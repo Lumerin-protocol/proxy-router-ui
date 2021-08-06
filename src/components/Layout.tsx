@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import { BellIcon, CalendarIcon, ChartBarIcon, FolderIcon, HomeIcon, InboxIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
+import { ActionPanel } from './UI/ActionPanel';
 
 interface Navigation {
 	name: string;
@@ -215,16 +216,9 @@ export const Layout: React.FC = () => {
 				</div>
 
 				<main className='flex-1 relative overflow-y-auto focus:outline-none'>
-					<div className='py-6'>
-						<div className='max-w-7xl mx-auto px-4 sm:px-6 md:px-8'>
-							<h1 className='text-2xl font-semibold text-gray-900'>Something Very Exciting Coming Soon!</h1>
-						</div>
-						<div className='max-w-7xl mx-auto px-4 sm:px-6 md:px-8'>
-							{/* Replace with your content */}
-							<div className='py-4'>
-								<div className='border-4 border-dashed border-gray-200 rounded-lg h-96' />
-							</div>
-							{/* /End replace */}
+					<div className='w-6/12 lg:w-4/12 py-6 m-auto'>
+						<div className='max-w-7xl px-4 sm:px-6 md:px-8'>
+							<ActionPanel />
 						</div>
 					</div>
 				</main>
