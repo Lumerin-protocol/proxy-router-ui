@@ -1,19 +1,19 @@
-import React from 'react';
-import './App.css';
+import React, { Suspense } from 'react';
+import { Spinner } from './components/UI/Spinner';
+import { Route, RouteComponentProps, Switch } from 'react-router-dom';
+import { Layout } from './components/Layout';
 
-function App() {
-	return (
-		<div className='App'>
-			<header className='App-header'>
-				<p>
-					Edit <code>src/App.tsx</code> and save to reload.
-				</p>
-				<a className='App-link' href='https://reactjs.org' target='_blank' rel='noopener noreferrer'>
-					Learn React
-				</a>
-			</header>
-		</div>
-	);
-}
+const routes = (
+	<Suspense fallback={<Spinner />}>
+		<Switch>
+			<Route path='/' render={(props: RouteComponentProps) => <Layout />} />
+		</Switch>
+	</Suspense>
+);
 
-export default App;
+export const App: React.FC = () => {
+	return routes;
+};
+
+App.displayName = 'App';
+(App as any).whyDidYouRender = false;
