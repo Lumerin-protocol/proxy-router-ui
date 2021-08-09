@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import { BellIcon, CalendarIcon, ChartBarIcon, FolderIcon, HomeIcon, InboxIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
-import { ActionPanel } from './UI/ActionPanel';
+import { ActionPanel } from './ui/ActionPanel';
 
 interface Navigation {
 	name: string;

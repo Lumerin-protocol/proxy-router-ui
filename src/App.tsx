@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Spinner } from './components/UI/Spinner';
+import { Spinner } from './components/ui/Spinner';
 import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { Layout } from './components/Layout';
 

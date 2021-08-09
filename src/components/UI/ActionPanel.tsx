@@ -25,3 +25,6 @@ export const ActionPanel: React.FC = () => {
 		</div>
 	);
 };
+
+ActionPanel.displayName = 'ActionPanel';
+(ActionPanel as any).whyDidYouRender = false;
