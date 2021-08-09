@@ -42,33 +42,3 @@ If you aren’t satisfied with the build tool and configuration choices, you can
 Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## AWS CLI Commands
-
-Commands to get a user authentication token then build, tag, and push an image to our AWS ECR.
-
-**Note: You will need to run `aws configure` locally to setup your AWS user credentials which are in your AWS account under IAM. You need to add the `AmazonEC2ContainerRegistryFullAccess` policy to your user so it can access ECR.**
-
-### `aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 092029861612.dkr.ecr.us-west-2.amazonaws.com`
-
-Get an authentication token for the user which is needed when pushing an image to ECR
-
-### `docker build -t titan-proxy-router-ui .`
-
-Build an image
-
-### `docker tag titan-proxy-router-ui:latest 092029861612.dkr.ecr.us-west-2.amazonaws.com/titan-proxy-router-ui:latest`
-
-Tag image
-
-### `docker push 092029861612.dkr.ecr.us-west-2.amazonaws.com/titan-proxy-router-ui:latest`
-
-Push image to ECR
-
-**Note: Once the new image is in ECR, update the service to use the latest image.**
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
