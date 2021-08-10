@@ -25,7 +25,7 @@ Commands to get a user authentication token then build, tag, and push an image t
 
 **Note: You will need to run `aws configure` locally to setup your AWS user credentials which are in your AWS account under IAM. You need to add the `AmazonEC2ContainerRegistryFullAccess` policy to your user so it can access ECR.**
 
-**Get an authentication token for the user which is needed when pushing an image to ECR**
+**login to AWS**
 
 1. `aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 092029861612.dkr.ecr.us-west-2.amazonaws.com`
    **Build an image**
