@@ -1,12 +1,13 @@
 import React, { Suspense } from 'react';
 import { Spinner } from './components/ui/Spinner';
-import { Route, RouteComponentProps, Switch } from 'react-router-dom';
+import { RouteComponentProps, Switch } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { RouteWithErrorBoundary } from './components/RouteWithErrorBoundary';
 
 const routes = (
 	<Suspense fallback={<Spinner />}>
 		<Switch>
-			<Route path='/' render={(props: RouteComponentProps) => <Layout />} />
+			<RouteWithErrorBoundary path='/' render={(props: RouteComponentProps) => <Layout />} />
 		</Switch>
 	</Suspense>
 );
