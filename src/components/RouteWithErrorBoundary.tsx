@@ -1,7 +1,6 @@
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { Route, RouteProps } from 'react-router';
 import { ErrorPage } from './ui/ErrorPage';
-import ReactGA from '../reactGA';
 
 const ErrorFallback: React.ComponentType<FallbackProps> = ({ error, resetErrorBoundary }) => {
 	return <ErrorPage error={error} />;
@@ -10,16 +9,12 @@ const ErrorFallback: React.ComponentType<FallbackProps> = ({ error, resetErrorBo
 // add reset logic if needed
 const onResetHandler: () => void = () => {};
 
-const errorHandler: (error: Error, info: { componentStack: string }) => void = (error, info) => {
-	ReactGA.exception({
-		description: `Error message: ${error.message} with stack trace: ${info.componentStack}`,
-		fatal: true,
-	});
-};
+// log to local filestore or localStorage if needed
+const errorHandler: (error: Error, info: { componentStack: string }) => void = (error, info) => {};
 
 export const RouteWithErrorBoundary: React.FC<RouteProps> = (props) => {
 	return (
-		<ErrorBoundary fallbackRender={ErrorFallback} onReset={() => {}} onError={errorHandler} key={props.location?.pathname}>
+		<ErrorBoundary fallbackRender={ErrorFallback} onReset={onResetHandler} onError={errorHandler} key={props.location?.pathname}>
 			<Route {...props} />
 		</ErrorBoundary>
 	);

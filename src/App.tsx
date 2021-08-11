@@ -7,7 +7,7 @@ import { RouteWithErrorBoundary } from './components/RouteWithErrorBoundary';
 const routes = (
 	<Suspense fallback={<Spinner />}>
 		<Switch>
-			<RouteWithErrorBoundary path='/' render={(props: RouteComponentProps) => <Layout {...props} />} />
+			<RouteWithErrorBoundary path='/' render={(props: RouteComponentProps) => <Layout />} />
 		</Switch>
 	</Suspense>
 );

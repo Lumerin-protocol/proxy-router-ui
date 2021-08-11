@@ -3,8 +3,6 @@ import { Dialog, Menu, Transition } from '@headlessui/react';
 import { BellIcon, CalendarIcon, ChartBarIcon, FolderIcon, HomeIcon, InboxIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
 import { ActionPanel } from './ui/ActionPanel';
-import { RouteComponentProps } from 'react-router-dom';
-import ReactGA from '../reactGA';
 
 interface Navigation {
 	name: string;
@@ -36,9 +34,7 @@ const classNames = (...classes: string[]) => {
 	return classes.filter(Boolean).join(' ');
 };
 
-export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
-	ReactGA.set({ page: location.pathname });
-
+export const Layout: React.FC = () => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
 	return (
