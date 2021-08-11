@@ -12,7 +12,7 @@ const onResetHandler: () => void = () => {};
 
 const errorHandler: (error: Error, info: { componentStack: string }) => void = (error, info) => {
 	ReactGA.exception({
-		description: `Error message: ${error.message}`,
+		description: `Error message: ${error.message} with stack trace: ${info.componentStack}`,
 		fatal: true,
 	});
 };
