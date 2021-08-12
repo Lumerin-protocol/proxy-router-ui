@@ -9,7 +9,10 @@
 			"request": "launch",
 			"name": "Chrome",
 			"url": "http://localhost:3000",
-			"webRoot": "${workspaceFolder}"
+			"webRoot": "${workspaceFolder}",
+			"runtimeArgs": [
+				"--load-extension=${env:userprofile}/AppData/Local/Google/Chrome/User Data/Profile 2/Extensions/nkbihfbeogaeaoehlefnkodbefgpgknn/9.8.4_0"
+			]
 		}
 	]
 }

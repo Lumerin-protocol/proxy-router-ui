@@ -52,6 +52,7 @@
 		]
 	},
 	"devDependencies": {
+		"@openzeppelin/contracts": "^4.2.0",
 		"@welldone-software/why-did-you-render": "^6.2.0",
 		"autoprefixer": "^9.8.6",
 		"postcss": "^7.0.36",
