@@ -4,6 +4,7 @@ import { CalendarIcon, ChartBarIcon, FolderIcon, HomeIcon, InboxIcon, MenuAlt2Ic
 import { SearchIcon } from '@heroicons/react/solid';
 import { ActionPanel } from './ui/ActionPanel';
 import { web3Client } from './hooks/web3Client';
+import axios from 'axios';
 
 interface Navigation {
 	name: string;
@@ -37,6 +38,18 @@ const classNames = (...classes: string[]) => {
 
 export const Layout: React.FC = () => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+
+	// create logger to hit local logging service to have logs during development
+	// axios
+	// 	.post('http://localhost:5000/log', {
+	// 		logLevel: 'trace',
+	// 		message: 'test message from ui',
+	// 		stackTrace: 'test stack trace',
+	// 	})
+	// 	.then((response) => {})
+	// 	.catch((error) => {
+	// 		console.log(error.message);
+	// 	});
 
 	return (
 		<div className='h-screen flex overflow-hidden bg-gray-100'>
