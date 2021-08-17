@@ -3,6 +3,7 @@ import { Dialog, Menu, Transition } from '@headlessui/react';
 import { HomeIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
 import { getWeb3Client } from '../web3/getWeb3Client';
 import { truncateWalletAddress } from '../utils';
+import { ConnectWalletModal } from './ui/ConnectWalletModal';
 
 interface Navigation {
 	name: string;
@@ -31,6 +32,7 @@ const classNames = (...classes: string[]) => {
 };
 
 export const Layout: React.FC = () => {
+	// state and constants
 	const CONNECT_YOUR_WALLET = 'Connect Your Wallet';
 	const DISCONNECT = 'Disconnect';
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
@@ -38,8 +40,10 @@ export const Layout: React.FC = () => {
 	const [web3, setWeb3] = useState<Promise<any>>();
 	const [accounts, setAccounts] = useState<any>();
 	const [instance, setInstance] = useState<any>();
+	const [connectWalletModalOpen, setConnectWalletModalOpen] = useState<boolean>(false);
 
-	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
+	// Wallet setup
+	const connectWallet: (walletName: string) => void = async (walletName) => {
 		if (walletText === CONNECT_YOUR_WALLET) {
 			const clientData = await getWeb3Client();
 			if (clientData) {
@@ -55,6 +59,16 @@ export const Layout: React.FC = () => {
 		}
 	};
 
+	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
+		if (walletText === CONNECT_YOUR_WALLET) {
+			setConnectWalletModalOpen(true);
+		} else {
+			setWalletText(CONNECT_YOUR_WALLET);
+			setConnectWalletModalOpen(false);
+			setWeb3(undefined);
+		}
+	};
+
 	const getTruncatedWalletAddress: () => string | null = () => {
 		if (walletText === DISCONNECT && accounts) {
 			return truncateWalletAddress(accounts[0]);
@@ -65,6 +79,7 @@ export const Layout: React.FC = () => {
 
 	return (
 		<div className='h-screen flex overflow-hidden bg-gray-100'>
+			<ConnectWalletModal open={connectWalletModalOpen} setOpen={setConnectWalletModalOpen} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
