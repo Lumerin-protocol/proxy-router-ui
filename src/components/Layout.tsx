@@ -1,10 +1,8 @@
 import { Fragment, useState } from 'react';
 import { Dialog, Menu, Transition } from '@headlessui/react';
-import { CalendarIcon, ChartBarIcon, FolderIcon, HomeIcon, InboxIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
-import { SearchIcon } from '@heroicons/react/solid';
-import { ActionPanel } from './ui/ActionPanel';
-import { web3Client } from './hooks/web3Client';
-import axios from 'axios';
+import { HomeIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
+import { getWeb3Client } from '../web3/getWeb3Client';
+import { truncateWalletAddress } from '../utils';
 
 interface Navigation {
 	name: string;
@@ -19,12 +17,8 @@ interface UserNavigation {
 }
 
 const navigation: Navigation[] = [
-	{ name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-	{ name: 'Team', href: '#', icon: UsersIcon, current: false },
-	{ name: 'Projects', href: '#', icon: FolderIcon, current: false },
-	{ name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
-	{ name: 'Documents', href: '#', icon: InboxIcon, current: false },
-	{ name: 'Reports', href: '#', icon: ChartBarIcon, current: false },
+	{ name: 'Marketplace', href: '#', icon: HomeIcon, current: true },
+	{ name: 'My Orders', href: '#', icon: UsersIcon, current: false },
 ];
 const userNavigation: UserNavigation[] = [
 	{ name: 'Your Profile', href: '#' },
@@ -37,19 +31,37 @@ const classNames = (...classes: string[]) => {
 };
 
 export const Layout: React.FC = () => {
+	const CONNECT_YOUR_WALLET = 'Connect Your Wallet';
+	const DISCONNECT = 'Disconnect';
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+	const [walletText, setWalletText] = useState<string>(CONNECT_YOUR_WALLET);
+	const [web3, setWeb3] = useState<Promise<any>>();
+	const [accounts, setAccounts] = useState<any>();
+	const [instance, setInstance] = useState<any>();
 
-	// create logger to hit local logging service to have logs during development
-	// axios
-	// 	.post('http://localhost:5000/log', {
-	// 		logLevel: 'trace',
-	// 		message: 'test message from ui',
-	// 		stackTrace: 'test stack trace',
-	// 	})
-	// 	.then((response) => {})
-	// 	.catch((error) => {
-	// 		console.log(error.message);
-	// 	});
+	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
+		if (walletText === CONNECT_YOUR_WALLET) {
+			const clientData = await getWeb3Client();
+			if (clientData) {
+				const { accounts, instance, web3 } = clientData;
+				setAccounts(accounts);
+				setInstance(instance);
+				setWeb3(web3);
+			}
+			setWalletText(DISCONNECT);
+		} else {
+			setWalletText(CONNECT_YOUR_WALLET);
+			setWeb3(undefined);
+		}
+	};
+
+	const getTruncatedWalletAddress: () => string | null = () => {
+		if (walletText === DISCONNECT && accounts) {
+			return truncateWalletAddress(accounts[0]);
+		}
+
+		return null;
+	};
 
 	return (
 		<div className='h-screen flex overflow-hidden bg-gray-100'>
@@ -147,7 +159,7 @@ export const Layout: React.FC = () => {
 				</div>
 			</div>
 			<div className='flex flex-col w-0 flex-1 overflow-hidden'>
-				<div className='relative z-10 flex-shrink-0 flex h-16 bg-white shadow'>
+				<div className='relative z-10 flex-shrink-0 flex h-16 bg-white'>
 					<button
 						type='button'
 						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden'
@@ -156,32 +168,18 @@ export const Layout: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className='flex-1 px-4 flex justify-between'>
-						<div className='flex-1 flex'>
-							<form className='w-full flex md:ml-0' action='#' method='GET'>
-								<label htmlFor='search-field' className='sr-only'>
-									Search
-								</label>
-								<div className='relative w-full text-gray-400 focus-within:text-gray-600'>
-									<div className='absolute inset-y-0 left-0 flex items-center pointer-events-none'>
-										<SearchIcon className='h-5 w-5' aria-hidden='true' />
-									</div>
-									<input
-										id='search-field'
-										className='block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent sm:text-sm'
-										placeholder='Search'
-										type='search'
-										name='search'
-									/>
-								</div>
-							</form>
-						</div>
+					<div className='flex-1 px-4 flex justify-end'>
 						<button
 							type='button'
 							className='px-12 py-2 bg-white text-base font-medium text-indigo-600 hover:text-indigo-900'
-							onClick={web3Client}
+							onClick={walletClickHandler}
 						>
-							Connect Your Wallet
+							<span className='border border-solid rounded-3xl border-indigo-300 py-2 px-4 mr-2'>{walletText}</span>
+							{walletText === DISCONNECT ? (
+								<span className='border border-solid rounded-3xl border-transparent py-2 px-4 bg-gray-200 text-black'>
+									{getTruncatedWalletAddress()}
+								</span>
+							) : null}
 						</button>
 						<div className='ml-4 flex items-center md:ml-6'>
 							{/* Profile dropdown */}
@@ -233,9 +231,7 @@ export const Layout: React.FC = () => {
 
 				<main className='flex-1 relative overflow-y-auto focus:outline-none'>
 					<div className='w-6/12 lg:w-4/12 py-6 m-auto'>
-						<div className='max-w-7xl px-4 sm:px-6 md:px-8'>
-							<ActionPanel />
-						</div>
+						<div className='max-w-7xl px-4 sm:px-6 md:px-8'></div>
 					</div>
 				</main>
 			</div>

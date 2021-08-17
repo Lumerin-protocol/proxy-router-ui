@@ -56,7 +56,6 @@
 		"@openzeppelin/contracts": "^4.2.0",
 		"@welldone-software/why-did-you-render": "^6.2.0",
 		"autoprefixer": "^9.8.6",
-		"axios": "^0.21.1",
 		"postcss": "^7.0.36",
 		"tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7"
 	}
