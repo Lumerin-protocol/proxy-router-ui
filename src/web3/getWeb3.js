@@ -1,9 +1,13 @@
 import Web3 from 'web3';
 import detectEthereumProvider from '@metamask/detect-provider';
+import WalletConnectProvider from '@walletconnect/web3-provider';
 
-const connectToWallet = async (resolve, reject) => {
-	// Metamask
-	const provider = await detectEthereumProvider();
+const METAMASK = 'MetaMask';
+const WALLETCONNECT = 'WalletConnect';
+const COINBASE_WALLET = 'Coinbase Wallet';
+let provider = null;
+
+const connectWithProvider = async (resolve, reject, provider) => {
 	if (provider) {
 		const web3 = new Web3(provider);
 		try {
@@ -14,19 +18,40 @@ const connectToWallet = async (resolve, reject) => {
 		} catch (error) {
 			reject(error);
 		}
-	}
-	// Fallback to localhost; use dev console port by default...
-	else {
-		const provider = new Web3.providers.HttpProvider('http://127.0.0.1:7545');
-		const web3 = new Web3(provider);
-		console.log('No web3 instance injected, using Local web3.');
-		resolve(web3);
+	} else {
+		reject();
 	}
 };
 
-const getWeb3 = () =>
+// TODO: decide if this is needed for Stage 1
+const connectWithWalletConnect = async (resolve, reject) => {
+	const provider = new WalletConnectProvider({
+		infuraId: '27e484dcd9e3efcfd25a83a78777cdf1',
+	});
+
+	await connectWithProvider(resolve, reject, provider);
+};
+
+const connectToWallet = async (resolve, reject, walletName) => {
+	switch (walletName) {
+		case METAMASK:
+			provider = await detectEthereumProvider();
+			await connectWithProvider(resolve, reject, provider);
+			break;
+		case WALLETCONNECT:
+			await connectWithWalletConnect(resolve, reject);
+			break;
+		case COINBASE_WALLET:
+			provider = null;
+			break;
+		default:
+			break;
+	}
+};
+
+const getWeb3 = (walletName) =>
 	new Promise((resolve, reject) => {
-		connectToWallet(resolve, reject);
+		connectToWallet(resolve, reject, walletName);
 	});
 
 export default getWeb3;

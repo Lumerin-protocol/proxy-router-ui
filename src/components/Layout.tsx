@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import { HomeIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
 import { getWeb3Client } from '../web3/getWeb3Client';
@@ -43,21 +43,20 @@ export const Layout: React.FC = () => {
 	const [connectWalletModalOpen, setConnectWalletModalOpen] = useState<boolean>(false);
 
 	// Wallet setup
-	const connectWallet: (walletName: string) => void = async (walletName) => {
-		if (walletText === CONNECT_YOUR_WALLET) {
-			const clientData = await getWeb3Client();
+	const connectWallet = useCallback(
+		async (walletName: string) => {
+			const clientData = await getWeb3Client(walletName);
 			if (clientData) {
 				const { accounts, instance, web3 } = clientData;
 				setAccounts(accounts);
 				setInstance(instance);
 				setWeb3(web3);
+				setWalletText(DISCONNECT);
+				setConnectWalletModalOpen(false);
 			}
-			setWalletText(DISCONNECT);
-		} else {
-			setWalletText(CONNECT_YOUR_WALLET);
-			setWeb3(undefined);
-		}
-	};
+		},
+		[setAccounts, setInstance, setWalletText, setWeb3]
+	);
 
 	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
 		if (walletText === CONNECT_YOUR_WALLET) {
@@ -79,7 +78,7 @@ export const Layout: React.FC = () => {
 
 	return (
 		<div className='h-screen flex overflow-hidden bg-gray-100'>
-			<ConnectWalletModal open={connectWalletModalOpen} setOpen={setConnectWalletModalOpen} />
+			<ConnectWalletModal open={connectWalletModalOpen} setOpen={setConnectWalletModalOpen} connectWallet={connectWallet} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
