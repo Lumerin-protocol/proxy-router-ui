@@ -1,5 +1,4 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { XCircleIcon } from '@heroicons/react/solid';
 import { Fragment } from 'react';
 
 interface AlertProps {
@@ -41,12 +40,15 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen }) => {
 						<div className='inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6'>
 							<div className='rounded-md bg-red-50 p-4'>
 								<div className='flex'>
-									<div className='flex-shrink-0'>
-										<XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' onClick={() => setOpen(false)} />
-									</div>
-									<div className='ml-3'>
-										<h3 className='text-sm font-medium text-red-800'>{message}</h3>
-									</div>
+									<button
+										type='button'
+										className='inline-flex justify-center w-full bg-red-50 text-base text-color-white font-medium'
+										onClick={() => {}}
+									>
+										<div className='ml-3'>
+											<h3 className='text-sm font-medium text-red-600'>{message}</h3>
+										</div>
+									</button>
 								</div>
 							</div>
 						</div>

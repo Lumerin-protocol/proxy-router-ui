@@ -1,9 +1,10 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import { HomeIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
 import { getWeb3Client } from '../web3/getWeb3Client';
 import { truncateWalletAddress } from '../utils';
 import { Alert } from './ui/Alert';
+import { disconnectWallet } from '../web3/utils';
 
 interface Navigation {
 	name: string;
@@ -33,12 +34,12 @@ const classNames = (...classes: string[]) => {
 
 export const Layout: React.FC = () => {
 	// state and constants
-	const CONNECT_YOUR_WALLET = 'Connect Your Wallet';
+	const CONNECT_VIA_METAMASK = 'Connect Via MetaMask';
 	const DISCONNECT = 'Disconnect';
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-	const [walletText, setWalletText] = useState<string>(CONNECT_YOUR_WALLET);
+	const [walletText, setWalletText] = useState<string>(CONNECT_VIA_METAMASK);
 	const [web3, setWeb3] = useState<Promise<any>>();
-	const [accounts, setAccounts] = useState<any>();
+	const [accounts, setAccounts] = useState<string[]>();
 	const [instance, setInstance] = useState<any>();
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
@@ -55,10 +56,11 @@ export const Layout: React.FC = () => {
 	};
 
 	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
-		if (walletText === CONNECT_YOUR_WALLET) {
+		if (walletText === CONNECT_VIA_METAMASK) {
 			connectWallet();
 		} else {
-			setWalletText(CONNECT_YOUR_WALLET);
+			disconnectWallet();
+			setWalletText(CONNECT_VIA_METAMASK);
 			setWeb3(undefined);
 		}
 	};
@@ -71,9 +73,14 @@ export const Layout: React.FC = () => {
 		return null;
 	};
 
+	// when a user disconnects MetaMask, alertOpen will be true
+	useEffect(() => {
+		if (alertOpen) setWalletText(CONNECT_VIA_METAMASK);
+	}, [alertOpen]);
+
 	return (
 		<div className='h-screen flex overflow-hidden bg-gray-100'>
-			<Alert message={'Your Wallet Cound Not Connect'} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child

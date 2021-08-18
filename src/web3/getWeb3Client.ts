@@ -7,9 +7,12 @@ export const getWeb3Client: (
 ) => Promise<{ accounts: any; instance: any; web3: Promise<any> } | null> = async (setOpenAlert) => {
 	try {
 		// Get network provider and web3 instance.
-		const web3 = await getWeb3();
+		const web3 = await getWeb3(setOpenAlert);
 		// Use web3 to get the user's accounts.
 		const accounts = await web3.eth.getAccounts();
+		if (accounts.length === 0 || accounts[0] === '') {
+			setOpenAlert(true);
+		}
 		// Get the contract instance.
 		const networkId = await web3.eth.net.getId();
 		const deployedNetwork = (TestToken as any).networks[networkId];
