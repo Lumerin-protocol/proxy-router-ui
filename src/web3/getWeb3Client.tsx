@@ -2,10 +2,12 @@
 import getWeb3 from './getWeb3';
 import TestToken from '../contracts/TestToken.json';
 
-export const getWeb3Client: (walletName: string) => Promise<{ accounts: any; instance: any; web3: Promise<any> } | null> = async (walletName) => {
+export const getWeb3Client: (
+	setOpenAlert: React.Dispatch<React.SetStateAction<boolean>>
+) => Promise<{ accounts: any; instance: any; web3: Promise<any> } | null> = async (setOpenAlert) => {
 	try {
 		// Get network provider and web3 instance.
-		const web3 = await getWeb3(walletName);
+		const web3 = await getWeb3();
 		// Use web3 to get the user's accounts.
 		const accounts = await web3.eth.getAccounts();
 		// Get the contract instance.
@@ -15,9 +17,7 @@ export const getWeb3Client: (walletName: string) => Promise<{ accounts: any; ins
 
 		return { accounts, instance, web3 };
 	} catch (error) {
-		console.error(error);
-		// TODO: show alert that wallet couldn't connect
-
+		setOpenAlert(true);
 		return null;
 	}
 };

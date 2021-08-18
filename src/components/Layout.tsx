@@ -1,9 +1,9 @@
-import { Fragment, useCallback, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import { HomeIcon, MenuAlt2Icon, UsersIcon, XIcon } from '@heroicons/react/outline';
 import { getWeb3Client } from '../web3/getWeb3Client';
 import { truncateWalletAddress } from '../utils';
-import { ConnectWalletModal } from './ui/ConnectWalletModal';
+import { Alert } from './ui/Alert';
 
 interface Navigation {
 	name: string;
@@ -40,30 +40,25 @@ export const Layout: React.FC = () => {
 	const [web3, setWeb3] = useState<Promise<any>>();
 	const [accounts, setAccounts] = useState<any>();
 	const [instance, setInstance] = useState<any>();
-	const [connectWalletModalOpen, setConnectWalletModalOpen] = useState<boolean>(false);
+	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	// Wallet setup
-	const connectWallet = useCallback(
-		async (walletName: string) => {
-			const clientData = await getWeb3Client(walletName);
-			if (clientData) {
-				const { accounts, instance, web3 } = clientData;
-				setAccounts(accounts);
-				setInstance(instance);
-				setWeb3(web3);
-				setWalletText(DISCONNECT);
-				setConnectWalletModalOpen(false);
-			}
-		},
-		[setAccounts, setInstance, setWalletText, setWeb3]
-	);
+	const connectWallet = async () => {
+		const clientData = await getWeb3Client(setAlertOpen);
+		if (clientData) {
+			const { accounts, instance, web3 } = clientData;
+			setAccounts(accounts);
+			setInstance(instance);
+			setWeb3(web3);
+			setWalletText(DISCONNECT);
+		}
+	};
 
 	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
 		if (walletText === CONNECT_YOUR_WALLET) {
-			setConnectWalletModalOpen(true);
+			connectWallet();
 		} else {
 			setWalletText(CONNECT_YOUR_WALLET);
-			setConnectWalletModalOpen(false);
 			setWeb3(undefined);
 		}
 	};
@@ -78,7 +73,7 @@ export const Layout: React.FC = () => {
 
 	return (
 		<div className='h-screen flex overflow-hidden bg-gray-100'>
-			<ConnectWalletModal open={connectWalletModalOpen} setOpen={setConnectWalletModalOpen} connectWallet={connectWallet} />
+			<Alert message={'Your Wallet Cound Not Connect'} open={alertOpen} setOpen={setAlertOpen} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child

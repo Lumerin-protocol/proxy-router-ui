@@ -4,7 +4,7 @@ import { Dialog, Transition } from '@headlessui/react';
 interface ConnectWalletModalProps {
 	open: boolean;
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	connectWallet: (wallName: string) => void;
+	connectWallet: () => void;
 }
 
 export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, setOpen, connectWallet }) => {
@@ -52,24 +52,10 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, se
 								<button
 									type='button'
 									className='inline-flex justify-center w-full bg-titan-gray rounded-3xl border border-transparent shadow-sm px-4 py-2 mb-3 bg-indigo-600 text-base font-medium text-black hover:bg-titan-aqua hover:text-white focus:outline-none sm:text-sm'
-									onClick={(event) => connectWallet(event.currentTarget.innerText)}
+									onClick={() => connectWallet()}
 								>
 									MetaMask
 								</button>
-								{/* <button
-									type='button'
-									className='inline-flex justify-center w-full bg-titan-gray rounded-3xl border border-transparent shadow-sm px-4 py-2 mb-3 bg-indigo-600 text-base font-medium text-black hover:bg-titan-aqua hover:text-white focus:outline-none sm:text-sm'
-									onClick={(event) => connectWallet(event.currentTarget.innerText)}
-								>
-									WalletConnect
-								</button> */}
-								{/* <button
-									type='button'
-									className='inline-flex justify-center w-full bg-titan-gray rounded-3xl border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-black hover:bg-titan-aqua hover:text-white focus:outline-none sm:text-sm'
-									onClick={(event) => connectWallet(event.currentTarget.innerText)}
-								>
-									Coinbase Wallet
-								</button> */}
 							</div>
 						</div>
 					</Transition.Child>
