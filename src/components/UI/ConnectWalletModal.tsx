@@ -51,7 +51,7 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, se
 							<div className='mt-5 sm:mt-6'>
 								<button
 									type='button'
-									className='inline-flex justify-center w-full bg-titan-gray rounded-3xl border border-transparent shadow-sm px-4 py-2 mb-3 bg-indigo-600 text-base font-medium text-black hover:bg-titan-aqua hover:text-white focus:outline-none sm:text-sm'
+									className='inline-flex justify-center w-full bg-lumerin-gray rounded-3xl border border-transparent shadow-sm px-4 py-2 mb-3 bg-indigo-600 text-base font-medium text-black hover:bg-titan-aqua hover:text-white focus:outline-none sm:text-sm'
 									onClick={() => connectWallet()}
 								>
 									MetaMask

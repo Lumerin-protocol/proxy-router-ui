@@ -3,9 +3,13 @@ module.exports = {
 	darkMode: false, // or 'media' or 'class'
 	theme: {
 		extend: {
+			fontFamily: {
+				Inter: ['Inter', 'sans-serif'],
+			},
 			colors: {
-				'titan-gray': '#EDEEF2',
-				'titan-aqua': '#27C9D0',
+				'lumerin-gray': '#EDEEF2',
+				'lumerin-aqua': '#11B4BF',
+				'lumerin-light-aqua': '#DBECED',
 			},
 		},
 	},

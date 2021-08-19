@@ -187,17 +187,23 @@ export const Layout: React.FC = () => {
 					<div className='flex-1 px-4 flex justify-end'>
 						<button
 							type='button'
-							className='px-12 py-2 bg-white text-base font-medium text-indigo-600 hover:text-indigo-900'
+							className='px-12 pl-2 pr-0 bg-white text-base font-medium text-white hover:text-indigo-50'
 							onClick={walletClickHandler}
 						>
-							<span className='border border-solid rounded-3xl border-indigo-300 py-2 px-4 mr-2'>{walletText}</span>
+							<span
+								className={classNames(
+									walletText === DISCONNECT
+										? 'border border-solid border-lumerin-aqua rounded-3xl bg-white text-sm text-lumerin-aqua font-Inter py-2 px-4 mr-2'
+										: 'rounded-3xl bg-lumerin-aqua text-sm font-Inter py-2 px-4 mr-2'
+								)}
+							>
+								{walletText}
+							</span>
 							{walletText === DISCONNECT ? (
-								<span className='border border-solid rounded-3xl border-transparent py-2 px-4 bg-gray-200 text-black'>
-									{getTruncatedWalletAddress()}
-								</span>
+								<span className='rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-black'>{getTruncatedWalletAddress()}</span>
 							) : null}
 						</button>
-						<div className='ml-4 flex items-center md:ml-6'>
+						<div className='ml-4 flex items-center hidden'>
 							{/* Profile dropdown */}
 							<Menu as='div' className='ml-3 relative'>
 								{({ open }) => (
