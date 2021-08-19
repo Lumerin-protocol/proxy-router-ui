@@ -79,7 +79,7 @@ export const Layout: React.FC = () => {
 	}, [alertOpen]);
 
 	return (
-		<div className='h-screen flex overflow-hidden bg-gray-100'>
+		<div id='layout' className='h-screen flex overflow-hidden bg-gray-100'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
@@ -150,7 +150,7 @@ export const Layout: React.FC = () => {
 			</Transition.Root>
 
 			{/* Static sidebar for desktop */}
-			<div className='hidden bg-indigo-700 md:flex md:flex-shrink-0'>
+			<div className='hidden bg-white md:flex md:flex-shrink-0'>
 				<div className='flex flex-col w-64'>
 					{/* Sidebar component, swap this element with another sidebar if you like */}
 					<div className='flex flex-col flex-grow pt-5 pb-4 overflow-y-auto'>
