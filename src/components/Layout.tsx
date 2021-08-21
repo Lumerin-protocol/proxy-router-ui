@@ -135,7 +135,9 @@ export const Layout: React.FC = () => {
 												'group flex items-center px-2 py-2 text-base font-medium rounded-md'
 											)}
 										>
-											<item.icon className='mr-4 flex-shrink-0 h-6 w-6 text-indigo-300' aria-hidden='true' />
+											<span className='bg-lumerin-gray'>
+												<item.icon className='mr-4 flex-shrink-0 h-6 w-6 text-indigo-300' aria-hidden='true' />
+											</span>
 											{item.name}
 										</a>
 									))}
@@ -154,18 +156,20 @@ export const Layout: React.FC = () => {
 				<div className='flex flex-col w-64'>
 					{/* Sidebar component, swap this element with another sidebar if you like */}
 					<div className='flex flex-col flex-grow pt-5 pb-4 overflow-y-auto'>
-						<div className='mt-5 flex-1 flex flex-col'>
+						<div className='mt-5 flex-1 flex flex-col mt-20'>
 							<nav className='flex-1 px-2 space-y-1'>
 								{navigation.map((item) => (
 									<a
 										key={item.name}
 										href={item.href}
 										className={classNames(
-											item.current ? 'bg-indigo-800 text-white' : 'text-indigo-100 hover:bg-indigo-600',
+											item.current ? 'text-black' : 'text-lumerin-aqua',
 											'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
 										)}
 									>
-										<item.icon className='mr-3 flex-shrink-0 h-6 w-6 text-indigo-300' aria-hidden='true' />
+										<span className='bg-lumerin-gray rounded-full mr-4'>
+											<item.icon className='m-2 flex-shrink-0 h-6 w-6 text-indigo-300' aria-hidden='true' />
+										</span>
 										{item.name}
 									</a>
 								))}
@@ -174,8 +178,8 @@ export const Layout: React.FC = () => {
 					</div>
 				</div>
 			</div>
-			<div className='flex flex-col w-0 flex-1 overflow-hidden'>
-				<div className='relative z-10 flex-shrink-0 flex h-16 bg-white'>
+			<div className='flex flex-col w-0 flex-1 overflow-hidden bg-white'>
+				<div className='relative z-10 flex-shrink-0 flex h-20 bg-white'>
 					<button
 						type='button'
 						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden'
@@ -202,7 +206,7 @@ export const Layout: React.FC = () => {
 									viewBox='0 0 19 20'
 									fill='none'
 									xmlns='http://www.w3.org/2000/svg'
-									style={{ marginLeft: '.5rem' }}
+									style={{ marginLeft: '1rem' }}
 								>
 									<path
 										d='M17.1363 1L10.5098 6.6788L11.7352 3.32838L17.1363 1Z'
@@ -411,7 +415,7 @@ export const Layout: React.FC = () => {
 							) : null}
 						</button>
 						{walletText === DISCONNECT ? (
-							<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-black'>
+							<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-black font-medium'>
 								{getTruncatedWalletAddress()}
 								<svg
 									width='19'
@@ -419,7 +423,7 @@ export const Layout: React.FC = () => {
 									viewBox='0 0 19 20'
 									fill='none'
 									xmlns='http://www.w3.org/2000/svg'
-									style={{ marginLeft: '.5rem' }}
+									style={{ marginLeft: '1rem' }}
 								>
 									<path
 										d='M17.1363 1L10.5098 6.6788L11.7352 3.32838L17.1363 1Z'
@@ -676,11 +680,7 @@ export const Layout: React.FC = () => {
 					</div>
 				</div>
 
-				<main className='flex-1 relative overflow-y-auto focus:outline-none'>
-					<div className='w-6/12 lg:w-4/12 py-6 m-auto'>
-						<div className='max-w-7xl px-4 sm:px-6 md:px-8'></div>
-					</div>
-				</main>
+				<main className='flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-4xl mr-4'></main>
 			</div>
 		</div>
 	);
