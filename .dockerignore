@@ -3,5 +3,3 @@ build
 .dockerignore
 Dockerfile
 Dockerfile.prod
-truffle
-src/contracts

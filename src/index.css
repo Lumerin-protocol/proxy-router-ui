@@ -7,4 +7,8 @@
 	.btn-action-panel {
 		@apply w-5/12 rounded-full inline-flex justify-center rounded-md border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm;
 	}
+
+	.btn-wallet {
+		@apply flex items-center justify-center bg-white text-base font-medium text-white hover:text-indigo-50;
+	}
 }
