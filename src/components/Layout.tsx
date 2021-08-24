@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
-import { getWeb3Client } from '../web3/getWeb3Client';
+import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
 import { truncateWalletAddress } from '../utils';
 import { ReactComponent as Marketplace } from '../images/marketplace.svg';
 import { ReactComponent as MyOrders } from '../images/myorders.svg';
@@ -11,6 +11,8 @@ import { Alert } from './ui/Alert';
 import { disconnectWallet } from '../web3/utils';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { ContractTable } from './ContractTable';
+import { Contract } from 'web3-eth-contract';
+import Web3 from 'web3';
 
 const classNames = (...classes: string[]) => {
 	return classes.filter(Boolean).join(' ');
@@ -22,9 +24,9 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	const DISCONNECT = 'Disconnect';
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [walletText, setWalletText] = useState<string>(CONNECT_VIA_METAMASK);
-	const [web3, setWeb3] = useState<Promise<any>>();
+	const [web3, setWeb3] = useState<Web3>();
 	const [accounts, setAccounts] = useState<string[]>();
-	const [instance, setInstance] = useState<any>();
+	const [instance, setInstance] = useState<Contract>();
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	// navigation
@@ -42,9 +44,9 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 
 	// Wallet setup
 	const connectWallet = async () => {
-		const clientData = await getWeb3Client(setAlertOpen);
-		if (clientData) {
-			const { accounts, instance, web3 } = clientData;
+		const web3Result = await getWeb3ResultAsync(setAlertOpen);
+		if (web3Result) {
+			const { accounts, instance, web3 } = web3Result;
 			setAccounts(accounts);
 			setInstance(instance);
 			setWeb3(web3);

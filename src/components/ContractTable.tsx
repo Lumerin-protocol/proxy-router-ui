@@ -13,6 +13,7 @@ export const ContractTable: React.FC = () => {
 
 	const data: Data[] = useMemo(
 		() => [
+			{},
 			{
 				id: 1,
 				price: '0.3241',
@@ -89,7 +90,7 @@ export const ContractTable: React.FC = () => {
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
 
 	return (
-		<table {...getTableProps()}>
+		<table {...getTableProps()} className='w-4/5 m-auto'>
 			<thead>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
@@ -105,7 +106,18 @@ export const ContractTable: React.FC = () => {
 					return (
 						<tr {...row.getRowProps()}>
 							{row.cells.map((cell) => {
-								return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
+								return (
+									<td
+										{...cell.getCellProps()}
+										style={{
+											padding: '10px',
+											border: 'solid 1px gray',
+											background: 'papayawhip',
+										}}
+									>
+										{cell.render('Cell')}
+									</td>
+								);
 							})}
 						</tr>
 					);
