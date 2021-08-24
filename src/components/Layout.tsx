@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Dialog, Menu, Transition } from '@headlessui/react';
+import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
 import { getWeb3Client } from '../web3/getWeb3Client';
 import { truncateWalletAddress } from '../utils';
@@ -9,34 +9,14 @@ import { ReactComponent as MetaMask } from '../images/metamask.svg';
 import { ReactComponent as Logo } from '../images/logo.svg';
 import { Alert } from './ui/Alert';
 import { disconnectWallet } from '../web3/utils';
-
-interface Navigation {
-	name: string;
-	href: string;
-	icon: JSX.Element;
-	current: boolean;
-}
-
-interface UserNavigation {
-	name: string;
-	href: string;
-}
-
-const navigation: Navigation[] = [
-	{ name: 'Marketplace', href: '#', icon: <Marketplace />, current: true },
-	{ name: 'My Orders', href: '#', icon: <MyOrders />, current: false },
-];
-const userNavigation: UserNavigation[] = [
-	{ name: 'Your Profile', href: '#' },
-	{ name: 'Settings', href: '#' },
-	{ name: 'Sign out', href: '#' },
-];
+import { Link, RouteComponentProps } from 'react-router-dom';
+import { ContractTable } from './ContractTable';
 
 const classNames = (...classes: string[]) => {
 	return classes.filter(Boolean).join(' ');
 };
 
-export const Layout: React.FC = () => {
+export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	// state and constants
 	const CONNECT_VIA_METAMASK = 'Connect Via MetaMask';
 	const DISCONNECT = 'Disconnect';
@@ -46,6 +26,19 @@ export const Layout: React.FC = () => {
 	const [accounts, setAccounts] = useState<string[]>();
 	const [instance, setInstance] = useState<any>();
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+
+	// navigation
+	interface Navigation {
+		name: string;
+		to: string;
+		icon: JSX.Element;
+		current: boolean;
+	}
+
+	const navigation: Navigation[] = [
+		{ name: 'Marketplace', to: '/', icon: <Marketplace />, current: location.pathname === '/' },
+		{ name: 'My Orders', to: 'orders', icon: <MyOrders />, current: location.pathname === '/orders' },
+	];
 
 	// Wallet setup
 	const connectWallet = async () => {
@@ -131,17 +124,17 @@ export const Layout: React.FC = () => {
 							<div className='mt-5 flex-1 h-0 overflow-y-auto'>
 								<nav className='px-2 space-y-1'>
 									{navigation.map((item) => (
-										<a
+										<Link
 											key={item.name}
-											href={item.href}
+											to={item.to}
 											className={classNames(
-												item.current ? 'text-black' : 'text-lumerin-aqua',
+												item.current ? 'text-lumerin-aqua' : 'text-black',
 												'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
 											)}
 										>
 											{item.icon}
 											<span className='ml-4'>{item.name}</span>
-										</a>
+										</Link>
 									))}
 								</nav>
 							</div>
@@ -164,17 +157,17 @@ export const Layout: React.FC = () => {
 						<div className='flex-1 flex flex-col'>
 							<nav className='flex-1 px-2 space-y-1'>
 								{navigation.map((item) => (
-									<a
+									<Link
 										key={item.name}
-										href={item.href}
+										to={item.to}
 										className={classNames(
-											item.current ? 'text-black' : 'text-lumerin-aqua',
+											item.current ? 'text-lumerin-aqua' : 'text-black',
 											'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
 										)}
 									>
 										{item.icon}
 										<span className='ml-4'>{item.name}</span>
-									</a>
+									</Link>
 								))}
 							</nav>
 						</div>
@@ -210,56 +203,12 @@ export const Layout: React.FC = () => {
 								<MetaMask />
 							</button>
 						) : null}
-
-						<div className='ml-4 flex items-center hidden'>
-							{/* Profile dropdown */}
-							<Menu as='div' className='ml-3 relative'>
-								{({ open }) => (
-									<>
-										<div>
-											<Menu.Button className='max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
-												<span className='sr-only'>Open user menu</span>
-											</Menu.Button>
-										</div>
-										<Transition
-											show={open}
-											as={Fragment}
-											enter='transition ease-out duration-100'
-											enterFrom='transform opacity-0 scale-95'
-											enterTo='transform opacity-100 scale-100'
-											leave='transition ease-in duration-75'
-											leaveFrom='transform opacity-100 scale-100'
-											leaveTo='transform opacity-0 scale-95'
-										>
-											<Menu.Items
-												static
-												className='origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none'
-											>
-												{userNavigation.map((item) => (
-													<Menu.Item key={item.name}>
-														{({ active }) => (
-															<a
-																href={item.href}
-																className={classNames(
-																	active ? 'bg-gray-100' : '',
-																	'block px-4 py-2 text-sm text-gray-700'
-																)}
-															>
-																{item.name}
-															</a>
-														)}
-													</Menu.Item>
-												))}
-											</Menu.Items>
-										</Transition>
-									</>
-								)}
-							</Menu>
-						</div>
 					</div>
 				</div>
 
-				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-4xl'></main>
+				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-4xl'>
+					<ContractTable />
+				</main>
 			</div>
 		</div>
 	);
