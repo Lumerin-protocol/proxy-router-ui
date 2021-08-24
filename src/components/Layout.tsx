@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
 import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
-import { truncateWalletAddress } from '../utils';
+import { classNames, truncateWalletAddress } from '../utils';
 import { ReactComponent as Marketplace } from '../images/marketplace.svg';
 import { ReactComponent as MyOrders } from '../images/myorders.svg';
 import { ReactComponent as MetaMask } from '../images/metamask.svg';
@@ -13,10 +13,6 @@ import { Link, RouteComponentProps } from 'react-router-dom';
 import { ContractTable } from './ContractTable';
 import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
-
-const classNames = (...classes: string[]) => {
-	return classes.filter(Boolean).join(' ');
-};
 
 export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	// state and constants

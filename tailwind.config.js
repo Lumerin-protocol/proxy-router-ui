@@ -1,3 +1,5 @@
+const plugin = require('tailwindcss/plugin');
+
 module.exports = {
 	purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
 	darkMode: false, // or 'media' or 'class'
@@ -8,6 +10,7 @@ module.exports = {
 			},
 			colors: {
 				'lumerin-gray': '#F2F5F9',
+				'lumerin-dark-gray': '#DEE3EA',
 				'lumerin-aqua': '#11B4BF',
 				'lumerin-light-aqua': '#DBECED',
 			},
@@ -19,5 +22,9 @@ module.exports = {
 	variants: {
 		extend: {},
 	},
-	plugins: [],
+	plugins: [
+		plugin(function ({ addUtilities, addComponents, e, prefix, config }) {
+			// Add your custom styles here
+		}),
+	],
 };
