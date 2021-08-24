@@ -60,8 +60,14 @@ export const ContractTable: React.FC = () => {
 		limit?: string;
 		speed?: number;
 		length?: string;
-		trade?: string;
+		trade?: JSX.Element | string;
 	}
+
+	const BuyButton = (
+		<button type='button' className='w-20 h-8 rounded-xl p-auto bg-lumerin-aqua text-white font-medium' onClick={() => {}}>
+			<span>Buy</span>
+		</button>
+	);
 
 	const data: Data[] = useMemo(
 		() => [
@@ -72,7 +78,7 @@ export const ContractTable: React.FC = () => {
 				limit: '0.0100',
 				speed: 100,
 				length: '4 hours',
-				trade: 'Buy',
+				trade: BuyButton,
 			},
 			{
 				id: <TableIcon icon={<Hashrate />} text={1} />,
@@ -80,7 +86,7 @@ export const ContractTable: React.FC = () => {
 				limit: '0.0100',
 				speed: 100,
 				length: '24 hours',
-				trade: 'Buy',
+				trade: BuyButton,
 			},
 			{
 				id: <TableIcon icon={<Hashrate />} text={1} />,
@@ -88,7 +94,7 @@ export const ContractTable: React.FC = () => {
 				limit: '0.0100',
 				speed: 100,
 				length: '3 days',
-				trade: 'Buy',
+				trade: BuyButton,
 			},
 			{
 				id: <TableIcon icon={<Hashrate />} text={1} />,
@@ -96,7 +102,7 @@ export const ContractTable: React.FC = () => {
 				limit: '0.0100',
 				speed: 100,
 				length: '2 weeks',
-				trade: 'Buy',
+				trade: BuyButton,
 			},
 			{
 				id: <TableIcon icon={<Hashrate />} text={1} />,
@@ -104,7 +110,7 @@ export const ContractTable: React.FC = () => {
 				limit: '0.0100',
 				speed: 100,
 				length: '4 hours',
-				trade: 'Buy',
+				trade: BuyButton,
 			},
 			{
 				id: <TableIcon icon={<Hashrate />} text={1} />,
@@ -112,7 +118,7 @@ export const ContractTable: React.FC = () => {
 				limit: '0.0100',
 				speed: 100,
 				length: '1 hour',
-				trade: 'Buy',
+				trade: BuyButton,
 			},
 		],
 		[]
