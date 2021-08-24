@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react';
-import { Router } from 'react-router-dom';
+import { RouteComponentProps, Router } from 'react-router-dom';
+import { match } from 'react-router';
 import { createMemoryHistory } from 'history';
 import { render } from '@testing-library/react';
 
@@ -14,4 +15,21 @@ export const renderWithRouter = (ui: ReactElement, route?: string) => {
 		...render(ui, { wrapper: Wrapper }),
 		history,
 	};
+};
+
+export const createRouteComponentProps: () => RouteComponentProps = () => {
+	const history = createMemoryHistory();
+	const match: match = {
+		params: {},
+		isExact: false,
+		path: '/',
+		url: '',
+	};
+	const props: RouteComponentProps = {
+		history: history,
+		location: history.location,
+		match: match,
+	};
+
+	return props;
 };

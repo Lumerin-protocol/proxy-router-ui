@@ -1,11 +1,13 @@
 import '@testing-library/jest-dom/extend-expect';
 import { Layout } from '../components/Layout';
-import { renderWithRouter } from './testhelper';
+import { createRouteComponentProps, renderWithRouter } from './testhelper';
 
 describe('<Layout />', () => {
 	it('displays', () => {
+		// Arrange
+
 		// Act
-		renderWithRouter(<Layout />, '/');
+		renderWithRouter(<Layout {...createRouteComponentProps()} />, '/');
 
 		//Assert
 		const LayoutDiv = document.getElementById('layout');
