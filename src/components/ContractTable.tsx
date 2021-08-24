@@ -2,23 +2,40 @@ import { useMemo } from 'react';
 import { Column, useTable } from 'react-table';
 import { createUseStyles } from 'react-jss';
 import { classNames } from '../utils';
+import { ReactComponent as Hashrate } from '../images/hashrate.svg';
+import { ReactComponent as Lumerin } from '../images/lumerin.svg';
+import { TableIcon } from './ui/TableIcon';
 
 const useStyles = createUseStyles({
-	tableHeader: {
+	table: {
+		width: '95%',
+		'& > tbody > tr > td': {
+			backgroundColor: 'white',
+		},
 		'& > thead > tr > th:first-child': {
 			border: '1px solid transparent',
 			borderRadius: '100px 0 0 100px',
+		},
+		'& > tbody > tr:first-child': {
+			height: '20px',
+		},
+		'& > tbody > tr:first-child > td': {
+			backgroundColor: '#F2F5F9 !important',
 		},
 		'& > thead > tr > th:last-child': {
 			border: '1px solid transparent',
 			borderRadius: '0 100px 100px 0',
 		},
-		'& > tbody > tr:first-child > td:first-child': {
+		'& > tbody > tr:nth-child(2) > td': {
+			border: '1px solid transparent',
+			borderBottomColor: '#E5E7EB',
+		},
+		'& > tbody > tr:nth-child(2) > td:first-child': {
 			border: '1px solid transparent',
 			borderBottomColor: '#E5E7EB',
 			borderTopLeftRadius: '30px',
 		},
-		'& > tbody > tr:first-child > td:last-child': {
+		'& > tbody > tr:nth-child(2) > td:last-child': {
 			border: '1px solid transparent',
 			borderBottomColor: '#E5E7EB',
 			borderTopRightRadius: '30px',
@@ -38,8 +55,8 @@ const useStyles = createUseStyles({
 
 export const ContractTable: React.FC = () => {
 	interface Data {
-		id?: number;
-		price?: string;
+		id?: JSX.Element | string;
+		price?: JSX.Element | string;
 		limit?: string;
 		speed?: number;
 		length?: string;
@@ -48,49 +65,50 @@ export const ContractTable: React.FC = () => {
 
 	const data: Data[] = useMemo(
 		() => [
+			{},
 			{
-				id: 1,
-				price: '0.3241',
+				id: <TableIcon icon={<Hashrate />} text={1} />,
+				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
 				limit: '0.0100',
 				speed: 100,
 				length: '4 hours',
 				trade: 'Buy',
 			},
 			{
-				id: 2,
-				price: '0.3241',
+				id: <TableIcon icon={<Hashrate />} text={1} />,
+				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
 				limit: '0.0100',
 				speed: 100,
 				length: '24 hours',
 				trade: 'Buy',
 			},
 			{
-				id: 3,
-				price: '0.3241',
+				id: <TableIcon icon={<Hashrate />} text={1} />,
+				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
 				limit: '0.0100',
 				speed: 100,
 				length: '3 days',
 				trade: 'Buy',
 			},
 			{
-				id: 4,
-				price: '0.3241',
+				id: <TableIcon icon={<Hashrate />} text={1} />,
+				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
 				limit: '0.0100',
 				speed: 100,
 				length: '2 weeks',
 				trade: 'Buy',
 			},
 			{
-				id: 5,
-				price: '0.3241',
+				id: <TableIcon icon={<Hashrate />} text={1} />,
+				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
 				limit: '0.0100',
 				speed: 100,
 				length: '4 hours',
 				trade: 'Buy',
 			},
 			{
-				id: 6,
-				price: '0.3241',
+				id: <TableIcon icon={<Hashrate />} text={1} />,
+				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
 				limit: '0.0100',
 				speed: 100,
 				length: '1 hour',
@@ -125,7 +143,7 @@ export const ContractTable: React.FC = () => {
 	const classes = useStyles();
 
 	return (
-		<table {...getTableProps()} className={classNames(classes.tableHeader, 'w-4/5 m-auto mt-8 bg-lumerin-gray h-10')}>
+		<table {...getTableProps()} className={classNames(classes.table, 'm-auto mt-8 bg-lumerin-gray h-10')}>
 			<thead className='bg-lumerin-dark-gray h-16'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
@@ -146,7 +164,6 @@ export const ContractTable: React.FC = () => {
 										{...cell.getCellProps()}
 										style={{
 											padding: '0.625rem',
-											background: 'white',
 										}}
 									>
 										{cell.render('Cell')}
