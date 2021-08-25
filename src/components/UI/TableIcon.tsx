@@ -7,10 +7,10 @@ interface TableIconProps {
 
 export const TableIcon: React.FC<TableIconProps> = ({ icon, text }) => {
 	return (
-		<div className='flex justify-center'>
-			<div className='flex'>
+		<div className='flex justify-center items-center'>
+			<div className='flex items-center'>
 				<span>{icon}</span>
-				<span className='ml-4'>{text}</span>
+				<span className='ml-4 font-semibold'>{text}</span>
 			</div>
 		</div>
 	);

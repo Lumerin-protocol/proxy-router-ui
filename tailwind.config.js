@@ -6,6 +6,9 @@ module.exports = {
 			fontFamily: {
 				Inter: ['Inter', 'sans-serif'],
 			},
+			fontSize: {
+				xs: '.8125rem',
+			},
 			colors: {
 				'lumerin-gray': '#F2F5F9',
 				'lumerin-dark-gray': '#DEE3EA',

@@ -149,8 +149,8 @@ export const ContractTable: React.FC = () => {
 	const classes = useStyles();
 
 	return (
-		<table {...getTableProps()} className={classNames(classes.table, 'm-auto mt-8 bg-lumerin-gray h-10')}>
-			<thead className='bg-lumerin-dark-gray h-16'>
+		<table {...getTableProps()} className={classNames(classes.table, 'm-auto mt-8 bg-lumerin-gray h-10 font-Inter')}>
+			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
 						{headerGroup.headers.map((column) => (
@@ -166,12 +166,7 @@ export const ContractTable: React.FC = () => {
 						<tr {...row.getRowProps()} className='h-16 text-center'>
 							{row.cells.map((cell) => {
 								return (
-									<td
-										{...cell.getCellProps()}
-										style={{
-											padding: '0.625rem',
-										}}
-									>
+									<td {...cell.getCellProps()} className='p-2.5 font-semibold text-sm'>
 										{cell.render('Cell')}
 									</td>
 								);

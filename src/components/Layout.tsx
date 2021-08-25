@@ -7,6 +7,7 @@ import { ReactComponent as Marketplace } from '../images/marketplace.svg';
 import { ReactComponent as MyOrders } from '../images/myorders.svg';
 import { ReactComponent as MetaMask } from '../images/metamask.svg';
 import { ReactComponent as Logo } from '../images/logo.svg';
+import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { Alert } from './ui/Alert';
 import { disconnectWallet } from '../web3/utils';
 import { Link, RouteComponentProps } from 'react-router-dom';
@@ -187,7 +188,7 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 							type='button'
 							className={classNames(
 								walletText === DISCONNECT
-									? 'w-40 h-12 mt-4 border border-solid border-lumerin-aqua rounded-3xl bg-white text-sm text-lumerin-aqua font-Inter py-2 px-4 mr-2'
+									? 'w-40 h-12 mt-4 mr-2 py-2 px-4 border border-solid border-lumerin-aqua rounded-3xl bg-white text-sm text-lumerin-aqua font-Inter'
 									: 'btn-wallet w-60 h-12 mt-4 rounded-3xl bg-lumerin-aqua text-sm font-Inter'
 							)}
 							onClick={walletClickHandler}
@@ -196,10 +197,16 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 							{walletText === CONNECT_VIA_METAMASK ? <MetaMask /> : null}
 						</button>
 						{walletText === DISCONNECT ? (
-							<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-black font-medium'>
-								<span className='mr-4'>{getTruncatedWalletAddress()}</span>
-								<MetaMask />
-							</button>
+							<div className='flex'>
+								<button className='w-40 h-12 mt-4 mr-2 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
+									<Lumerin />
+									<span className='ml-4'>3,409 LMRN</span>
+								</button>
+								<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
+									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
+									<MetaMask />
+								</button>
+							</div>
 						) : null}
 					</div>
 				</div>
