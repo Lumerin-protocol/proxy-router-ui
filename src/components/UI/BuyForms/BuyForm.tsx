@@ -28,27 +28,29 @@ export const BuyForm: React.FC = () => {
 						</label>
 						<div className='mt-1'>
 							<input
-								id='email'
-								name='email'
-								type='email'
+								id='ip'
+								name='ip'
+								type='text'
+								placeholder='127.0.0.1'
 								autoComplete='email'
 								required
-								className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+								className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 							/>
 						</div>
 					</div>
-					<div className=''>
+					<div className='w-36'>
 						<label htmlFor='email' className='block text-sm font-medium text-gray-700'>
 							Port Number *
 						</label>
 						<div className='mt-1'>
 							<input
-								id='email'
-								name='email'
-								type='email'
+								id='port'
+								name='port'
+								type='text'
+								placeholder='7777'
 								autoComplete='email'
 								required
-								className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+								className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 							/>
 						</div>
 					</div>
@@ -56,32 +58,18 @@ export const BuyForm: React.FC = () => {
 			</div>
 
 			<div className='bg-white p-4 p-4'>
-				<label htmlFor='password' className='block text-sm font-medium text-gray-700'>
-					Port Number
-				</label>
-				<div className='mt-1'>
-					<input
-						id='password'
-						name='password'
-						type='password'
-						autoComplete='current-password'
-						required
-						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
-					/>
-				</div>
-			</div>
-			<div className='bg-white p-4 p-4'>
 				<label htmlFor='email' className='block text-sm font-medium text-gray-700'>
 					Username
 				</label>
 				<div className='mt-1'>
 					<input
-						id='email'
-						name='email'
-						type='email'
+						id='username'
+						name='username'
+						type='text'
+						placeholder='account.worker'
 						autoComplete='email'
 						required
-						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 					/>
 				</div>
 			</div>
@@ -95,9 +83,10 @@ export const BuyForm: React.FC = () => {
 						id='password'
 						name='password'
 						type='password'
+						placeholder='password'
 						autoComplete='current-password'
 						required
-						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 					/>
 				</div>
 			</div>
@@ -109,9 +98,9 @@ export const BuyForm: React.FC = () => {
 				</div>
 				<button
 					type='submit'
-					className='w-full flex justify-center py-2 px-4 border border-transparent rounded-120 shadow-sm text-sm font-medium text-white bg-black bg-opacity-25 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+					className='w-full flex justify-center py-2 px-4 border border-transparent rounded-120 shadow-sm text-sm font-medium text-white bg-black bg-opacity-25 hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
 				>
-					Sign in
+					Review Order
 				</button>
 			</div>
 		</div>

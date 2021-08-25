@@ -13,6 +13,7 @@ module.exports = {
 				'lumerin-gray': '#F2F5F9',
 				'lumerin-dark-gray': '#DEE3EA',
 				'lumerin-input-gray': '#EDEEF2',
+				'lumerin-placeholder-gray': '#C4C4C4',
 				'lumerin-aqua': '#11B4BF',
 				'lumerin-light-aqua': '#DBECED',
 			},
