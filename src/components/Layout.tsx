@@ -2,18 +2,20 @@ import { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
 import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
-import { classNames, truncateWalletAddress } from '../utils';
+import { classNames, truncateAddress } from '../utils';
 import { ReactComponent as Marketplace } from '../images/marketplace.svg';
 import { ReactComponent as MyOrders } from '../images/myorders.svg';
 import { ReactComponent as MetaMask } from '../images/metamask.svg';
 import { ReactComponent as Logo } from '../images/logo.svg';
 import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { Alert } from './ui/Alert';
+import { Modal } from './ui/Modal';
 import { disconnectWallet } from '../web3/utils';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { ContractTable } from './ContractTable';
 import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
+import { BuyForm } from './ui/BuyForms/BuyForm';
 
 export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	// state and constants
@@ -25,6 +27,7 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	const [accounts, setAccounts] = useState<string[]>();
 	const [instance, setInstance] = useState<Contract>();
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [modalOpen, setModalOpen] = useState<boolean>(false);
 
 	// navigation
 	interface Navigation {
@@ -63,10 +66,15 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 
 	const getTruncatedWalletAddress: () => string | null = () => {
 		if (walletText === DISCONNECT && accounts) {
-			return truncateWalletAddress(accounts[0]);
+			return truncateAddress(accounts[0]);
 		}
 
 		return null;
+	};
+
+	// Buy contract setup
+	const buyClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+		if (!modalOpen) setModalOpen(true);
 	};
 
 	// when a user disconnects MetaMask, alertOpen will be true
@@ -77,6 +85,7 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	return (
 		<div id='layout' className='h-screen flex overflow-hidden bg-gray-100'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
+			<Modal open={modalOpen} setOpen={setModalOpen} content={<BuyForm />} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
@@ -211,8 +220,8 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 					</div>
 				</div>
 
-				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-4xl'>
-					<ContractTable />
+				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
+					<ContractTable buyClickHandler={buyClickHandler} />
 				</main>
 			</div>
 		</div>

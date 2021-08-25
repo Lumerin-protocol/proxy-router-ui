@@ -53,7 +53,11 @@ const useStyles = createUseStyles({
 	},
 });
 
-export const ContractTable: React.FC = () => {
+interface ContractTableProps {
+	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
+}
+
+export const ContractTable: React.FC<ContractTableProps> = ({ buyClickHandler }) => {
 	interface Data {
 		id?: JSX.Element | string;
 		price?: JSX.Element | string;
@@ -64,7 +68,7 @@ export const ContractTable: React.FC = () => {
 	}
 
 	const BuyButton = (
-		<button type='button' className='w-20 h-8 rounded-xl p-auto bg-lumerin-aqua text-white font-medium' onClick={() => {}}>
+		<button type='button' className='w-20 h-8 rounded-xl p-auto bg-lumerin-aqua text-white font-medium' onClick={buyClickHandler}>
 			<span>Buy</span>
 		</button>
 	);
