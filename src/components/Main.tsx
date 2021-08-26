@@ -3,21 +3,26 @@ import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
 import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
 import { classNames, truncateAddress } from '../utils';
-import { ReactComponent as Marketplace } from '../images/marketplace.svg';
-import { ReactComponent as MyOrders } from '../images/myorders.svg';
-import { ReactComponent as MetaMask } from '../images/metamask.svg';
-import { ReactComponent as Logo } from '../images/logo.svg';
-import { ReactComponent as Lumerin } from '../images/lumerin.svg';
+import { ReactComponent as MarketplaceIcon } from '../images/marketplace.svg';
+import { ReactComponent as MyOrdersIcon } from '../images/myorders.svg';
+import { ReactComponent as MetaMaskIcon } from '../images/metamask.svg';
+import { ReactComponent as LogoIcon } from '../images/logo.svg';
+import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
 import { disconnectWallet } from '../web3/utils';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { ContractTable } from './ContractTable';
+import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
 import { BuyForm } from './ui/BuyForms/BuyForm';
+import { PageName } from '../App';
 
-export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
+interface MainProps extends RouteComponentProps {
+	pageName: string;
+}
+
+export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	// state and constants
 	const CONNECT_VIA_METAMASK = 'Connect Via MetaMask';
 	const DISCONNECT = 'Disconnect';
@@ -38,8 +43,8 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	}
 
 	const navigation: Navigation[] = [
-		{ name: 'Marketplace', to: '/', icon: <Marketplace />, current: location.pathname === '/' },
-		{ name: 'My Orders', to: 'orders', icon: <MyOrders />, current: location.pathname === '/orders' },
+		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: location.pathname === '/' },
+		{ name: 'My Orders', to: 'orders', icon: <MyOrdersIcon />, current: location.pathname === '/orders' },
 	];
 
 	// Wallet setup
@@ -83,7 +88,7 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 	}, [alertOpen]);
 
 	return (
-		<div id='layout' className='h-screen flex overflow-hidden bg-gray-100'>
+		<div id='main' className='h-screen flex overflow-hidden bg-gray-100'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
 			<Modal open={modalOpen} setOpen={setModalOpen} content={<BuyForm />} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
@@ -160,7 +165,7 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 					{/* Sidebar component, swap this element with another sidebar if you like */}
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
-							<Logo />
+							<LogoIcon />
 						</div>
 						<div className='flex-1 flex flex-col'>
 							<nav className='flex-1 px-2 space-y-1'>
@@ -203,17 +208,17 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 							onClick={walletClickHandler}
 						>
 							<span className={classNames(walletText === CONNECT_VIA_METAMASK ? 'mr-4' : '')}>{walletText}</span>
-							{walletText === CONNECT_VIA_METAMASK ? <MetaMask /> : null}
+							{walletText === CONNECT_VIA_METAMASK ? <MetaMaskIcon /> : null}
 						</button>
 						{walletText === DISCONNECT ? (
 							<div className='flex'>
 								<button className='w-40 h-12 mt-4 mr-2 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
-									<Lumerin />
+									<LumerinIcon />
 									<span className='ml-4'>3,409 LMRN</span>
 								</button>
 								<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
-									<MetaMask />
+									<MetaMaskIcon />
 								</button>
 							</div>
 						) : null}
@@ -221,12 +226,12 @@ export const Layout: React.FC<RouteComponentProps> = ({ location }) => {
 				</div>
 
 				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
-					<ContractTable buyClickHandler={buyClickHandler} />
+					{pageName === PageName.Marketplace ? <Marketplace buyClickHandler={buyClickHandler} /> : null}
 				</main>
 			</div>
 		</div>
 	);
 };
 
-Layout.displayName = 'Layout';
-(Layout as any).whyDidYouRender = false;
+Main.displayName = 'Main';
+(Main as any).whyDidYouRender = false;

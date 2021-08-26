@@ -2,7 +2,7 @@
 import getWeb3Async from './getWeb3Async';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
-import TestToken from '../contracts/TestToken.json';
+import TestContract from '../contracts/TestingContract.json';
 import Web3 from 'web3';
 
 interface Networks {
@@ -33,9 +33,9 @@ export const getWeb3ResultAsync: (setOpenAlert: React.Dispatch<React.SetStateAct
 			setOpenAlert(true);
 		}
 		// Get the contract instance.
-		const networkId = await web3.eth.net.getId();
-		const deployedNetwork = (TestToken as ContractJson).networks[networkId];
-		const instance = new web3.eth.Contract(TestToken.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
+		const networkId = 1629923697559;
+		const deployedNetwork = (TestContract as ContractJson).networks[networkId];
+		const instance = new web3.eth.Contract(TestContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 
 		return { accounts, instance, web3 };
 	} catch (error) {

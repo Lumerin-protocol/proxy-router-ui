@@ -53,11 +53,11 @@ const useStyles = createUseStyles({
 	},
 });
 
-interface ContractTableProps {
+interface MarketplaceProps {
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const ContractTable: React.FC<ContractTableProps> = ({ buyClickHandler }) => {
+export const Marketplace: React.FC<MarketplaceProps> = ({ buyClickHandler }) => {
 	interface Data {
 		id?: JSX.Element | string;
 		price?: JSX.Element | string;
@@ -183,5 +183,5 @@ export const ContractTable: React.FC<ContractTableProps> = ({ buyClickHandler })
 	);
 };
 
-ContractTable.displayName = 'ContractTable';
-(ContractTable as any).whyDidYouRender = false;
+Marketplace.displayName = 'Marketplace';
+(Marketplace as any).whyDidYouRender = false;

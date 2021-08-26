@@ -1,16 +1,17 @@
 import '@testing-library/jest-dom/extend-expect';
-import { Layout } from '../components/Layout';
+import { PageName } from '../App';
+import { Main } from '../components/Main';
 import { createRouteComponentProps, renderWithRouter } from './testhelper';
 
-describe('<Layout />', () => {
+describe('<Main />', () => {
 	it('displays', () => {
 		// Arrange
 
 		// Act
-		renderWithRouter(<Layout {...createRouteComponentProps()} />, '/');
+		renderWithRouter(<Main {...createRouteComponentProps()} pageName={PageName.Marketplace} />, '/');
 
 		//Assert
-		const LayoutDiv = document.getElementById('layout');
+		const LayoutDiv = document.getElementById('main');
 		expect(LayoutDiv).toBeInTheDocument();
 	});
 });
