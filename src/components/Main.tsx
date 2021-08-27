@@ -10,6 +10,7 @@ import { ReactComponent as LogoIcon } from '../images/logo.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
+import { ActionPanel } from './ui/ActionPanel';
 import { reconnectWallet } from '../web3/utils';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Marketplace } from './Marketplace';
@@ -35,7 +36,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	const [contractInstance, setContractInstance] = useState<Contract>();
 	const [contracts, setContracts] = useState<string[]>([]);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
-	const [modalOpen, setModalOpen] = useState<boolean>(false);
+	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 
 	// navigation
 	interface Navigation {
@@ -79,6 +80,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	};
 
 	// contract state needed by children
+	// contracts
 	useEffect(() => {
 		const getContracts = async () => {
 			const contracts: string[] = await contractInstance?.methods.getContractList().call();
@@ -89,6 +91,8 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		getContracts();
 	}, [contractInstance]);
 
+	// price
+
 	// check if MetaMask is connected
 	useEffect(() => {
 		if (walletText === WalletText.ConnectViaMetaMask) reconnectWallet();
@@ -96,7 +100,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 
 	// Buy contract setup
 	const buyClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		if (!modalOpen) setModalOpen(true);
+		if (!buyModalOpen) setBuyModalOpen(true);
 	};
 
 	// when a user disconnects MetaMask, alertOpen will be true
@@ -104,11 +108,19 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
 	}, [alertOpen]);
 
+	// action panel setup
+	const headerText = 'MetaMask Is Not Connected.';
+	const ActionPanelButton: JSX.Element = (
+		<button type='button' className='btn-wallet w-60 h-12 my-4 rounded-3xl bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
+			<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
+			<MetaMaskIcon />
+		</button>
+	);
+
 	const getContent: (pageName: string, contracts: string[]) => JSX.Element = (pageName, contracts) => {
 		if (contracts.length === 0) {
-			return <div>Connect to MetaMask</div>;
+			return <ActionPanel button={ActionPanelButton} headerText={headerText} paragraphText={null} />;
 		}
-
 		if (pageName === PageName.Marketplace) return <Marketplace contracts={contracts} buyClickHandler={buyClickHandler} />;
 		if (pageName === PageName.MyOrders) return <div>My Orders</div>;
 		return <Marketplace contracts={contracts} buyClickHandler={buyClickHandler} />;
@@ -118,7 +130,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	return (
 		<div id='main' className='h-screen flex overflow-hidden bg-gray-100'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
-			<Modal open={modalOpen} setOpen={setModalOpen} content={<BuyForm />} />
+			<Modal open={buyModalOpen} setOpen={setBuyModalOpen} content={<BuyForm />} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
@@ -253,7 +265,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 					</div>
 				</div>
 
-				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
+				<main className='relative ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
 					{content}
 				</main>
 			</div>
