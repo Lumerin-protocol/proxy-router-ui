@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
-import { Column, useTable } from 'react-table';
+import { useCallback, useEffect, useMemo } from 'react';
 import { createUseStyles } from 'react-jss';
-import { classNames } from '../utils';
+import { classNames, truncateAddress } from '../utils';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { TableIcon } from './ui/TableIcon';
+import { Column, useTable } from 'react-table';
 
 const useStyles = createUseStyles({
 	table: {
@@ -54,10 +54,11 @@ const useStyles = createUseStyles({
 });
 
 interface MarketplaceProps {
+	contracts: string[];
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const Marketplace: React.FC<MarketplaceProps> = ({ buyClickHandler }) => {
+export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHandler }) => {
 	interface Data {
 		id?: JSX.Element | string;
 		price?: JSX.Element | string;
@@ -73,60 +74,31 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ buyClickHandler }) => 
 		</button>
 	);
 
-	const data: Data[] = useMemo(
-		() => [
-			{},
-			{
-				id: <TableIcon icon={<Hashrate />} text={1} />,
-				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
-				limit: '0.0100',
-				speed: 100,
-				length: '4 hours',
-				trade: BuyButton,
-			},
-			{
-				id: <TableIcon icon={<Hashrate />} text={1} />,
-				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
-				limit: '0.0100',
-				speed: 100,
-				length: '24 hours',
-				trade: BuyButton,
-			},
-			{
-				id: <TableIcon icon={<Hashrate />} text={1} />,
-				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
-				limit: '0.0100',
-				speed: 100,
-				length: '3 days',
-				trade: BuyButton,
-			},
-			{
-				id: <TableIcon icon={<Hashrate />} text={1} />,
-				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
-				limit: '0.0100',
-				speed: 100,
-				length: '2 weeks',
-				trade: BuyButton,
-			},
-			{
-				id: <TableIcon icon={<Hashrate />} text={1} />,
-				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
-				limit: '0.0100',
-				speed: 100,
-				length: '4 hours',
-				trade: BuyButton,
-			},
-			{
-				id: <TableIcon icon={<Hashrate />} text={1} />,
-				price: <TableIcon icon={<Lumerin />} text='0.3241' />,
-				limit: '0.0100',
-				speed: 100,
-				length: '1 hour',
-				trade: BuyButton,
-			},
-		],
-		[]
-	);
+	const getTableData: (contracts: string[]) => Data[] = useCallback((contracts) => {
+		const tableData: Data[] = [];
+		let data: Data = {};
+		if (contracts.length > 0) {
+			contracts.forEach((contract) => {
+				data = {
+					id: <TableIcon icon={<Hashrate />} text={truncateAddress(contract)} />,
+					price: <TableIcon icon={<Lumerin />} text='0.3241' />,
+					limit: '0.0100',
+					speed: 100,
+					length: '4 hours',
+					trade: BuyButton,
+				};
+				tableData.push(data);
+			});
+			// insert empty row for styling
+			tableData.unshift({});
+		}
+
+		return tableData;
+	}, []);
+
+	const data: Data[] = useMemo(() => getTableData(contracts), [getTableData, contracts]);
+
+	useEffect(() => {}, [contracts]);
 
 	interface Header {
 		Header?: string;

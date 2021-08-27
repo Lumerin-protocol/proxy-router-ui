@@ -10,27 +10,30 @@ import { ReactComponent as LogoIcon } from '../images/logo.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
-import { disconnectWallet } from '../web3/utils';
+import { reconnectWallet } from '../web3/utils';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
-import Web3 from 'web3';
 import { BuyForm } from './ui/BuyForms/BuyForm';
 import { PageName } from '../App';
+
+export enum WalletText {
+	ConnectViaMetaMask = 'Connect Via MetaMask',
+	Disconnect = 'Disconnect',
+}
 
 interface MainProps extends RouteComponentProps {
 	pageName: string;
 }
 
+// Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	// state and constants
-	const CONNECT_VIA_METAMASK = 'Connect Via MetaMask';
-	const DISCONNECT = 'Disconnect';
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-	const [walletText, setWalletText] = useState<string>(CONNECT_VIA_METAMASK);
-	const [web3, setWeb3] = useState<Web3>();
+	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
 	const [accounts, setAccounts] = useState<string[]>();
-	const [instance, setInstance] = useState<Contract>();
+	const [contractInstance, setContractInstance] = useState<Contract>();
+	const [contracts, setContracts] = useState<string[]>([]);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [modalOpen, setModalOpen] = useState<boolean>(false);
 
@@ -49,33 +52,47 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 
 	// Wallet setup
 	const connectWallet = async () => {
-		const web3Result = await getWeb3ResultAsync(setAlertOpen);
+		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText);
 		if (web3Result) {
-			const { accounts, instance, web3 } = web3Result;
+			const { accounts, contractInstance } = web3Result;
 			setAccounts(accounts);
-			setInstance(instance);
-			setWeb3(web3);
-			setWalletText(DISCONNECT);
+			setContractInstance(contractInstance);
+			setWalletText(WalletText.Disconnect);
 		}
 	};
 
 	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
-		if (walletText === CONNECT_VIA_METAMASK) {
+		if (walletText === WalletText.ConnectViaMetaMask) {
 			connectWallet();
 		} else {
-			disconnectWallet();
-			setWalletText(CONNECT_VIA_METAMASK);
-			setWeb3(undefined);
+			reconnectWallet();
+			setWalletText(WalletText.ConnectViaMetaMask);
 		}
 	};
 
 	const getTruncatedWalletAddress: () => string | null = () => {
-		if (walletText === DISCONNECT && accounts) {
+		if (walletText === WalletText.Disconnect && accounts) {
 			return truncateAddress(accounts[0]);
 		}
 
 		return null;
 	};
+
+	// contract state needed by children
+	useEffect(() => {
+		const getContracts = async () => {
+			const contracts: string[] = await contractInstance?.methods.getContractList().call();
+			if (contracts) {
+				setContracts(contracts);
+			}
+		};
+		getContracts();
+	}, [contractInstance]);
+
+	// check if MetaMask is connected
+	useEffect(() => {
+		if (walletText === WalletText.ConnectViaMetaMask) reconnectWallet();
+	}, [walletText]);
 
 	// Buy contract setup
 	const buyClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -84,8 +101,19 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 
 	// when a user disconnects MetaMask, alertOpen will be true
 	useEffect(() => {
-		if (alertOpen) setWalletText(CONNECT_VIA_METAMASK);
+		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
 	}, [alertOpen]);
+
+	const getContent: (pageName: string, contracts: string[]) => JSX.Element = (pageName, contracts) => {
+		if (contracts.length === 0) {
+			return <div>Connect to MetaMask</div>;
+		}
+
+		if (pageName === PageName.Marketplace) return <Marketplace contracts={contracts} buyClickHandler={buyClickHandler} />;
+		if (pageName === PageName.MyOrders) return <div>My Orders</div>;
+		return <Marketplace contracts={contracts} buyClickHandler={buyClickHandler} />;
+	};
+	const content: JSX.Element = getContent(pageName, contracts);
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden bg-gray-100'>
@@ -201,16 +229,16 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 						<button
 							type='button'
 							className={classNames(
-								walletText === DISCONNECT
+								walletText === WalletText.Disconnect
 									? 'w-40 h-12 mt-4 mr-2 py-2 px-4 border border-solid border-lumerin-aqua rounded-3xl bg-white text-sm text-lumerin-aqua font-Inter'
 									: 'btn-wallet w-60 h-12 mt-4 rounded-3xl bg-lumerin-aqua text-sm font-Inter'
 							)}
 							onClick={walletClickHandler}
 						>
-							<span className={classNames(walletText === CONNECT_VIA_METAMASK ? 'mr-4' : '')}>{walletText}</span>
-							{walletText === CONNECT_VIA_METAMASK ? <MetaMaskIcon /> : null}
+							<span className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'mr-4' : '')}>{walletText}</span>
+							{walletText === WalletText.ConnectViaMetaMask ? <MetaMaskIcon /> : null}
 						</button>
-						{walletText === DISCONNECT ? (
+						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
 								<button className='w-40 h-12 mt-4 mr-2 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
 									<LumerinIcon />
@@ -226,7 +254,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 				</div>
 
 				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
-					{pageName === PageName.Marketplace ? <Marketplace buyClickHandler={buyClickHandler} /> : null}
+					{content}
 				</main>
 			</div>
 		</div>
