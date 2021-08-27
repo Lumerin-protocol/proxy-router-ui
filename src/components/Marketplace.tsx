@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { createUseStyles } from 'react-jss';
 import { classNames, truncateAddress } from '../utils';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
@@ -15,16 +15,27 @@ const useStyles = createUseStyles({
 		'& > thead > tr > th:first-child': {
 			border: '1px solid transparent',
 			borderRadius: '100px 0 0 100px',
+			width: '20%',
 		},
-		'& > tbody > tr:first-child': {
-			height: '20px',
-		},
+		// '& > thead > tr > th:nth-child(2)': {
+		// 	width: '20%',
+		// },
+		// '& > thead > tr > th:nth-child(3)': {
+		// 	width: '20%',
+		// },
+		// '& > thead > tr > th:nth-child(4)': {
+		// 	width: '20%',
+		// },
+		// '& > tbody > tr:first-child': {
+		// 	height: '20px',
+		// },
 		'& > tbody > tr:first-child > td': {
 			backgroundColor: '#F2F5F9 !important',
 		},
 		'& > thead > tr > th:last-child': {
 			border: '1px solid transparent',
 			borderRadius: '0 100px 100px 0',
+			width: '10%',
 		},
 		'& > tbody > tr:nth-child(2) > td': {
 			border: '1px solid transparent',
@@ -50,55 +61,46 @@ const useStyles = createUseStyles({
 			borderTopColor: '#E5E7EB',
 			borderBottomRightRadius: '30px',
 		},
+		'& > tbody > tr > td:nth-child(2)': {
+			paddingLeft: 0,
+		},
 	},
 });
 
+export interface Data {
+	id?: JSX.Element | string;
+	price?: JSX.Element | string;
+	limit?: string;
+	speed?: number;
+	length?: string;
+	trade?: JSX.Element | string;
+}
+
 interface MarketplaceProps {
-	contracts: string[];
+	contracts: Data[];
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHandler }) => {
-	interface Data {
-		id?: JSX.Element | string;
-		price?: JSX.Element | string;
-		limit?: string;
-		speed?: number;
-		length?: string;
-		trade?: JSX.Element | string;
-	}
-
 	const BuyButton = (
 		<button type='button' className='w-20 h-8 rounded-xl p-auto bg-lumerin-aqua text-white font-medium' onClick={buyClickHandler}>
 			<span>Buy</span>
 		</button>
 	);
 
-	const getTableData: (contracts: string[]) => Data[] = useCallback((contracts) => {
-		const tableData: Data[] = [];
-		let data: Data = {};
-		if (contracts.length > 0) {
-			contracts.forEach((contract) => {
-				data = {
-					id: <TableIcon icon={<Hashrate />} text={truncateAddress(contract)} />,
-					price: <TableIcon icon={<Lumerin />} text='0.3241' />,
-					limit: '0.0100',
-					speed: 100,
-					length: '4 hours',
-					trade: BuyButton,
-				};
-				tableData.push(data);
-			});
-			// insert empty row for styling
-			tableData.unshift({});
-		}
+	const getTableData: (contracts: Data[]) => Data[] = (contracts) => {
+		contracts.forEach((contract) => {
+			if (Object.keys(contract).length !== 0 && typeof contract.id === 'string') {
+				contract.id = <TableIcon icon={<Hashrate />} text={truncateAddress(contract.id as string, true)} justify='start' />;
+				contract.price = <TableIcon icon={<Lumerin />} text={contract.price as string} justify='center' />;
+				contract.trade = BuyButton;
+			}
+		});
+		// add empty row for styling
+		if (Object.keys(contracts[0]).length !== 0) contracts.unshift({});
 
-		return tableData;
-	}, []);
-
-	const data: Data[] = useMemo(() => getTableData(contracts), [getTableData, contracts]);
-
-	useEffect(() => {}, [contracts]);
+		return contracts;
+	};
 
 	interface Header {
 		Header?: string;
@@ -120,6 +122,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHan
 		[]
 	);
 
+	const data = getTableData(contracts);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
 	const classes = useStyles();

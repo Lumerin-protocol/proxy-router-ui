@@ -17,6 +17,7 @@ import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
 import { PageName } from '../App';
+import { Data } from './Marketplace';
 
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
@@ -34,7 +35,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
 	const [accounts, setAccounts] = useState<string[]>();
 	const [contractInstance, setContractInstance] = useState<Contract>();
-	const [contracts, setContracts] = useState<string[]>([]);
+	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 
@@ -79,19 +80,40 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		return null;
 	};
 
-	// contract state needed by children
-	// contracts
-	useEffect(() => {
-		const getContracts = async () => {
-			const contracts: string[] = await contractInstance?.methods.getContractList().call();
-			if (contracts) {
-				setContracts(contracts);
-			}
-		};
-		getContracts();
-	}, [contractInstance]);
+	// create contracts
+	interface HashRentalContract extends Data {}
+	const hashRentalContracts: HashRentalContract[] = [];
+	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
+		const price = await contractInstance?.methods.getAddressPrice(address).call();
+		const limit = await contractInstance?.methods.getAddressLimit(address).call();
+		const speed = await contractInstance?.methods.getAddressSpeed(address).call();
+		const length = await contractInstance?.methods.getAddressLength(address).call();
 
-	// price
+		return {
+			id: address,
+			price,
+			limit,
+			speed,
+			length,
+		} as HashRentalContract;
+	};
+
+	const getContractDataAsync: (addresses: string[]) => void = async (addresses) => {
+		for await (const address of addresses) {
+			const contract = await createContractAsync(address);
+			if (contract) hashRentalContracts.push(contract);
+		}
+		setContracts(hashRentalContracts);
+	};
+
+	const createContractsAsync = async () => {
+		const addresses: string[] = await contractInstance?.methods.getContractList().call();
+		if (addresses) {
+			getContractDataAsync(addresses);
+		}
+	};
+
+	createContractsAsync();
 
 	// check if MetaMask is connected
 	useEffect(() => {
@@ -117,7 +139,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		</button>
 	);
 
-	const getContent: (pageName: string, contracts: string[]) => JSX.Element = (pageName, contracts) => {
+	const getContent: (pageName: string, contracts: HashRentalContract[]) => JSX.Element = (pageName, contracts) => {
 		if (contracts.length === 0) {
 			return <ActionPanel button={ActionPanelButton} headerText={headerText} paragraphText={null} />;
 		}
