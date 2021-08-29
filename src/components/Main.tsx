@@ -10,7 +10,6 @@ import { ReactComponent as LogoIcon } from '../images/logo.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
-import { ActionPanel } from './ui/ActionPanel';
 import { reconnectWallet } from '../web3/utils';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Marketplace } from './Marketplace';
@@ -18,6 +17,8 @@ import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
 import { PageName } from '../App';
 import { Data } from './Marketplace';
+import { Spinner } from './ui/Spinner';
+import { ActionPanel } from './ui/ActionPanel';
 
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
@@ -130,10 +131,8 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
 	}, [alertOpen]);
 
-	// action panel setup
-	const headerText = 'MetaMask Is Not Connected.';
 	const ActionPanelButton: JSX.Element = (
-		<button type='button' className='btn-wallet w-60 h-12 my-4 rounded-3xl bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
+		<button type='button' className='btn-wallet w-60 h-12 mt-4 mb-20 rounded-3xl bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
 			<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
 			<MetaMaskIcon />
 		</button>
@@ -141,7 +140,12 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 
 	const getContent: (pageName: string, contracts: HashRentalContract[]) => JSX.Element = (pageName, contracts) => {
 		if (contracts.length === 0) {
-			return <ActionPanel button={ActionPanelButton} headerText={headerText} paragraphText={null} />;
+			return (
+				<div className='flex flex-col justify-center items-center h-full'>
+					{ActionPanelButton}
+					<Spinner />
+				</div>
+			);
 		}
 		if (pageName === PageName.Marketplace) return <Marketplace contracts={contracts} buyClickHandler={buyClickHandler} />;
 		if (pageName === PageName.MyOrders) return <div>My Orders</div>;

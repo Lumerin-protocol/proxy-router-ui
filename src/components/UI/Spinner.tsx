@@ -1,8 +1,7 @@
-import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 
-export const Spinner: React.FC = () => <FontAwesomeIcon icon={faSpinner} />;
+export const Spinner: React.FC = (props) => <FontAwesomeIcon icon={faCircleNotch} size='10x' color='#11B4BF' spin />;
 
 Spinner.displayName = 'Spinner';
 (Spinner as any).whyDidYouRender = false;
