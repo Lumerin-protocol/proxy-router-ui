@@ -296,7 +296,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 					</div>
 				</div>
 
-				<main className='relative ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
+				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
 					{content}
 				</main>
 			</div>

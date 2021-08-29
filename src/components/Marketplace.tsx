@@ -13,7 +13,7 @@ const useStyles = createUseStyles({
 			backgroundColor: 'white',
 		},
 		'& > thead > tr > th:first-child': {
-			border: '1px solid transparent',
+			border: '0px solid transparent',
 			borderRadius: '100px 0 0 100px',
 			width: '20%',
 		},
@@ -33,7 +33,7 @@ const useStyles = createUseStyles({
 			backgroundColor: '#F2F5F9 !important',
 		},
 		'& > thead > tr > th:last-child': {
-			border: '1px solid transparent',
+			border: '0px solid transparent',
 			borderRadius: '0 100px 100px 0',
 			width: '10%',
 		},
@@ -128,12 +128,14 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHan
 	const classes = useStyles();
 
 	return (
-		<table {...getTableProps()} className={classNames(classes.table, 'm-auto mt-8 bg-lumerin-gray h-10 font-Inter')}>
+		<table {...getTableProps()} className={classNames(classes.table, 'relative border-collapse m-auto mt-8 bg-lumerin-gray h-10 font-Inter')}>
 			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
 						{headerGroup.headers.map((column) => (
-							<th {...column.getHeaderProps()}>{column.render('Header')}</th>
+							<th {...column.getHeaderProps()} className='sticky top-0 bg-lumerin-dark-gray'>
+								{column.render('Header')}
+							</th>
 						))}
 					</tr>
 				))}
