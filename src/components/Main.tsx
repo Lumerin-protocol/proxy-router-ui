@@ -1,8 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
+import { Link, RouteComponentProps } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
-import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
-import { classNames, truncateAddress } from '../utils';
 import { ReactComponent as MarketplaceIcon } from '../images/marketplace.svg';
 import { ReactComponent as MyOrdersIcon } from '../images/myorders.svg';
 import { ReactComponent as MetaMaskIcon } from '../images/metamask.svg';
@@ -10,15 +9,16 @@ import { ReactComponent as LogoIcon } from '../images/logo.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
-import { reconnectWallet } from '../web3/utils';
-import { Link, RouteComponentProps } from 'react-router-dom';
 import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
 import { PageName } from '../App';
 import { Data } from './Marketplace';
 import { Spinner } from './ui/Spinner';
-import { ActionPanel } from './ui/ActionPanel';
+import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
+import { classNames, truncateAddress } from '../utils';
+import { reconnectWallet } from '../web3/utils';
+import { useInterval } from './hooks/useInterval';
 
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
@@ -83,7 +83,6 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 
 	// create contracts
 	interface HashRentalContract extends Data {}
-	const hashRentalContracts: HashRentalContract[] = [];
 	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
 		const price = await contractInstance?.methods.getAddressPrice(address).call();
 		const limit = await contractInstance?.methods.getAddressLimit(address).call();
@@ -100,6 +99,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	};
 
 	const getContractDataAsync: (addresses: string[]) => void = async (addresses) => {
+		const hashRentalContracts: HashRentalContract[] = [];
 		for await (const address of addresses) {
 			const contract = await createContractAsync(address);
 			if (contract) hashRentalContracts.push(contract);
@@ -113,8 +113,13 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 			getContractDataAsync(addresses);
 		}
 	};
+	createContractsAsync(); // initial load
 
-	createContractsAsync();
+	// get contracts at set interval of 20 seconds
+	// TODO: listen to event instead
+	useInterval(() => {
+		createContractsAsync();
+	}, 20000);
 
 	// check if MetaMask is connected
 	useEffect(() => {
@@ -131,7 +136,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
 	}, [alertOpen]);
 
-	const ActionPanelButton: JSX.Element = (
+	const ActionButton: JSX.Element = (
 		<button type='button' className='btn-wallet w-60 h-12 mt-4 mb-20 rounded-3xl bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
 			<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
 			<MetaMaskIcon />
@@ -142,7 +147,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		if (contracts.length === 0) {
 			return (
 				<div className='flex flex-col justify-center items-center h-full'>
-					{ActionPanelButton}
+					{ActionButton}
 					<Spinner />
 				</div>
 			);
