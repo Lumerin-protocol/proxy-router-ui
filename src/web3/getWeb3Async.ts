@@ -3,8 +3,6 @@ import Web3 from 'web3';
 import { provider } from 'web3-core/types/index';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { registerEventListeners } from './eventListeners';
-import Debug from 'debug';
-const debug = Debug('getWeb3');
 
 type Resolve = (web3: Web3) => void;
 type Reject = (error: Error) => void;
@@ -26,7 +24,7 @@ const connectToMetaMaskAsync = async (
 			// Accounts now exposed
 			resolve(web3);
 		} catch (error) {
-			reject(error);
+			reject(error as Error);
 		}
 	} else {
 		reject(new Error('Could not connect wallet'));
