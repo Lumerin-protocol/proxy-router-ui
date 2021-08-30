@@ -38,7 +38,7 @@ export const getWeb3ResultAsync: (
 		const contractInstance = new web3.eth.Contract(TestContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 		return { accounts, contractInstance };
 	} catch (error) {
-		console.log(error.message);
+		console.log((error as Error).message);
 		return null;
 	}
 };

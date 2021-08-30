@@ -1,3 +1,4 @@
+import './wdyr.ts'; // Dev diagnostics
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { App } from './App';

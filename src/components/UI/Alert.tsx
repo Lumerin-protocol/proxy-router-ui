@@ -60,4 +60,4 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen }) => {
 };
 
 Alert.displayName = 'Alert';
-(Alert as any).whyDidYouRender = false;
+Alert.whyDidYouRender = false;

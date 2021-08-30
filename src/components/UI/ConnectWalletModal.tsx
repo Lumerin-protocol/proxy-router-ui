@@ -66,4 +66,4 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, se
 };
 
 ConnectWalletModal.displayName = 'ConnectWalletModal';
-(ConnectWalletModal as any).whyDidYouRender = false;
+ConnectWalletModal.whyDidYouRender = false;

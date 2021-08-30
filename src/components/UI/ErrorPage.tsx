@@ -27,4 +27,4 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({ error }) => {
 };
 
 ErrorPage.displayName = 'ErrorPage';
-(ErrorPage as any).whyDidYouRender = false;
+ErrorPage.whyDidYouRender = false;

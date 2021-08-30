@@ -20,4 +20,4 @@ export const RouteWithErrorBoundary: React.FC<RouteProps> = (props) => {
 	);
 };
 RouteWithErrorBoundary.displayName = 'RouteWithErrorBoundary';
-(RouteWithErrorBoundary as any).whyDidYouRender = false;
+RouteWithErrorBoundary.whyDidYouRender = false;

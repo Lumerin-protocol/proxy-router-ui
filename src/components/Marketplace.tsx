@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { createUseStyles } from 'react-jss';
 import { classNames, truncateAddress } from '../utils';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
@@ -82,25 +82,31 @@ interface MarketplaceProps {
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHandler }) => {
-	const BuyButton = (
-		<button type='button' className='w-20 h-8 rounded-xl p-auto bg-lumerin-aqua text-white font-medium' onClick={buyClickHandler}>
-			<span>Buy</span>
-		</button>
+	const BuyButton: JSX.Element = useMemo(
+		() => (
+			<button type='button' className='w-20 h-8 rounded-xl p-auto bg-lumerin-aqua text-white font-medium' onClick={buyClickHandler}>
+				<span>Buy</span>
+			</button>
+		),
+		[buyClickHandler]
 	);
 
-	const getTableData: (contracts: Data[]) => Data[] = (contracts) => {
-		contracts.forEach((contract) => {
-			if (Object.keys(contract).length !== 0 && typeof contract.id === 'string') {
-				contract.id = <TableIcon icon={<Hashrate />} text={truncateAddress(contract.id as string, true)} justify='start' />;
-				contract.price = <TableIcon icon={<Lumerin />} text={contract.price as string} justify='center' />;
-				contract.trade = BuyButton;
-			}
-		});
-		// add empty row for styling
-		if (Object.keys(contracts[0]).length !== 0) contracts.unshift({});
+	const getTableData: (contracts: Data[]) => Data[] = useCallback(
+		(contracts) => {
+			const updatedContracts = contracts.map((contract) => {
+				const updatedContract = { ...contract };
+				if (Object.keys(contract).length !== 0 && typeof contract.id === 'string') {
+					updatedContract.id = <TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} justify='start' />;
+					updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
+					updatedContract.trade = BuyButton;
+				}
+				return updatedContract;
+			});
 
-		return contracts;
-	};
+			return updatedContracts;
+		},
+		[BuyButton]
+	);
 
 	interface Header {
 		Header?: string;
@@ -122,7 +128,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHan
 		[]
 	);
 
-	const data = getTableData(contracts);
+	const data = useMemo(() => getTableData(contracts), [contracts, getTableData]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
 	const classes = useStyles();
@@ -161,4 +167,4 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHan
 };
 
 Marketplace.displayName = 'Marketplace';
-(Marketplace as any).whyDidYouRender = false;
+Marketplace.whyDidYouRender = false;

@@ -1,7 +1,22 @@
 import React from 'react';
+import { useForm } from 'react-hook-form';
 import { truncateAddress } from '../../../utils';
 
+interface InputValues {
+	ipAddress: string;
+	portNumber: number;
+	username: string;
+	password: string;
+}
+
 export const BuyForm: React.FC = () => {
+	// input validation setup
+	const { register, handleSubmit } = useForm<InputValues>();
+
+	const buyContract: (data: InputValues) => void = (data) => {
+		console.log(data);
+	};
+
 	return (
 		<div className='flex flex-col justify-center font-Inter font-medium'>
 			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-30'>
@@ -28,8 +43,8 @@ export const BuyForm: React.FC = () => {
 						</label>
 						<div className='mt-1'>
 							<input
-								id='ip'
-								name='ip'
+								{...register('ipAddress', { required: true })}
+								id='ipAddress'
 								type='text'
 								placeholder='127.0.0.1'
 								autoComplete='email'
@@ -44,8 +59,8 @@ export const BuyForm: React.FC = () => {
 						</label>
 						<div className='mt-1'>
 							<input
-								id='port'
-								name='port'
+								{...register('portNumber', { required: true })}
+								id='portNumber'
 								type='text'
 								placeholder='7777'
 								autoComplete='email'
@@ -63,8 +78,8 @@ export const BuyForm: React.FC = () => {
 				</label>
 				<div className='mt-1'>
 					<input
+						{...register('username')}
 						id='username'
-						name='username'
 						type='text'
 						placeholder='account.worker'
 						autoComplete='email'
@@ -80,8 +95,8 @@ export const BuyForm: React.FC = () => {
 				</label>
 				<div className='mt-1'>
 					<input
+						{...register('password')}
 						id='password'
-						name='password'
 						type='password'
 						placeholder='password'
 						autoComplete='current-password'
@@ -99,6 +114,7 @@ export const BuyForm: React.FC = () => {
 				<button
 					type='submit'
 					className='w-full flex justify-center py-2 px-4 border border-transparent rounded-120 shadow-sm text-sm font-medium text-white bg-black bg-opacity-25 hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
+					onClick={handleSubmit((data) => buyContract(data))}
 				>
 					Review Order
 				</button>
@@ -108,4 +124,4 @@ export const BuyForm: React.FC = () => {
 };
 
 BuyForm.displayName = 'BuyForm';
-(BuyForm as any).whyDidYouRender = false;
+BuyForm.whyDidYouRender = true;

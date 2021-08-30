@@ -21,4 +21,4 @@ export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify }) => 
 };
 
 TableIcon.displayName = 'Icon';
-(TableIcon as any).whyDidYouRender = false;
+TableIcon.whyDidYouRender = false;

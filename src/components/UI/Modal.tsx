@@ -48,4 +48,4 @@ export const Modal: React.FC<ModalProps> = ({ open, setOpen, content }) => {
 };
 
 Modal.displayName = 'Modal';
-(Modal as any).whyDidYouRender = false;
+Modal.whyDidYouRender = false;

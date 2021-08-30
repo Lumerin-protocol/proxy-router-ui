@@ -18,6 +18,7 @@ import { Spinner } from './ui/Spinner';
 import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
 import { classNames, truncateAddress } from '../utils';
 import { reconnectWallet } from '../web3/utils';
+import _ from 'lodash';
 import { useInterval } from './hooks/useInterval';
 
 export enum WalletText {
@@ -39,6 +40,8 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
+
+	// console.log('main firing');
 
 	// navigation
 	interface Navigation {
@@ -81,7 +84,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		return null;
 	};
 
-	// create contracts
+	// contracts setup
 	interface HashRentalContract extends Data {}
 	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
 		const price = await contractInstance?.methods.getAddressPrice(address).call();
@@ -104,7 +107,12 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 			const contract = await createContractAsync(address);
 			if (contract) hashRentalContracts.push(contract);
 		}
-		setContracts(hashRentalContracts);
+
+		// add empty row for styling
+		hashRentalContracts.unshift({});
+		if (!_.isEqual(contracts, hashRentalContracts)) {
+			setContracts(hashRentalContracts);
+		}
 	};
 
 	const createContractsAsync = async () => {
@@ -113,6 +121,9 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 			getContractDataAsync(addresses);
 		}
 	};
+
+	// this could be placed in a useEffect but than all async methods would
+	// need to be moved inside it
 	createContractsAsync(); // initial load
 
 	// get contracts at set interval of 20 seconds
@@ -305,4 +316,4 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 };
 
 Main.displayName = 'Main';
-(Main as any).whyDidYouRender = false;
+Main.whyDidYouRender = true;
