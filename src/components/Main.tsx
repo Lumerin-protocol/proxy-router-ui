@@ -316,4 +316,4 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 };
 
 Main.displayName = 'Main';
-Main.whyDidYouRender = true;
+Main.whyDidYouRender = false;
