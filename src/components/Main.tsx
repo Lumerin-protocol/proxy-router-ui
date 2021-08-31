@@ -148,7 +148,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	}, [alertOpen]);
 
 	const ActionButton: JSX.Element = (
-		<button type='button' className='btn-wallet w-60 h-12 mt-4 mb-20 rounded-3xl bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
+		<button type='button' className='btn-wallet w-60 h-12 mt-4 mb-20 rounded-5 bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
 			<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
 			<MetaMaskIcon />
 		</button>
@@ -170,7 +170,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	const content: JSX.Element = getContent(pageName, contracts);
 
 	return (
-		<div id='main' className='h-screen flex overflow-hidden bg-gray-100'>
+		<div id='main' className='h-screen flex overflow-hidden'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
 			<Modal open={buyModalOpen} setOpen={setBuyModalOpen} content={<BuyForm />} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
@@ -284,8 +284,8 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 							type='button'
 							className={classNames(
 								walletText === WalletText.Disconnect
-									? 'w-40 h-12 mt-4 mr-2 py-2 px-4 border border-solid border-lumerin-aqua rounded-3xl bg-white text-sm text-lumerin-aqua font-Inter'
-									: 'btn-wallet w-60 h-12 mt-4 rounded-3xl bg-lumerin-aqua text-sm font-Inter'
+									? 'w-40 h-12 mt-4 mr-2 py-2 px-4 border border-solid border-lumerin-aqua rounded-5 bg-white text-sm text-lumerin-aqua font-Inter'
+									: 'btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
 							)}
 							onClick={walletClickHandler}
 						>
@@ -294,11 +294,11 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 						</button>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
-								<button className='w-40 h-12 mt-4 mr-2 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
+								<button className='w-40 h-12 mt-4 mr-2 flex items-center justify-center rounded-5 py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
 									<LumerinIcon />
 									<span className='ml-4'>3,409 LMRN</span>
 								</button>
-								<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-3xl py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
+								<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-5 py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
 									<MetaMaskIcon />
 								</button>
@@ -307,7 +307,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 					</div>
 				</div>
 
-				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none bg-lumerin-gray border border-transparent rounded-50'>
+				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none border border-transparent'>
 					{content}
 				</main>
 			</div>

@@ -8,61 +8,61 @@ import { Column, useTable } from 'react-table';
 
 const useStyles = createUseStyles({
 	table: {
-		width: '95%',
+		'& > tbody > tr:first-child': {
+			height: '32px',
+		},
 		'& > tbody > tr > td': {
 			backgroundColor: 'white',
+			border: '1px solid #E5E7EB',
+		},
+		'& > tbody > tr > td:first-child': {
+			borderRight: 'none',
+		},
+		'& > tbody > tr > td:nth-child(2)': {
+			borderLeft: 'none',
+			borderRight: 'none',
+			paddingLeft: 0,
+		},
+		'& > tbody > tr > td:nth-child(3)': {
+			borderLeft: 'none',
+			borderRight: 'none',
+		},
+		'& > tbody > tr > td:nth-child(4)': {
+			borderLeft: 'none',
+			borderRight: 'none',
+		},
+		'& > tbody > tr > td:nth-child(5)': {
+			borderLeft: 'none',
+			borderRight: 'none',
+		},
+		'& > tbody > tr > td:last-child': {
+			borderLeft: 'none',
 		},
 		'& > thead > tr > th:first-child': {
 			border: '0px solid transparent',
-			borderRadius: '100px 0 0 100px',
+			borderRadius: '5px 0 0 5px',
 			width: '20%',
 		},
-		// '& > thead > tr > th:nth-child(2)': {
-		// 	width: '20%',
-		// },
-		// '& > thead > tr > th:nth-child(3)': {
-		// 	width: '20%',
-		// },
-		// '& > thead > tr > th:nth-child(4)': {
-		// 	width: '20%',
-		// },
-		// '& > tbody > tr:first-child': {
-		// 	height: '20px',
-		// },
 		'& > tbody > tr:first-child > td': {
-			backgroundColor: '#F2F5F9 !important',
+			border: 'none',
 		},
+
 		'& > thead > tr > th:last-child': {
-			border: '0px solid transparent',
-			borderRadius: '0 100px 100px 0',
+			borderRadius: '0 5px 5px 0',
 			width: '10%',
 		},
-		'& > tbody > tr:nth-child(2) > td': {
-			border: '1px solid transparent',
-			borderBottomColor: '#E5E7EB',
-		},
 		'& > tbody > tr:nth-child(2) > td:first-child': {
-			border: '1px solid transparent',
-			borderBottomColor: '#E5E7EB',
-			borderTopLeftRadius: '30px',
+			borderRadius: '5px 0 0 5px',
 		},
 		'& > tbody > tr:nth-child(2) > td:last-child': {
-			border: '1px solid transparent',
 			borderBottomColor: '#E5E7EB',
 			borderTopRightRadius: '30px',
 		},
 		'& > tbody > tr:last-child > td:first-child': {
-			border: '1px solid transparent',
-			borderTopColor: '#E5E7EB',
-			borderBottomLeftRadius: '30px',
+			borderRadius: '5px 0 0 5px',
 		},
 		'& > tbody > tr:last-child > td:last-child': {
-			border: '1px solid transparent',
-			borderTopColor: '#E5E7EB',
-			borderBottomRightRadius: '30px',
-		},
-		'& > tbody > tr > td:nth-child(2)': {
-			paddingLeft: 0,
+			borderRadius: '0 5px 5px 0',
 		},
 	},
 });
@@ -84,7 +84,7 @@ interface MarketplaceProps {
 export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHandler }) => {
 	const BuyButton: JSX.Element = useMemo(
 		() => (
-			<button type='button' className='w-20 h-8 rounded-xl p-auto bg-lumerin-aqua text-white font-medium' onClick={buyClickHandler}>
+			<button type='button' className='w-20 h-8 rounded-5 p-auto bg-lumerin-aqua text-white font-medium' onClick={buyClickHandler}>
 				<span>Buy</span>
 			</button>
 		),
@@ -134,7 +134,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHan
 	const classes = useStyles();
 
 	return (
-		<table {...getTableProps()} className={classNames(classes.table, 'relative border-collapse m-auto mt-8 bg-lumerin-gray h-10 font-Inter')}>
+		<table {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-collapse h-10 font-Inter')}>
 			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>

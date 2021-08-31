@@ -18,10 +18,14 @@ module.exports = {
 				'lumerin-light-aqua': '#DBECED',
 			},
 			borderRadius: {
+				5: '5px',
 				30: '30px',
 				50: '50px',
 				120: '120px',
 				'50%': '50%',
+			},
+			width: {
+				99: '99%',
 			},
 		},
 	},

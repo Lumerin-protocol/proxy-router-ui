@@ -24,17 +24,23 @@ export const BuyForm: React.FC = () => {
 	} = useForm<InputValues>({ mode: 'onBlur' });
 
 	const buyContract: (data: InputValues) => void = (data) => {
-		console.log(data);
+		if (isValid) {
+			// show Confirm Order Modal
+		}
 	};
 
-	// check if form state is valid
+	// check if input is valid
 	useEffect(() => {
-		if (isValid) setButtonOpacity('100');
+		if (isValid) {
+			setButtonOpacity('100');
+		} else {
+			setButtonOpacity('25');
+		}
 	}, [isValid]);
 
 	return (
 		<div className='flex flex-col justify-center font-Inter font-medium'>
-			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-30'>
+			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
 				<div className='text-white'>
 					<p className='text-lg'>Purchase Hashpower</p>
 					<p className='text-sm'>My Order</p>
@@ -67,8 +73,8 @@ export const BuyForm: React.FC = () => {
 								placeholder='127.0.0.1'
 								className={classNames(
 									errors.ipAddress
-										? 'appearance-none block w-full px-3 py-2 bg-red-100 border border-transparent rounded-120 shadow-sm placeholder-red-400 placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
-										: 'appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+										? 'appearance-none block w-full px-3 py-2 bg-red-100 border border-transparent rounded-5 shadow-sm placeholder-red-400 placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+										: 'appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-5 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 								)}
 							/>
 						</div>
@@ -93,8 +99,8 @@ export const BuyForm: React.FC = () => {
 								placeholder='7777'
 								className={classNames(
 									errors.portNumber
-										? 'appearance-none block w-full px-3 py-2 bg-red-100 border border-transparent rounded-120 shadow-sm placeholder-red-400 placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
-										: 'appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+										? 'appearance-none block w-full px-3 py-2 bg-red-100 border border-transparent rounded-5 shadow-sm placeholder-red-400 placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+										: 'appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-5 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 								)}
 							/>
 							{errors.portNumber?.type === 'required' && <div className='text-xs text-red-500'>{errors.portNumber.message}</div>}
@@ -114,7 +120,7 @@ export const BuyForm: React.FC = () => {
 						id='username'
 						type='text'
 						placeholder='account.worker'
-						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-5 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 					/>
 				</div>
 			</div>
@@ -129,14 +135,14 @@ export const BuyForm: React.FC = () => {
 						id='password'
 						type='password'
 						placeholder='password'
-						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-120 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-5 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
 					/>
 				</div>
 			</div>
-			<div className='bg-white p-4 pt-14 rounded-b-30'>
+			<div className='flex bg-white p-4 pt-14 rounded-b-5'>
 				<button
 					type='submit'
-					className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-120 shadow-sm text-sm font-medium text-white bg-black bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					className={`h-16 w-full py-2 px-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white bg-black bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					onClick={handleSubmit((data) => buyContract(data))}
 				>
 					Review Order
