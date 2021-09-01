@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { createUseStyles } from 'react-jss';
 import { classNames, truncateAddress } from '../utils';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
+import { BuyButton } from './ui/BuyButton';
 
 const useStyles = createUseStyles({
 	table: {
@@ -78,19 +79,11 @@ export interface Data {
 
 interface MarketplaceProps {
 	contracts: Data[];
+	setContractId: Dispatch<SetStateAction<string>>;
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHandler }) => {
-	const BuyButton: JSX.Element = useMemo(
-		() => (
-			<button type='button' className='w-20 h-8 rounded-5 p-auto bg-lumerin-aqua text-white font-medium' onClick={buyClickHandler}>
-				<span>Buy</span>
-			</button>
-		),
-		[buyClickHandler]
-	);
-
+export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContractId, buyClickHandler }) => {
 	const getTableData: (contracts: Data[]) => Data[] = useCallback(
 		(contracts) => {
 			const updatedContracts = contracts.map((contract) => {
@@ -98,14 +91,14 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHan
 				if (Object.keys(contract).length !== 0 && typeof contract.id === 'string') {
 					updatedContract.id = <TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} justify='start' />;
 					updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
-					updatedContract.trade = BuyButton;
+					updatedContract.trade = <BuyButton contractId={contract.id} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
 				}
 				return updatedContract;
 			});
 
 			return updatedContracts;
 		},
-		[BuyButton]
+		[setContractId, buyClickHandler]
 	);
 
 	interface Header {
@@ -119,7 +112,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, buyClickHan
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
 			{ Header: 'Order ID', accessor: 'id' },
-			{ Header: 'PRICE (LMRN/TH/DAY)', accessor: 'price' },
+			{ Header: 'PRICE (ETH)', accessor: 'price' },
 			{ Header: 'LIMIT (TH/S)', accessor: 'limit' },
 			{ Header: 'SPEED (TH/S)', accessor: 'speed' },
 			{ Header: 'LENGTH (HR/D/W)', accessor: 'length' },

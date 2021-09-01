@@ -26,6 +26,8 @@ export enum WalletText {
 	Disconnect = 'Disconnect',
 }
 
+export interface HashRentalContract extends Data {}
+
 interface MainProps extends RouteComponentProps {
 	pageName: string;
 }
@@ -38,6 +40,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	const [accounts, setAccounts] = useState<string[]>();
 	const [contractInstance, setContractInstance] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
+	const [contractId, setContractId] = useState<string>('');
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 
@@ -85,7 +88,6 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	};
 
 	// contracts setup
-	interface HashRentalContract extends Data {}
 	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
 		const price = await contractInstance?.methods.getAddressPrice(address).call();
 		const limit = await contractInstance?.methods.getAddressLimit(address).call();
@@ -163,16 +165,17 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 				</div>
 			);
 		}
-		if (pageName === PageName.Marketplace) return <Marketplace contracts={contracts} buyClickHandler={buyClickHandler} />;
+		if (pageName === PageName.Marketplace)
+			return <Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
 		if (pageName === PageName.MyOrders) return <div>My Orders</div>;
-		return <Marketplace contracts={contracts} buyClickHandler={buyClickHandler} />;
+		return <Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
 	};
 	const content: JSX.Element = getContent(pageName, contracts);
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
-			<Modal open={buyModalOpen} setOpen={setBuyModalOpen} content={<BuyForm />} />
+			<Modal open={buyModalOpen} setOpen={setBuyModalOpen} content={<BuyForm contracts={contracts} contractId={contractId} />} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
