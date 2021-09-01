@@ -154,7 +154,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const bgColor = contentState === ContentState.completed ? 'bg-lumerin-aqua' : 'bg-black';
 
 	return (
-		<div className={`flex flex-col justify-center sm:w-full sm:max-w-${maxWidth} font-Inter font-medium`}>
+		<div className={`flex flex-col justify-center w-full max-w-${maxWidth} font-Inter font-medium`}>
 			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
 				<div className='text-white'>
 					<p className='text-lg'>Purchase Hashpower</p>
