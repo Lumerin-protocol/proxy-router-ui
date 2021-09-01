@@ -27,6 +27,7 @@ const connectToMetaMaskAsync = async (
 			reject(error as Error);
 		}
 	} else {
+		// TODO: add MetaMask onboarding
 		reject(new Error('Could not connect wallet'));
 	}
 };

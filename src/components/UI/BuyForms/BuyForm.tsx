@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { classNames, truncateAddress } from '../../../utils';
-import _ from 'lodash';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { HashRentalContract } from '../../Main';
+import { Contract } from 'web3-eth-contract';
+import { CompletedContent } from './CompletedContent';
+import { Link } from 'react-router-dom';
 
 export interface InputValues {
 	ipAddress: string;
@@ -28,7 +30,7 @@ enum ContentState {
 interface TextType {
 	review: string;
 	confirm: string;
-	completed: string;
+	completed?: string;
 }
 
 const orderText: TextType = {
@@ -40,7 +42,6 @@ const orderText: TextType = {
 const paragraphText: TextType = {
 	review: 'Please enter a valid IP Address that is connected to your mining machine as well as the Port Number. Username and PW are optional.',
 	confirm: 'Please review the following information below is correct. Once submitted, you will not be able to make any changes.',
-	completed: '',
 };
 
 const buttonText: TextType = {
@@ -62,9 +63,12 @@ const initialFormData: FormData = {
 interface BuyFormProps {
 	contracts: HashRentalContract[];
 	contractId: string;
+	userAccount: string;
+	marketplaceContract: Contract | undefined;
+	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId }) => {
+export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -91,7 +95,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId }) => {
 		};
 	};
 	const buyContract: (data: InputValues) => void = (data) => {
-		if (isValid) {
+		// review
+		if (isValid && contentState === ContentState.review) {
 			setContentState(ContentState.confirm);
 			setFormData({
 				ipAddress: data.ipAddress,
@@ -101,6 +106,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId }) => {
 				...getContractInfo(),
 			});
 		}
+
+		// confirm
+		if (isValid && contentState === ContentState.confirm) {
+			setContentState(ContentState.completed);
+			// TODO call marketplaceContract.methods.buyContract(ipAddress, portNumber, username, password).send({ from: userAccount , value: this.web3.utils.toWei('1', 'wei') })
+		}
+
+		// completed
+		if (contentState === ContentState.completed) setOpen(false);
 	};
 
 	// check if input is valid
@@ -127,16 +141,20 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId }) => {
 				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.completed:
-				orderContent = orderText.completed;
-				buttonContent = buttonText.completed;
-				content = <div>Confirm</div>;
+				orderContent = orderText.completed as string;
+				buttonContent = buttonText.completed as string;
+				content = <CompletedContent />;
 				break;
 		}
 	};
 	createContent();
 
+	const maxWidth = contentState === ContentState.review ? 'lg' : 'sm';
+	const display = contentState === ContentState.completed ? 'hidden' : 'block';
+	const bgColor = contentState === ContentState.completed ? 'bg-lumerin-aqua' : 'bg-black';
+
 	return (
-		<div className='flex flex-col justify-center font-Inter font-medium'>
+		<div className={`flex flex-col justify-center sm:w-full sm:max-w-${maxWidth} font-Inter font-medium`}>
 			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
 				<div className='text-white'>
 					<p className='text-lg'>Purchase Hashpower</p>
@@ -147,14 +165,24 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId }) => {
 					<p className='text-sm'>{truncateAddress('123456789101112131415')}</p>
 				</div>
 			</div>
-			<div className='bg-white p-4 sm:mx-auto sm:w-full sm:max-w-lg text-sm'>
+			<div className={`${display} bg-white p-4 sm:mx-auto text-sm`}>
 				<p>{paragraphContent}</p>
 			</div>
 			{content}
-			<div className='flex bg-white p-4 pt-14 rounded-b-5'>
+			<div className='flex flex-col bg-white p-4 pt-14 rounded-b-5'>
+				<Link
+					to='/myorders'
+					className={classNames(
+						contentState === ContentState.completed
+							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
+							: 'hidden'
+					)}
+				>
+					<span>View Orders</span>
+				</Link>
 				<button
 					type='submit'
-					className={`h-16 w-full py-2 px-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white bg-black bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					className={`h-16 w-full py-2 px-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white ${bgColor} bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					onClick={handleSubmit((data) => buyContract(data))}
 				>
 					{buttonContent}

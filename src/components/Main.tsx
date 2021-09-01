@@ -38,13 +38,13 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
 	const [accounts, setAccounts] = useState<string[]>();
-	const [contractInstance, setContractInstance] = useState<Contract>();
+	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 
-	// console.log('main firing');
+	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 
 	// navigation
 	interface Navigation {
@@ -56,7 +56,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 
 	const navigation: Navigation[] = [
 		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: location.pathname === '/' },
-		{ name: 'My Orders', to: 'orders', icon: <MyOrdersIcon />, current: location.pathname === '/orders' },
+		{ name: 'My Orders', to: 'orders', icon: <MyOrdersIcon />, current: location.pathname === '/myorders' },
 	];
 
 	// Wallet setup
@@ -65,7 +65,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		if (web3Result) {
 			const { accounts, contractInstance } = web3Result;
 			setAccounts(accounts);
-			setContractInstance(contractInstance);
+			setMarketplaceContract(contractInstance);
 			setWalletText(WalletText.Disconnect);
 		}
 	};
@@ -89,10 +89,10 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 
 	// contracts setup
 	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
-		const price = await contractInstance?.methods.getAddressPrice(address).call();
-		const limit = await contractInstance?.methods.getAddressLimit(address).call();
-		const speed = await contractInstance?.methods.getAddressSpeed(address).call();
-		const length = await contractInstance?.methods.getAddressLength(address).call();
+		const price = await marketplaceContract?.methods.getAddressPrice(address).call();
+		const limit = await marketplaceContract?.methods.getAddressLimit(address).call();
+		const speed = await marketplaceContract?.methods.getAddressSpeed(address).call();
+		const length = await marketplaceContract?.methods.getAddressLength(address).call();
 
 		return {
 			id: address,
@@ -118,7 +118,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	};
 
 	const createContractsAsync = async () => {
-		const addresses: string[] = await contractInstance?.methods.getContractList().call();
+		const addresses: string[] = await marketplaceContract?.methods.getContractList().call();
 		if (addresses) {
 			getContractDataAsync(addresses);
 		}
@@ -175,7 +175,19 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 	return (
 		<div id='main' className='h-screen flex overflow-hidden'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
-			<Modal open={buyModalOpen} setOpen={setBuyModalOpen} content={<BuyForm contracts={contracts} contractId={contractId} />} />
+			<Modal
+				open={buyModalOpen}
+				setOpen={setBuyModalOpen}
+				content={
+					<BuyForm
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						marketplaceContract={marketplaceContract}
+						setOpen={setBuyModalOpen}
+					/>
+				}
+			/>
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
@@ -310,9 +322,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 					</div>
 				</div>
 
-				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none border border-transparent'>
-					{content}
-				</main>
+				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{content}</main>
 			</div>
 		</div>
 	);

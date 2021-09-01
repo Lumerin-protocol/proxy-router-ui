@@ -9,12 +9,16 @@ import { BuyButton } from './ui/BuyButton';
 
 const useStyles = createUseStyles({
 	table: {
+		'&': {
+			borderSpacing: 0,
+		},
 		'& > tbody > tr:first-child': {
 			height: '32px',
 		},
 		'& > tbody > tr > td': {
 			backgroundColor: 'white',
 			border: '1px solid #E5E7EB',
+			borderBottom: 'none',
 		},
 		'& > tbody > tr > td:first-child': {
 			borderRight: 'none',
@@ -53,17 +57,19 @@ const useStyles = createUseStyles({
 			width: '10%',
 		},
 		'& > tbody > tr:nth-child(2) > td:first-child': {
-			borderRadius: '5px 0 0 5px',
+			borderTopLeftRadius: '5px',
 		},
 		'& > tbody > tr:nth-child(2) > td:last-child': {
-			borderBottomColor: '#E5E7EB',
-			borderTopRightRadius: '30px',
+			borderTopRightRadius: '5px',
+		},
+		'& > tbody > tr:last-child > td': {
+			borderBottom: '1px solid #E5E7EB',
 		},
 		'& > tbody > tr:last-child > td:first-child': {
-			borderRadius: '5px 0 0 5px',
+			borderBottomLeftRadius: '5px',
 		},
 		'& > tbody > tr:last-child > td:last-child': {
-			borderRadius: '0 5px 5px 0',
+			borderBottomRightRadius: '5px',
 		},
 	},
 });
@@ -127,7 +133,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const classes = useStyles();
 
 	return (
-		<table {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-collapse h-10 font-Inter')}>
+		<table {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-separate h-10 font-Inter')}>
 			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
