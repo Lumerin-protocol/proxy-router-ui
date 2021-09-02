@@ -12,14 +12,14 @@ import { Modal } from './ui/Modal';
 import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
-import { Data } from './Marketplace';
+import { MarketPlaceData } from './Marketplace';
 import { Spinner } from './ui/Spinner';
 import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
 import { classNames, truncateAddress } from '../utils';
 import { reconnectWallet } from '../web3/utils';
 import _ from 'lodash';
 import { useInterval } from './hooks/useInterval';
-import { MyOrders } from './ui/MyOrders';
+import { MyOrders, MyOrdersData } from './MyOrders';
 
 declare var window: Window;
 
@@ -33,7 +33,8 @@ export enum WalletText {
 	Disconnect = 'Disconnect',
 }
 
-export interface HashRentalContract extends Data {}
+export interface HashRentalContract extends MarketPlaceData {}
+export interface MyOrder extends MyOrdersData {}
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -44,6 +45,7 @@ export const Main: React.FC = () => {
 	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
+	const [myOrders, setMyOrders] = useState<MyOrder[]>([]);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 
@@ -128,9 +130,53 @@ export const Main: React.FC = () => {
 		}
 	};
 
+	const dummyOrders: MyOrder[] = [
+		{
+			id: '10',
+			started: Date.now().toLocaleString(), // using Luxon
+			status: 'active',
+			delivered: '10/100',
+		},
+		{
+			id: '20',
+			started: Date.now().toLocaleString(), // using Luxon
+			status: 'active',
+			delivered: '20/100',
+		},
+		{
+			id: '30',
+			started: Date.now().toLocaleString(), // using Luxon
+			status: 'completed',
+			delivered: '30/100',
+		},
+		{
+			id: '40',
+			started: Date.now().toLocaleString(), // using Luxon
+			status: 'completed',
+			delivered: '90/100',
+		},
+		{
+			id: '50',
+			started: Date.now().toLocaleString(), // using Luxon
+			status: 'completed',
+			delivered: '70/100',
+		},
+	];
+
+	const createMyOrdersAsync = async () => {
+		// const addresses: string[] = await marketplaceContract?.methods.getMyOrders(userAccount).call();
+		const myDummyOrders = dummyOrders;
+		// add empty row for styling
+		myDummyOrders.unshift({});
+		if (!_.isEqual(myOrders, myDummyOrders)) {
+			setMyOrders(myDummyOrders);
+		}
+	};
+
 	// this could be placed in a useEffect but than all async methods would
 	// need to be moved inside it
-	createContractsAsync(); // initial load
+	createContractsAsync();
+	createMyOrdersAsync();
 
 	// get contracts at set interval of 20 seconds
 	// TODO: listen to event instead
@@ -153,6 +199,7 @@ export const Main: React.FC = () => {
 		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
 	}, [alertOpen]);
 
+	// content setup
 	const ActionButton: JSX.Element = (
 		<button type='button' className='btn-wallet w-60 h-12 mt-4 mb-20 rounded-5 bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
 			<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
@@ -163,7 +210,7 @@ export const Main: React.FC = () => {
 	const routes = (
 		<Suspense fallback={<Spinner />}>
 			<Switch>
-				<Route path='/myorders' exact render={(props: RouteComponentProps) => <MyOrders />} />
+				<Route path='/myorders' exact render={(props: RouteComponentProps) => <MyOrders orders={myOrders} />} />
 				<Route
 					path='/'
 					render={(props: RouteComponentProps) => (
@@ -175,7 +222,7 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
-		if (contracts.length === 0 && pathName === PathName.Marketplace) {
+		if ((contracts.length === 0 && pathName === PathName.Marketplace) || (myOrders.length === 0 && PathName.MyOrders)) {
 			return (
 				<div className='flex flex-col justify-center items-center h-full'>
 					{ActionButton}

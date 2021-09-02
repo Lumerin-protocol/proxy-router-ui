@@ -1,11 +1,8 @@
-import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { createUseStyles } from 'react-jss';
-import { classNames, truncateAddress } from '../utils';
-import { ReactComponent as Hashrate } from '../images/hashrate.svg';
-import { ReactComponent as Lumerin } from '../images/lumerin.svg';
-import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
-import { BuyButton } from './ui/BuyButton';
+import { classNames } from '../utils';
+import { MyOrder } from './Main';
 
 const useStyles = createUseStyles({
 	table: {
@@ -33,10 +30,6 @@ const useStyles = createUseStyles({
 			borderRight: 'none',
 		},
 		'& > tbody > tr > td:nth-child(4)': {
-			borderLeft: 'none',
-			borderRight: 'none',
-		},
-		'& > tbody > tr > td:nth-child(5)': {
 			borderLeft: 'none',
 			borderRight: 'none',
 		},
@@ -74,40 +67,29 @@ const useStyles = createUseStyles({
 	},
 });
 
-export interface MarketPlaceData {
-	id?: JSX.Element | string;
-	price?: JSX.Element | string;
-	limit?: string;
-	speed?: number;
-	length?: string;
-	trade?: JSX.Element | string;
+export interface MyOrdersData {
+	id?: string;
+	started?: string;
+	status?: string;
+	delivered?: string;
+	progress?: string;
 }
 
-interface MarketplaceProps {
-	contracts: MarketPlaceData[];
-	setContractId: Dispatch<SetStateAction<string>>;
-	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
+interface MyOrdersProps {
+	orders: MyOrder[];
 }
 
-export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContractId, buyClickHandler }) => {
-	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = useCallback(
-		(contracts) => {
-			const updatedContracts = contracts.map((contract) => {
-				const updatedContract = { ...contract };
-				if (Object.keys(contract).length !== 0 && typeof contract.id === 'string') {
-					updatedContract.id = (
-						<TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} hasLink justify='start' />
-					);
-					updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
-					updatedContract.trade = <BuyButton contractId={contract.id} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
-				}
-				return updatedContract;
-			});
+export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
+	const getTableData: (orders: MyOrder[]) => MyOrdersData[] = useCallback((orders) => {
+		const updatedOrders = orders.map((order) => {
+			const updatedOrder = { ...order };
+			if (Object.keys(order).length !== 0 && typeof order.id === 'string') {
+			}
+			return updatedOrder;
+		});
 
-			return updatedContracts;
-		},
-		[setContractId, buyClickHandler]
-	);
+		return updatedOrders;
+	}, []);
 
 	interface Header {
 		Header?: string;
@@ -115,27 +97,26 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	}
 
 	// This interface needs to have all the properties for both data and columns based on index.d.ts
-	interface CustomTableOptions extends MarketPlaceData, Header {}
+	interface CustomTableOptions extends MyOrdersData, Header {}
 
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
-			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
-			{ Header: 'PRICE (ETH)', accessor: 'price' },
-			{ Header: 'LIMIT (TH/S)', accessor: 'limit' },
-			{ Header: 'SPEED (TH/S)', accessor: 'speed' },
-			{ Header: 'LENGTH (HR/D/W)', accessor: 'length' },
-			{ Header: 'TRADE', accessor: 'trade' },
+			{ Header: 'ORDER ID', accessor: 'id' },
+			{ Header: 'STARTED', accessor: 'started' },
+			{ Header: 'STATUS', accessor: 'status' },
+			{ Header: 'DELIVERD VS PROMISED (TH/S)', accessor: 'delivered' },
+			{ Header: 'PROGRESS', accessor: 'progress' },
 		],
 		[]
 	);
 
-	const data = useMemo(() => getTableData(contracts), [contracts, getTableData]);
+	const data = useMemo(() => getTableData(orders), [orders, getTableData]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
 	const classes = useStyles();
 
 	return (
-		<table id='marketplace' {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-separate h-10 font-Inter')}>
+		<table id='myorders' {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-separate h-10 font-Inter')}>
 			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
@@ -167,5 +148,5 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	);
 };
 
-Marketplace.displayName = 'Marketplace';
-Marketplace.whyDidYouRender = false;
+MyOrders.displayName = 'MyOrders';
+MyOrders.whyDidYouRender = false;
