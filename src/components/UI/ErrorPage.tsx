@@ -16,7 +16,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({ error }) => {
 						</div>
 						<div className='mt-10 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
 							<Link style={{ color: 'blue' }} to='/'>
-								Return Home
+								Return to Marketplace
 							</Link>
 						</div>
 					</div>

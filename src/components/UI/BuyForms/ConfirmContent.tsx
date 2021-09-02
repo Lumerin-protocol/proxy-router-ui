@@ -5,16 +5,12 @@ interface ConfirmContentProps {
 	data: FormData;
 }
 
-export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { ipAddress, portNumber, username, password, limit, speed, price } }) => {
+export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddress, username, password, limit, speed, price } }) => {
 	return (
 		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm'>
 			<div className='flex justify-between my-2'>
-				<p>IP Address</p>
-				<p>{ipAddress}</p>
-			</div>
-			<div className='flex justify-between my-2'>
-				<p>Port Number</p>
-				<p>{portNumber}</p>
+				<p>Pool Address</p>
+				<p>{poolAddress}</p>
 			</div>
 			<div className='flex justify-between my-2'>
 				<p>Username</p>

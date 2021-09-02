@@ -9,8 +9,7 @@ import { CompletedContent } from './CompletedContent';
 import { Link } from 'react-router-dom';
 
 export interface InputValues {
-	ipAddress: string;
-	portNumber: number;
+	poolAddress: string;
 	username: string;
 	password: string;
 }
@@ -51,8 +50,7 @@ const buttonText: TextType = {
 };
 
 const initialFormData: FormData = {
-	ipAddress: '',
-	portNumber: 0,
+	poolAddress: '',
 	username: '',
 	password: '',
 	limit: '',
@@ -99,8 +97,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		if (isValid && contentState === ContentState.review) {
 			setContentState(ContentState.confirm);
 			setFormData({
-				ipAddress: data.ipAddress,
-				portNumber: data.portNumber,
+				poolAddress: data.poolAddress,
 				username: data.username,
 				password: data.password,
 				...getContractInfo(),
@@ -154,7 +151,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const bgColor = contentState === ContentState.completed ? 'bg-lumerin-aqua' : 'bg-black';
 
 	return (
-		<div className={`flex flex-col justify-center w-full max-w-${maxWidth} font-Inter font-medium`}>
+		// TODO: figure out why max-length isn't working when deployed
+		<div className={`flex flex-col justify-center w-full max-w-${maxWidth} font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
 			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
 				<div className='text-white'>
 					<p className='text-lg'>Purchase Hashpower</p>
