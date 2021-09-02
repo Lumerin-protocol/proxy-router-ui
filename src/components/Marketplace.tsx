@@ -95,7 +95,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 			const updatedContracts = contracts.map((contract) => {
 				const updatedContract = { ...contract };
 				if (Object.keys(contract).length !== 0 && typeof contract.id === 'string') {
-					updatedContract.id = <TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} justify='start' />;
+					updatedContract.id = (
+						<TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} hasLink justify='start' />
+					);
 					updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
 					updatedContract.trade = <BuyButton contractId={contract.id} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
 				}
@@ -133,7 +135,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const classes = useStyles();
 
 	return (
-		<table {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-separate h-10 font-Inter')}>
+		<table id='marketplace' {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-separate h-10 font-Inter')}>
 			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>

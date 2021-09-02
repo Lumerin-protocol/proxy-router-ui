@@ -1,25 +1,24 @@
-import React, { Suspense } from 'react';
-import { Spinner } from './components/ui/Spinner';
-import { RouteComponentProps, Switch } from 'react-router-dom';
+import React from 'react';
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { Main } from './components/Main';
-import { RouteWithErrorBoundary } from './components/RouteWithErrorBoundary';
+import { ErrorPage } from './components/ui/ErrorPage';
 
-export enum PageName {
-	Marketplace = 'MARKETPLACE',
-	MyOrders = 'MY_ORDERS',
-}
-
-const routes = (
-	<Suspense fallback={<Spinner />}>
-		<Switch>
-			<RouteWithErrorBoundary path='/' render={(props: RouteComponentProps) => <Main {...props} pageName={PageName.Marketplace} />} />
-		</Switch>
-	</Suspense>
-);
-
-export const App: React.FC = () => {
-	return routes;
+// error handling logic
+// display <ErrorPage /> with error message
+const ErrorFallback: React.ComponentType<FallbackProps> = ({ error, resetErrorBoundary }) => {
+	return <ErrorPage error={error} />;
 };
 
+// add reset logic if needed
+const onResetHandler: () => void = () => {};
+
+// log to local filestore or localStorage if needed
+const errorHandler: (error: Error, info: { componentStack: string }) => void = (error, info) => {};
+
+export const App: React.FC = () => (
+	<ErrorBoundary fallbackRender={ErrorFallback} onReset={onResetHandler} onError={errorHandler}>
+		<Main />
+	</ErrorBoundary>
+);
 App.displayName = 'App';
 (App as any).whyDidYouRender = false;

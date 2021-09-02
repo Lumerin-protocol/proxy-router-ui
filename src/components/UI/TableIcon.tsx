@@ -5,16 +5,17 @@ interface TableIconProps {
 	icon: JSX.Element;
 	text: string | number;
 	justify: string;
+	hasLink?: boolean;
 }
 
-export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify }) => {
+export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, hasLink }) => {
 	justify = justify ?? 'center';
 	justify = `justify-${justify}`;
 	return (
 		<div className={classNames('flex ml-4', justify)}>
 			<div className='flex items-center'>
 				<span>{icon}</span>
-				<span className='ml-4 font-semibold text-left'>{text}</span>
+				<span className='ml-4 font-semibold text-left'>{hasLink ? <a href={`https://etherscan.io/address/${text}`}>{text}</a> : text}</span>
 			</div>
 		</div>
 	);

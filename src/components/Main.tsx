@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useState } from 'react';
-import { Link, RouteComponentProps } from 'react-router-dom';
+import { Fragment, Suspense, useEffect, useState } from 'react';
+import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
 import { ReactComponent as MarketplaceIcon } from '../images/marketplace.svg';
@@ -12,7 +12,6 @@ import { Modal } from './ui/Modal';
 import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
-import { PageName } from '../App';
 import { Data } from './Marketplace';
 import { Spinner } from './ui/Spinner';
 import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
@@ -20,6 +19,14 @@ import { classNames, truncateAddress } from '../utils';
 import { reconnectWallet } from '../web3/utils';
 import _ from 'lodash';
 import { useInterval } from './hooks/useInterval';
+import { MyOrders } from './ui/MyOrders';
+
+declare var window: Window;
+
+export enum PathName {
+	Marketplace = '/',
+	MyOrders = '/myorders',
+}
 
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
@@ -28,12 +35,8 @@ export enum WalletText {
 
 export interface HashRentalContract extends Data {}
 
-interface MainProps extends RouteComponentProps {
-	pageName: string;
-}
-
 // Main contains the basic layout of pages and maintains contract state needed by its children
-export const Main: React.FC<MainProps> = ({ location, pageName }) => {
+export const Main: React.FC = () => {
 	// state and constants
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
@@ -54,9 +57,10 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		current: boolean;
 	}
 
+	const pathName = window.location.pathname;
 	const navigation: Navigation[] = [
-		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: location.pathname === '/' },
-		{ name: 'My Orders', to: 'orders', icon: <MyOrdersIcon />, current: location.pathname === '/myorders' },
+		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: pathName === '/' },
+		{ name: 'My Orders', to: 'myorders', icon: <MyOrdersIcon />, current: pathName === '/myorders' },
 	];
 
 	// Wallet setup
@@ -156,8 +160,22 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 		</button>
 	);
 
-	const getContent: (pageName: string, contracts: HashRentalContract[]) => JSX.Element = (pageName, contracts) => {
-		if (contracts.length === 0) {
+	const routes = (
+		<Suspense fallback={<Spinner />}>
+			<Switch>
+				<Route path='/myorders' exact render={(props: RouteComponentProps) => <MyOrders />} />
+				<Route
+					path='/'
+					render={(props: RouteComponentProps) => (
+						<Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />
+					)}
+				/>
+			</Switch>
+		</Suspense>
+	);
+
+	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
+		if (contracts.length === 0 && pathName === PathName.Marketplace) {
 			return (
 				<div className='flex flex-col justify-center items-center h-full'>
 					{ActionButton}
@@ -165,12 +183,8 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 				</div>
 			);
 		}
-		if (pageName === PageName.Marketplace)
-			return <Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
-		if (pageName === PageName.MyOrders) return <div>My Orders</div>;
-		return <Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
+		return routes;
 	};
-	const content: JSX.Element = getContent(pageName, contracts);
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden'>
@@ -322,7 +336,7 @@ export const Main: React.FC<MainProps> = ({ location, pageName }) => {
 					</div>
 				</div>
 
-				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{content}</main>
+				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent(contracts)}</main>
 			</div>
 		</div>
 	);
