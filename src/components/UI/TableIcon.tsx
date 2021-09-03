@@ -15,7 +15,15 @@ export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, hasLi
 		<div className={classNames('flex ml-4', justify)}>
 			<div className='flex items-center'>
 				<span>{icon}</span>
-				<span className='ml-4 font-semibold text-left'>{hasLink ? <a href={`https://etherscan.io/address/${text}`}>{text}</a> : text}</span>
+				<span className='ml-4 font-semibold text-left'>
+					{hasLink ? (
+						<a href={`https://etherscan.io/address/${text}`} target='_blank' rel='noreferrer'>
+							{text}
+						</a>
+					) : (
+						text
+					)}
+				</span>
 			</div>
 		</div>
 	);

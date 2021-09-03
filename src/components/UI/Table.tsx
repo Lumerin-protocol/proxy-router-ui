@@ -18,6 +18,11 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr > td:first-child': {
 			borderRight: 'none',
+			cursor: 'pointer',
+		},
+		'& > tbody > tr > td:first-child:hover': {
+			backgroundColor: '#11B4BF',
+			color: 'white',
 		},
 		'& > tbody > tr > td:nth-child(2)': {
 			borderLeft: 'none',

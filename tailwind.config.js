@@ -16,6 +16,7 @@ module.exports = {
 				'lumerin-placeholder-gray': '#C4C4C4',
 				'lumerin-aqua': '#11B4BF',
 				'lumerin-light-aqua': '#DBECED',
+				'lumerin-green': '#66BE26',
 			},
 			borderRadius: {
 				5: '5px',

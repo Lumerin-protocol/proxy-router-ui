@@ -132,31 +132,31 @@ export const Main: React.FC = () => {
 
 	const dummyOrders: MyOrder[] = [
 		{
-			id: '10',
+			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
 			started: Date.now().toLocaleString(), // using Luxon
 			status: 'active',
 			delivered: '10/100',
 		},
 		{
-			id: '20',
+			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
 			started: Date.now().toLocaleString(), // using Luxon
 			status: 'active',
 			delivered: '20/100',
 		},
 		{
-			id: '30',
+			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
 			started: Date.now().toLocaleString(), // using Luxon
 			status: 'completed',
 			delivered: '30/100',
 		},
 		{
-			id: '40',
+			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
 			started: Date.now().toLocaleString(), // using Luxon
 			status: 'completed',
 			delivered: '90/100',
 		},
 		{
-			id: '50',
+			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
 			started: Date.now().toLocaleString(), // using Luxon
 			status: 'completed',
 			delivered: '70/100',
