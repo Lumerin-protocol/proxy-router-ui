@@ -44,6 +44,7 @@ const useStyles = createUseStyles({
 		'& > tbody > tr > td:last-child': {
 			borderLeft: 'none',
 			borderRight: '1px solid #E5E7EB',
+			verticalAlign: 'bottom',
 		},
 		'& > thead > tr > th:first-child': {
 			border: '0px solid transparent',

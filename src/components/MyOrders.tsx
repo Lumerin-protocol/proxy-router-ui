@@ -42,9 +42,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 		const promised = numbers[1];
 		const percentage = (parseInt(delivered) / parseInt(promised)) * 100;
 		return (
-			<div>
+			<div className='flex justify-evenly items-baseline'>
 				<div>{percentage}%</div>
-				<div>
+				<div className='w-1/2'>
 					<ProgressBar width={percentage.toString()} />
 				</div>
 			</div>
