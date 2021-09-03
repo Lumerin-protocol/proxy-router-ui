@@ -6,13 +6,14 @@ import { MyOrder } from './Main';
 import { Table } from './ui/Table';
 import { classNames, truncateAddress } from '../utils';
 import _ from 'lodash';
+import { ProgressBar } from './ui/ProgressBar';
 
 export interface MyOrdersData {
 	id?: JSX.Element | string;
 	started?: string;
 	status?: JSX.Element | string;
 	delivered?: string;
-	progress?: string;
+	progress?: JSX.Element | string;
 }
 
 interface MyOrdersProps {
@@ -34,12 +35,29 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 			</div>
 		);
 	};
+
+	const getProgressDiv: (progress: string) => JSX.Element = (progress) => {
+		const numbers = progress.split('/');
+		const delivered = numbers[0];
+		const promised = numbers[1];
+		const percentage = (parseInt(delivered) / parseInt(promised)) * 100;
+		return (
+			<div>
+				<div>{percentage}%</div>
+				<div>
+					<ProgressBar width={percentage.toString()} />
+				</div>
+			</div>
+		);
+	};
+
 	const getTableData: (orders: MyOrder[]) => MyOrdersData[] = useCallback((orders) => {
 		const updatedOrders = orders.map((order) => {
 			const updatedOrder = { ...order };
 			if (Object.keys(order).length !== 0 && typeof order.id === 'string') {
 				updatedOrder.id = <TableIcon icon={<Hashrate />} text={truncateAddress(updatedOrder.id as string, true)} hasLink justify='start' />;
 				updatedOrder.status = getStatusDiv(updatedOrder.status as string);
+				updatedOrder.progress = getProgressDiv(updatedOrder.delivered as string);
 			}
 			return updatedOrder;
 		});
