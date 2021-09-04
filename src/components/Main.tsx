@@ -48,6 +48,7 @@ export const Main: React.FC = () => {
 	const [myOrders, setMyOrders] = useState<MyOrder[]>([]);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
+	const [toggle, setToggle] = useState<boolean>(false);
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 
@@ -95,10 +96,7 @@ export const Main: React.FC = () => {
 
 	// contracts setup
 	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
-		const price = await marketplaceContract?.methods.getAddressPrice(address).call();
-		const limit = await marketplaceContract?.methods.getAddressLimit(address).call();
-		const speed = await marketplaceContract?.methods.getAddressSpeed(address).call();
-		const length = await marketplaceContract?.methods.getAddressLength(address).call();
+		const [price, limit, speed, length] = await marketplaceContract?.methods.getContractVariables(address).call();
 
 		return {
 			id: address,
@@ -133,31 +131,31 @@ export const Main: React.FC = () => {
 	const dummyOrders: MyOrder[] = [
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: Date.now().toLocaleString(), // using Luxon
+			started: '01/01/2021', // using Luxon
 			status: 'active',
 			delivered: '10/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: Date.now().toLocaleString(), // using Luxon
+			started: '01/01/2021', // using Luxon
 			status: 'active',
 			delivered: '20/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: Date.now().toLocaleString(), // using Luxon
+			started: '01/01/2021', // using Luxon
 			status: 'completed',
 			delivered: '30/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: Date.now().toLocaleString(), // using Luxon
+			started: '01/01/2021', // using Luxon
 			status: 'completed',
 			delivered: '90/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: Date.now().toLocaleString(), // using Luxon
+			started: '01/01/2021', // using Luxon
 			status: 'completed',
 			delivered: '70/100',
 		},
@@ -302,6 +300,9 @@ export const Main: React.FC = () => {
 												item.current ? 'text-lumerin-aqua' : 'text-black',
 												'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
 											)}
+											onClick={() => {
+												setToggle(!toggle);
+											}}
 										>
 											{item.icon}
 											<span className='ml-4'>{item.name}</span>
@@ -335,6 +336,7 @@ export const Main: React.FC = () => {
 											item.current ? 'text-lumerin-aqua' : 'text-black',
 											'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
 										)}
+										onClick={() => setToggle(!toggle)}
 									>
 										{item.icon}
 										<span className='ml-4'>{item.name}</span>
@@ -390,4 +392,4 @@ export const Main: React.FC = () => {
 };
 
 Main.displayName = 'Main';
-Main.whyDidYouRender = false;
+Main.whyDidYouRender = true;

@@ -75,7 +75,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
-			{ Header: 'ORDER ID', accessor: 'id' },
+			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
 			{ Header: 'STARTED', accessor: 'started' },
 			{ Header: 'STATUS', accessor: 'status' },
 			{ Header: 'DELIVERD VS PROMISED (TH/S)', accessor: 'delivered' },

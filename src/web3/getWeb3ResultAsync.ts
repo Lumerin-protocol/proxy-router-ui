@@ -33,7 +33,7 @@ export const getWeb3ResultAsync: (
 			setOpenAlert(true);
 		}
 		// Get the contract instance.
-		const networkId = 1629923697559;
+		const networkId = 1630680607183;
 		const deployedNetwork = (TestContract as ContractJson).networks[networkId];
 		const contractInstance = new web3.eth.Contract(TestContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 		return { accounts, contractInstance };
