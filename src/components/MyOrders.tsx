@@ -87,7 +87,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 	const data = useMemo(() => getTableData(orders), [orders, getTableData]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='myorders' tableInstance={tableInstance} />;
+	return <Table id='myorders' tableInstance={tableInstance} columnCount={5} />;
 };
 
 MyOrders.displayName = 'MyOrders';

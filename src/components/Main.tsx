@@ -20,6 +20,7 @@ import { reconnectWallet } from '../web3/utils';
 import _ from 'lodash';
 import { useInterval } from './hooks/useInterval';
 import { MyOrders, MyOrdersData } from './MyOrders';
+import { DateTime } from 'luxon';
 
 declare var window: Window;
 
@@ -131,31 +132,31 @@ export const Main: React.FC = () => {
 	const dummyOrders: MyOrder[] = [
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: '01/01/2021', // using Luxon
+			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
 			status: 'active',
 			delivered: '10/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: '01/01/2021', // using Luxon
+			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
 			status: 'active',
 			delivered: '20/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: '01/01/2021', // using Luxon
+			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
 			status: 'completed',
 			delivered: '30/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: '01/01/2021', // using Luxon
+			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
 			status: 'completed',
 			delivered: '90/100',
 		},
 		{
 			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: '01/01/2021', // using Luxon
+			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
 			status: 'completed',
 			delivered: '70/100',
 		},

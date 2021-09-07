@@ -65,7 +65,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const data = useMemo(() => getTableData(contracts), [contracts, getTableData]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='marketplace' tableInstance={tableInstance} />;
+	return <Table id='marketplace' tableInstance={tableInstance} columnCount={6} />;
 };
 
 Marketplace.displayName = 'Marketplace';

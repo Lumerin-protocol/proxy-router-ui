@@ -49,7 +49,6 @@ const useStyles = createUseStyles({
 		'& > thead > tr > th:first-child': {
 			border: '0px solid transparent',
 			borderRadius: '5px 0 0 5px',
-			width: '20%',
 		},
 		'& > tbody > tr:first-child > td': {
 			border: 'none',
@@ -57,7 +56,6 @@ const useStyles = createUseStyles({
 
 		'& > thead > tr > th:last-child': {
 			borderRadius: '0 5px 5px 0',
-			width: '10%',
 		},
 		'& > tbody > tr:nth-child(2) > td:first-child': {
 			borderTopLeftRadius: '5px',
@@ -80,9 +78,10 @@ const useStyles = createUseStyles({
 interface TableProps {
 	id: string;
 	tableInstance: TableInstance;
+	columnCount: number;
 }
 
-export const Table: React.FC<TableProps> = ({ id, tableInstance }) => {
+export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount }) => {
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
 	const classes = useStyles();
 
@@ -92,7 +91,11 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance }) => {
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
 						{headerGroup.headers.map((column) => (
-							<th {...column.getHeaderProps()} className='sticky top-0 bg-lumerin-dark-gray'>
+							<th
+								{...column.getHeaderProps()}
+								className='sticky top-0 bg-lumerin-dark-gray'
+								style={{ width: `${Math.floor(100 / columnCount)}%` }}
+							>
 								{column.render('Header')}
 							</th>
 						))}

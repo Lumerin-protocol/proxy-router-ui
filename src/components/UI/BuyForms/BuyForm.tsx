@@ -181,6 +181,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				<button
 					type='submit'
 					className={`h-16 w-full py-2 px-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white ${bgColor} bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }} // TODO: figure out why tailwind opacity not working in prod
 					onClick={handleSubmit((data) => buyContract(data))}
 				>
 					{buttonContent}
