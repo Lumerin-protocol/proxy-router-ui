@@ -1,6 +1,7 @@
 // import { useState } from 'react';
 import React from 'react';
 import getWeb3Async from './getWeb3Async';
+import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import TestContract from '../contracts/TestingContract.json';
@@ -18,6 +19,7 @@ interface ContractJson {
 interface Web3Result {
 	accounts: string[];
 	contractInstance: Contract;
+	web3: Web3;
 }
 
 export const getWeb3ResultAsync: (
@@ -36,7 +38,7 @@ export const getWeb3ResultAsync: (
 		const networkId = 1630680607183;
 		const deployedNetwork = (TestContract as ContractJson).networks[networkId];
 		const contractInstance = new web3.eth.Contract(TestContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
-		return { accounts, contractInstance };
+		return { accounts, contractInstance, web3 };
 	} catch (error) {
 		console.log((error as Error).message);
 		return null;

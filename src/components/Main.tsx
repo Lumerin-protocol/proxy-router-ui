@@ -21,6 +21,7 @@ import _ from 'lodash';
 import { useInterval } from './hooks/useInterval';
 import { MyOrders, MyOrdersData } from './MyOrders';
 import { DateTime } from 'luxon';
+import Web3 from 'web3';
 
 declare var window: Window;
 
@@ -44,6 +45,7 @@ export const Main: React.FC = () => {
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
 	const [accounts, setAccounts] = useState<string[]>();
 	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
+	const [web3, setWeb3] = useState<Web3>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [myOrders, setMyOrders] = useState<MyOrder[]>([]);
@@ -71,9 +73,10 @@ export const Main: React.FC = () => {
 	const connectWallet = async () => {
 		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText);
 		if (web3Result) {
-			const { accounts, contractInstance } = web3Result;
+			const { accounts, contractInstance, web3 } = web3Result;
 			setAccounts(accounts);
 			setMarketplaceContract(contractInstance);
+			setWeb3(web3);
 			setWalletText(WalletText.Disconnect);
 		}
 	};
@@ -162,6 +165,32 @@ export const Main: React.FC = () => {
 		},
 	];
 
+	// const createMyOrdersAsync = async () => {
+	// 	const myOrders: MyOrder[] = [];
+	// 	try {
+	// 		const events = await marketplaceContract?.getPastEvents('BuyContract', {
+	// 			filter: { _buyer: userAccount },
+	// 			fromBlock: 0,
+	// 			toBlock: 'latest',
+	// 		});
+	// 		events?.forEach(async (event) => {
+	// 			const block = await web3?.eth.getBlock(event.blockNumber);
+	// 			const myOrder = await createMyOrderAsync(event.returnValues.contractAddress, block?.timestamp);
+	// 			if (myOrder) myOrders.push(myOrder);
+	// 		});
+	// 	} catch (error) {
+	// 		console.log(error);
+	// 		throw new Error((error as Error).message);
+	// 	}
+	// 	// const addresses: string[] = await marketplaceContract?.methods.getMyOrders(userAccount).call();
+	// 	const myDummyOrders = dummyOrders;
+	// 	// add empty row for styling
+	// 	myDummyOrders.unshift({});
+	// 	if (!_.isEqual(myOrders, myDummyOrders)) {
+	// 		setMyOrders(myDummyOrders);
+	// 	}
+	// };
+
 	const createMyOrdersAsync = async () => {
 		// const addresses: string[] = await marketplaceContract?.methods.getMyOrders(userAccount).call();
 		const myDummyOrders = dummyOrders;
@@ -244,6 +273,7 @@ export const Main: React.FC = () => {
 						contractId={contractId}
 						userAccount={userAccount}
 						marketplaceContract={marketplaceContract}
+						web3={web3}
 						setOpen={setBuyModalOpen}
 					/>
 				}

@@ -78,7 +78,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
 			{ Header: 'STARTED', accessor: 'started' },
 			{ Header: 'STATUS', accessor: 'status' },
-			{ Header: 'DELIVERD VS PROMISED (TH/S)', accessor: 'delivered' },
+			{ Header: 'DELIVERED VS PROMISED (TH/S)', accessor: 'delivered' },
 			{ Header: 'PROGRESS', accessor: 'progress' },
 		],
 		[]

@@ -7,6 +7,7 @@ import { HashRentalContract } from '../../Main';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import { Link } from 'react-router-dom';
+import Web3 from 'web3';
 
 export interface InputValues {
 	poolAddress: string;
@@ -40,7 +41,8 @@ const orderText: TextType = {
 
 const paragraphText: TextType = {
 	review: 'Please enter a valid IP Address that is connected to your mining machine as well as the Port Number. Username and PW are optional.',
-	confirm: 'Please review the following information below is correct. Once submitted, you will not be able to make any changes.',
+	confirm:
+		'Please review the following information below is correct. Once submitted, you will not be able to make any changes. Click the contract address above to see the contract on etherscan.',
 };
 
 const buttonText: TextType = {
@@ -63,10 +65,11 @@ interface BuyFormProps {
 	contractId: string;
 	userAccount: string;
 	marketplaceContract: Contract | undefined;
+	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
+export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -83,16 +86,16 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		speed: number;
 		price: string;
 	}
-	const getContractInfo: () => ContractInfo = () => {
-		const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
+	const contract = contracts.filter((contract) => contract.id === contractId)[0];
+	const getContractInfo: () => ContractInfo = () => {
 		return {
 			limit: contract.limit as string,
 			speed: contract.speed as number,
 			price: contract.price as string,
 		};
 	};
-	const buyContract: (data: InputValues) => void = (data) => {
+	const buyContract: (data: InputValues) => void = async (data) => {
 		// review
 		if (isValid && contentState === ContentState.review) {
 			setContentState(ContentState.confirm);
@@ -107,7 +110,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		// confirm
 		if (isValid && contentState === ContentState.confirm) {
 			setContentState(ContentState.completed);
-			// TODO call marketplaceContract.methods.buyContract(ipAddress, portNumber, username, password).send({ from: userAccount , value: this.web3.utils.toWei('1', 'wei') })
+			try {
+				await marketplaceContract?.methods
+					.setBuyContract(contract.id, data.poolAddress, data.username, data.password)
+					.send({ from: userAccount, value: web3?.utils.toWei(contract.price as string, 'ether') });
+			} catch (error) {
+				console.log(error);
+				throw new Error((error as Error).message);
+			}
 		}
 
 		// completed
@@ -158,9 +168,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					<p className='text-lg'>Purchase Hashpower</p>
 					<p className='text-sm'>{orderContent}</p>
 				</div>
-				<div className='flex flex-col items-end text-white'>
-					<p className='text-lg'>Order ID</p>
-					<p className='text-sm'>{truncateAddress('123456789101112131415')}</p>
+				<div className='flex flex-col items-end text-white hover:text-lumerin-light-aqua'>
+					<a href={`https://etherscan.io/address/${contract.id}`} target='_blank' rel='noreferrer'>
+						<p className='text-lg'>Contract Address</p>
+						<p className='text-sm'>{truncateAddress(contract.id as string)}</p>
+					</a>
 				</div>
 			</div>
 			<div className={`${display} bg-white p-4 sm:mx-auto text-sm`}>
@@ -175,6 +187,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
 							: 'hidden'
 					)}
+					onClick={() => setOpen(false)}
 				>
 					<span>View Orders</span>
 				</Link>
