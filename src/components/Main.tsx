@@ -22,6 +22,7 @@ import { useInterval } from './hooks/useInterval';
 import { MyOrders, MyOrdersData } from './MyOrders';
 import { DateTime } from 'luxon';
 import Web3 from 'web3';
+import MetaMaskOnboarding from '@metamask/onboarding';
 
 declare var window: Window;
 
@@ -70,6 +71,7 @@ export const Main: React.FC = () => {
 	];
 
 	// Wallet setup
+	const onboarding = new MetaMaskOnboarding();
 	const connectWallet = async () => {
 		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText);
 		if (web3Result) {
@@ -82,6 +84,13 @@ export const Main: React.FC = () => {
 	};
 
 	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
+		// handle Metamask not installed
+		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+			onboarding.startOnboarding();
+		} else {
+			onboarding.stopOnboarding();
+		}
+
 		if (walletText === WalletText.ConnectViaMetaMask) {
 			connectWallet();
 		} else {
@@ -238,11 +247,11 @@ export const Main: React.FC = () => {
 	const routes = (
 		<Suspense fallback={<Spinner />}>
 			<Switch>
-				<Route path='/myorders' exact render={(props: RouteComponentProps) => <MyOrders orders={myOrders} />} />
+				<Route path='/myorders' exact render={(props: RouteComponentProps) => <MyOrders {...props} orders={myOrders} />} />
 				<Route
 					path='/'
 					render={(props: RouteComponentProps) => (
-						<Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />
+						<Marketplace {...props} contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />
 					)}
 				/>
 			</Switch>
