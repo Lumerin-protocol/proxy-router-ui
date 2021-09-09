@@ -13,16 +13,16 @@ import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
 import { MarketPlaceData } from './Marketplace';
-import { Spinner } from './ui/Spinner';
-import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
-import { classNames, truncateAddress } from '../utils';
-import { reconnectWallet } from '../web3/utils';
-import _ from 'lodash';
-import { useInterval } from './hooks/useInterval';
 import { MyOrders, MyOrdersData } from './MyOrders';
+import { Spinner } from './ui/Spinner';
+import { useInterval } from './hooks/useInterval';
+import { getWeb3ResultAsync } from '../web3/getWeb3ResultAsync';
+import { reconnectWallet } from '../web3/utils';
+import { classNames, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
-import Web3 from 'web3';
 import MetaMaskOnboarding from '@metamask/onboarding';
+import Web3 from 'web3';
+import _ from 'lodash';
 
 declare var window: Window;
 
@@ -412,11 +412,11 @@ export const Main: React.FC = () => {
 						</button>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
-								<button className='w-40 h-12 mt-4 mr-2 flex items-center justify-center rounded-5 py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
+								<button className='btn-connected mr-2'>
 									<LumerinIcon />
-									<span className='ml-4'>3,409 LMRN</span>
+									<span className='ml-3'>3,409 LMRN</span>
 								</button>
-								<button className='w-40 h-12 mt-4 flex items-center justify-center rounded-5 py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-medium'>
+								<button className='btn-connected'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
 									<MetaMaskIcon />
 								</button>
