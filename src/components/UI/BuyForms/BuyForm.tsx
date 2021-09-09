@@ -9,10 +9,12 @@ import { CompletedContent } from './CompletedContent';
 import { Link } from 'react-router-dom';
 import Web3 from 'web3';
 
+// making fields optional bc a user might not have filled out the input fields
+// when useForm() returns the error object that's typed against InputValues
 export interface InputValues {
-	poolAddress: string;
-	username: string;
-	password: string;
+	poolAddress?: string;
+	username?: string;
+	password?: string;
 }
 
 export interface FormData extends InputValues {
@@ -111,9 +113,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		if (isValid && contentState === ContentState.confirm) {
 			setContentState(ContentState.completed);
 			try {
-				await marketplaceContract?.methods
+				const receipt = await marketplaceContract?.methods
 					.setBuyContract(contract.id, data.poolAddress, data.username, data.password)
 					.send({ from: userAccount, value: web3?.utils.toWei(contract.price as string, 'ether') });
+				console.log(receipt);
 			} catch (error) {
 				console.log(error);
 				throw new Error((error as Error).message);

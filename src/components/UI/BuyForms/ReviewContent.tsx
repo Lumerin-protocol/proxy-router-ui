@@ -5,7 +5,7 @@ import { InputValues } from './BuyForm';
 
 interface ReviewContentProps {
 	register: UseFormRegister<InputValues>;
-	errors: DeepMap<InputValues, FieldError>;
+	errors: DeepMap<InputValues, FieldError | undefined>; // undefined bc error for specific input might not exist
 }
 export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }) => {
 	return (
