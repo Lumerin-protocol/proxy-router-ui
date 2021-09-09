@@ -111,12 +111,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 		// confirm
 		if (isValid && contentState === ContentState.confirm) {
-			setContentState(ContentState.completed);
 			try {
 				const receipt = await marketplaceContract?.methods
 					.setBuyContract(contract.id, data.poolAddress, data.username, data.password)
 					.send({ from: userAccount, value: web3?.utils.toWei(contract.price as string, 'ether') });
-				console.log(receipt);
+				if (receipt?.status) setContentState(ContentState.completed);
 			} catch (error) {
 				console.log(error);
 				throw new Error((error as Error).message);
