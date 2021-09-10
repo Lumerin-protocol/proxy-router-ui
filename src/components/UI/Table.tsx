@@ -2,6 +2,7 @@ import React from 'react';
 import { createUseStyles } from 'react-jss';
 import { TableInstance } from 'react-table';
 import { classNames } from '../../utils';
+const { colors } = require('styles/styles.config.js');
 
 const useStyles = createUseStyles({
 	table: {
@@ -13,7 +14,7 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr > td': {
 			backgroundColor: 'white',
-			border: '1px solid #E5E7EB',
+			border: `1px solid ${colors['lumerin-table-border-gray']}`,
 			borderBottom: 'none',
 		},
 		'& > tbody > tr > td:first-child': {
@@ -21,7 +22,7 @@ const useStyles = createUseStyles({
 			cursor: 'pointer',
 		},
 		'& > tbody > tr > td:first-child:hover': {
-			backgroundColor: '#11B4BF',
+			backgroundColor: colors['lumerin-aqua'],
 			color: 'white',
 		},
 		'& > tbody > tr > td:nth-child(2)': {
@@ -43,7 +44,7 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr > td:last-child': {
 			borderLeft: 'none',
-			borderRight: '1px solid #E5E7EB',
+			borderRight: `1px solid ${colors['lumerin-table-border-gray']}`,
 			verticalAlign: 'bottom',
 		},
 		'& > thead > tr > th:first-child': {
@@ -64,7 +65,7 @@ const useStyles = createUseStyles({
 			borderTopRightRadius: '5px',
 		},
 		'& > tbody > tr:last-child > td': {
-			borderBottom: '1px solid #E5E7EB',
+			borderBottom: `1px solid ${colors['lumerin-table-border-gray']}`,
 		},
 		'& > tbody > tr:last-child > td:first-child': {
 			borderBottomLeftRadius: '5px',

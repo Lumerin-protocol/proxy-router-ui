@@ -1,3 +1,5 @@
+const { colors } = require('./styles/styles.config');
+
 module.exports = {
 	purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
 	darkMode: false, // or 'media' or 'class'
@@ -9,15 +11,7 @@ module.exports = {
 			fontSize: {
 				xs: '.8125rem',
 			},
-			colors: {
-				'lumerin-gray': '#F2F5F9',
-				'lumerin-dark-gray': '#DEE3EA',
-				'lumerin-input-gray': '#EDEEF2',
-				'lumerin-placeholder-gray': '#C4C4C4',
-				'lumerin-aqua': '#11B4BF',
-				'lumerin-light-aqua': '#DBECED',
-				'lumerin-green': '#66BE26',
-			},
+			colors,
 			borderRadius: {
 				5: '5px',
 				30: '30px',

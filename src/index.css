@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* button styles */
 @layer components {
 	/* buttons */
 	.btn-action-panel {

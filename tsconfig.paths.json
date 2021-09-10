@@ -1,0 +1,9 @@
+// allows for importing files outside of src folder which create-react-app prevents by default
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"styles/*": ["styles/*"]
+		}
+	}
+}
