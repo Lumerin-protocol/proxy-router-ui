@@ -1,11 +1,11 @@
 import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
-import { truncateAddress } from '../utils';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ReactComponent as Lumerin } from '../images/lumerin.svg';
-import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
+import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
+import { truncateAddress } from '../utils';
 
 export interface MarketPlaceData {
 	id?: JSX.Element | string;

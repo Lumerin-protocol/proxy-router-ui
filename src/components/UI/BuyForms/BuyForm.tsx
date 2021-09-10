@@ -186,7 +186,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					to='/myorders'
 					className={classNames(
 						contentState === ContentState.completed
-							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
+							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-buy-modal text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
 							: 'hidden'
 					)}
 					onClick={() => setOpen(false)}
@@ -195,7 +195,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				</Link>
 				<button
 					type='submit'
-					className={`h-16 w-full py-2 px-4 border border-transparent rounded-5 shadow-sm text-sm font-medium text-white ${bgColor} bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					className={`h-16 w-full py-2 px-4 btn-buy-modal text-sm font-medium text-white ${bgColor} bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }} // TODO: figure out why tailwind opacity not working in prod
 					onClick={handleSubmit((data) => buyContract(data))}
 				>

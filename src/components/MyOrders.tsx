@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
-import { TableIcon } from './ui/TableIcon';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
+import { ProgressBar } from './ui/ProgressBar';
+import { Table } from './ui/Table';
+import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
 import { MyOrder } from './Main';
-import { Table } from './ui/Table';
 import { classNames, truncateAddress } from '../utils';
 import _ from 'lodash';
-import { ProgressBar } from './ui/ProgressBar';
 
 export interface MyOrdersData {
 	id?: JSX.Element | string;

@@ -292,11 +292,11 @@ export const Main: React.FC = () => {
 					<Transition.Child
 						as={Fragment}
 						enter='transition-opacity ease-linear duration-300'
-						enterFrom='opacity-0'
-						enterTo='opacity-100'
+						enterFrom='entertfrom-leaveto-opacity'
+						enterTo='enterto-enterleave-opacity'
 						leave='transition-opacity ease-linear duration-300'
-						leaveFrom='opacity-100'
-						leaveTo='opacity-0'
+						leaveFrom='enterto-enterleave-opacity'
+						leaveTo='entertfrom-leaveto-opacity'
 					>
 						<Dialog.Overlay className='fixed inset-0 bg-gray-600 bg-opacity-75' />
 					</Transition.Child>
@@ -313,11 +313,11 @@ export const Main: React.FC = () => {
 							<Transition.Child
 								as={Fragment}
 								enter='ease-in-out duration-300'
-								enterFrom='opacity-0'
-								enterTo='opacity-100'
+								enterFrom='entertfrom-leaveto-opacity'
+								enterTo='enterto-enterleave-opacity'
 								leave='ease-in-out duration-300'
-								leaveFrom='opacity-100'
-								leaveTo='opacity-0'
+								leaveFrom='enterto-enterleave-opacity'
+								leaveTo='entertfrom-leaveto-opacity'
 							>
 								<div className='absolute top-0 right-0 -mr-12 pt-2'>
 									<button

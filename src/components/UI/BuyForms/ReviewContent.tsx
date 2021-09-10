@@ -24,9 +24,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 							type='text'
 							placeholder=' stratum+tcp://IPorHostname'
 							className={classNames(
-								errors.poolAddress
-									? 'appearance-none block w-full px-3 py-2 bg-red-100 border border-transparent rounded-5 shadow-sm placeholder-red-400 placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
-									: 'appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-5 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+								errors.poolAddress ? 'bg-red-100 btn-buy-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
 						/>
 					</div>
@@ -44,7 +42,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 						id='username'
 						type='text'
 						placeholder='account.worker'
-						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-5 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
+						className='review-no-errors review-input'
 					/>
 				</div>
 			</div>
@@ -54,13 +52,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 					Password
 				</label>
 				<div className='mt-1'>
-					<input
-						{...register('password')}
-						id='password'
-						type='password'
-						placeholder='password'
-						className='appearance-none block w-full px-3 py-2 bg-lumerin-input-gray border border-transparent rounded-5 shadow-sm placeholder-lumerin-placeholder-gray placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm'
-					/>
+					<input {...register('password')} id='password' type='password' placeholder='password' className='review-no-errors review-input' />
 				</div>
 			</div>
 		</React.Fragment>
