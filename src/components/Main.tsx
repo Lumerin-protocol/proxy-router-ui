@@ -24,16 +24,22 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import _ from 'lodash';
 
-declare var window: Window;
-
-export enum PathName {
+enum PathName {
 	Marketplace = '/',
 	MyOrders = '/myorders',
 }
 
+// used in `eventListeners.ts`
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
 	Disconnect = 'Disconnect',
+}
+
+interface Navigation {
+	name: string;
+	to: string;
+	icon: JSX.Element;
+	current: boolean;
 }
 
 export interface HashRentalContract extends MarketPlaceData {}
@@ -41,7 +47,7 @@ export interface MyOrder extends MyOrdersData {}
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
-	// state and constants
+	// State and constants
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
 	const [accounts, setAccounts] = useState<string[]>();
@@ -56,23 +62,17 @@ export const Main: React.FC = () => {
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 
-	// navigation
-	interface Navigation {
-		name: string;
-		to: string;
-		icon: JSX.Element;
-		current: boolean;
-	}
-
+	// Navigation setup
 	const pathName = window.location.pathname;
 	const navigation: Navigation[] = [
 		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: pathName === '/' },
 		{ name: 'My Orders', to: 'myorders', icon: <MyOrdersIcon />, current: pathName === '/myorders' },
 	];
 
-	// Wallet setup
+	// Wallet/MetaMask setup
+	// Get accounts, web3 and contract instances
 	const onboarding = new MetaMaskOnboarding();
-	const connectWallet = async () => {
+	const connectWallet: () => void = async () => {
 		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText);
 		if (web3Result) {
 			const { accounts, contractInstance, web3 } = web3Result;
@@ -83,8 +83,9 @@ export const Main: React.FC = () => {
 		}
 	};
 
+	// Onboard metamask and set wallet text
 	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
-		// handle Metamask not installed
+		// Onboard metamask if not installed
 		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
 			onboarding.startOnboarding();
 		} else {
@@ -100,14 +101,24 @@ export const Main: React.FC = () => {
 	};
 
 	const getTruncatedWalletAddress: () => string | null = () => {
-		if (walletText === WalletText.Disconnect && accounts) {
-			return truncateAddress(accounts[0]);
+		if (walletText === WalletText.Disconnect && userAccount) {
+			return truncateAddress(userAccount);
 		}
 
 		return null;
 	};
 
-	// contracts setup
+	// Check if MetaMask is connected
+	useEffect(() => {
+		if (walletText === WalletText.ConnectViaMetaMask) reconnectWallet();
+	}, [walletText]);
+
+	// When a user disconnects MetaMask, alertOpen will be true
+	useEffect(() => {
+		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
+	}, [alertOpen]);
+
+	// Contracts setup
 	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
 		const [price, limit, speed, length] = await marketplaceContract?.methods.getContractVariables(address).call();
 
@@ -120,7 +131,7 @@ export const Main: React.FC = () => {
 		} as HashRentalContract;
 	};
 
-	const getContractDataAsync: (addresses: string[]) => void = async (addresses) => {
+	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
 		const hashRentalContracts: HashRentalContract[] = [];
 		for await (const address of addresses) {
 			const contract = await createContractAsync(address);
@@ -129,15 +140,16 @@ export const Main: React.FC = () => {
 
 		// add empty row for styling
 		hashRentalContracts.unshift({});
+		// update contracts if deep equality is false
 		if (!_.isEqual(contracts, hashRentalContracts)) {
 			setContracts(hashRentalContracts);
 		}
 	};
 
-	const createContractsAsync = async () => {
+	const createContractsAsync: () => void = async () => {
 		const addresses: string[] = await marketplaceContract?.methods.getContractList().call();
 		if (addresses) {
-			getContractDataAsync(addresses);
+			addContractsAsync(addresses);
 		}
 	};
 
@@ -182,6 +194,7 @@ export const Main: React.FC = () => {
 	// 			fromBlock: 0,
 	// 			toBlock: 'latest',
 	// 		});
+	//      use await for
 	// 		events?.forEach(async (event) => {
 	// 			const block = await web3?.eth.getBlock(event.blockNumber);
 	// 			const myOrder = await createMyOrderAsync(event.returnValues.contractAddress, block?.timestamp);
@@ -200,7 +213,7 @@ export const Main: React.FC = () => {
 	// 	}
 	// };
 
-	const createMyOrdersAsync = async () => {
+	const createMyOrdersAsync: () => void = async () => {
 		// const addresses: string[] = await marketplaceContract?.methods.getMyOrders(userAccount).call();
 		const myDummyOrders = dummyOrders;
 		// add empty row for styling
@@ -210,31 +223,17 @@ export const Main: React.FC = () => {
 		}
 	};
 
-	// this could be placed in a useEffect but than all async methods would
-	// need to be moved inside it
-	createContractsAsync();
-	createMyOrdersAsync();
+	// set contracts and orders once marketplaceContract exists
+	useEffect(() => {
+		createContractsAsync();
+		createMyOrdersAsync();
+	}, [marketplaceContract]);
 
-	// get contracts at set interval of 20 seconds
-	// TODO: listen to event instead
+	// get contracts at interval of 20 seconds
 	useInterval(() => {
 		createContractsAsync();
+		createMyOrdersAsync();
 	}, 20000);
-
-	// check if MetaMask is connected
-	useEffect(() => {
-		if (walletText === WalletText.ConnectViaMetaMask) reconnectWallet();
-	}, [walletText]);
-
-	// Buy contract setup
-	const buyClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		if (!buyModalOpen) setBuyModalOpen(true);
-	};
-
-	// when a user disconnects MetaMask, alertOpen will be true
-	useEffect(() => {
-		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
-	}, [alertOpen]);
 
 	// content setup
 	const ActionButton: JSX.Element = (
@@ -268,6 +267,11 @@ export const Main: React.FC = () => {
 			);
 		}
 		return routes;
+	};
+
+	// <Marketplace /> click handler
+	const buyClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+		if (!buyModalOpen) setBuyModalOpen(true);
 	};
 
 	return (

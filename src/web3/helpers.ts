@@ -7,8 +7,6 @@ import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import TestContract from '../contracts/TestingContract.json';
 
-declare var window: Window;
-
 interface Networks {
 	[networkId: number]: {
 		address: string;

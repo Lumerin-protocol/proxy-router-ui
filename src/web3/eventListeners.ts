@@ -1,5 +1,8 @@
 import { WalletText } from '../components/Main';
 import { reconnectWallet } from './helpers';
+
+// Type as `any` since EthereumProvider doesn't have `on` method
+// and isn't exported so can't extend with interface merging
 const ethereum: any = window.ethereum;
 
 export const registerEventListeners: (
@@ -14,7 +17,6 @@ export const registerEventListeners: (
 		chainId: string;
 	}
 	const handleOnConnect: (connectInfo: ConnectInfo) => void = (connectInfo) => {
-		const changeWalletText = setWalletText;
 		console.log(`on connect: ${connectInfo.chainId}`);
 		changeWalletText(WalletText.Disconnect);
 	};
