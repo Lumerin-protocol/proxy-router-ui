@@ -1,5 +1,5 @@
 import { WalletText } from '../components/Main';
-import { reconnectWallet } from './utils';
+import { reconnectWallet } from './helpers';
 const ethereum: any = window.ethereum;
 
 export const registerEventListeners: (

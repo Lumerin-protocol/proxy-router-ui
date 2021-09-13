@@ -4,6 +4,7 @@ export const truncateAddress: (address: string, isLongString?: boolean) => strin
 	return `${address.substr(0, index)}...${address.substring(address.length - index, address.length)}`;
 };
 
-export const classNames = (...classes: string[]) => {
+// used to dynamically set classes for html elements
+export const classNames: (...classes: string[]) => string = (...classes) => {
 	return classes.filter(Boolean).join(' ');
 };

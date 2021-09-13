@@ -1,9 +1,9 @@
-import './wdyr.ts'; // Dev diagnostics
+import './wdyr.ts';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-import { App } from './App';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { App } from './App';
 import { ErrorPage } from './components/ui/ErrorPage';
 import reportWebVitals from './reportWebVitals';
 import './index.css';

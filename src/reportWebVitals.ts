@@ -1,6 +1,5 @@
 import { ReportHandler } from 'web-vitals';
 
-// TODO: send vitals to Google Analytics?
 const reportWebVitals = (onPerfEntry?: ReportHandler) => {
 	if (onPerfEntry && onPerfEntry instanceof Function) {
 		import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
