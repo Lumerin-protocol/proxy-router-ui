@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
@@ -59,7 +59,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 		);
 	};
 
-	const getTableData: (orders: MyOrder[]) => MyOrdersData[] = useCallback((orders) => {
+	const getTableData: (orders: MyOrder[]) => MyOrdersData[] = (orders) => {
 		const updatedOrders = orders.map((order) => {
 			const updatedOrder = { ...order };
 			if (Object.keys(order).length !== 0) {
@@ -71,7 +71,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 		});
 
 		return updatedOrders;
-	}, []);
+	};
 
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
@@ -84,7 +84,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 		[]
 	);
 
-	const data = useMemo(() => getTableData(orders), [orders, getTableData]);
+	const data = getTableData(orders);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
 	return <Table id='myorders' tableInstance={tableInstance} columnCount={5} />;

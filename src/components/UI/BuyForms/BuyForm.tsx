@@ -17,7 +17,7 @@ export interface InputValues {
 	password?: string;
 }
 
-export interface ReviewContentData extends InputValues {
+export interface FormData extends InputValues {
 	limit: string;
 	speed: number;
 	price: string;
@@ -60,8 +60,8 @@ interface ContractInfo {
 	price: string;
 }
 
-// Used to set initial state for reviewContentData to prevent undefined error
-const initialReviewContentData: ReviewContentData = {
+// Used to set initial state for contentData to prevent undefined error
+const initialFormData: FormData = {
 	poolAddress: '',
 	username: '',
 	password: '',
@@ -82,7 +82,7 @@ interface BuyFormProps {
 export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.review);
-	const [reviewContentData, setReviewContentData] = useState<ReviewContentData>(initialReviewContentData);
+	const [formData, setFormData] = useState<FormData>(initialFormData);
 
 	// Input validation setup
 	const {
@@ -105,7 +105,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		// Review
 		if (isValid && contentState === ContentState.review) {
 			setContentState(ContentState.confirm);
-			setReviewContentData({
+			setFormData({
 				poolAddress: data.poolAddress,
 				username: data.username,
 				password: data.password,
@@ -153,7 +153,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				orderContent = orderText.confirm;
 				paragraphContent = paragraphText.confirm;
 				buttonContent = buttonText.confirm;
-				content = <ConfirmContent data={reviewContentData} />;
+				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.completed:
 				orderContent = orderText.completed as string;

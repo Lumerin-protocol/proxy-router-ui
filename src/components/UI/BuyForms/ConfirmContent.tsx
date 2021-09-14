@@ -1,8 +1,8 @@
 import React from 'react';
-import { ReviewContentData } from './BuyForm';
+import { FormData } from './BuyForm';
 
 interface ConfirmContentProps {
-	data: ReviewContentData;
+	data: FormData;
 }
 
 export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddress, username, limit, speed, price } }) => {

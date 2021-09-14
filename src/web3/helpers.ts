@@ -28,7 +28,7 @@ type Reject = (error: Error) => void;
 type SetAlertOpen = React.Dispatch<React.SetStateAction<boolean>>;
 
 // Web3 setup helpers
-// Private functions for getWeb3ResultAsync
+// Private functions for getWeb3ResultAsync()
 const connectToMetaMaskAsync: (
 	resolve: Resolve,
 	reject: Reject,

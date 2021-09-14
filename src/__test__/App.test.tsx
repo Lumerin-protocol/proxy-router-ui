@@ -6,21 +6,21 @@ import { render } from '@testing-library/react';
 import { MyOrder } from '../components/Main';
 import { MyOrders } from '../components/MyOrders';
 
-// testing basic behavior and will add more complex tests as needed
+// Testing basic behavior and will add more complex tests as needed
 
-// top level integration tests
+// Top level integration tests
 describe('<App />', () => {
 	it('displays <Main />', () => {
 		// Act
 		renderWithRouter(<App />, '/');
 
-		//Assert
+		// Assert
 		const mainDiv = document.getElementById('main');
 		expect(mainDiv).toBeInTheDocument();
 	});
 });
 
-// page level tests
+// Page level tests
 describe('<Marketplace />', () => {
 	it('displays', () => {
 		// Arrange

@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
+import React, { Dispatch, SetStateAction, useMemo } from 'react';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { Column, useTable } from 'react-table';
@@ -31,26 +31,23 @@ interface MarketplaceProps {
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContractId, buyClickHandler }) => {
-	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = useCallback(
-		(contracts) => {
-			const updatedContracts = contracts.map((contract) => {
-				const updatedContract = { ...contract };
-				if (Object.keys(contract).length !== 0) {
-					updatedContract.id = (
-						<TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} hasLink justify='start' />
-					);
-					updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
-					updatedContract.trade = (
-						<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
-					);
-				}
-				return updatedContract;
-			});
+	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = (contracts) => {
+		const updatedContracts = contracts.map((contract) => {
+			const updatedContract = { ...contract };
+			if (Object.keys(contract).length !== 0) {
+				updatedContract.id = (
+					<TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} hasLink justify='start' />
+				);
+				updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
+				updatedContract.trade = (
+					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
+				);
+			}
+			return updatedContract;
+		});
 
-			return updatedContracts;
-		},
-		[setContractId, buyClickHandler]
-	);
+		return updatedContracts;
+	};
 
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
@@ -64,7 +61,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		[]
 	);
 
-	const data = useMemo(() => getTableData(contracts), [contracts, getTableData]);
+	const data = getTableData(contracts);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
 	return <Table id='marketplace' tableInstance={tableInstance} columnCount={6} />;
