@@ -18,7 +18,7 @@ import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
 import { getWeb3ResultAsync } from '../web3/helpers';
 import { reconnectWallet } from '../web3/helpers';
-import { classNames, truncateAddress } from '../utils';
+import { AddressLength, classNames, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
@@ -102,7 +102,7 @@ export const Main: React.FC = () => {
 
 	const getTruncatedWalletAddress: () => string | null = () => {
 		if (walletText === WalletText.Disconnect && userAccount) {
-			return truncateAddress(userAccount);
+			return truncateAddress(userAccount, AddressLength.medium);
 		}
 
 		return null;

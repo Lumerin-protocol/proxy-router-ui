@@ -1,6 +1,23 @@
 // string helpers
-export const truncateAddress: (address: string, isLongString?: boolean) => string = (address, isLongString) => {
-	const index = isLongString ? 10 : 5;
+export enum AddressLength {
+	short,
+	medium,
+	long,
+}
+export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (address, desiredLength) => {
+	let index;
+	switch (desiredLength) {
+		case AddressLength.short:
+			return `${address.substr(0, 5)}...`;
+		case AddressLength.medium:
+			index = 5;
+			break;
+		case AddressLength.long:
+			index = 10;
+			break;
+		default:
+			index = 10;
+	}
 	return `${address.substr(0, index)}...${address.substring(address.length - index, address.length)}`;
 };
 

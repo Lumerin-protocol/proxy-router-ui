@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
 import { MyOrder } from './Main';
-import { classNames, truncateAddress } from '../utils';
+import { AddressLength, classNames, truncateAddress } from '../utils';
 import _ from 'lodash';
 
 export interface MyOrdersData {
@@ -29,6 +29,28 @@ interface MyOrdersProps {
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
+	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
+
+	// Adjust contract address length when breakpoint > lg
+	const mediaQueryList = window.matchMedia('(min-width: 1024px)');
+	// Not an arrow function since parameter is typed as this and arrow function can't have this as parameter
+	function mediaQueryListOnChangeHandler(this: MediaQueryList, ev: MediaQueryListEvent): any {
+		if (this.matches && !isLargeBreakpointOrGreater) {
+			setIsLargeBreakpointOrGreater(true);
+		} else if (isLargeBreakpointOrGreater) {
+			setIsLargeBreakpointOrGreater(false);
+		}
+	}
+	mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+
+	useEffect(() => {
+		if (!mediaQueryList.matches) {
+			setIsLargeBreakpointOrGreater(false);
+		} else {
+			setIsLargeBreakpointOrGreater(true);
+		}
+	}, [mediaQueryList.matches]);
+
 	const getStatusDiv: (status: string) => JSX.Element = (status) => {
 		return (
 			<div className='flex justify-center'>
@@ -63,7 +85,18 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 		const updatedOrders = orders.map((order) => {
 			const updatedOrder = { ...order };
 			if (Object.keys(order).length !== 0) {
-				updatedOrder.id = <TableIcon icon={<Hashrate />} text={truncateAddress(updatedOrder.id as string, true)} hasLink justify='start' />;
+				updatedOrder.id = (
+					<TableIcon
+						icon={<Hashrate />}
+						text={
+							isLargeBreakpointOrGreater
+								? truncateAddress(updatedOrder.id as string)
+								: truncateAddress(updatedOrder.id as string, AddressLength.short)
+						}
+						hasLink
+						justify='start'
+					/>
+				);
 				updatedOrder.status = getStatusDiv(updatedOrder.status as string);
 				updatedOrder.progress = getProgressDiv(updatedOrder.delivered as string);
 			}

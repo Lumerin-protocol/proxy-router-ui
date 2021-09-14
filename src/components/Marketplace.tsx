@@ -1,11 +1,11 @@
-import React, { Dispatch, SetStateAction, useMemo } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
-import { truncateAddress } from '../utils';
+import { AddressLength, truncateAddress } from '../utils';
 
 export interface MarketPlaceData {
 	id?: JSX.Element | string;
@@ -31,12 +31,43 @@ interface MarketplaceProps {
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContractId, buyClickHandler }) => {
+	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
+
+	// Adjust contract address length when breakpoint > lg
+	const mediaQueryList = window.matchMedia('(min-width: 1024px)');
+	// Not an arrow function since parameter is typed as this and arrow function can't have this as parameter
+	function mediaQueryListOnChangeHandler(this: MediaQueryList, ev: MediaQueryListEvent): any {
+		if (this.matches && !isLargeBreakpointOrGreater) {
+			setIsLargeBreakpointOrGreater(true);
+		} else if (isLargeBreakpointOrGreater) {
+			setIsLargeBreakpointOrGreater(false);
+		}
+	}
+	mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+
+	useEffect(() => {
+		if (!mediaQueryList.matches) {
+			setIsLargeBreakpointOrGreater(false);
+		} else {
+			setIsLargeBreakpointOrGreater(true);
+		}
+	}, [mediaQueryList.matches]);
+
 	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = (contracts) => {
 		const updatedContracts = contracts.map((contract) => {
 			const updatedContract = { ...contract };
 			if (Object.keys(contract).length !== 0) {
 				updatedContract.id = (
-					<TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} hasLink justify='start' />
+					<TableIcon
+						icon={<Hashrate />}
+						text={
+							isLargeBreakpointOrGreater
+								? truncateAddress(updatedContract.id as string)
+								: truncateAddress(updatedContract.id as string, AddressLength.short)
+						}
+						hasLink
+						justify='start'
+					/>
 				);
 				updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
 				updatedContract.trade = (
