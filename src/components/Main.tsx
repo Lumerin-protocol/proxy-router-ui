@@ -127,7 +127,7 @@ export const Main: React.FC = () => {
 			price,
 			limit,
 			speed,
-			length,
+			length, // TODO: how is unit returned (e.g. hr,d,w)?
 		} as HashRentalContract;
 	};
 
