@@ -1,12 +1,12 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { classNames, truncateAddress } from '../../../utils';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { HashRentalContract } from '../../Main';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { Link } from 'react-router-dom';
+import { classNames, truncateAddress } from '../../../utils';
 import Web3 from 'web3';
 
 // making fields optional bc a user might not have filled out the input fields
@@ -17,7 +17,7 @@ export interface InputValues {
 	password?: string;
 }
 
-export interface FormData extends InputValues {
+export interface ReviewContentData extends InputValues {
 	limit: string;
 	speed: number;
 	price: string;
@@ -29,31 +29,39 @@ enum ContentState {
 	completed = 'completed',
 }
 
-interface TextType {
+interface Text {
 	review: string;
 	confirm: string;
 	completed?: string;
 }
 
-const orderText: TextType = {
+// Form text setup
+const orderText: Text = {
 	review: 'My Order',
 	confirm: 'Confirm Order',
 	completed: 'Order Complete',
 };
 
-const paragraphText: TextType = {
+const paragraphText: Text = {
 	review: 'Please enter a valid IP Address that is connected to your mining machine as well as the Port Number. Username and PW are optional.',
 	confirm:
 		'Please review the following information below is correct. Once submitted, you will not be able to make any changes. Click the contract address above to see the contract on etherscan.',
 };
 
-const buttonText: TextType = {
+const buttonText: Text = {
 	review: 'Review Order',
 	confirm: 'Confirm Order',
 	completed: 'Close',
 };
 
-const initialFormData: FormData = {
+interface ContractInfo {
+	limit: string;
+	speed: number;
+	price: string;
+}
+
+// Used to set initial state for reviewContentData to prevent undefined error
+const initialReviewContentData: ReviewContentData = {
 	poolAddress: '',
 	username: '',
 	password: '',
@@ -74,21 +82,16 @@ interface BuyFormProps {
 export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.review);
-	const [formData, setFormData] = useState<FormData>(initialFormData);
+	const [reviewContentData, setReviewContentData] = useState<ReviewContentData>(initialReviewContentData);
 
-	// input validation setup
+	// Input validation setup
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm<InputValues>({ mode: 'onBlur' });
 
-	interface ContractInfo {
-		limit: string;
-		speed: number;
-		price: string;
-	}
-
+	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 	const getContractInfo: () => ContractInfo = () => {
 		return {
@@ -97,11 +100,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			price: contract.price as string,
 		};
 	};
+	// Controls contentState and creating a transaction
 	const buyContract: (data: InputValues) => void = async (data) => {
-		// review
+		// Review
 		if (isValid && contentState === ContentState.review) {
 			setContentState(ContentState.confirm);
-			setFormData({
+			setReviewContentData({
 				poolAddress: data.poolAddress,
 				username: data.username,
 				password: data.password,
@@ -109,9 +113,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			});
 		}
 
-		// confirm
+		// Confirm
 		if (isValid && contentState === ContentState.confirm) {
 			try {
+				// TODO: send Lumerin instead of Ether
 				const receipt = await marketplaceContract?.methods
 					.setBuyContract(contract.id, data.poolAddress, data.username, data.password)
 					.send({ from: userAccount, value: web3?.utils.toWei(contract.price as string, 'ether') });
@@ -122,11 +127,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			}
 		}
 
-		// completed
+		// Completed
 		if (contentState === ContentState.completed) setOpen(false);
 	};
 
-	// check if input is valid
+	// Change opacity of Review Order button based on input validation
 	useEffect(() => {
 		if (isValid) {
 			setButtonOpacity('100');
@@ -135,35 +140,41 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		}
 	}, [isValid]);
 
-	// content setup
-	// defaults to review state
-	let orderContent = orderText.review;
-	let paragraphContent = paragraphText.review;
-	let buttonContent = buttonText.review;
-	let content = <ReviewContent register={register} errors={errors} />;
+	// Content setup
+	// Defaults to review state
+	// Initialize variables since html elements need values on first render
+	let orderContent = '';
+	let paragraphContent = '';
+	let buttonContent = '';
+	let content = <div></div>;
 	const createContent: () => void = () => {
 		switch (contentState) {
 			case ContentState.confirm:
 				orderContent = orderText.confirm;
 				paragraphContent = paragraphText.confirm;
 				buttonContent = buttonText.confirm;
-				content = <ConfirmContent data={formData} />;
+				content = <ConfirmContent data={reviewContentData} />;
 				break;
 			case ContentState.completed:
 				orderContent = orderText.completed as string;
 				buttonContent = buttonText.completed as string;
 				content = <CompletedContent />;
 				break;
+			default:
+				orderContent = orderText.review;
+				paragraphContent = paragraphText.review;
+				buttonContent = buttonText.review;
+				content = <ReviewContent register={register} errors={errors} />;
 		}
 	};
 	createContent();
 
+	// Set styles based on ContentState
 	const maxWidth = contentState === ContentState.review ? 'lg' : 'sm';
 	const display = contentState === ContentState.completed ? 'hidden' : 'block';
 	const bgColor = contentState === ContentState.completed ? 'bg-lumerin-aqua' : 'bg-black';
 
 	return (
-		// TODO: figure out why max-length isn't working when deployed
 		<div className={`flex flex-col justify-center w-full max-w-${maxWidth} font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
 			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
 				<div className='text-white'>
@@ -196,7 +207,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				<button
 					type='submit'
 					className={`h-16 w-full py-2 px-4 btn-buy-modal text-sm font-medium text-white ${bgColor} bg-opacity-${buttonOpacity} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }} // TODO: figure out why tailwind opacity not working in prod
+					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
 					onClick={handleSubmit((data) => buyContract(data))}
 				>
 					{buttonContent}

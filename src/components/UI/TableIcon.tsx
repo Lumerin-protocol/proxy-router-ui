@@ -17,7 +17,7 @@ export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, hasLi
 				<span>{icon}</span>
 				<span className='ml-4 font-semibold text-left'>
 					{hasLink ? (
-						<a href={`https://etherscan.io/address/${text}`} target='_blank' rel='noreferrer'>
+						<a href={`https://etherscan.io/address/${text}`} target='_blank' rel='noreferrer' className='cursor-pointer'>
 							{text}
 						</a>
 					) : (

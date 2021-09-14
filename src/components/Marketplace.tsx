@@ -16,6 +16,14 @@ export interface MarketPlaceData {
 	trade?: JSX.Element | string;
 }
 
+interface Header {
+	Header?: string;
+	accessor?: string;
+}
+
+// This interface needs to have all the properties for both data and columns based on index.d.ts
+interface CustomTableOptions extends MarketPlaceData, Header {}
+
 interface MarketplaceProps {
 	contracts: MarketPlaceData[];
 	setContractId: Dispatch<SetStateAction<string>>;
@@ -27,12 +35,14 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		(contracts) => {
 			const updatedContracts = contracts.map((contract) => {
 				const updatedContract = { ...contract };
-				if (Object.keys(contract).length !== 0 && typeof contract.id === 'string') {
+				if (Object.keys(contract).length !== 0) {
 					updatedContract.id = (
 						<TableIcon icon={<Hashrate />} text={truncateAddress(updatedContract.id as string, true)} hasLink justify='start' />
 					);
 					updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
-					updatedContract.trade = <BuyButton contractId={contract.id} setContractId={setContractId} buyClickHandler={buyClickHandler} />;
+					updatedContract.trade = (
+						<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
+					);
 				}
 				return updatedContract;
 			});
@@ -41,14 +51,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		},
 		[setContractId, buyClickHandler]
 	);
-
-	interface Header {
-		Header?: string;
-		accessor?: string;
-	}
-
-	// This interface needs to have all the properties for both data and columns based on index.d.ts
-	interface CustomTableOptions extends MarketPlaceData, Header {}
 
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [

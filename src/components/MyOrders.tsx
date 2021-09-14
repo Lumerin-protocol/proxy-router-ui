@@ -16,6 +16,14 @@ export interface MyOrdersData {
 	progress?: JSX.Element | string;
 }
 
+interface Header {
+	Header?: string;
+	accessor?: string;
+}
+
+// This interface needs to have all the properties for both data and columns based on index.d.ts
+interface CustomTableOptions extends MyOrdersData, Header {}
+
 interface MyOrdersProps {
 	orders: MyOrder[];
 }
@@ -37,9 +45,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 	};
 
 	const getProgressDiv: (progress: string) => JSX.Element = (progress) => {
-		const numbers = progress.split('/');
-		const delivered = numbers[0];
-		const promised = numbers[1];
+		const hashrates = progress.split('/');
+		const delivered = hashrates[0];
+		const promised = hashrates[1];
 		const percentage = (parseInt(delivered) / parseInt(promised)) * 100;
 		return (
 			<div className='flex justify-evenly items-baseline'>
@@ -54,7 +62,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 	const getTableData: (orders: MyOrder[]) => MyOrdersData[] = useCallback((orders) => {
 		const updatedOrders = orders.map((order) => {
 			const updatedOrder = { ...order };
-			if (Object.keys(order).length !== 0 && typeof order.id === 'string') {
+			if (Object.keys(order).length !== 0) {
 				updatedOrder.id = <TableIcon icon={<Hashrate />} text={truncateAddress(updatedOrder.id as string, true)} hasLink justify='start' />;
 				updatedOrder.status = getStatusDiv(updatedOrder.status as string);
 				updatedOrder.progress = getProgressDiv(updatedOrder.delivered as string);
@@ -64,14 +72,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 
 		return updatedOrders;
 	}, []);
-
-	interface Header {
-		Header?: string;
-		accessor?: string;
-	}
-
-	// This interface needs to have all the properties for both data and columns based on index.d.ts
-	interface CustomTableOptions extends MyOrdersData, Header {}
 
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [

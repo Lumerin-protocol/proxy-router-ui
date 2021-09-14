@@ -9,8 +9,18 @@ const useStyles = createUseStyles({
 		'&': {
 			borderSpacing: 0,
 		},
+		'& > thead > tr > th:first-child': {
+			border: '0px solid transparent',
+			borderRadius: '5px 0 0 5px',
+		},
+		'& > thead > tr > th:last-child': {
+			borderRadius: '0 5px 5px 0',
+		},
 		'& > tbody > tr:first-child': {
 			height: '32px',
+		},
+		'& > tbody > tr:first-child > td': {
+			border: 'none',
 		},
 		'& > tbody > tr > td': {
 			backgroundColor: 'white',
@@ -19,16 +29,26 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr > td:first-child': {
 			borderRight: 'none',
-			cursor: 'pointer',
 		},
 		'& > tbody > tr > td:first-child:hover': {
 			backgroundColor: colors['lumerin-aqua'],
 			color: 'white',
 		},
+		'& > tbody > tr > td:last-child': {
+			borderLeft: 'none',
+			borderRight: `1px solid ${colors['lumerin-table-border-gray']}`,
+			verticalAlign: 'bottom',
+		},
 		'& > tbody > tr > td:nth-child(2)': {
 			borderLeft: 'none',
 			borderRight: 'none',
 			paddingLeft: 0,
+		},
+		'& > tbody > tr:nth-child(2) > td:first-child': {
+			borderTopLeftRadius: '5px',
+		},
+		'& > tbody > tr:nth-child(2) > td:last-child': {
+			borderTopRightRadius: '5px',
 		},
 		'& > tbody > tr > td:nth-child(3)': {
 			borderLeft: 'none',
@@ -41,28 +61,6 @@ const useStyles = createUseStyles({
 		'& > tbody > tr > td:nth-child(5)': {
 			borderLeft: 'none',
 			borderRight: 'none',
-		},
-		'& > tbody > tr > td:last-child': {
-			borderLeft: 'none',
-			borderRight: `1px solid ${colors['lumerin-table-border-gray']}`,
-			verticalAlign: 'bottom',
-		},
-		'& > thead > tr > th:first-child': {
-			border: '0px solid transparent',
-			borderRadius: '5px 0 0 5px',
-		},
-		'& > tbody > tr:first-child > td': {
-			border: 'none',
-		},
-
-		'& > thead > tr > th:last-child': {
-			borderRadius: '0 5px 5px 0',
-		},
-		'& > tbody > tr:nth-child(2) > td:first-child': {
-			borderTopLeftRadius: '5px',
-		},
-		'& > tbody > tr:nth-child(2) > td:last-child': {
-			borderTopRightRadius: '5px',
 		},
 		'& > tbody > tr:last-child > td': {
 			borderBottom: `1px solid ${colors['lumerin-table-border-gray']}`,

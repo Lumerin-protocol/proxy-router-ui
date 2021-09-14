@@ -1,11 +1,11 @@
 import React from 'react';
-import { FormData } from './BuyForm';
+import { ReviewContentData } from './BuyForm';
 
 interface ConfirmContentProps {
-	data: FormData;
+	data: ReviewContentData;
 }
 
-export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddress, username, password, limit, speed, price } }) => {
+export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddress, username, limit, speed, price } }) => {
 	return (
 		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm'>
 			<div className='confirm-div'>

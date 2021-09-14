@@ -7,6 +7,7 @@ interface ConnectWalletModalProps {
 	connectWallet: () => void;
 }
 
+// currently not in use
 export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, setOpen, connectWallet }) => {
 	return (
 		<Transition.Root show={open} as={Fragment}>
