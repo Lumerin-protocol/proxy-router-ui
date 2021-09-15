@@ -36,7 +36,9 @@ const connectToMetaMaskAsync: (
 	setWalletText: React.Dispatch<React.SetStateAction<string>>
 ) => void = async (resolve, reject, setAlertOpen, setWalletText) => {
 	const provider = (await detectEthereumProvider()) as provider;
-	if (provider) {
+	// If the provider returned by detectEthereumProvider is not the same as
+	// window.ethereum, something is overwriting it, perhaps another wallet.
+	if (provider && provider === window.ethereum) {
 		registerEventListeners(setAlertOpen, setWalletText);
 		const web3 = new Web3(provider);
 		try {
@@ -51,7 +53,8 @@ const connectToMetaMaskAsync: (
 			reject(error as Error);
 		}
 	} else {
-		reject(new Error('Could not connect wallet'));
+		if (!provider) reject(new Error('Could not connect wallet'));
+		if (provider !== window.ethereum) reject(new Error('Do you have multiple wallets installed?'));
 	}
 };
 
