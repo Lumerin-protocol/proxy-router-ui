@@ -22,6 +22,7 @@ import { AddressLength, classNames, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
+import { EventData } from 'web3-eth-contract';
 import _ from 'lodash';
 
 enum PathName {
@@ -53,6 +54,7 @@ export const Main: React.FC = () => {
 	const [accounts, setAccounts] = useState<string[]>();
 	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
 	const [web3, setWeb3] = useState<Web3>();
+	const [addresses, setAddresses] = useState<string[]>([]);
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [myOrders, setMyOrders] = useState<MyOrder[]>([]);
@@ -146,64 +148,72 @@ export const Main: React.FC = () => {
 		}
 	};
 
+	// Orders setup
 	const createContractsAsync: () => void = async () => {
-		const addresses: string[] = await marketplaceContract?.methods.getContractList().call();
-		if (addresses) {
-			addContractsAsync(addresses);
+		try {
+			const addresses: string[] = await marketplaceContract?.methods.getContractList().call();
+			if (addresses) {
+				setAddresses(addresses);
+				addContractsAsync(addresses);
+			}
+		} catch (error) {
+			console.log(error);
+			throw new Error((error as Error).message);
 		}
 	};
 
-	const dummyOrders: MyOrder[] = [
-		{
-			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
-			status: 'active',
-			delivered: '10/100',
-		},
-		{
-			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
-			status: 'active',
-			delivered: '20/100',
-		},
-		{
-			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
-			status: 'completed',
-			delivered: '30/100',
-		},
-		{
-			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
-			status: 'completed',
-			delivered: '90/100',
-		},
-		{
-			id: '0x93567dc781708F9D8C28BD0B64a76A7321950aDB',
-			started: DateTime.fromMillis(1628864352000).toFormat('MM/dd/yyyy hh:mm:ss'),
-			status: 'completed',
-			delivered: '70/100',
-		},
-	];
+	const createMyOrderAsync: (contractAddress: string, timestamp: string) => Promise<MyOrder> = async (contractAddress, timestamp) => {
+		try {
+			// TODO: update when validator api is ready
+			// const response = await axios.get(`validatorurl/${contractAddress}`);
+			// const delivered = response.data;
+			const contractState: string = await marketplaceContract?.methods.getState(contractAddress).call();
+			return {
+				id: contractAddress,
+				started: DateTime.fromSeconds(parseInt(timestamp)).toFormat('MM/dd/yyyy hh:mm:ss'),
+				status: contractState,
+				delivered: '70/100',
+			} as MyOrder;
+		} catch (error) {
+			console.log(error);
+			throw new Error((error as Error).message);
+		}
+	};
 
-	// const createMyOrdersAsync = async () => {
-	// 	const myOrders: MyOrder[] = [];
-	// 	try {
-	// 		const events = await marketplaceContract?.getPastEvents('BuyContract', {
-	// 			filter: { _buyer: userAccount },
-	// 			fromBlock: 0,
-	// 			toBlock: 'latest',
-	// 		});
-	//      use await for
-	// 		events?.forEach(async (event) => {
-	// 			const block = await web3?.eth.getBlock(event.blockNumber);
-	// 			const myOrder = await createMyOrderAsync(event.returnValues.contractAddress, block?.timestamp);
-	// 			if (myOrder) myOrders.push(myOrder);
-	// 		});
-	// 	} catch (error) {
-	// 		console.log(error);
-	// 		throw new Error((error as Error).message);
-	// 	}
+	const addMyOrderAsync: (events: EventData[]) => void = async (events) => {
+		const myContractOrders: MyOrder[] = [];
+		// filter contracts by userAccount
+		const eventsForAddress = events.filter((event) => userAccount === event.returnValues._buyer);
+		for await (const event of eventsForAddress) {
+			// get block to use its timestamp
+			const block = await web3?.eth.getBlock(event.blockNumber);
+			const myOrder = await createMyOrderAsync(event.returnValues._contractAddress as string, block?.timestamp as string);
+			if (myOrder) myContractOrders.push(myOrder);
+		}
+
+		// add empty row for styling
+		myContractOrders.unshift({});
+		if (!_.isEqual(myOrders, myContractOrders)) {
+			setMyOrders(myContractOrders);
+		}
+	};
+
+	const createMyOrdersAsync: () => void = async () => {
+		if (addresses.length > 0) {
+			try {
+				const events = await marketplaceContract?.getPastEvents('contractPurchased', {
+					fromBlock: 0, // TODO: update to block# when marketplace is deployed
+					toBlock: 'latest',
+				});
+				if (events) addMyOrderAsync(events);
+			} catch (error) {
+				console.log(error);
+				throw new Error((error as Error).message);
+			}
+		}
+	};
+
+	// const createMyOrdersAsync: () => void = async () => {
 	// 	// const addresses: string[] = await marketplaceContract?.methods.getMyOrders(userAccount).call();
 	// 	const myDummyOrders = dummyOrders;
 	// 	// add empty row for styling
@@ -213,21 +223,10 @@ export const Main: React.FC = () => {
 	// 	}
 	// };
 
-	const createMyOrdersAsync: () => void = async () => {
-		// const addresses: string[] = await marketplaceContract?.methods.getMyOrders(userAccount).call();
-		const myDummyOrders = dummyOrders;
-		// add empty row for styling
-		myDummyOrders.unshift({});
-		if (!_.isEqual(myOrders, myDummyOrders)) {
-			setMyOrders(myDummyOrders);
-		}
-	};
-
 	// set contracts and orders once marketplaceContract exists
-	useEffect(() => {
-		createContractsAsync();
-		createMyOrdersAsync();
-	}, [marketplaceContract]);
+	useEffect(() => createContractsAsync(), [marketplaceContract]);
+	// set orders once addresses have been retrieved
+	useEffect(() => createMyOrdersAsync(), [addresses]);
 
 	// get contracts at interval of 20 seconds
 	useInterval(() => {
@@ -258,7 +257,7 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
-		if ((contracts.length === 0 && pathName === PathName.Marketplace) || (myOrders.length === 0 && PathName.MyOrders)) {
+		if (contracts.length === 0 && pathName === PathName.Marketplace && myOrders.length === 0 && PathName.MyOrders) {
 			return (
 				<div className='flex flex-col justify-center items-center h-full'>
 					{ActionButton}
