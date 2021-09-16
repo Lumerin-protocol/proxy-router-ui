@@ -5,7 +5,7 @@ interface ProgressBarProps {
 }
 export const ProgressBar: React.FC<ProgressBarProps> = ({ width }) => {
 	return (
-		<div className='relative pt-1'>
+		<div className='pt-1'>
 			<div className='overflow-hidden h-2 mb-4 text-xs flex rounded bg-lumerin-dark-gray'>
 				<div
 					style={{ width: `${width}%` }}

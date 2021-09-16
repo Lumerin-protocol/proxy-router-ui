@@ -4,6 +4,8 @@ import { TableInstance } from 'react-table';
 import { classNames } from '../../utils';
 const { colors } = require('styles/styles.config.js');
 
+// The use of `!important` is bc not dynamically checking the number of cells per row
+// My Orders page has one more cell than Marketplace
 const useStyles = createUseStyles({
 	table: {
 		'&': {
