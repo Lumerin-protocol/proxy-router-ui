@@ -42,7 +42,8 @@ export const registerEventListeners: (
 			showAlert(true);
 			changeWalletText(WalletText.ConnectViaMetaMask);
 		} else {
-			changeWalletText(WalletText.Disconnect);
+			// Reload so contracts are loaded for that userAccount
+			window.location.reload();
 		}
 	};
 

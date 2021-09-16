@@ -22,6 +22,9 @@ const useStyles = createUseStyles({
 		'& > tbody > tr:first-child > td': {
 			border: 'none',
 		},
+		'& > tbody > tr:first-child > td:last-child': {
+			borderRight: 'none !important',
+		},
 		'& > tbody > tr > td': {
 			backgroundColor: 'white',
 			border: `1px solid ${colors['lumerin-table-border-gray']}`,
@@ -36,7 +39,7 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr > td:last-child': {
 			borderLeft: 'none',
-			borderRight: `1px solid ${colors['lumerin-table-border-gray']}`,
+			borderRight: `1px solid ${colors['lumerin-table-border-gray']} !important`,
 			verticalAlign: 'bottom',
 		},
 		'& > tbody > tr > td:nth-child(2)': {
