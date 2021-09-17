@@ -172,7 +172,7 @@ export const Main: React.FC = () => {
 
 	const createMyOrderAsync: (contractAddress: string, timestamp: string) => Promise<MyOrder | null> = async (contractAddress, timestamp) => {
 		try {
-			const response = await axios.get(`http://localhost:7545/completionStatus/${contractAddress}`);
+			const response = await axios.get(`http://44.234.253.47:7545/completionStatus/${contractAddress}`);
 			const delivered = (response.data as ValidatorResponse).hashes_done.toFixed();
 			const contractState: string = await marketplaceContract?.methods.getState(contractAddress).call();
 			return {
