@@ -6,6 +6,7 @@ import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import TestContract from '../contracts/TestingContract.json';
+import { printError } from '../utils';
 
 interface Networks {
 	[networkId: number]: {
@@ -49,8 +50,9 @@ const connectToMetaMaskAsync: (
 			// Accounts now exposed
 			resolve(web3);
 		} catch (error) {
-			console.log((error as Error).message);
-			reject(error as Error);
+			const typedError = error as Error;
+			printError(typedError.message, typedError.stack as string);
+			reject(typedError);
 		}
 	} else {
 		if (!provider) reject(new Error('Could not connect wallet'));
@@ -96,7 +98,8 @@ export const getWeb3ResultAsync: (
 		const contractInstance = new web3.eth.Contract(TestContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 		return { accounts, contractInstance, web3 };
 	} catch (error) {
-		console.log((error as Error).message);
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
 		return null;
 	}
 };

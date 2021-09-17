@@ -6,7 +6,7 @@ import { ConfirmContent } from './ConfirmContent';
 import { HashRentalContract } from '../../Main';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { classNames, truncateAddress } from '../../../utils';
+import { classNames, printError, truncateAddress } from '../../../utils';
 import Web3 from 'web3';
 
 // making fields optional bc a user might not have filled out the input fields
@@ -122,8 +122,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					.send({ from: userAccount, value: web3?.utils.toWei(contract.price as string, 'ether') });
 				if (receipt?.status) setContentState(ContentState.completed);
 			} catch (error) {
-				console.log(error);
-				throw new Error((error as Error).message);
+				const typedError = error as Error;
+				printError(typedError.message, typedError.stack as string);
+				// crash app if can't communicate with webfacing contract
+				throw typedError;
 			}
 		}
 

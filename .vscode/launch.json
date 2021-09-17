@@ -11,7 +11,7 @@
 			"url": "http://localhost:3000",
 			"webRoot": "${workspaceFolder}",
 			"runtimeArgs": [
-				"--load-extension=${env:userprofile}/AppData/Local/Google/Chrome/User Data/Profile 2/Extensions/nkbihfbeogaeaoehlefnkodbefgpgknn/10.0.3_0"
+				"--load-extension=${env:userprofile}/AppData/Local/Google/Chrome/User Data/Profile 2/Extensions/nkbihfbeogaeaoehlefnkodbefgpgknn/10.1.0_0"
 			]
 		},
 		{

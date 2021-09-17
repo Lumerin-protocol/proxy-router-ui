@@ -23,7 +23,9 @@ import { DateTime } from 'luxon';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { EventData } from 'web3-eth-contract';
+import axios from 'axios';
 import _ from 'lodash';
+import { printError } from '../utils';
 
 enum PathName {
 	Marketplace = '/',
@@ -41,6 +43,10 @@ interface Navigation {
 	to: string;
 	icon: JSX.Element;
 	current: boolean;
+}
+
+interface ValidatorResponse {
+	hashes_done: number;
 }
 
 export interface HashRentalContract extends MarketPlaceData {}
@@ -157,26 +163,30 @@ export const Main: React.FC = () => {
 				addContractsAsync(addresses);
 			}
 		} catch (error) {
-			console.log(error);
-			throw new Error((error as Error).message);
+			const typedError = error as Error;
+			printError(typedError.message, typedError.stack as string);
+			// crash app if can't communicate with webfacing contract
+			throw typedError;
 		}
 	};
 
-	const createMyOrderAsync: (contractAddress: string, timestamp: string) => Promise<MyOrder> = async (contractAddress, timestamp) => {
+	const createMyOrderAsync: (contractAddress: string, timestamp: string) => Promise<MyOrder | null> = async (contractAddress, timestamp) => {
 		try {
-			// TODO: update when validator api is ready
-			// const response = await axios.get(`validatorurl/${contractAddress}`);
-			// const delivered = response.data;
+			const response = await axios.get(`http://localhost:7545/completionStatus/${contractAddress}`);
+			const delivered = (response.data as ValidatorResponse).hashes_done.toFixed();
 			const contractState: string = await marketplaceContract?.methods.getState(contractAddress).call();
 			return {
 				id: contractAddress,
 				started: DateTime.fromSeconds(parseInt(timestamp)).toFormat('MM/dd/yyyy hh:mm:ss'),
 				status: contractState,
-				delivered: '70/100',
+				delivered: `${delivered}/100`,
 			} as MyOrder;
 		} catch (error) {
-			console.log(error);
-			throw new Error((error as Error).message);
+			const typedError = error as Error;
+			printError(typedError.message, typedError.stack as string);
+			// don't crash app if validator api is down
+			if (typedError.message !== 'Network Error') throw typedError;
+			return null;
 		}
 	};
 
@@ -207,21 +217,13 @@ export const Main: React.FC = () => {
 				});
 				if (events) addMyOrderAsync(events);
 			} catch (error) {
-				console.log(error);
-				throw new Error((error as Error).message);
+				const typedError = error as Error;
+				printError(typedError.message, typedError.stack as string);
+				// crash app bc events should exist
+				throw typedError;
 			}
 		}
 	};
-
-	// const createMyOrdersAsync: () => void = async () => {
-	// 	// const addresses: string[] = await marketplaceContract?.methods.getMyOrders(userAccount).call();
-	// 	const myDummyOrders = dummyOrders;
-	// 	// add empty row for styling
-	// 	myDummyOrders.unshift({});
-	// 	if (!_.isEqual(myOrders, myDummyOrders)) {
-	// 		setMyOrders(myDummyOrders);
-	// 	}
-	// };
 
 	// set contracts and orders once marketplaceContract exists
 	useEffect(() => createContractsAsync(), [marketplaceContract]);
