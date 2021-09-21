@@ -1,5 +1,5 @@
 import { WalletText } from '../components/Main';
-import { reconnectWallet } from './helpers';
+import { reconnectWalletAsync } from './helpers';
 
 // Type as `any` since EthereumProvider doesn't have `on` method
 // and isn't exported so can't extend with interface merging
@@ -25,7 +25,7 @@ export const registerEventListeners: (
 		console.log(`on disconnect: ${error.message}`);
 		showAlert(true);
 		changeWalletText(WalletText.ConnectViaMetaMask);
-		reconnectWallet();
+		reconnectWalletAsync();
 	};
 
 	// chainChanged

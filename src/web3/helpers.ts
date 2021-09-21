@@ -30,34 +30,10 @@ type Reject = (error: Error) => void;
 type SetAlertOpen = React.Dispatch<React.SetStateAction<boolean>>;
 
 const ethereum: any = window.ethereum;
-const networkId = 1631200230898;
-const deployedNetwork = (TestContract as ContractJson).networks[networkId];
 const lumerinTokenAddress = '0x7bd2FF9F8eE07BDAbc6f09653B5f9e64f071D27D';
 
 // Web3 setup helpers
-
 // Private functions for getWeb3ResultAsync()
-// https://docs.metamask.io/guide/registering-your-token.html#example
-const addLumerinTokenToMetaMask: () => void = async () => {
-	try {
-		await ethereum?.request({
-			method: 'wallet_watchAsset',
-			params: {
-				type: 'ERC20',
-				options: {
-					address: lumerinTokenAddress, // The address that the token is at.
-					symbol: 'LMR', // A ticker symbol or shorthand, up to 5 chars.
-					decimals: 8, // The number of decimals in the token
-					image: lumerin, // A string url of the token logo
-				},
-			},
-		});
-	} catch (error) {
-		const typedError = error as Error;
-		printError(typedError.message, typedError.stack as string);
-	}
-};
-
 const connectToMetaMaskAsync: (
 	resolve: Resolve,
 	reject: Reject,
@@ -69,7 +45,6 @@ const connectToMetaMaskAsync: (
 	// window.ethereum, something is overwriting it, perhaps another wallet.
 	if (provider && provider === ethereum) {
 		registerEventListeners(setAlertOpen, setWalletText);
-		addLumerinTokenToMetaMask();
 		const web3 = new Web3(provider);
 		try {
 			// Request account access if needed
@@ -116,6 +91,10 @@ export const getWeb3ResultAsync: (
 	try {
 		// Get network provider and web3 instance
 		const web3 = await getWeb3Async(setOpenAlert, setWalletText);
+		// Get network info
+		const networkId = await web3.eth.net.getId();
+		const deployedNetwork = (TestContract as ContractJson).networks[networkId];
+
 		// Use web3 to get the user's accounts
 		const accounts = await web3.eth.getAccounts();
 		if (accounts.length === 0 || accounts[0] === '') {
@@ -133,7 +112,7 @@ export const getWeb3ResultAsync: (
 
 // Wallet helpers
 // Makes user choose which account they want to use in MetaMask
-export const reconnectWallet: () => void = async () => {
+export const reconnectWalletAsync: () => void = async () => {
 	await (ethereum as any)?.request({
 		method: 'wallet_requestPermissions',
 		params: [
@@ -144,4 +123,62 @@ export const reconnectWallet: () => void = async () => {
 	});
 };
 
-// export const getLumerinTokenBalance: (userAccount: string) => number = (userAccount) => {};
+// https://docs.metamask.io/guide/registering-your-token.html#example
+export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
+	try {
+		await ethereum?.request({
+			method: 'wallet_watchAsset',
+			params: {
+				type: 'ERC20',
+				options: {
+					address: lumerinTokenAddress,
+					symbol: 'LMR',
+					decimals: 8,
+					image: lumerin,
+				},
+			},
+		});
+	} catch (error) {
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
+	}
+};
+
+export const getLumerinTokenBalanceAsync: (web3: Web3, userAccount: string) => Promise<number | null> = async (web3, userAccount) => {
+	// Minimum ABI to get ERC20 Lumerin Token balance and number of decimals
+	const minABI: AbiItem[] = [
+		// balanceOf()
+		{
+			constant: true,
+			inputs: [{ name: '_owner', type: 'address' }],
+			name: 'balanceOf',
+			outputs: [{ name: 'balance', type: 'uint256' }],
+			type: 'function',
+		},
+		// decimals()
+		{
+			constant: true,
+			inputs: [],
+			name: 'decimals',
+			outputs: [
+				{
+					internalType: 'uint8',
+					name: '',
+					type: 'uint8',
+				},
+			],
+			stateMutability: 'view',
+			type: 'function',
+		},
+	];
+	const lumerinContract = new web3.eth.Contract(minABI, lumerinTokenAddress);
+	try {
+		const lumerinBalanceNoDecimals: string = await lumerinContract.methods.balanceOf(userAccount).call();
+		const numOfDecimals: string = await lumerinContract.methods.decimals().call();
+		return parseInt(lumerinBalanceNoDecimals) / 10 ** parseInt(numOfDecimals);
+	} catch (error) {
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
+		return null;
+	}
+};

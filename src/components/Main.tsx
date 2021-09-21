@@ -16,8 +16,7 @@ import { MarketPlaceData } from './Marketplace';
 import { MyOrders, MyOrdersData } from './MyOrders';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
-import { getWeb3ResultAsync } from '../web3/helpers';
-import { reconnectWallet } from '../web3/helpers';
+import { addLumerinTokenToMetaMaskAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync, reconnectWalletAsync } from '../web3/helpers';
 import { AddressLength, classNames, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
 import MetaMaskOnboarding from '@metamask/onboarding';
@@ -104,7 +103,7 @@ export const Main: React.FC = () => {
 		if (walletText === WalletText.ConnectViaMetaMask) {
 			connectWallet();
 		} else {
-			reconnectWallet();
+			reconnectWalletAsync();
 			setWalletText(WalletText.ConnectViaMetaMask);
 		}
 	};
@@ -119,7 +118,7 @@ export const Main: React.FC = () => {
 
 	// Check if MetaMask is connected
 	useEffect(() => {
-		if (walletText === WalletText.ConnectViaMetaMask) reconnectWallet();
+		if (walletText === WalletText.ConnectViaMetaMask) reconnectWalletAsync();
 	}, [walletText]);
 
 	// When a user disconnects MetaMask, alertOpen will be true
@@ -212,6 +211,7 @@ export const Main: React.FC = () => {
 	const createMyOrdersAsync: () => void = async () => {
 		if (addresses.length > 0) {
 			try {
+				// TODO: have event index buyer address to filter by
 				const events = await marketplaceContract?.getPastEvents('contractPurchased', {
 					fromBlock: 0, // TODO: update to block# when marketplace is deployed
 					toBlock: 'latest',
@@ -226,8 +226,18 @@ export const Main: React.FC = () => {
 		}
 	};
 
+	// Get Lumerin token balance
+	const updateLumerinTokenBalanceAsync: () => void = async () => {
+		if (web3) {
+			const lumerinTokenBalance = await getLumerinTokenBalanceAsync(web3, userAccount);
+			if (lumerinTokenBalance) setLumerinBalance(lumerinTokenBalance);
+		}
+	};
+	useEffect(() => updateLumerinTokenBalanceAsync(), [web3]);
+
 	// set contracts and orders once marketplaceContract exists
 	useEffect(() => createContractsAsync(), [marketplaceContract]);
+
 	// set orders once addresses have been retrieved
 	useEffect(() => createMyOrdersAsync(), [addresses]);
 
@@ -418,7 +428,7 @@ export const Main: React.FC = () => {
 						</button>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
-								<button className='btn-connected mr-2 cursor-default'>
+								<button className='btn-connected mr-2' onClick={() => addLumerinTokenToMetaMaskAsync()}>
 									<LumerinIcon />
 									<span className='ml-3'>{lumerinBalance} LMR</span>
 								</button>
