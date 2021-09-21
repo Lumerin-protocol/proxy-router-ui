@@ -1,6 +1,7 @@
 import React from 'react';
 import Web3 from 'web3';
 import detectEthereumProvider from '@metamask/detect-provider';
+import lumerin from '../images/lumerin_metamask.png';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
@@ -28,8 +29,35 @@ type Resolve = (web3: Web3) => void;
 type Reject = (error: Error) => void;
 type SetAlertOpen = React.Dispatch<React.SetStateAction<boolean>>;
 
+const ethereum: any = window.ethereum;
+const networkId = 1631200230898;
+const deployedNetwork = (TestContract as ContractJson).networks[networkId];
+const lumerinTokenAddress = '0x7bd2FF9F8eE07BDAbc6f09653B5f9e64f071D27D';
+
 // Web3 setup helpers
+
 // Private functions for getWeb3ResultAsync()
+// https://docs.metamask.io/guide/registering-your-token.html#example
+const addLumerinTokenToMetaMask: () => void = async () => {
+	try {
+		await ethereum?.request({
+			method: 'wallet_watchAsset',
+			params: {
+				type: 'ERC20',
+				options: {
+					address: lumerinTokenAddress, // The address that the token is at.
+					symbol: 'LMR', // A ticker symbol or shorthand, up to 5 chars.
+					decimals: 8, // The number of decimals in the token
+					image: lumerin, // A string url of the token logo
+				},
+			},
+		});
+	} catch (error) {
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
+	}
+};
+
 const connectToMetaMaskAsync: (
 	resolve: Resolve,
 	reject: Reject,
@@ -39,14 +67,15 @@ const connectToMetaMaskAsync: (
 	const provider = (await detectEthereumProvider()) as provider;
 	// If the provider returned by detectEthereumProvider is not the same as
 	// window.ethereum, something is overwriting it, perhaps another wallet.
-	if (provider && provider === window.ethereum) {
+	if (provider && provider === ethereum) {
 		registerEventListeners(setAlertOpen, setWalletText);
+		addLumerinTokenToMetaMask();
 		const web3 = new Web3(provider);
 		try {
 			// Request account access if needed
 			// Interface EthereumProvider is not an exported member
 			// so can't extend it with interface merging to add request()
-			await (window.ethereum as any).request({ method: 'eth_requestAccounts' });
+			await (ethereum as any).request({ method: 'eth_requestAccounts' });
 			// Accounts now exposed
 			resolve(web3);
 		} catch (error) {
@@ -56,7 +85,7 @@ const connectToMetaMaskAsync: (
 		}
 	} else {
 		if (!provider) reject(new Error('Could not connect wallet'));
-		if (provider !== window.ethereum) reject(new Error('Do you have multiple wallets installed?'));
+		if (provider !== ethereum) reject(new Error('Do you have multiple wallets installed?'));
 	}
 };
 
@@ -93,8 +122,6 @@ export const getWeb3ResultAsync: (
 			setOpenAlert(true);
 		}
 		// Get the contract instance
-		const networkId = 1631200230898;
-		const deployedNetwork = (TestContract as ContractJson).networks[networkId];
 		const contractInstance = new web3.eth.Contract(TestContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 		return { accounts, contractInstance, web3 };
 	} catch (error) {
@@ -107,7 +134,7 @@ export const getWeb3ResultAsync: (
 // Wallet helpers
 // Makes user choose which account they want to use in MetaMask
 export const reconnectWallet: () => void = async () => {
-	await (window.ethereum as any)?.request({
+	await (ethereum as any)?.request({
 		method: 'wallet_requestPermissions',
 		params: [
 			{
@@ -116,3 +143,5 @@ export const reconnectWallet: () => void = async () => {
 		],
 	});
 };
+
+// export const getLumerinTokenBalance: (userAccount: string) => number = (userAccount) => {};

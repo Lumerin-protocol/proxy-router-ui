@@ -57,13 +57,14 @@ export const Main: React.FC = () => {
 	// State and constants
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
+	const [web3, setWeb3] = useState<Web3>();
 	const [accounts, setAccounts] = useState<string[]>();
 	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
-	const [web3, setWeb3] = useState<Web3>();
 	const [addresses, setAddresses] = useState<string[]>([]);
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [myOrders, setMyOrders] = useState<MyOrder[]>([]);
+	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 	const [toggle, setToggle] = useState<boolean>(false);
@@ -417,11 +418,11 @@ export const Main: React.FC = () => {
 						</button>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
-								<button className='btn-connected mr-2'>
+								<button className='btn-connected mr-2 cursor-default'>
 									<LumerinIcon />
-									<span className='ml-3'>3,409 LMRN</span>
+									<span className='ml-3'>{lumerinBalance} LMR</span>
 								</button>
-								<button className='btn-connected'>
+								<button className='btn-connected cursor-default'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
 									<MetaMaskIcon />
 								</button>
