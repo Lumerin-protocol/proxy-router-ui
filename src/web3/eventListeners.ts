@@ -41,9 +41,6 @@ export const registerEventListeners: (
 			// MetaMask is locked or the user has not connected any accounts
 			showAlert(true);
 			changeWalletText(WalletText.ConnectViaMetaMask);
-		} else {
-			// Reload so contracts are loaded for that userAccount
-			window.location.reload();
 		}
 	};
 

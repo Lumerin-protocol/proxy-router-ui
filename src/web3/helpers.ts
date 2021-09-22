@@ -75,7 +75,7 @@ const connectToWalletAsync: (
 };
 
 // Get web3 instance
-const getWeb3Async: (setAlertOpen: SetAlertOpen, setWalletText: React.Dispatch<React.SetStateAction<string>>) => Promise<Web3> = (
+const getWeb3Async: (setAlertOpen: SetAlertOpen, setWalletText: React.Dispatch<React.SetStateAction<string>>) => Promise<Web3> = async (
 	setAlertOpen,
 	setWalletText
 ) =>

@@ -116,11 +116,6 @@ export const Main: React.FC = () => {
 		return null;
 	};
 
-	// Check if MetaMask is connected
-	useEffect(() => {
-		if (walletText === WalletText.ConnectViaMetaMask) reconnectWalletAsync();
-	}, [walletText]);
-
 	// When a user disconnects MetaMask, alertOpen will be true
 	useEffect(() => {
 		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
