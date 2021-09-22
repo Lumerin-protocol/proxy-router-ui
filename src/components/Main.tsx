@@ -281,6 +281,9 @@ export const Main: React.FC = () => {
 		if (!buyModalOpen) setBuyModalOpen(true);
 	};
 
+	// Hide top right button if no contracts
+	const buttonDisplay = contracts.length === 0 ? 'hidden' : 'flex-1 px-4 flex justify-end';
+
 	return (
 		<div id='main' className='h-screen flex overflow-hidden'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
@@ -408,7 +411,7 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className='flex-1 px-4 flex justify-end'>
+					<div className={buttonDisplay}>
 						<button
 							type='button'
 							className={classNames(

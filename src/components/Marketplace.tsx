@@ -43,15 +43,15 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 			setIsLargeBreakpointOrGreater(false);
 		}
 	}
-	mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
 
 	useEffect(() => {
-		if (!mediaQueryList.matches) {
+		if (!mediaQueryList?.matches) {
 			setIsLargeBreakpointOrGreater(false);
 		} else {
 			setIsLargeBreakpointOrGreater(true);
 		}
-	}, [mediaQueryList.matches]);
+	}, [mediaQueryList?.matches]);
 
 	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = (contracts) => {
 		const updatedContracts = contracts.map((contract) => {

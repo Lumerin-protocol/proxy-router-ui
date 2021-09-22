@@ -41,15 +41,15 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 			setIsLargeBreakpointOrGreater(false);
 		}
 	}
-	mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
 
 	useEffect(() => {
-		if (!mediaQueryList.matches) {
+		if (!mediaQueryList?.matches) {
 			setIsLargeBreakpointOrGreater(false);
 		} else {
 			setIsLargeBreakpointOrGreater(true);
 		}
-	}, [mediaQueryList.matches]);
+	}, [mediaQueryList?.matches]);
 
 	const getStatusDiv: (status: string) => JSX.Element = (status) => {
 		return (
