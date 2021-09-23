@@ -7,6 +7,7 @@ import { ReactComponent as MyOrdersIcon } from '../images/myorders.svg';
 import { ReactComponent as MetaMaskIcon } from '../images/metamask.svg';
 import { ReactComponent as LogoIcon } from '../images/logo.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
+import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
 import { Marketplace } from './Marketplace';
@@ -66,6 +67,7 @@ export const Main: React.FC = () => {
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
+	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [toggle, setToggle] = useState<boolean>(false);
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
@@ -76,6 +78,15 @@ export const Main: React.FC = () => {
 		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: pathName === '/' },
 		{ name: 'My Orders', to: 'myorders', icon: <MyOrdersIcon />, current: pathName === '/myorders' },
 	];
+	const createContractNav: JSX.Element = (
+		<div
+			className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
+			onClick={() => setCreateModalOpen(true)}
+		>
+			<CreateContractIcon />
+			<span className='ml-4'>Create Contract</span>
+		</div>
+	);
 
 	// Wallet/MetaMask setup
 	// Get accounts, web3 and contract instances
@@ -301,6 +312,20 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
+			{/* <Modal
+				open={createModalOpen}
+				setOpen={setCreateModalOpen}
+				content={
+					<BuyForm
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						marketplaceContract={marketplaceContract}
+						web3={web3}
+						setOpen={setBuyModalOpen}
+					/>
+				}
+			/> */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
@@ -352,7 +377,7 @@ export const Main: React.FC = () => {
 											to={item.to}
 											className={classNames(
 												item.current ? 'text-lumerin-aqua' : 'text-black',
-												'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
+												'flex items-center px-2 py-2 text-sm font-medium rounded-md'
 											)}
 											onClick={() => {
 												setToggle(!toggle);
@@ -362,6 +387,7 @@ export const Main: React.FC = () => {
 											<span className='ml-4'>{item.name}</span>
 										</Link>
 									))}
+									{createContractNav}
 								</nav>
 							</div>
 						</div>
@@ -388,7 +414,7 @@ export const Main: React.FC = () => {
 										to={item.to}
 										className={classNames(
 											item.current ? 'text-lumerin-aqua' : 'text-black',
-											'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
+											'flex items-center px-2 py-2 text-sm font-medium rounded-md'
 										)}
 										onClick={() => setToggle(!toggle)}
 									>
@@ -396,6 +422,7 @@ export const Main: React.FC = () => {
 										<span className='ml-4'>{item.name}</span>
 									</Link>
 								))}
+								{createContractNav}
 							</nav>
 						</div>
 					</div>

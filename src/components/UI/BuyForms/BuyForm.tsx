@@ -9,7 +9,7 @@ import { CompletedContent } from './CompletedContent';
 import { classNames, printError, truncateAddress } from '../../../utils';
 import Web3 from 'web3';
 
-// making fields optional bc a user might not have filled out the input fields
+// Making fields optional bc a user might not have filled out the input fields
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValues {
 	poolAddress?: string;
