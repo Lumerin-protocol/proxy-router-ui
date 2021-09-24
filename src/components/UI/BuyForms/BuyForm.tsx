@@ -24,9 +24,9 @@ export interface FormData extends InputValues {
 }
 
 enum ContentState {
-	review = 'review',
-	confirm = 'confirm',
-	completed = 'completed',
+	Review = 'review',
+	Confirm = 'confirm',
+	Complete = 'complete',
 }
 
 interface Text {
@@ -81,7 +81,7 @@ interface BuyFormProps {
 
 export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
-	const [contentState, setContentState] = useState<string>(ContentState.review);
+	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 
 	// Input validation setup
@@ -103,8 +103,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	// Controls contentState and creating a transaction
 	const buyContract: (data: InputValues) => void = async (data) => {
 		// Review
-		if (isValid && contentState === ContentState.review) {
-			setContentState(ContentState.confirm);
+		if (isValid && contentState === ContentState.Review) {
+			setContentState(ContentState.Confirm);
 			setFormData({
 				poolAddress: data.poolAddress,
 				username: data.username,
@@ -114,13 +114,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		}
 
 		// Confirm
-		if (isValid && contentState === ContentState.confirm) {
+		if (isValid && contentState === ContentState.Confirm) {
 			try {
 				// TODO: send Lumerin instead of Ether
 				const receipt = await marketplaceContract?.methods
 					.setBuyContract(contract.id, data.poolAddress, data.username, data.password)
 					.send({ from: userAccount, value: web3?.utils.toWei(contract.price as string, 'ether') });
-				if (receipt?.status) setContentState(ContentState.completed);
+				if (receipt?.status) setContentState(ContentState.Complete);
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
@@ -130,7 +130,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		}
 
 		// Completed
-		if (contentState === ContentState.completed) setOpen(false);
+		if (contentState === ContentState.Complete) setOpen(false);
 	};
 
 	// Change opacity of Review Order button based on input validation
@@ -151,13 +151,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	let content = <div></div>;
 	const createContent: () => void = () => {
 		switch (contentState) {
-			case ContentState.confirm:
+			case ContentState.Confirm:
 				orderContent = orderText.confirm;
 				paragraphContent = paragraphText.confirm;
 				buttonContent = buttonText.confirm;
 				content = <ConfirmContent data={formData} />;
 				break;
-			case ContentState.completed:
+			case ContentState.Complete:
 				orderContent = orderText.completed as string;
 				buttonContent = buttonText.completed as string;
 				content = <CompletedContent />;
@@ -172,12 +172,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	createContent();
 
 	// Set styles based on ContentState
-	const maxWidth = contentState === ContentState.review ? 'lg' : 'sm';
-	const display = contentState === ContentState.completed ? 'hidden' : 'block';
-	const bgColor = contentState === ContentState.completed ? 'bg-lumerin-aqua' : 'bg-black';
+	const display = contentState === ContentState.Complete ? 'hidden' : 'block';
+	const bgColor = contentState === ContentState.Complete ? 'bg-lumerin-aqua' : 'bg-black';
 
 	return (
-		<div className={`flex flex-col justify-center w-full max-w-${maxWidth} font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
+		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
 			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
 				<div className='text-white'>
 					<p className='text-lg'>Purchase Hashpower</p>
@@ -198,7 +197,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				<Link
 					to='/myorders'
 					className={classNames(
-						contentState === ContentState.completed
+						contentState === ContentState.Complete
 							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-buy-modal text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
 							: 'hidden'
 					)}

@@ -26,6 +26,7 @@ import { EventData } from 'web3-eth-contract';
 import axios from 'axios';
 import _ from 'lodash';
 import { printError } from '../utils';
+import { CreateForm } from './ui/CreateForms/CreateForm';
 
 enum PathName {
 	Marketplace = '/',
@@ -78,6 +79,7 @@ export const Main: React.FC = () => {
 		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: pathName === '/' },
 		{ name: 'My Orders', to: 'myorders', icon: <MyOrdersIcon />, current: pathName === '/myorders' },
 	];
+	// Stage 2 functionality
 	const createContractNav: JSX.Element = (
 		<div
 			className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
@@ -276,7 +278,7 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
-		if (contracts.length === 0 && pathName === PathName.Marketplace && myOrders.length === 0 && PathName.MyOrders) {
+		if (contracts.length === 0 && myOrders.length === 0 && PathName.MyOrders) {
 			return (
 				<div className='flex flex-col justify-center items-center h-full'>
 					{ActionButton}
@@ -312,20 +314,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			{/* <Modal
-				open={createModalOpen}
-				setOpen={setCreateModalOpen}
-				content={
-					<BuyForm
-						contracts={contracts}
-						contractId={contractId}
-						userAccount={userAccount}
-						marketplaceContract={marketplaceContract}
-						web3={web3}
-						setOpen={setBuyModalOpen}
-					/>
-				}
-			/> */}
+			<Modal open={createModalOpen} setOpen={setCreateModalOpen} content={<CreateForm />} />
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
