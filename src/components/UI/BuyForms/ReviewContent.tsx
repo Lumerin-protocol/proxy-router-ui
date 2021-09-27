@@ -12,7 +12,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 		<React.Fragment>
 			<div className='bg-white p-4 p-4'>
 				<div>
-					<label htmlFor='email' className='block text-sm font-medium text-gray-700'>
+					<label htmlFor='poolAddress' className='block text-sm font-medium text-gray-700'>
 						Pool Address *
 					</label>
 					<div className='mt-1'>
@@ -22,9 +22,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 							})}
 							id='poolAddress'
 							type='text'
-							placeholder=' stratum+tcp://IPorHostname'
+							placeholder='stratum+tcp://IPorHostname'
 							className={classNames(
-								errors.poolAddress ? 'bg-red-100 btn-buy-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
+								errors.poolAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
 						/>
 					</div>
@@ -33,7 +33,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 			</div>
 
 			<div className='bg-white p-4 p-4'>
-				<label htmlFor='email' className='block text-sm font-medium text-gray-700'>
+				<label htmlFor='username' className='block text-sm font-medium text-gray-700'>
 					Username
 				</label>
 				<div className='mt-1'>

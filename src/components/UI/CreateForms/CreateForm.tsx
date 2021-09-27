@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { CreateContent } from './CreateContent';
 
 // Making fields optional bc a user might not have filled out the input fields
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValues {
-	sellerAddress?: string;
-	time?: number;
+	walletAddress?: string;
+	contractTime?: number;
 	endDate?: string;
 	listPrice: number;
 }
 
 enum ContentState {
-	Create = 'create',
-	Draft = 'draft',
-	Complete = 'completed',
+	Create = 'CREATE',
+	Draft = 'DRAFT',
+	Complete = 'COMPLETE',
 }
 
 export const CreateForm: React.FC = () => {
@@ -33,19 +34,18 @@ export const CreateForm: React.FC = () => {
 
 	// Content setup
 	// Defaults to create state
-	// Initialize variables since html elements need values on first render
-	let buttonContent = 'Save As Draft';
+	// Initialize since html element needs a value on first render
 	let content = <div></div>;
 	const createContent: () => void = () => {
 		switch (contentState) {
-			case ContentState.Create:
+			case ContentState.Draft:
 				// content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Complete:
 				// content = <CompletedContent />;
 				break;
 			default:
-			// content = <ReviewContent register={register} errors={errors} />;
+				content = <CreateContent register={register} errors={errors} />;
 		}
 	};
 	createContent();
@@ -54,24 +54,25 @@ export const CreateForm: React.FC = () => {
 
 	return (
 		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
-			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
-				<div className='text-white'>
-					<p className='text-lg'>Create New Contract</p>
-					<p className='text-sm'>Sell your hashpower to the Lumerin Marketplace</p>
+			<div className='flex justify-between bg-white p-4 border-transparent rounded-t-5'>
+				<div className='text-black'>
+					<p className='text-3xl'>Create New Contract</p>
+					<p>Sell your hashpower to the Lumerin Marketplace</p>
 				</div>
 			</div>
-			<div className='flex flex-col bg-white p-4 pt-14 rounded-b-5'>
+			{content}
+			<div className='flex gap-6 bg-white p-4 pt-14'>
 				<button
 					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-buy-modal text-sm font-medium text-white ${bgColor} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
 					onClick={handleSubmit((data) => createContract(data))}
 				>
-					{buttonContent}
+					Cancel
 				</button>
 				<button
 					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-buy-modal text-sm font-medium text-white ${bgColor} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					className={`h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white ${bgColor} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
 					onClick={handleSubmit((data) => createContract(data))}
 				>

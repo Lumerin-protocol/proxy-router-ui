@@ -24,9 +24,9 @@ export interface FormData extends InputValues {
 }
 
 enum ContentState {
-	Review = 'review',
-	Confirm = 'confirm',
-	Complete = 'complete',
+	Review = 'REVIEW',
+	Confirm = 'CONFIRM',
+	Complete = 'COMPLETE',
 }
 
 interface Text {
@@ -193,12 +193,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				<p>{paragraphContent}</p>
 			</div>
 			{content}
-			<div className='flex flex-col bg-white p-4 pt-14 rounded-b-5'>
+			<div className='flex flex-col bg-white p-4 pt-14'>
 				<Link
 					to='/myorders'
 					className={classNames(
 						contentState === ContentState.Complete
-							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-buy-modal text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
+							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-modal text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
 							: 'hidden'
 					)}
 					onClick={() => setOpen(false)}
@@ -207,7 +207,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				</Link>
 				<button
 					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-buy-modal text-sm font-medium text-white ${bgColor} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					className={`h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white ${bgColor} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
 					onClick={handleSubmit((data) => buyContract(data))}
 				>
