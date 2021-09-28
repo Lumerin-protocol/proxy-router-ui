@@ -1,4 +1,4 @@
-import { truncateAddress, classNames } from '../utils';
+import { truncateAddress, classNames, AddressLength } from '../utils';
 
 describe('utils', () => {
 	// truncateAddress()
@@ -6,18 +6,27 @@ describe('utils', () => {
 		// Arrange
 		const address = '0xEeD15Bb091bf3F615400f6F8160aC423EaF6a413';
 
-		it('shortString works', () => {
+		it('short string works', () => {
 			// Act
-			const result = truncateAddress(address);
+			const result = truncateAddress(address, AddressLength.short);
+
+			// Assert
+			const expectedString = '0xEeD...';
+			expect(result).toBe(expectedString);
+		});
+
+		it('medium string works', () => {
+			// Act
+			const result = truncateAddress(address, AddressLength.medium);
 
 			// Assert
 			const expectedString = '0xEeD...6a413';
 			expect(result).toBe(expectedString);
 		});
 
-		it('longString works', () => {
+		it('long string works', () => {
 			// Act
-			const result = truncateAddress(address, true);
+			const result = truncateAddress(address, AddressLength.long);
 
 			// Assert
 			const expectedString = '0xEeD15Bb0...23EaF6a413';
