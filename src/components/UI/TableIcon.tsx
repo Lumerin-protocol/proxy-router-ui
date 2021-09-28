@@ -9,10 +9,10 @@ interface TableIconProps {
 }
 
 export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, hasLink }) => {
-	justify = justify ?? 'center';
-	justify = `justify-${justify}`;
+	let updatedJustify = justify ?? 'center';
+	updatedJustify = `justify-${updatedJustify}`;
 	return (
-		<div className={classNames('flex ml-4', justify)}>
+		<div className={classNames('flex ml-4', updatedJustify)}>
 			<div className='flex items-center'>
 				<span>{icon}</span>
 				<span className='ml-4 font-semibold text-left'>
