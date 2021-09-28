@@ -24,9 +24,9 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { EventData } from 'web3-eth-contract';
 import axios from 'axios';
-import _ from 'lodash';
 import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
+import _ from 'lodash';
 
 enum PathName {
 	Marketplace = '/',
@@ -147,11 +147,22 @@ export const Main: React.FC = () => {
 		} as HashRentalContract;
 	};
 
+	// Don't allow duplicates for active contracts:
+	// this only occurs with test contract and check won't be needed in production
+	const hasContract: (contract: HashRentalContract) => boolean = (contract) => {
+		if (contracts.length > 0) {
+			const filteredContracts = contracts.filter((existingContract) => existingContract.id === contract.id);
+			return filteredContracts.length === 0;
+		}
+		return false;
+	};
+
 	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
 		const hashRentalContracts: HashRentalContract[] = [];
 		for await (const address of addresses) {
 			const contract = await createContractAsync(address);
-			if (contract) hashRentalContracts.push(contract);
+
+			if (contract && !hasContract(contract)) hashRentalContracts.push(contract);
 		}
 
 		// add empty row for styling
@@ -314,7 +325,11 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Modal open={createModalOpen} setOpen={setCreateModalOpen} content={<CreateForm />} />
+			<Modal
+				open={createModalOpen}
+				setOpen={setCreateModalOpen}
+				content={<CreateForm userAccount={userAccount} marketplaceContract={marketplaceContract} web3={web3} setOpen={setCreateModalOpen} />}
+			/>
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
