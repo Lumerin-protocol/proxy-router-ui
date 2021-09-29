@@ -86,7 +86,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 			{ Header: 'PRICE (ETH)', accessor: 'price' },
 			{ Header: 'LIMIT (TH/S)', accessor: 'limit' },
 			{ Header: 'SPEED (TH/S)', accessor: 'speed' },
-			{ Header: 'LENGTH (HR/D/W)', accessor: 'length' },
+			{ Header: 'DURATION (HOURS)', accessor: 'length' },
 			{ Header: 'TRADE', accessor: 'trade' },
 		],
 		[]

@@ -6,7 +6,7 @@ import { ConfirmContent } from './ConfirmContent';
 import { HashRentalContract } from '../../Main';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { classNames, printError, truncateAddress } from '../../../utils';
+import { AddressLength, classNames, printError, truncateAddress } from '../../../utils';
 import Web3 from 'web3';
 
 // Making fields optional bc a user might not have filled out the input fields
@@ -36,16 +36,9 @@ interface Text {
 }
 
 // Form text setup
-const orderText: Text = {
-	review: 'My Order',
-	confirm: 'Confirm Order',
-	completed: 'Order Complete',
-};
-
 const paragraphText: Text = {
 	review: 'Please enter a valid IP Address that is connected to your mining machine as well as the Port Number. Username and PW are optional.',
-	confirm:
-		'Please review the following information below is correct. Once submitted, you will not be able to make any changes. Click the contract address above to see the contract on etherscan.',
+	confirm: 'Please review the following information below is correct. Once submitted, you will not be able to make any changes.',
 };
 
 const buttonText: Text = {
@@ -145,25 +138,21 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	// Content setup
 	// Defaults to review state
 	// Initialize variables since html elements need values on first render
-	let orderContent = '';
 	let paragraphContent = '';
 	let buttonContent = '';
 	let content = <div></div>;
 	const createContent: () => void = () => {
 		switch (contentState) {
 			case ContentState.Confirm:
-				orderContent = orderText.confirm;
 				paragraphContent = paragraphText.confirm;
 				buttonContent = buttonText.confirm;
 				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Complete:
-				orderContent = orderText.completed as string;
 				buttonContent = buttonText.completed as string;
 				content = <CompletedContent />;
 				break;
 			default:
-				orderContent = orderText.review;
 				paragraphContent = paragraphText.review;
 				buttonContent = buttonText.review;
 				content = <ReviewContent register={register} errors={errors} />;
@@ -171,48 +160,59 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	};
 	createContent();
 
-	// Set styles based on ContentState
+	// Set styles and button based on ContentState
 	const display = contentState === ContentState.Complete ? 'hidden' : 'block';
-	const bgColor = contentState === ContentState.Complete ? 'bg-lumerin-aqua' : 'bg-black';
+	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
+	const getButton: () => JSX.Element = () => {
+		return contentState === ContentState.Complete ? (
+			<Link
+				to='/myorders'
+				className={classNames(
+					contentState === ContentState.Complete
+						? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-modal text-sm font-medium text-white bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
+						: 'hidden'
+				)}
+				onClick={() => setOpen(false)}
+			>
+				<span>View Orders</span>
+			</Link>
+		) : (
+			<button
+				type='submit'
+				className={classNames(
+					contentState !== ContentState.Complete
+						? `h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white ${bgColor} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`
+						: 'hidden'
+				)}
+				style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
+				onClick={handleSubmit((data) => buyContract(data))}
+			>
+				{buttonContent}
+			</button>
+		);
+	};
 
 	return (
 		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
-			<div className='flex justify-between bg-lumerin-aqua p-4 border-transparent rounded-t-5'>
-				<div className='text-white'>
-					<p className='text-lg'>Purchase Hashpower</p>
-					<p className='text-sm'>{orderContent}</p>
+			<div className='flex justify-between bg-white text-black p-4 border-transparent rounded-t-5'>
+				<div className={classNames(contentState === ContentState.Complete ? 'hidden' : 'block')}>
+					<p className='text-3xl'>Purchase Hashpower</p>
+					<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.medium)}</p>
 				</div>
-				<div className='flex flex-col items-end text-white hover:text-lumerin-light-aqua'>
-					<a href={`https://etherscan.io/address/${contract.id}`} target='_blank' rel='noreferrer'>
-						<p className='text-lg'>Contract Address</p>
-						<p className='text-sm'>{truncateAddress(contract.id as string)}</p>
-					</a>
-				</div>
-			</div>
-			<div className={`${display} bg-white p-4 sm:mx-auto text-sm`}>
-				<p>{paragraphContent}</p>
 			</div>
 			{content}
-			<div className='flex flex-col bg-white p-4 pt-14'>
-				<Link
-					to='/myorders'
-					className={classNames(
-						contentState === ContentState.Complete
-							? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-modal text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
-							: 'hidden'
-					)}
-					onClick={() => setOpen(false)}
-				>
-					<span>View Orders</span>
-				</Link>
+			<div className={`${display} bg-white px-10 pt-20 pb-4 sm:mx-auto text-sm`}>
+				<p>{paragraphContent}</p>
+			</div>
+			<div className='flex gap-6 bg-white p-4'>
 				<button
 					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white ${bgColor} hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
-					onClick={handleSubmit((data) => buyContract(data))}
+					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+					onClick={() => setOpen(false)}
 				>
-					{buttonContent}
+					{contentState === ContentState.Complete ? 'Close' : 'Cancel'}
 				</button>
+				{getButton()}
 			</div>
 		</div>
 	);
