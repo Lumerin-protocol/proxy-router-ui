@@ -7,10 +7,12 @@ const ethereum: any = window.ethereum;
 
 export const registerEventListeners: (
 	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>,
-	setWalletText: React.Dispatch<React.SetStateAction<string>>
-) => void = (setAlertOpen, setWalletText) => {
+	setWalletText: React.Dispatch<React.SetStateAction<string>>,
+	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>
+) => void = (setAlertOpen, setWalletText, setAccounts) => {
 	const showAlert = setAlertOpen;
 	const changeWalletText = setWalletText;
+	const changeAccounts = setAccounts;
 
 	// connect
 	interface ConnectInfo {
@@ -41,6 +43,8 @@ export const registerEventListeners: (
 			// MetaMask is locked or the user has not connected any accounts
 			showAlert(true);
 			changeWalletText(WalletText.ConnectViaMetaMask);
+		} else {
+			changeAccounts(accounts);
 		}
 	};
 

@@ -38,13 +38,14 @@ const connectToMetaMaskAsync: (
 	resolve: Resolve,
 	reject: Reject,
 	setAlertOpen: SetAlertOpen,
-	setWalletText: React.Dispatch<React.SetStateAction<string>>
-) => void = async (resolve, reject, setAlertOpen, setWalletText) => {
+	setWalletText: React.Dispatch<React.SetStateAction<string>>,
+	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>
+) => void = async (resolve, reject, setAlertOpen, setWalletText, setAccounts) => {
 	const provider = (await detectEthereumProvider()) as provider;
 	// If the provider returned by detectEthereumProvider is not the same as
 	// window.ethereum, something is overwriting it, perhaps another wallet.
 	if (provider && provider === ethereum) {
-		registerEventListeners(setAlertOpen, setWalletText);
+		registerEventListeners(setAlertOpen, setWalletText, setAccounts);
 		const web3 = new Web3(provider);
 		try {
 			// Request account access if needed
@@ -69,28 +70,31 @@ const connectToWalletAsync: (
 	resolve: Resolve,
 	reject: Reject,
 	setAlertOpen: SetAlertOpen,
-	setWalletText: React.Dispatch<React.SetStateAction<string>>
-) => void = async (resolve, reject, setAlertOpen, setWalletText) => {
-	connectToMetaMaskAsync(resolve, reject, setAlertOpen, setWalletText);
+	setWalletText: React.Dispatch<React.SetStateAction<string>>,
+	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>
+) => void = async (resolve, reject, setAlertOpen, setWalletText, setAccounts) => {
+	connectToMetaMaskAsync(resolve, reject, setAlertOpen, setWalletText, setAccounts);
 };
 
 // Get web3 instance
-const getWeb3Async: (setAlertOpen: SetAlertOpen, setWalletText: React.Dispatch<React.SetStateAction<string>>) => Promise<Web3> = async (
-	setAlertOpen,
-	setWalletText
-) =>
+const getWeb3Async: (
+	setAlertOpen: SetAlertOpen,
+	setWalletText: React.Dispatch<React.SetStateAction<string>>,
+	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>
+) => Promise<Web3> = async (setAlertOpen, setWalletText, setAccounts) =>
 	new Promise<Web3>((resolve, reject) => {
-		connectToWalletAsync(resolve, reject, setAlertOpen, setWalletText);
+		connectToWalletAsync(resolve, reject, setAlertOpen, setWalletText, setAccounts);
 	});
 
 // Get accounts, web3 and contract instances
 export const getWeb3ResultAsync: (
 	setOpenAlert: React.Dispatch<React.SetStateAction<boolean>>,
-	setWalletText: React.Dispatch<React.SetStateAction<string>>
-) => Promise<Web3Result | null> = async (setOpenAlert, setWalletText) => {
+	setWalletText: React.Dispatch<React.SetStateAction<string>>,
+	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>
+) => Promise<Web3Result | null> = async (setOpenAlert, setWalletText, setAccounts) => {
 	try {
 		// Get network provider and web3 instance
-		const web3 = await getWeb3Async(setOpenAlert, setWalletText);
+		const web3 = await getWeb3Async(setOpenAlert, setWalletText, setAccounts);
 		// Get network info
 		const networkId = await web3.eth.net.getId();
 		const deployedNetwork = (TestContract as ContractJson).networks[networkId];

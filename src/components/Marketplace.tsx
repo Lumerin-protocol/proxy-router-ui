@@ -83,7 +83,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
-			{ Header: 'PRICE (ETH)', accessor: 'price' },
+			{ Header: 'PRICE (LMR)', accessor: 'price' },
 			{ Header: 'LIMIT (TH/S)', accessor: 'limit' },
 			{ Header: 'SPEED (TH/S)', accessor: 'speed' },
 			{ Header: 'DURATION (HOURS)', accessor: 'length' },

@@ -33,7 +33,7 @@ enum PathName {
 	MyOrders = '/myorders',
 }
 
-// used in `eventListeners.ts`
+// Used in `eventListeners.ts`
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
 	Disconnect = 'Disconnect',
@@ -94,7 +94,7 @@ export const Main: React.FC = () => {
 	// Get accounts, web3 and contract instances
 	const onboarding = new MetaMaskOnboarding();
 	const connectWallet: () => void = async () => {
-		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText);
+		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText, setAccounts);
 		if (web3Result) {
 			const { accounts, contractInstance, web3 } = web3Result;
 			setAccounts(accounts);
