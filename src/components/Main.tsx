@@ -83,7 +83,10 @@ export const Main: React.FC = () => {
 	const createContractNav: JSX.Element = (
 		<div
 			className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
-			onClick={() => setCreateModalOpen(true)}
+			onClick={() => {
+				setCreateModalOpen(true);
+				setSidebarOpen(false);
+			}}
 		>
 			<CreateContractIcon />
 			<span className='ml-4'>Create Contract</span>
