@@ -212,7 +212,7 @@ export const Main: React.FC = () => {
 	const addMyOrderAsync: (events: EventData[]) => void = async (events) => {
 		const myContractOrders: MyOrder[] = [];
 		// filter contracts by userAccount
-		const eventsForAddress = events.filter((event) => userAccount === event.returnValues._buyer);
+		const eventsForAddress = events.filter((event) => userAccount.toLowerCase() === (event.returnValues._buyer as string).toLowerCase());
 		for await (const event of eventsForAddress) {
 			// get block to use its timestamp
 			const block = await web3?.eth.getBlock(event.blockNumber);
@@ -228,20 +228,18 @@ export const Main: React.FC = () => {
 	};
 
 	const createMyOrdersAsync: () => void = async () => {
-		if (addresses.length > 0) {
-			try {
-				// TODO: have event index buyer address to filter by
-				const events = await marketplaceContract?.getPastEvents('contractPurchased', {
-					fromBlock: 0, // TODO: update to block# when marketplace is deployed
-					toBlock: 'latest',
-				});
-				if (events) addMyOrderAsync(events);
-			} catch (error) {
-				const typedError = error as Error;
-				printError(typedError.message, typedError.stack as string);
-				// crash app bc events should exist
-				throw typedError;
-			}
+		try {
+			// TODO: have event index buyer address to filter by
+			const events = await marketplaceContract?.getPastEvents('contractPurchased', {
+				fromBlock: 0, // TODO: update to block# when marketplace is deployed
+				toBlock: 'latest',
+			});
+			if (events) addMyOrderAsync(events);
+		} catch (error) {
+			const typedError = error as Error;
+			printError(typedError.message, typedError.stack as string);
+			// Crash app bc events should exist
+			throw typedError;
 		}
 	};
 
@@ -252,21 +250,21 @@ export const Main: React.FC = () => {
 			if (lumerinTokenBalance) setLumerinBalance(lumerinTokenBalance);
 		}
 	};
-	useEffect(() => updateLumerinTokenBalanceAsync(), [web3]);
+	useEffect(() => updateLumerinTokenBalanceAsync(), [web3, accounts]);
 
-	// set contracts and orders once marketplaceContract exists
-	useEffect(() => createContractsAsync(), [marketplaceContract]);
+	// Set contracts and orders once marketplaceContract exists
+	useEffect(() => createContractsAsync(), [marketplaceContract, accounts]);
 
-	// set orders once addresses have been retrieved
-	useEffect(() => createMyOrdersAsync(), [addresses]);
+	// Set orders once addresses have been retrieved
+	useEffect(() => createMyOrdersAsync(), [addresses, accounts]);
 
-	// get contracts at interval of 20 seconds
+	// Get contracts at interval of 20 seconds
 	useInterval(() => {
 		createContractsAsync();
 		createMyOrdersAsync();
 	}, 20000);
 
-	// content setup
+	// Content setup
 	const ActionButton: JSX.Element = (
 		<button type='button' className='btn-wallet w-60 h-12 mt-4 mb-20 rounded-5 bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
 			<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
