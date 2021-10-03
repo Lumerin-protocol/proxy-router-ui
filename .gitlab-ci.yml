@@ -18,7 +18,7 @@ before_script:
 build-development:
     stage: build
     only: 
-        - development
+        - ci_test
     tags:
         - dedicated
     script:
@@ -29,7 +29,7 @@ build-development:
 deploy-development:
     stage: deploy
     only: 
-        - development
+        - ci_test
     tags:
         - dedicated
     script:
