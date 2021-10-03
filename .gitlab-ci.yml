@@ -1,5 +1,5 @@
 variables:
-  CLUSTER_HOST: 092029861612.dkr.ecr.us-west-2.amazonaws.com
+  REPOSITORY_URI: 092029861612.dkr.ecr.us-west-2.amazonaws.com/titan-proxy-router-ui:latest
   CI_AWS_ECS_CLUSTER: titan-proxy-router
   CI_AWS_ECS_SERVICE: titan-proxy-router-ui-service
   CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
@@ -9,12 +9,10 @@ stages:
     - deploy
 
 before_script:
-    - REPOSITORY_URI=$CLUSTER_HOST/titan-proxy-router-ui:latest
     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
     - aws configure set region $AWS_DEFAULT_REGION
-    #- aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $CLUSTER_HOST
-    - $(aws ecr get-login --no-include-email --region "${AWS_DEFAULT_REGION}")
+    - aws ecr get-login --no-include-email
 
 build-development:
     stage: build
