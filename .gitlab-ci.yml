@@ -37,4 +37,4 @@ deploy-development:
         - NEW_CONTAINER_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$REPOSITORY_URI" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
         - echo "Registering new container definition..."
         - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}" --memory 512
-        - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
+        - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}" --task-definition "${CI_AWS_ECS_TASK_DEFINITION}" --requires-compatibilities "FARGATE"
