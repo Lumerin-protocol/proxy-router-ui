@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { App } from './App';
-import { ErrorPage } from './components/UI/ErrorPage';
+import { ErrorPage } from './components/ui/ErrorPage';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
 
