@@ -12,7 +12,7 @@ export interface InputValues {
 	walletAddress?: string;
 	contractTime?: number;
 	endDate?: Date;
-	listPrice: number;
+	listPrice?: number;
 }
 
 // Used to set initial state for contentData to prevent undefined error
