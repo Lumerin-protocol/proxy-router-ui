@@ -1,0 +1,40 @@
+variables:
+  REPOSITORY_URI: 092029861612.dkr.ecr.us-west-2.amazonaws.com/titan-proxy-router-ui:latest
+  CI_AWS_ECS_CLUSTER: titan-proxy-router
+  CI_AWS_ECS_SERVICE: titan-proxy-router-ui-service
+  CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
+
+stages:
+    - build
+    - deploy
+
+before_script:
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set region $AWS_DEFAULT_REGION
+    - eval $(aws ecr get-login --no-include-email | sed 's|https://||')
+
+build-development:
+    stage: build
+    only: 
+        - development
+    tags:
+        - dedicated
+    script:
+        - docker build -t titan-proxy-router-ui .
+        - docker tag titan-proxy-router-ui:latest $REPOSITORY_URI
+        - docker push $REPOSITORY_URI
+
+deploy-development:
+    stage: deploy
+    only: 
+        - development
+    tags:
+        - dedicated
+    script:
+        - echo $REPOSITORY_URI
+        - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$CI_AWS_ECS_TASK_DEFINITION" --region "${AWS_DEFAULT_REGION}")
+        - NEW_CONTAINER_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$REPOSITORY_URI" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
+        - echo "Registering new container definition..."
+        - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}" --requires-compatibilities "FARGATE" --network-mode "awsvpc" --execution-role-arn "arn:aws:iam::092029861612:role/ecsTaskExecutionRole" --memory 512 --cpu 256
+        - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}" --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"

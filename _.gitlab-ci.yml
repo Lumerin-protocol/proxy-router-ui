@@ -1,7 +1,0 @@
-variables:
-  CI_AWS_ECS_CLUSTER: titan-proxy-router
-  CI_AWS_ECS_SERVICE: titan-proxy-router-ui-service
-  CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
-
-include:
-  - template: AWS/Deploy-ECS.gitlab-ci.yml
