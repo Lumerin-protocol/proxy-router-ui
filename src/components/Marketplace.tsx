@@ -53,6 +53,29 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		}
 	}, [mediaQueryList?.matches]);
 
+	enum Unit {
+		Hour = 'H',
+		Day = 'D',
+		Week = 'W',
+	}
+
+	const getLengthDisplay: (length: number) => string = (length) => {
+		// Test contract returning less than an hr so use multiplier
+		// TODO: remove when contracts updated
+		length = length * 10000;
+		const secondsInHour = 3600;
+		// Smallest unit to display is an hour since min contract duration is 1 hour
+		const weeks = Math.floor(length / (secondsInHour * 24 * 7));
+		const days = Math.floor(length / (secondsInHour * 24));
+		const hours = Math.floor((length % (secondsInHour * 24)) / secondsInHour);
+		if (weeks === 0) {
+			if (days === 0) return `${hours}${Unit.Hour}`;
+			if (hours === 0) return `${days}${Unit.Day}`;
+			return `${days}${Unit.Day} / ${hours}${Unit.Hour}`;
+		}
+		return `${weeks}${Unit.Week} / ${days}${Unit.Day} / ${hours}${Unit.Hour}`;
+	};
+
 	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = (contracts) => {
 		const updatedContracts = contracts.map((contract) => {
 			const updatedContract = { ...contract };
@@ -70,6 +93,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 					/>
 				);
 				updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
+				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
 				);
@@ -86,7 +110,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 			{ Header: 'PRICE (LMR)', accessor: 'price' },
 			{ Header: 'LIMIT (TH/S)', accessor: 'limit' },
 			{ Header: 'SPEED (TH/S)', accessor: 'speed' },
-			{ Header: 'DURATION (HOURS)', accessor: 'length' },
+			{ Header: 'DURATION (W/D/H)', accessor: 'length' },
 			{ Header: 'TRADE', accessor: 'trade' },
 		],
 		[]
