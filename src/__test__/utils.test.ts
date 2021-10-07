@@ -1,4 +1,4 @@
-import { truncateAddress, classNames, AddressLength } from '../utils';
+import { truncateAddress, classNames, AddressLength, getLengthDisplay } from '../utils';
 
 describe('utils', () => {
 	// truncateAddress()
@@ -36,15 +36,70 @@ describe('utils', () => {
 
 	// classNames()
 	describe('classNames', () => {
-		// Arrange
-		const classes = ['lumerin', 'token', 'is', 'awesome'];
 		it('works', () => {
+			// Arrange
+			const classes = ['lumerin', 'token', 'is', 'awesome'];
+
 			// Act
 			const result = classNames(...classes);
 
 			// Assert
 			const expectedResult = classes.join(' ');
 			expect(result).toBe(expectedResult);
+		});
+	});
+
+	// getLengthDispay()
+	// TODO: update seconds when contracts updated
+	describe('getLengthDisplay', () => {
+		it('displays weeks, hours, days', () => {
+			// Arrange
+			const seconds = 1000;
+
+			// Act
+			const result = getLengthDisplay(seconds);
+
+			// Assert
+			const expectedResult = '16W / 3D / 17H';
+			expect(result).toBe(expectedResult);
+		});
+
+		describe('handles 0 values', () => {
+			it('for 0 weeks', () => {
+				// Arrange
+				const seconds = 10;
+
+				// Act
+				const result = getLengthDisplay(seconds);
+
+				// Assert
+				const expectedResult = '1D / 3H';
+				expect(result).toBe(expectedResult);
+			});
+
+			it('for 0 days', () => {
+				// Arrange
+				const seconds = 0.5;
+
+				// Act
+				const result = getLengthDisplay(seconds);
+
+				// Assert
+				const expectedResult = '1H';
+				expect(result).toBe(expectedResult);
+			});
+
+			it('for 0 hours', () => {
+				// Arrange
+				const seconds = 8.64;
+
+				// Act
+				const result = getLengthDisplay(seconds);
+
+				// Assert
+				const expectedResult = '1D';
+				expect(result).toBe(expectedResult);
+			});
 		});
 	});
 });

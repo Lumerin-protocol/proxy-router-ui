@@ -5,7 +5,7 @@ import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
-import { AddressLength, truncateAddress } from '../utils';
+import { AddressLength, getLengthDisplay, truncateAddress } from '../utils';
 
 export interface MarketPlaceData {
 	id?: JSX.Element | string;
@@ -52,32 +52,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 			setIsLargeBreakpointOrGreater(true);
 		}
 	}, [mediaQueryList?.matches]);
-
-	enum Unit {
-		Hour = 'H',
-		Day = 'D',
-		Week = 'W',
-	}
-
-	// TODO: remove
-	// arbitrary change to force new deployment
-
-	const getLengthDisplay: (length: number) => string = (length) => {
-		// Test contract returning less than an hr so use multiplier
-		// TODO: remove when contracts updated
-		length = length * 10000;
-		const secondsInHour = 3600;
-		// Smallest unit to display is an hour since min contract duration is 1 hour
-		const weeks = Math.floor(length / (secondsInHour * 24 * 7));
-		const days = Math.floor(length / (secondsInHour * 24));
-		const hours = Math.floor((length % (secondsInHour * 24)) / secondsInHour);
-		if (weeks === 0) {
-			if (days === 0) return `${hours}${Unit.Hour}`;
-			if (hours === 0) return `${days}${Unit.Day}`;
-			return `${days}${Unit.Day} / ${hours}${Unit.Hour}`;
-		}
-		return `${weeks}${Unit.Week} / ${days}${Unit.Day} / ${hours}${Unit.Hour}`;
-	};
 
 	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = (contracts) => {
 		const updatedContracts = contracts.map((contract) => {
