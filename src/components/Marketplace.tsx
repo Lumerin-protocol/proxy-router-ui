@@ -59,6 +59,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		Week = 'W',
 	}
 
+	// TODO: remove
+	// arbitrary change to force new deployment
+
 	const getLengthDisplay: (length: number) => string = (length) => {
 		// Test contract returning less than an hr so use multiplier
 		// TODO: remove when contracts updated
