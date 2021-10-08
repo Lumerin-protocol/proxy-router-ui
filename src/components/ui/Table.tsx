@@ -20,6 +20,7 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr:first-child': {
 			height: '32px',
+			pointerEvents: 'none',
 		},
 		'& > tbody > tr:first-child > td': {
 			border: 'none',
