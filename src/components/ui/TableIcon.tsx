@@ -5,14 +5,18 @@ interface TableIconProps {
 	icon: JSX.Element;
 	text: string | number;
 	justify: string;
+	marginLeft?: string;
 	hasLink?: boolean;
 }
 
-export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, hasLink }) => {
+export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, marginLeft, hasLink }) => {
 	let updatedJustify = justify ?? 'center';
+	let updatedMarginLeft = marginLeft ?? '8';
 	updatedJustify = `justify-${updatedJustify}`;
+	updatedMarginLeft = `ml-${updatedMarginLeft}`;
+
 	return (
-		<div className={classNames('flex ml-4', updatedJustify)}>
+		<div className={classNames('flex', updatedMarginLeft, updatedJustify)}>
 			<div className='flex items-center'>
 				<span>{icon}</span>
 				<span className='ml-4 font-semibold text-left'>

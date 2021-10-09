@@ -60,7 +60,7 @@ describe('<MyOrders />', () => {
 		];
 
 		// Act
-		render(<MyOrders orders={myOrders} />);
+		render(<MyOrders orders={myOrders} currentBlockTimestamp={0} />);
 
 		// Assert
 		const table = document.getElementById('myorders');

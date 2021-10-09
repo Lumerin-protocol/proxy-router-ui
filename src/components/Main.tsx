@@ -54,6 +54,7 @@ export interface MyOrder extends MyOrdersData {}
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
 	// State and constants
+	// TODO: as webapp grows think of using context
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
 	const [web3, setWeb3] = useState<Web3>();
@@ -267,7 +268,7 @@ export const Main: React.FC = () => {
 	useEffect(() => createContractsAsync(), [marketplaceContract, accounts]);
 
 	// Set orders once addresses have been retrieved
-	useEffect(() => createMyOrdersAsync(), [addresses, accounts]);
+	useEffect(() => createMyOrdersAsync(), [addresses, contracts, accounts]);
 
 	// Get contracts at interval of 20 seconds
 	useInterval(() => {

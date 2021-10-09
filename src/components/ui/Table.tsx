@@ -5,7 +5,6 @@ import { classNames } from '../../utils';
 const { colors } = require('styles/styles.config.js');
 
 // The use of `!important` is bc not dynamically checking the number of cells per row
-// My Orders page has one more cell than Marketplace
 const useStyles = createUseStyles({
 	table: {
 		'&': {
@@ -48,7 +47,6 @@ const useStyles = createUseStyles({
 		'& > tbody > tr > td:nth-child(2)': {
 			borderLeft: 'none',
 			borderRight: 'none',
-			paddingLeft: 0,
 		},
 		'& > tbody > tr:nth-child(2) > td:first-child': {
 			borderTopLeftRadius: '5px',

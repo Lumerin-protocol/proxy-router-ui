@@ -69,7 +69,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 						justify='start'
 					/>
 				);
-				updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' />;
+				updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' marginLeft='0' />;
 				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
