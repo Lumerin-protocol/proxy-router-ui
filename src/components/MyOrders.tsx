@@ -6,13 +6,16 @@ import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
 import { MyOrder } from './Main';
 import { AddressLength, classNames, truncateAddress } from '../utils';
+import { DateTime } from 'luxon';
 import _ from 'lodash';
 
 export interface MyOrdersData {
 	id?: JSX.Element | string;
 	started?: string;
 	status?: JSX.Element | string;
-	delivered?: string;
+	speed?: number;
+	length?: string;
+	delivered?: string; // Not used in Stage 1
 	progress?: JSX.Element | string;
 }
 
@@ -26,9 +29,10 @@ interface CustomTableOptions extends MyOrdersData, Header {}
 
 interface MyOrdersProps {
 	orders: MyOrder[];
+	currentBlockTimestamp: number;
 }
 
-export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
+export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestamp }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
@@ -66,11 +70,27 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 		);
 	};
 
-	const getProgressDiv: (progress: string) => JSX.Element = (progress) => {
-		const hashrates = progress.split('/');
-		const delivered = hashrates[0];
-		const promised = hashrates[1];
-		const percentage = (parseInt(delivered) / parseInt(promised)) * 100;
+	const getProgressDiv: (startTime: string, length: number) => JSX.Element = (startTime, length) => {
+		// Potentially Stage 2 logic
+		// const hashrates = progress.split('/');
+		// const delivered = hashrates[0];
+		// const promised = hashrates[1];
+		// const percentage = (parseInt(delivered) / parseInt(promised)) * 100;
+
+		// Determine progress based on time passed compared to contract length
+		// Length is dummy data
+		// TODO: update when length is accurate
+		let timeElapsed: number = 0;
+		let percentage: number = 0;
+		if (length === 0) {
+			percentage = 100;
+		} else {
+			timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
+			// TODO: use line below when length is not dummy data
+			// percentage = timeElapsed / length;
+			percentage = (timeElapsed / 200000) * 100;
+		}
+
 		return (
 			<div className='flex justify-evenly items-baseline'>
 				<div>{percentage.toFixed()}%</div>
@@ -98,7 +118,8 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 					/>
 				);
 				updatedOrder.status = getStatusDiv(updatedOrder.status as string);
-				updatedOrder.progress = getProgressDiv(updatedOrder.delivered as string);
+				updatedOrder.progress = getProgressDiv(updatedOrder.started as string, parseInt(updatedOrder.length as string));
+				updatedOrder.started = DateTime.fromSeconds(parseInt(updatedOrder.started as string)).toFormat('MM/dd/yyyy hh:mm:ss');
 			}
 			return updatedOrder;
 		});
@@ -111,7 +132,8 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders }) => {
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
 			{ Header: 'STARTED', accessor: 'started' },
 			{ Header: 'STATUS', accessor: 'status' },
-			{ Header: 'DELIVERED VS PROMISED (TH/S)', accessor: 'delivered' },
+			// Add back during Stage 2
+			// { Header: 'DELIVERED VS PROMISED (TH/S)', accessor: 'delivered' },
 			{ Header: 'PROGRESS', accessor: 'progress' },
 		],
 		[]

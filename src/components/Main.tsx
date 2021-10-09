@@ -19,11 +19,9 @@ import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
 import { addLumerinTokenToMetaMaskAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync, reconnectWalletAsync } from '../web3/helpers';
 import { AddressLength, classNames, truncateAddress } from '../utils';
-import { DateTime } from 'luxon';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { EventData } from 'web3-eth-contract';
-import axios from 'axios';
 import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
 import _ from 'lodash';
@@ -46,9 +44,9 @@ interface Navigation {
 	current: boolean;
 }
 
-interface ValidatorResponse {
-	hashes_done: number;
-}
+// interface ValidatorResponse {
+// 	hashes_done: number;
+// }
 
 export interface HashRentalContract extends MarketPlaceData {}
 export interface MyOrder extends MyOrdersData {}
@@ -65,6 +63,7 @@ export const Main: React.FC = () => {
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [myOrders, setMyOrders] = useState<MyOrder[]>([]);
+	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
@@ -194,14 +193,21 @@ export const Main: React.FC = () => {
 
 	const createMyOrderAsync: (contractAddress: string, timestamp: string) => Promise<MyOrder | null> = async (contractAddress, timestamp) => {
 		try {
-			const response = await axios.get(`http://44.234.253.47:7545/completionStatus/${contractAddress}`);
-			const delivered = (response.data as ValidatorResponse).hashes_done.toFixed();
+			// Delivered hashrate will be used in Stage 2
+			// const response = await axios.get(`http://44.234.253.47:7545/completionStatus/${contractAddress}`);
+			// const delivered = (response.data as ValidatorResponse).hashes_done.toFixed();
 			const contractState: string = await marketplaceContract?.methods.getState(contractAddress).call();
+			let contract = null;
+			// Check there is an active contract at this address
+			if (contractState.toLowerCase() === 'active') {
+				contract = contracts.filter((contract) => contract.id === contractAddress)[0] as HashRentalContract;
+			}
 			return {
 				id: contractAddress,
-				started: DateTime.fromSeconds(parseInt(timestamp)).toFormat('MM/dd/yyyy hh:mm:ss'),
+				started: timestamp,
 				status: contractState,
-				delivered: `${delivered}/100`,
+				speed: contract ? contract.speed : 0,
+				length: contract ? contract.length : 0,
 			} as MyOrder;
 		} catch (error) {
 			const typedError = error as Error;
@@ -228,11 +234,13 @@ export const Main: React.FC = () => {
 		if (!_.isEqual(myOrders, myContractOrders)) {
 			setMyOrders(myContractOrders);
 		}
+
+		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
+		setCurrentBlockTimestamp(currentBlockTimestamp as number);
 	};
 
 	const createMyOrdersAsync: () => void = async () => {
 		try {
-			// TODO: have event index buyer address to filter by
 			const events = await marketplaceContract?.getPastEvents('contractPurchased', {
 				fromBlock: 0, // TODO: update to block# when marketplace is deployed
 				toBlock: 'latest',
@@ -278,7 +286,11 @@ export const Main: React.FC = () => {
 	const routes = (
 		<Suspense fallback={<Spinner />}>
 			<Switch>
-				<Route path='/myorders' exact render={(props: RouteComponentProps) => <MyOrders {...props} orders={myOrders} />} />
+				<Route
+					path='/myorders'
+					exact
+					render={(props: RouteComponentProps) => <MyOrders {...props} orders={myOrders} currentBlockTimestamp={currentBlockTimestamp} />}
+				/>
 				<Route
 					path='/'
 					render={(props: RouteComponentProps) => (
@@ -478,4 +490,4 @@ export const Main: React.FC = () => {
 };
 
 Main.displayName = 'Main';
-Main.whyDidYouRender = true;
+Main.whyDidYouRender = false;
