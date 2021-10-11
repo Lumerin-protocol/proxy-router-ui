@@ -88,7 +88,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 			timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
 			// TODO: use line below when length is not dummy data
 			// percentage = timeElapsed / length;
-			percentage = (timeElapsed / 200000) * 100;
+			percentage = (timeElapsed / 1000000) * 100;
 		}
 
 		return (

@@ -112,7 +112,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				// TODO: send Lumerin instead of Ether
 				const receipt = await marketplaceContract?.methods
 					.setBuyContract(contract.id, data.poolAddress, data.username, data.password)
-					.send({ from: userAccount, value: web3?.utils.toWei(contract.price as string, 'ether') });
+					// Contract price fixed since using ETH
+					// TODO: update to use lumerin when purchasing contract
+					.send({ from: userAccount, value: web3?.utils.toWei('0' as string, 'ether') });
 				if (receipt?.status) setContentState(ContentState.Complete);
 			} catch (error) {
 				const typedError = error as Error;
