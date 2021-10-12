@@ -323,7 +323,7 @@ export const Main: React.FC = () => {
 	const buttonDisplay = contracts.length === 0 ? 'hidden' : 'flex-1 px-4 flex justify-end';
 
 	return (
-		<div id='main' className='h-screen flex overflow-hidden'>
+		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
 			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
 			<Modal
 				open={buyModalOpen}
@@ -456,6 +456,9 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
+					<div className='flex flex-col justify-center'>
+						<p className='text-lg font-semibold'>{pathName === '/' ? 'Marketplace' : 'My Orders'}</p>
+					</div>
 					<div className={buttonDisplay}>
 						<button
 							type='button'

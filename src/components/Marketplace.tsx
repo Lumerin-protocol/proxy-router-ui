@@ -94,7 +94,15 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const data = getTableData(contracts);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='marketplace' tableInstance={tableInstance} columnCount={6} />;
+	return (
+		<div className='flex flex-col'>
+			<div className='mt-8 flex flex-col items-center text-18'>
+				<p>Welcome to the Lumerin Hashrate marketplace.</p>
+				<p> Tap buy to purchase any of the contracts below.</p>
+			</div>
+			<Table id='marketplace' tableInstance={tableInstance} columnCount={6} />
+		</div>
+	);
 };
 
 Marketplace.displayName = 'Marketplace';

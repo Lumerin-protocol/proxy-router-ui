@@ -10,6 +10,7 @@ module.exports = {
 			},
 			fontSize: {
 				xs: '.8125rem',
+				18: '1.125rem',
 			},
 			colors,
 			borderRadius: {
