@@ -30,7 +30,7 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr > td': {
 			backgroundColor: 'white',
-			border: `1px solid ${colors['lumerin-table-border-gray']}`,
+			border: `1px solid ${colors['lumerin-gray']}`,
 			borderBottom: 'none',
 		},
 		'& > tbody > tr > td:first-child': {
@@ -42,7 +42,7 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr > td:last-child': {
 			borderLeft: 'none',
-			borderRight: `1px solid ${colors['lumerin-table-border-gray']} !important`,
+			borderRight: `1px solid ${colors['lumerin-gray']} !important`,
 		},
 		'& > tbody > tr > td:nth-child(2)': {
 			borderLeft: 'none',
@@ -67,7 +67,7 @@ const useStyles = createUseStyles({
 			borderRight: 'none',
 		},
 		'& > tbody > tr:last-child > td': {
-			borderBottom: `1px solid ${colors['lumerin-table-border-gray']}`,
+			borderBottom: `1px solid ${colors['lumerin-gray']}`,
 		},
 		'& > tbody > tr:last-child > td:first-child': {
 			borderBottomLeftRadius: '5px',

@@ -115,7 +115,7 @@ export const getWeb3ResultAsync: (
 };
 
 // Wallet helpers
-// Makes user choose which account they want to use in MetaMask
+// Allows user choose which account they want to use in MetaMask
 export const reconnectWalletAsync: () => void = async () => {
 	await (ethereum as any)?.request({
 		method: 'wallet_requestPermissions',

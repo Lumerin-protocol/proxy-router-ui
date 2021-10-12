@@ -467,7 +467,7 @@ export const Main: React.FC = () => {
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
 								<button className='btn-add-lmr p-0 mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
-									<span className='ml-3'>Add LMR to Wallet</span>
+									<span>Add LMR to Wallet</span>
 								</button>
 								<button className='btn-connected w-64 cursor-default'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>

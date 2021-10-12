@@ -8,7 +8,6 @@ module.exports = {
 		'lumerin-helpertext-gray': '#707070',
 		'lumerin-aqua': '#11B4BF',
 		'lumerin-table-text-color': '#0A0B0D',
-		'lumerin-table-border-gray': '#F2F5F9',
 		'lumerin-light-aqua': '#DBECED',
 		'lumerin-green': '#66BE26',
 	},
