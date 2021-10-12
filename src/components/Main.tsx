@@ -125,8 +125,8 @@ export const Main: React.FC = () => {
 	};
 
 	const getTruncatedWalletAddress: () => string | null = () => {
-		if (walletText === WalletText.Disconnect && userAccount) {
-			return truncateAddress(userAccount, AddressLength.medium);
+		if (userAccount) {
+			return truncateAddress(userAccount, AddressLength.LONG);
 		}
 
 		return null;
@@ -460,25 +460,16 @@ export const Main: React.FC = () => {
 						<p className='text-lg font-semibold'>{pathName === '/' ? 'Marketplace' : 'My Orders'}</p>
 					</div>
 					<div className={buttonDisplay}>
-						<button
-							type='button'
-							className={classNames(
-								walletText === WalletText.Disconnect
-									? 'w-40 h-12 mt-4 mr-2 py-2 px-4 border border-solid border-lumerin-aqua rounded-5 bg-white text-sm text-lumerin-aqua font-Inter'
-									: 'btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
-							)}
-							onClick={walletClickHandler}
-						>
-							<span className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'mr-4' : '')}>{walletText}</span>
-							{walletText === WalletText.ConnectViaMetaMask ? <MetaMaskIcon /> : null}
+						<button className='btn-lmr pointer-events-none'>
+							<LumerinIcon />
+							<span className='ml-2'>{lumerinBalance} LMR</span>
 						</button>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
-								<button className='btn-connected mr-2' onClick={() => addLumerinTokenToMetaMaskAsync()}>
-									<LumerinIcon />
-									<span className='ml-3'>{lumerinBalance} LMR</span>
+								<button className='btn-add-lmr p-0 mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
+									<span className='ml-3'>Add LMR to Wallet</span>
 								</button>
-								<button className='btn-connected cursor-default'>
+								<button className='btn-connected w-64 cursor-default'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
 									<MetaMaskIcon />
 								</button>

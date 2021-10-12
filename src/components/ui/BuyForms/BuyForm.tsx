@@ -199,7 +199,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			<div className='flex justify-between bg-white text-black p-4 border-transparent rounded-t-5'>
 				<div className={classNames(contentState === ContentState.Complete ? 'hidden' : 'block')}>
 					<p className='text-3xl'>Purchase Hashpower</p>
-					<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.medium)}</p>
+					<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
 				</div>
 			</div>
 			{content}

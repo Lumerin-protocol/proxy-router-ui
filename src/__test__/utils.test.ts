@@ -8,7 +8,7 @@ describe('utils', () => {
 
 		it('short string works', () => {
 			// Act
-			const result = truncateAddress(address, AddressLength.short);
+			const result = truncateAddress(address, AddressLength.SHORT);
 
 			// Assert
 			const expectedString = '0xEeD...';
@@ -17,7 +17,7 @@ describe('utils', () => {
 
 		it('medium string works', () => {
 			// Act
-			const result = truncateAddress(address, AddressLength.medium);
+			const result = truncateAddress(address, AddressLength.MEDIUM);
 
 			// Assert
 			const expectedString = '0xEeD...6a413';
@@ -26,7 +26,7 @@ describe('utils', () => {
 
 		it('long string works', () => {
 			// Act
-			const result = truncateAddress(address, AddressLength.long);
+			const result = truncateAddress(address, AddressLength.LONG);
 
 			// Assert
 			const expectedString = '0xEeD15Bb0...23EaF6a413';

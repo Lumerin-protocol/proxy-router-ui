@@ -110,7 +110,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 						text={
 							isLargeBreakpointOrGreater
 								? truncateAddress(updatedOrder.id as string)
-								: truncateAddress(updatedOrder.id as string, AddressLength.short)
+								: truncateAddress(updatedOrder.id as string, AddressLength.SHORT)
 						}
 						hasLink
 						justify='start'

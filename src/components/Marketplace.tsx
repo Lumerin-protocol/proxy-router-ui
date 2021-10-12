@@ -62,7 +62,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 						text={
 							isLargeBreakpointOrGreater
 								? truncateAddress(updatedContract.id as string)
-								: truncateAddress(updatedContract.id as string, AddressLength.short)
+								: truncateAddress(updatedContract.id as string, AddressLength.SHORT)
 						}
 						hasLink
 						justify='start'
