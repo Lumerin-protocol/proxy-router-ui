@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
@@ -57,7 +56,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 
 	const getStatusDiv: (status: string) => JSX.Element = (status) => {
 		return (
-			<div className='flex justify-center'>
+			<div>
 				<span
 					className={classNames(
 						status === 'active' ? 'w-20 bg-lumerin-green text-white' : 'w-28 bg-lumerin-dark-gray text-black',
@@ -92,9 +91,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 		}
 
 		return (
-			<div className='flex justify-evenly items-baseline'>
+			<div className='flex items-baseline'>
 				<div>{percentage.toFixed()}%</div>
-				<div className='w-1/2'>
+				<div className='w-1/2 ml-4'>
 					<ProgressBar width={percentage.toString()} />
 				</div>
 			</div>
@@ -107,7 +106,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 			if (Object.keys(order).length !== 0) {
 				updatedOrder.id = (
 					<TableIcon
-						icon={<Hashrate />}
+						icon={null}
 						text={
 							isLargeBreakpointOrGreater
 								? truncateAddress(updatedOrder.id as string)

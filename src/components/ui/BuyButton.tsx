@@ -13,7 +13,7 @@ export const BuyButton: React.FC<BuyButtonProps> = ({ contractId, setContractId,
 	};
 
 	return (
-		<button type='button' className='w-20 h-8 rounded-5 p-auto bg-lumerin-aqua text-white font-medium' onClick={(event) => clickHandler(event)}>
+		<button type='button' className='w-20 h-10 rounded-5 p-auto bg-lumerin-aqua text-white font-medium' onClick={(event) => clickHandler(event)}>
 			<span>Buy</span>
 		</button>
 	);

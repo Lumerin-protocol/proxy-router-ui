@@ -34,17 +34,20 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 
 			<div className='bg-white p-4 p-4'>
 				<label htmlFor='username' className='block text-sm font-medium text-gray-700'>
-					Username
+					Username *
 				</label>
 				<div className='mt-1'>
 					<input
-						{...register('username')}
+						{...register('username', {
+							required: 'Username is required',
+						})}
 						id='username'
 						type='text'
 						placeholder='account.worker'
 						className='review-no-errors review-input'
 					/>
 				</div>
+				{errors.username?.type === 'required' && <div className='text-xs text-red-500'>{errors.username.message}</div>}
 			</div>
 
 			<div className='bg-white p-4 p-4'>

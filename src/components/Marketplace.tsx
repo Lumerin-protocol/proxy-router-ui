@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { ReactComponent as Hashrate } from '../images/hashrate.svg';
 import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
@@ -59,7 +58,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 			if (Object.keys(contract).length !== 0) {
 				updatedContract.id = (
 					<TableIcon
-						icon={<Hashrate />}
+						icon={null}
 						text={
 							isLargeBreakpointOrGreater
 								? truncateAddress(updatedContract.id as string)
@@ -69,7 +68,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 						justify='start'
 					/>
 				);
-				updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='center' marginLeft='0' />;
+				updatedContract.price = <TableIcon icon={<Lumerin />} text={updatedContract.price as string} justify='start' />;
 				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />

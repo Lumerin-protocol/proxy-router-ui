@@ -9,6 +9,7 @@ const useStyles = createUseStyles({
 	table: {
 		'&': {
 			borderSpacing: 0,
+			color: colors['lumerin-table-text-color'],
 		},
 		'& > thead > tr > th:first-child': {
 			border: '0px solid transparent',
@@ -42,7 +43,6 @@ const useStyles = createUseStyles({
 		'& > tbody > tr > td:last-child': {
 			borderLeft: 'none',
 			borderRight: `1px solid ${colors['lumerin-table-border-gray']} !important`,
-			verticalAlign: 'bottom',
 		},
 		'& > tbody > tr > td:nth-child(2)': {
 			borderLeft: 'none',
@@ -86,6 +86,7 @@ interface TableProps {
 
 export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount }) => {
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
+	const paddingLeft = 'pl-18';
 	const classes = useStyles();
 
 	return (
@@ -96,7 +97,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount }) 
 						{headerGroup.headers.map((column) => (
 							<th
 								{...column.getHeaderProps()}
-								className='sticky top-0 bg-lumerin-dark-gray'
+								className={`sticky ${paddingLeft} text-justify top-0 bg-lumerin-dark-gray`}
 								style={{ width: `${Math.floor(100 / columnCount)}%` }}
 							>
 								{column.render('Header')}
@@ -109,10 +110,10 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount }) 
 				{rows.map((row) => {
 					prepareRow(row);
 					return (
-						<tr {...row.getRowProps()} className='h-16 text-center'>
+						<tr {...row.getRowProps()} className='h-75 text-center'>
 							{row.cells.map((cell) => {
 								return (
-									<td {...cell.getCellProps()} className='p-2.5 font-semibold text-sm'>
+									<td {...cell.getCellProps()} className={`${paddingLeft} text-justify font-semibold text-sm`}>
 										{cell.render('Cell')}
 									</td>
 								);

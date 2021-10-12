@@ -19,6 +19,12 @@ module.exports = {
 				120: '120px',
 				'50%': '50%',
 			},
+			padding: {
+				18: '4.5rem',
+			},
+			height: {
+				75: '75px',
+			},
 			width: {
 				99: '99%',
 			},
