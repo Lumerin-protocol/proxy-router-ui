@@ -36,6 +36,6 @@ deploy-development:
         - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$REPOSITORY_URI'"') > input.json
         - echo $(cat input.json | jq '.taskDefinition') > input.json
         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)') > input.json
-        - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --cli-input-json file://input.json
-        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region "${AWS_DEFAULT_REGION}" | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER --service $CI_AWS_ECS_SERVICE --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
+        - #aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
+        - #REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
+        - #aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER --service $CI_AWS_ECS_SERVICE --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
