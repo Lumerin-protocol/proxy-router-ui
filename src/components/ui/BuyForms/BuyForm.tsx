@@ -78,7 +78,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [isTransactionPending, setIsTransactionPending] = useState<boolean>(false);
-	const [isTransactionSent, setIsTransactionSent] = useState<boolean>(false);
+	const [shouldSendTransaction, setShouldSendTransaction] = useState<boolean>(false);
 
 	// Input validation setup
 	const {
@@ -131,7 +131,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				// TODO: transaction has failed so surface this to user
 			}
 
-			setIsTransactionSent(false);
+			setShouldSendTransaction(false);
 			setIsTransactionPending(false);
 			setContentState(ContentState.Complete);
 		} catch (error) {
@@ -143,15 +143,16 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	};
 
 	// Pending
-	if (isValid && contentState === ContentState.Pending && !isTransactionSent) {
-		setIsTransactionSent(true);
+	if (isValid && contentState === ContentState.Pending && !shouldSendTransaction) {
+		setShouldSendTransaction(true);
 	}
 
+	// Enforcing only 1 transaction sent when buying contract in case of multiple rerenders
 	useEffect(() => {
-		if (isTransactionSent && contentState === ContentState.Pending && isTransactionPending) {
+		if (shouldSendTransaction && contentState === ContentState.Pending && isTransactionPending) {
 			createTransactionAsync();
 		}
-	}, [isTransactionSent]);
+	}, [shouldSendTransaction]);
 
 	// Change opacity of Review Order button based on input validation
 	useEffect(() => {

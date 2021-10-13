@@ -141,7 +141,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 	const data = getTableData(orders);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='myorders' tableInstance={tableInstance} columnCount={5} />;
+	return <Table id='myorders' tableInstance={tableInstance} columnCount={5} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
 };
 
 MyOrders.displayName = 'MyOrders';

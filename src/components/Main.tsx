@@ -344,8 +344,9 @@ export const Main: React.FC = () => {
 				setOpen={setCreateModalOpen}
 				content={<CreateForm userAccount={userAccount} marketplaceContract={marketplaceContract} web3={web3} setOpen={setCreateModalOpen} />}
 			/>
+			{/* collapsable sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>
-				<Dialog as='div' static className='fixed inset-0 flex z-40 md:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
+				<Dialog as='div' static className='fixed inset-0 flex z-40 lg:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
 					<Transition.Child
 						as={Fragment}
 						enter='transition-opacity ease-linear duration-300'
@@ -417,9 +418,8 @@ export const Main: React.FC = () => {
 			</Transition.Root>
 
 			{/* Static sidebar for desktop */}
-			<div className='hidden bg-white md:flex md:flex-shrink-0'>
+			<div className='hidden bg-white lg:flex lg:flex-shrink-0'>
 				<div className='flex flex-col w-64'>
-					{/* Sidebar component, swap this element with another sidebar if you like */}
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
 							<LogoIcon />
@@ -450,13 +450,13 @@ export const Main: React.FC = () => {
 				<div className='relative z-10 flex-shrink-0 flex h-20 bg-white'>
 					<button
 						type='button'
-						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden'
+						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden'
 						onClick={() => setSidebarOpen(true)}
 					>
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className='flex flex-col justify-center'>
+					<div className='flex flex-col justify-center md:ml-4 xl:ml-0'>
 						<p className='text-lg font-semibold'>{pathName === '/' ? 'Marketplace' : 'My Orders'}</p>
 					</div>
 					<div className={buttonDisplay}>
@@ -478,7 +478,7 @@ export const Main: React.FC = () => {
 					</div>
 				</div>
 
-				<main className='ml-16 md:ml-4 lg:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent(contracts)}</main>
+				<main className='ml-16 lg:ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent(contracts)}</main>
 			</div>
 		</div>
 	);

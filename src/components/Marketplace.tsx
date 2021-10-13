@@ -68,7 +68,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 						justify='start'
 					/>
 				);
-				updatedContract.price = <TableIcon icon={<Lumerin />} text={`${updatedContract.price as string} LMR`} justify='start' />;
+				updatedContract.price = <TableIcon icon={null} text={`${updatedContract.price as string} LMR`} justify='start' />;
 				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
@@ -100,7 +100,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 				<p>Welcome to the Lumerin Hashrate marketplace.</p>
 				<p> Tap buy to purchase any of the contracts below.</p>
 			</div>
-			<Table id='marketplace' tableInstance={tableInstance} columnCount={6} />
+			<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 		</div>
 	);
 };
