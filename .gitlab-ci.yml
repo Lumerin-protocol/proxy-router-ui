@@ -32,9 +32,10 @@ deploy-development:
     tags:
         - dedicated
     script:
-        - echo $REPOSITORY_URI
-        - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$CI_AWS_ECS_TASK_DEFINITION" --region "${AWS_DEFAULT_REGION}")
-        - NEW_CONTAINER_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$REPOSITORY_URI" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
-        - echo "Registering new container definition..."
-        - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}" --requires-compatibilities "FARGATE" --network-mode "awsvpc" --execution-role-arn "arn:aws:iam::092029861612:role/ecsTaskExecutionRole" --memory 512 --cpu 256
-        - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}" --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
+        - echo 'aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION' > input.json
+        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$REPOSITORY_URI'"') > input.json
+        - echo $(cat input.json | jq '.taskDefinition') > input.json
+        - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)') > input.json
+        - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --cli-input-json file://input.json
+        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region "${AWS_DEFAULT_REGION}" | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
+        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER --service $CI_AWS_ECS_SERVICE --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
