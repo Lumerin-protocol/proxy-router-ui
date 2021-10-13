@@ -26,6 +26,7 @@ export interface FormData extends InputValues {
 enum ContentState {
 	Review = 'REVIEW',
 	Confirm = 'CONFIRM',
+	Pending = 'PENDING',
 	Complete = 'COMPLETE',
 }
 
@@ -76,6 +77,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
+	const [isTransactionPending, setIsTransactionPending] = useState<boolean>(false);
+	const [isTransactionSent, setIsTransactionSent] = useState<boolean>(false);
 
 	// Input validation setup
 	const {
@@ -94,7 +97,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		};
 	};
 	// Controls contentState and creating a transaction
-	const buyContract: (data: InputValues) => void = async (data) => {
+	const buyContract: (data: InputValues) => void = (data) => {
 		// Review
 		if (isValid && contentState === ContentState.Review) {
 			setContentState(ContentState.Confirm);
@@ -108,25 +111,47 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 		// Confirm
 		if (isValid && contentState === ContentState.Confirm) {
-			try {
-				// TODO: send Lumerin instead of Ether
-				const receipt = await marketplaceContract?.methods
-					.setBuyContract(contract.id, data.poolAddress, data.username, data.password)
-					// Contract price fixed since using ETH
-					// TODO: update to use lumerin when purchasing contract
-					.send({ from: userAccount, value: web3?.utils.toWei('0' as string, 'ether') });
-				if (receipt?.status) setContentState(ContentState.Complete);
-			} catch (error) {
-				const typedError = error as Error;
-				printError(typedError.message, typedError.stack as string);
-				// crash app if can't communicate with webfacing contract
-				throw typedError;
-			}
+			setIsTransactionPending(true);
+			setContentState(ContentState.Pending);
 		}
 
 		// Completed
 		if (contentState === ContentState.Complete) setOpen(false);
 	};
+
+	const createTransactionAsync: () => void = async () => {
+		try {
+			// TODO: send Lumerin instead of Ether
+			const receipt = await marketplaceContract?.methods
+				.setBuyContract(contract.id, formData.poolAddress, formData.username, formData.password)
+				// Contract price fixed since using ETH
+				// TODO: update to use lumerin when purchasing contract
+				.send({ from: userAccount, value: web3?.utils.toWei('0' as string, 'ether') });
+			if (!receipt?.status) {
+				// TODO: transaction has failed so surface this to user
+			}
+
+			setIsTransactionSent(false);
+			setIsTransactionPending(false);
+			setContentState(ContentState.Complete);
+		} catch (error) {
+			const typedError = error as Error;
+			printError(typedError.message, typedError.stack as string);
+			// crash app if can't communicate with webfacing contract
+			throw typedError;
+		}
+	};
+
+	// Pending
+	if (isValid && contentState === ContentState.Pending && !isTransactionSent) {
+		setIsTransactionSent(true);
+	}
+
+	useEffect(() => {
+		if (isTransactionSent && contentState === ContentState.Pending && isTransactionPending) {
+			createTransactionAsync();
+		}
+	}, [isTransactionSent]);
 
 	// Change opacity of Review Order button based on input validation
 	useEffect(() => {
@@ -150,9 +175,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				buttonContent = buttonText.confirm;
 				content = <ConfirmContent data={formData} />;
 				break;
+			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent />;
+				content = <CompletedContent isTransactionPending={isTransactionPending} />;
 				break;
 			default:
 				paragraphContent = paragraphText.review;
@@ -163,7 +189,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	createContent();
 
 	// Set styles and button based on ContentState
-	const display = contentState === ContentState.Complete ? 'hidden' : 'block';
+	const display = contentState === ContentState.Pending || contentState === ContentState.Complete ? 'hidden' : 'block';
 	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
 	const getButton: () => JSX.Element = () => {
 		return contentState === ContentState.Complete ? (
