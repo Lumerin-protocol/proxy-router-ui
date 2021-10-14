@@ -7,6 +7,7 @@ import { ReactComponent as MyOrdersIcon } from '../images/myorders.svg';
 import { ReactComponent as MetaMaskIcon } from '../images/metamask.svg';
 import { ReactComponent as LogoIcon } from '../images/logo.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
+import { ReactComponent as LumerinLandingPage } from '../images/lumerin_landingpage.svg';
 import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
@@ -304,7 +305,14 @@ export const Main: React.FC = () => {
 
 	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
 		if (contracts.length === 0 && myOrders.length === 0 && PathName.MyOrders) {
-			return <div className='fixed'>{ActionButton}</div>;
+			return (
+				<div className='flex flex-col items-center mt-20 mr-50 gap-4'>
+					<LumerinLandingPage />
+					<p className='mt-4 text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
+					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from a secured, easy to use, marketplace.</p>
+					<div>{ActionButton}</div>
+				</div>
+			);
 		}
 		return routes;
 	};
@@ -411,9 +419,12 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
+			<div className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'm-8' : 'hidden')}>
+				<LogoIcon />
+			</div>
 
 			{/* Static sidebar for desktop */}
-			<div className='hidden bg-white lg:flex lg:flex-shrink-0'>
+			<div className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0')}>
 				<div className='flex flex-col w-64'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
@@ -451,7 +462,11 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className='flex flex-col justify-center md:ml-4 xl:ml-0'>
+					<div
+						className={classNames(
+							walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex flex-col justify-center md:ml-4 xl:ml-0'
+						)}
+					>
 						<p className='text-lg font-semibold'>{pathName === '/' ? 'Marketplace' : 'My Orders'}</p>
 					</div>
 					<div className={buttonDisplay}>

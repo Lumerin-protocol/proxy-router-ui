@@ -11,8 +11,12 @@ module.exports = {
 			fontSize: {
 				xs: '.8125rem',
 				18: '1.125rem',
+				50: '3.125rem',
 			},
 			colors,
+			spacing: {
+				50: '12.5rem',
+			},
 			borderRadius: {
 				5: '5px',
 				30: '30px',
