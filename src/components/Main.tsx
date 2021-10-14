@@ -304,12 +304,7 @@ export const Main: React.FC = () => {
 
 	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
 		if (contracts.length === 0 && myOrders.length === 0 && PathName.MyOrders) {
-			return (
-				<div className='flex flex-col justify-center items-center h-full'>
-					{ActionButton}
-					<Spinner />
-				</div>
-			);
+			return <div className='fixed'>{ActionButton}</div>;
 		}
 		return routes;
 	};
