@@ -12,7 +12,7 @@ before_script:
     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
     - aws configure set region $AWS_DEFAULT_REGION
-    - eval $(aws ecr get-login --no-include-email --region "${AWS_DEFAULT_REGION}" | sed 's|https://||')
+    - eval $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION | sed 's|https://||')
     - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
 
 build-development:
@@ -21,6 +21,7 @@ build-development:
         - development
     tags:
         - dedicated
+        - amd
     script:
         - echo "Building image..."
         - docker build -t $REPOSITORY_URL:latest .
