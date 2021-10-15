@@ -6,6 +6,7 @@ import { ReactComponent as MarketplaceIcon } from '../images/marketplace.svg';
 import { ReactComponent as MyOrdersIcon } from '../images/myorders.svg';
 import { ReactComponent as MetaMaskIcon } from '../images/metamask.svg';
 import { ReactComponent as LogoIcon } from '../images/logo.svg';
+import { ReactComponent as LogoIcon2 } from '../images/logo2.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { ReactComponent as LumerinLandingPage } from '../images/lumerin_landingpage.svg';
 import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
@@ -428,7 +429,9 @@ export const Main: React.FC = () => {
 				<div className='flex flex-col w-64'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
-							<LogoIcon />
+							{/* <LogoIcon2 /> is identical but has different pattern id so it's not
+                            hidden when <LogoIcon /> is hidden since they have the same pattern */}
+							<LogoIcon2 />
 						</div>
 						<div className='flex-1 flex flex-col'>
 							<nav className='flex-1 px-2 space-y-1'>
