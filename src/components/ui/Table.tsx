@@ -91,7 +91,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 	const classes = useStyles();
 
 	return (
-		<table id={id} {...getTableProps()} className={classNames(classes.table, 'w-99 mt-10 relative border-separate h-10')}>
+		<table id={id} {...getTableProps()} className={classNames(classes.table, 'w-99 relative border-separate h-10')}>
 			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>

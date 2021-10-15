@@ -420,12 +420,12 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
-			<div className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'm-8' : 'hidden')}>
+			<div className={classNames(contracts.length === 0 ? 'm-8' : 'hidden')}>
 				<LogoIcon />
 			</div>
 
 			{/* Static sidebar for desktop */}
-			<div className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0')}>
+			<div className={classNames(contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0')}>
 				<div className='flex flex-col w-64'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
@@ -490,8 +490,11 @@ export const Main: React.FC = () => {
 						) : null}
 					</div>
 				</div>
-
-				<main className='ml-16 lg:ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent(contracts)}</main>
+				<div className={classNames(pathName === '/' && contracts.length > 0 ? 'mt-8 flex flex-col items-center text-18' : 'hidden')}>
+					<p>Welcome to the Lumerin Hashrate marketplace.</p>
+					<p> Tap buy to purchase any of the contracts below.</p>
+				</div>
+				<main className='mt-10 ml-16 lg:ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent(contracts)}</main>
 			</div>
 		</div>
 	);

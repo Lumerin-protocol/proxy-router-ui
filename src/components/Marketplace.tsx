@@ -33,7 +33,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
-	const mediaQueryList = window.matchMedia('(min-width: 1024px)');
+	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
 	// Not an arrow function since parameter is typed as this and arrow function can't have this as parameter
 	function mediaQueryListOnChangeHandler(this: MediaQueryList, ev: MediaQueryListEvent): any {
 		if (this.matches && !isLargeBreakpointOrGreater) {
@@ -96,10 +96,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 
 	return (
 		<div className='flex flex-col'>
-			<div className='mt-8 flex flex-col items-center text-18'>
-				<p>Welcome to the Lumerin Hashrate marketplace.</p>
-				<p> Tap buy to purchase any of the contracts below.</p>
-			</div>
 			<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 		</div>
 	);
