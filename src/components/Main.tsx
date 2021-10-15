@@ -310,7 +310,7 @@ export const Main: React.FC = () => {
 				<div className='flex flex-col items-center mt-20 mr-50 gap-4'>
 					<LumerinLandingPage />
 					<p className='mt-4 text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
-					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from a secured, easy to use, marketplace.</p>
+					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
 					<div>{ActionButton}</div>
 				</div>
 			);
@@ -325,6 +325,13 @@ export const Main: React.FC = () => {
 
 	// Hide top right button if no contracts
 	const buttonDisplay = contracts.length === 0 ? 'hidden' : 'flex-1 px-4 flex justify-end';
+
+	const getPageTitle: () => string = () => {
+		if (contracts.length === 0) return '';
+		if (pathName === '/') return 'Marketplace';
+		if (pathName === '/myorders') return 'My Orders';
+		return '';
+	};
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
@@ -470,7 +477,7 @@ export const Main: React.FC = () => {
 							walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex flex-col justify-center md:ml-4 xl:ml-0'
 						)}
 					>
-						<p className='text-lg font-semibold'>{pathName === '/' ? 'Marketplace' : 'My Orders'}</p>
+						<p className='text-lg font-semibold'>{getPageTitle()}</p>
 					</div>
 					<div className={buttonDisplay}>
 						<button className='btn-lmr pointer-events-none'>
