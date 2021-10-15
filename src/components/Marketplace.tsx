@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { ReactComponent as Lumerin } from '../images/lumerin.svg';
 import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';

@@ -417,7 +417,7 @@ export const Main: React.FC = () => {
 											<span className='ml-4'>{item.name}</span>
 										</Link>
 									))}
-									{createContractNav}
+									{/* {createContractNav} */}
 								</nav>
 							</div>
 						</div>
@@ -456,7 +456,7 @@ export const Main: React.FC = () => {
 										<span className='ml-4'>{item.name}</span>
 									</Link>
 								))}
-								{createContractNav}
+								{/* {createContractNav} */}
 							</nav>
 						</div>
 					</div>
@@ -474,7 +474,7 @@ export const Main: React.FC = () => {
 					</button>
 					<div
 						className={classNames(
-							walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex flex-col justify-center md:ml-4 xl:ml-0'
+							walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex flex-col justify-center sm:ml-4 xl:ml-0'
 						)}
 					>
 						<p className='text-lg font-semibold'>{getPageTitle()}</p>
