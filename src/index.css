@@ -28,6 +28,10 @@
 		@apply border border-transparent rounded-5 shadow-sm;
 	}
 
+	.modal-input-spacing {
+		@apply px-8 pt-8;
+	}
+
 	/* transitions */
 	.enter-300 {
 		@apply ease-out duration-300;

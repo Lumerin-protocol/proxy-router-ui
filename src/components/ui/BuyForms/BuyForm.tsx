@@ -223,7 +223,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 	return (
 		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
-			<div className='flex justify-between bg-white text-black p-4 border-transparent rounded-t-5'>
+			<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 				<div className={classNames(contentState === ContentState.Complete ? 'hidden' : 'block')}>
 					<p className='text-3xl'>Purchase Hashpower</p>
 					<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
@@ -233,7 +233,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			<div className={`${display} bg-white px-10 pt-20 pb-4 sm:mx-auto text-sm`}>
 				<p>{paragraphContent}</p>
 			</div>
-			<div className='flex gap-6 bg-white p-4'>
+			<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
 				<button
 					type='submit'
 					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}

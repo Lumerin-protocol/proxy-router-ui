@@ -10,7 +10,7 @@ interface ReviewContentProps {
 export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }) => {
 	return (
 		<React.Fragment>
-			<div className='bg-white p-4 p-4'>
+			<div className='bg-white modal-input-spacing'>
 				<div>
 					<label htmlFor='poolAddress' className='block text-sm font-medium text-gray-700'>
 						Pool Address *
@@ -32,7 +32,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 				</div>
 			</div>
 
-			<div className='bg-white p-4 p-4'>
+			<div className='bg-white modal-input-spacing'>
 				<label htmlFor='username' className='block text-sm font-medium text-gray-700'>
 					Username *
 				</label>
@@ -50,7 +50,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 				{errors.username?.type === 'required' && <div className='text-xs text-red-500'>{errors.username.message}</div>}
 			</div>
 
-			<div className='bg-white p-4 p-4'>
+			<div className='bg-white modal-input-spacing'>
 				<label htmlFor='password' className='block text-sm font-medium text-gray-700'>
 					Password
 				</label>
