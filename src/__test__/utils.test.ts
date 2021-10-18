@@ -52,7 +52,7 @@ describe('utils', () => {
 	// getLengthDispay()
 	// TODO: update seconds when contracts updated
 	describe('getLengthDisplay', () => {
-		it('displays weeks, hours, days', () => {
+		it('displays days', () => {
 			// Arrange
 			const seconds = 1000;
 
@@ -60,46 +60,20 @@ describe('utils', () => {
 			const result = getLengthDisplay(seconds);
 
 			// Assert
-			const expectedResult = '16W / 3D / 17H';
+			const expectedResult = '115.74 days';
 			expect(result).toBe(expectedResult);
 		});
 
-		describe('handles 0 values', () => {
-			it('for 0 weeks', () => {
-				// Arrange
-				const seconds = 10;
+		it('displays day when value is exactly 1 day', () => {
+			// Arrange
+			const seconds = 8.64;
 
-				// Act
-				const result = getLengthDisplay(seconds);
+			// Act
+			const result = getLengthDisplay(seconds);
 
-				// Assert
-				const expectedResult = '1D / 3H';
-				expect(result).toBe(expectedResult);
-			});
-
-			it('for 0 days', () => {
-				// Arrange
-				const seconds = 0.5;
-
-				// Act
-				const result = getLengthDisplay(seconds);
-
-				// Assert
-				const expectedResult = '1H';
-				expect(result).toBe(expectedResult);
-			});
-
-			it('for 0 hours', () => {
-				// Arrange
-				const seconds = 8.64;
-
-				// Act
-				const result = getLengthDisplay(seconds);
-
-				// Assert
-				const expectedResult = '1D';
-				expect(result).toBe(expectedResult);
-			});
+			// Assert
+			const expectedResult = '1 day';
+			expect(result).toBe(expectedResult);
 		});
 	});
 });

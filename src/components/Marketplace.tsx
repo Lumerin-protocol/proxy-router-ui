@@ -84,7 +84,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
 			{ Header: 'PRICE (LMR)', accessor: 'price' },
 			{ Header: 'SPEED (TH/S)', accessor: 'speed' },
-			{ Header: 'DURATION (W/D/H)', accessor: 'length' },
+			{ Header: 'DURATION (DAYS)', accessor: 'length' },
 			{ Header: 'TRADE', accessor: 'trade' },
 		],
 		[]
