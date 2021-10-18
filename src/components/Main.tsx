@@ -9,7 +9,10 @@ import { ReactComponent as LogoIcon } from '../images/logo.svg';
 import { ReactComponent as LogoIcon2 } from '../images/logo2.svg';
 import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { ReactComponent as LumerinLandingPage } from '../images/lumerin_landingpage.svg';
-import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
+import ImplementationContract from '../contracts/Implementation.json';
+import { AbiItem } from 'web3-utils';
+// Stage 2
+// import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
 import { Marketplace } from './Marketplace';
@@ -82,18 +85,18 @@ export const Main: React.FC = () => {
 		{ name: 'My Orders', to: 'myorders', icon: <MyOrdersIcon />, current: pathName === '/myorders' },
 	];
 	// Stage 2 functionality
-	const createContractNav: JSX.Element = (
-		<div
-			className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
-			onClick={() => {
-				setCreateModalOpen(true);
-				setSidebarOpen(false);
-			}}
-		>
-			<CreateContractIcon />
-			<span className='ml-4'>Create Contract</span>
-		</div>
-	);
+	// const createContractNav: JSX.Element = (
+	// 	<div
+	// 		className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
+	// 		onClick={() => {
+	// 			setCreateModalOpen(true);
+	// 			setSidebarOpen(false);
+	// 		}}
+	// 	>
+	// 		<CreateContractIcon />
+	// 		<span className='ml-4'>Create Contract</span>
+	// 	</div>
+	// );
 
 	// Wallet/MetaMask setup
 	// Get accounts, web3 and contract instances
@@ -140,16 +143,22 @@ export const Main: React.FC = () => {
 	}, [alertOpen]);
 
 	// Contracts setup
-	const createContractAsync: (address: string) => Promise<HashRentalContract> = async (address) => {
-		const [price, limit, speed, length] = await marketplaceContract?.methods.getContractVariables(address).call();
+	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (address) => {
+		if (web3) {
+			const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], address);
+			const price = await implementationContractInstance.methods.price().call();
+			const speed = await implementationContractInstance.methods.speed().call();
+			const length = await implementationContractInstance.methods.length().call();
 
-		return {
-			id: address,
-			price,
-			limit,
-			speed,
-			length, // TODO: how is unit returned (e.g. hr,d,w)?
-		} as HashRentalContract;
+			return {
+				id: address,
+				price,
+				speed,
+				length,
+			} as HashRentalContract;
+		}
+
+		return null;
 	};
 
 	// Don't allow duplicates for active contracts:
@@ -181,7 +190,7 @@ export const Main: React.FC = () => {
 	// Orders setup
 	const createContractsAsync: () => void = async () => {
 		try {
-			const addresses: string[] = await marketplaceContract?.methods.getContractList().call();
+			const addresses: string[] = await marketplaceContract?.methods.getListOfContracts().call();
 			if (addresses) {
 				setAddresses(addresses);
 				addContractsAsync(addresses);
@@ -244,7 +253,7 @@ export const Main: React.FC = () => {
 
 	const createMyOrdersAsync: () => void = async () => {
 		try {
-			const events = await marketplaceContract?.getPastEvents('contractPurchased', {
+			const events = await marketplaceContract?.getPastEvents('contractPurchase', {
 				fromBlock: 0, // TODO: update to block# when marketplace is deployed
 				toBlock: 'latest',
 			});
@@ -267,7 +276,7 @@ export const Main: React.FC = () => {
 	useEffect(() => updateLumerinTokenBalanceAsync(), [web3, accounts]);
 
 	// Set contracts and orders once marketplaceContract exists
-	useEffect(() => createContractsAsync(), [marketplaceContract, accounts]);
+	useEffect(() => createContractsAsync(), [marketplaceContract, accounts, web3]);
 
 	// Set orders once addresses have been retrieved
 	useEffect(() => createMyOrdersAsync(), [addresses, contracts, accounts]);
@@ -497,7 +506,7 @@ export const Main: React.FC = () => {
 						) : null}
 					</div>
 				</div>
-				<div className={classNames(pathName === '/' && contracts.length > 0 ? 'mt-8 flex flex-col items-center text-18' : 'hidden')}>
+				<div className={classNames(pathName === '/' && contracts.length > 1 ? 'mt-8 flex flex-col items-center text-18' : 'hidden')}>
 					<p>Welcome to the Lumerin Hashrate marketplace.</p>
 					<p> Tap buy to purchase any of the contracts below.</p>
 				</div>

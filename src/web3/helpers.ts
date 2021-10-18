@@ -6,7 +6,7 @@ import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
-import TestContract from '../contracts/TestingContract.json';
+import WebFacingContract from '../contracts/WebFacing.json';
 import { printError } from '../utils';
 
 interface Networks {
@@ -30,7 +30,7 @@ type Reject = (error: Error) => void;
 type SetAlertOpen = React.Dispatch<React.SetStateAction<boolean>>;
 
 const ethereum: any = window.ethereum;
-const lumerinTokenAddress = '0xb451cD81ed62D69C559d8721601E4B2a06Fc52Ff';
+const lumerinTokenAddress = '0xe982E462b094850F12AF94d21D470e21bE9D0E9C';
 
 // Web3 setup helpers
 // Private functions for getWeb3ResultAsync()
@@ -97,7 +97,7 @@ export const getWeb3ResultAsync: (
 		const web3 = await getWeb3Async(setOpenAlert, setWalletText, setAccounts);
 		// Get network info
 		const networkId = await web3.eth.net.getId();
-		const deployedNetwork = (TestContract as ContractJson).networks[networkId];
+		const deployedNetwork = (WebFacingContract as ContractJson).networks[networkId];
 
 		// Use web3 to get the user's accounts
 		const accounts = await web3.eth.getAccounts();
@@ -105,7 +105,7 @@ export const getWeb3ResultAsync: (
 			setOpenAlert(true);
 		}
 		// Get the contract instance
-		const contractInstance = new web3.eth.Contract(TestContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
+		const contractInstance = new web3.eth.Contract(WebFacingContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 		return { accounts, contractInstance, web3 };
 	} catch (error) {
 		const typedError = error as Error;
@@ -176,6 +176,7 @@ export const getLumerinTokenBalanceAsync: (web3: Web3, userAccount: string) => P
 		},
 	];
 	const lumerinContract = new web3.eth.Contract(minABI, lumerinTokenAddress);
+
 	try {
 		const lumerinBalanceNoDecimals: string = await lumerinContract.methods.balanceOf(userAccount).call();
 		const numOfDecimals: string = await lumerinContract.methods.decimals().call();

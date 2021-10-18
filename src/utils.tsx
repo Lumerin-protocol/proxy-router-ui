@@ -32,9 +32,6 @@ export const printError: (message: string, stacktrace: string) => void = (messag
 };
 
 export const getLengthDisplay: (length: number) => string = (length) => {
-	// Test contract returning less than an hr so use multiplier
-	// TODO: remove when contracts updated
-	length = length * 10000;
 	const secondsInHour = 3600;
 	const secondsInDay = secondsInHour * 24;
 

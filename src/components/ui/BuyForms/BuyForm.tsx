@@ -19,7 +19,7 @@ export interface InputValues {
 
 export interface FormData extends InputValues {
 	limit: string;
-	speed: number;
+	speed: string;
 	price: string;
 }
 
@@ -50,7 +50,7 @@ const buttonText: Text = {
 
 interface ContractInfo {
 	limit: string;
-	speed: number;
+	speed: string;
 	price: string;
 }
 
@@ -60,7 +60,7 @@ const initialFormData: FormData = {
 	username: '',
 	password: '',
 	limit: '',
-	speed: 0,
+	speed: '',
 	price: '',
 };
 
@@ -92,7 +92,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const getContractInfo: () => ContractInfo = () => {
 		return {
 			limit: contract.limit as string,
-			speed: contract.speed as number,
+			speed: contract.speed as string,
 			price: contract.price as string,
 		};
 	};

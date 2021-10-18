@@ -4,12 +4,13 @@ import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
 import { AddressLength, getLengthDisplay, truncateAddress } from '../utils';
+import { Spinner } from './ui/Spinner';
 
 export interface MarketPlaceData {
 	id?: JSX.Element | string;
 	price?: JSX.Element | string;
 	limit?: string;
-	speed?: number;
+	speed?: string;
 	length?: string;
 	trade?: JSX.Element | string;
 }
@@ -93,9 +94,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const data = getTableData(contracts);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
+	// There is always 1 empty contract for styling purposes
 	return (
 		<div className='flex flex-col'>
-			<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
+			{contracts.length > 1 ? (
+				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
+			) : (
+				<div className='flex justify-center mt-50 mr-50'>
+					<Spinner />
+				</div>
+			)}
 		</div>
 	);
 };
