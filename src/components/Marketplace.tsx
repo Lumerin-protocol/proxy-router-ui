@@ -8,8 +8,7 @@ import { Spinner } from './ui/Spinner';
 
 export interface MarketPlaceData {
 	id?: JSX.Element | string;
-	price?: JSX.Element | string;
-	limit?: string;
+	price?: JSX.Element | string | number;
 	speed?: string;
 	length?: string;
 	trade?: JSX.Element | string;

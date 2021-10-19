@@ -7,18 +7,21 @@ import { HashRentalContract } from '../../Main';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import { AddressLength, classNames, printError, truncateAddress } from '../../../utils';
+import ImplementationContract from '../../../contracts/Implementation.json';
 import Web3 from 'web3';
+import { AbiItem } from 'web3-utils';
+import { Receipt, transferLumerinAsync } from '../../../web3/helpers';
 
 // Making fields optional bc a user might not have filled out the input fields
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValues {
+	withValidator?: boolean;
 	poolAddress?: string;
 	username?: string;
 	password?: string;
 }
 
 export interface FormData extends InputValues {
-	limit: string;
 	speed: string;
 	price: string;
 }
@@ -49,17 +52,16 @@ const buttonText: Text = {
 };
 
 interface ContractInfo {
-	limit: string;
 	speed: string;
 	price: string;
 }
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
+	withValidator: false,
 	poolAddress: '',
 	username: '',
 	password: '',
-	limit: '',
 	speed: '',
 	price: '',
 };
@@ -91,7 +93,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 	const getContractInfo: () => ContractInfo = () => {
 		return {
-			limit: contract.limit as string,
 			speed: contract.speed as string,
 			price: contract.price as string,
 		};
@@ -120,15 +121,44 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	};
 
 	const createTransactionAsync: () => void = async () => {
+		// Order of events
+		// 1. Purchase hashrental contract
+		// 2. Transfer contract price (LMR) to escrow account
+		// 3. Call setFundContract to put contract in running state
 		try {
-			// TODO: send Lumerin instead of Ether
-			const receipt = await marketplaceContract?.methods
-				.setBuyContract(contract.id, formData.poolAddress, formData.username, formData.password)
-				// Contract price fixed since using ETH
-				// TODO: update to use lumerin when purchasing contract
-				.send({ from: userAccount, value: web3?.utils.toWei('0' as string, 'ether') });
-			if (!receipt?.status) {
-				// TODO: transaction has failed so surface this to user
+			// TODO: use checkbox for withValidator
+			// TODO: update with actual validator address and validator fee
+			const validator = formData.withValidator ? '0xD12b787E2F318448AE2Fd04e51540c9cBF822e89' : '0x0000000000000000000000000000000000000000';
+			const receipt: Receipt = await marketplaceContract?.methods
+				.setPurchaseContract(
+					contract.id,
+					userAccount,
+					validator,
+					formData.withValidator,
+					formData.poolAddress,
+					formData.username,
+					formData.password
+				)
+				.send({ from: userAccount });
+			if (receipt?.status) {
+				// Fund the escrow account which is same address as hashrental contract
+				if (web3) {
+					// TODO: use when on Ropsten
+					// const isSuccessful = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
+					const receipt: Receipt = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
+					if (receipt.status) {
+						// Call setFundContract() to put contract in running state
+						const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+						const receipt: Receipt = await implementationContractInstance.methods.setFundContract().send({ from: userAccount });
+						if (!receipt.status) {
+							// TODO: funding failed so surface this to user
+						}
+					} else {
+						// TODO: transfer has failed so surface this to user
+					}
+				}
+			} else {
+				// TODO: purchase has failed so surface this to user
 			}
 
 			setShouldSendTransaction(false);
@@ -137,7 +167,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		} catch (error) {
 			const typedError = error as Error;
 			printError(typedError.message, typedError.stack as string);
-			// crash app if can't communicate with webfacing contract
+			// crash app if can't communicate with contracts
 			throw typedError;
 		}
 	};

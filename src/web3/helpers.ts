@@ -7,6 +7,7 @@ import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import WebFacingContract from '../contracts/WebFacing.json';
+import LumerinContract from '../contracts/Lumerin.json';
 import { printError } from '../utils';
 
 interface Networks {
@@ -149,41 +150,32 @@ export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
 };
 
 export const getLumerinTokenBalanceAsync: (web3: Web3, userAccount: string) => Promise<number | null> = async (web3, userAccount) => {
-	// Minimum ABI to get ERC20 Lumerin Token balance and number of decimals
-	const minABI: AbiItem[] = [
-		// balanceOf()
-		{
-			constant: true,
-			inputs: [{ name: '_owner', type: 'address' }],
-			name: 'balanceOf',
-			outputs: [{ name: 'balance', type: 'uint256' }],
-			type: 'function',
-		},
-		// decimals()
-		{
-			constant: true,
-			inputs: [],
-			name: 'decimals',
-			outputs: [
-				{
-					internalType: 'uint8',
-					name: '',
-					type: 'uint8',
-				},
-			],
-			stateMutability: 'view',
-			type: 'function',
-		},
-	];
-	const lumerinContract = new web3.eth.Contract(minABI, lumerinTokenAddress);
+	const lumerinContractInstance = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
 
 	try {
-		const lumerinBalanceNoDecimals: string = await lumerinContract.methods.balanceOf(userAccount).call();
-		const numOfDecimals: string = await lumerinContract.methods.decimals().call();
-		return parseInt(lumerinBalanceNoDecimals) / 10 ** parseInt(numOfDecimals);
+		const lumerinBalanceNoDecimals: string = await lumerinContractInstance.methods.balanceOf(userAccount).call();
+		const lumerinBalanceNoDecimalsBN = web3.utils.toBN(lumerinBalanceNoDecimals);
+		const decimalsBN = web3.utils.toBN(8);
+		return lumerinBalanceNoDecimalsBN.div(web3.utils.toBN(10).pow(decimalsBN)).toNumber();
 	} catch (error) {
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);
 		return null;
 	}
+};
+
+export interface Receipt {
+	status: boolean;
+}
+export const transferLumerinAsync: (web3: Web3, userAccount: string, sellerAccount: string, amount: number) => Promise<Receipt> = async (
+	web3,
+	userAccount,
+	sellerAccount,
+	amount
+) => {
+	const lumerinContractInstance = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
+	const decimalsBN = web3.utils.toBN(8);
+	const amountBN = web3.utils.toBN(amount);
+	const amountAdjustedForDecimals = amountBN.mul(web3.utils.toBN(10).pow(decimalsBN));
+	return await lumerinContractInstance.methods.transfer(sellerAccount, amountAdjustedForDecimals).send({ from: userAccount });
 };

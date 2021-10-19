@@ -28,8 +28,7 @@ describe('<Marketplace />', () => {
 			{
 				id: '',
 				price: '1',
-				limit: '1',
-				speed: 1,
+				speed: '1',
 				length: '1',
 				trade: '',
 			},

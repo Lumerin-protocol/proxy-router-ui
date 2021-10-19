@@ -60,7 +60,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 		if (isValid && contentState === ContentState.Confirm) {
 			// TODO: update below logic when smart contract finished
 			// Create contract
-			// const receipt = await marketplaceContract?.methods.setCreateContract(data.walletAddress, data.limit, data.speed, data.length, data.price).send({ from: userAccount });
+			// const receipt = await marketplaceContract?.methods.setCreateContract(data.walletAddress, data.speed, data.length, data.price).send({ from: userAccount });
 			// if (receipt?.status) setContentState(ContentState.Complete);
 			try {
 				setOpen(false);

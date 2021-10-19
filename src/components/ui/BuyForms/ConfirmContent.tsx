@@ -5,7 +5,7 @@ interface ConfirmContentProps {
 	data: FormData;
 }
 
-export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddress, username, limit, speed, price } }) => {
+export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddress, username, speed, price } }) => {
 	return (
 		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm'>
 			<div className='confirm-div'>
@@ -15,10 +15,6 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddr
 			<div className='confirm-div'>
 				<p>Username</p>
 				<p>{username}</p>
-			</div>
-			<div className='confirm-div'>
-				<p>Limit (TH/S)</p>
-				<p>{limit}</p>
 			</div>
 			<div className='confirm-div'>
 				<p>Speed (TH/S)</p>

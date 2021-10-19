@@ -205,9 +205,6 @@ export const Main: React.FC = () => {
 
 	const createMyOrderAsync: (contractAddress: string, timestamp: string) => Promise<MyOrder | null> = async (contractAddress, timestamp) => {
 		try {
-			// Delivered hashrate will be used in Stage 2
-			// const response = await axios.get(`http://44.234.253.47:7545/completionStatus/${contractAddress}`);
-			// const delivered = (response.data as ValidatorResponse).hashes_done.toFixed();
 			const contractState: string = await marketplaceContract?.methods.getState(contractAddress).call();
 			let contract = null;
 			// Check there is an active contract at this address
@@ -279,12 +276,12 @@ export const Main: React.FC = () => {
 	useEffect(() => createContractsAsync(), [marketplaceContract, accounts, web3]);
 
 	// Set orders once addresses have been retrieved
-	useEffect(() => createMyOrdersAsync(), [addresses, contracts, accounts]);
+	// useEffect(() => createMyOrdersAsync(), [addresses, contracts, accounts]);
 
 	// Get contracts at interval of 20 seconds
 	useInterval(() => {
 		createContractsAsync();
-		createMyOrdersAsync();
+		// createMyOrdersAsync();
 	}, 20000);
 
 	// Content setup
