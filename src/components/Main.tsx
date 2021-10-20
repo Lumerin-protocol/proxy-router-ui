@@ -235,7 +235,7 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
-		if (contracts.length === 0) {
+		if (walletText === WalletText.ConnectViaMetaMask) {
 			return (
 				<div className='flex flex-col items-center mt-20 mr-50 gap-4'>
 					<LumerinLandingPage />

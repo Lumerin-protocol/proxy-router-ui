@@ -1,6 +1,7 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { classNames } from '../../../utils';
+import { Checkbox } from '../Checkbox';
 import { InputValues } from './BuyForm';
 
 interface ReviewContentProps {
@@ -8,6 +9,9 @@ interface ReviewContentProps {
 	errors: DeepMap<InputValues, FieldError | undefined>; // undefined bc error for specific input might not exist
 }
 export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }) => {
+	const checkboxLabel = 'Titan Validator Service';
+	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.';
+
 	return (
 		<React.Fragment>
 			<div className='bg-white modal-input-spacing'>
@@ -49,7 +53,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 				</div>
 				{errors.username?.type === 'required' && <div className='text-xs text-red-500'>{errors.username.message}</div>}
 			</div>
-
 			<div className='bg-white modal-input-spacing'>
 				<label htmlFor='password' className='block text-sm font-medium text-gray-700'>
 					Password
@@ -57,6 +60,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 				<div className='mt-1'>
 					<input {...register('password')} id='password' type='password' placeholder='password' className='review-no-errors review-input' />
 				</div>
+				<Checkbox label={checkboxLabel} description={checkboxDescription} register={register} />
 			</div>
 		</React.Fragment>
 	);

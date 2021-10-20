@@ -106,6 +106,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				poolAddress: data.poolAddress,
 				username: data.username,
 				password: data.password,
+				withValidator: data.withValidator,
 				...getContractInfo(),
 			});
 		}
@@ -120,15 +121,23 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		if (contentState === ContentState.Complete) setOpen(false);
 	};
 
+	interface SendOptions {
+		from: string;
+		gas: number;
+		value?: string;
+	}
 	const createTransactionAsync: () => void = async () => {
 		// Order of events
 		// 1. Purchase hashrental contract
 		// 2. Transfer contract price (LMR) to escrow account
 		// 3. Call setFundContract to put contract in running state
 		try {
-			// TODO: use checkbox for withValidator
 			// TODO: update with actual validator address and validator fee
 			const validator = formData.withValidator ? '0xD12b787E2F318448AE2Fd04e51540c9cBF822e89' : '0x0000000000000000000000000000000000000000';
+			const validatorFee = '100';
+			const gasLimit = 1000000;
+			let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
+			if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 			const receipt: Receipt = await marketplaceContract?.methods
 				.setPurchaseContract(
 					contract.id,
@@ -139,7 +148,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					formData.username,
 					formData.password
 				)
-				.send({ from: userAccount, gas: 1000000 });
+				.send(sendOptions);
 			if (receipt?.status) {
 				// Fund the escrow account which is same address as hashrental contract
 				if (web3) {
@@ -151,7 +160,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 						const receipt: Receipt = await implementationContractInstance.methods
 							.setFundContract()
-							.send({ from: userAccount, gas: 1000000 });
+							.send({ from: userAccount, gas: gasLimit });
 						if (!receipt.status) {
 							// TODO: funding failed so surface this to user
 						}
@@ -262,7 +271,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				</div>
 			</div>
 			{content}
-			<div className={`${display} bg-white px-10 pt-20 pb-4 sm:mx-auto text-sm`}>
+			<div className={`${display} bg-white px-10 pt-16 pb-4 sm:mx-auto text-sm`}>
 				<p>{paragraphContent}</p>
 			</div>
 			<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
