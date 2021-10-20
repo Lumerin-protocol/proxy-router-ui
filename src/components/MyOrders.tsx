@@ -64,7 +64,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, web3
 		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
 		setCurrentBlockTimestamp(currentBlockTimestamp as number);
 	};
-	useEffect(() => getCurrentBlockTimestampAsync(), []);
+	useEffect(() => getCurrentBlockTimestampAsync(), [web3]);
 
 	const getStatusText: (state: string) => string = (state) => {
 		switch (state) {
@@ -100,11 +100,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, web3
 	const getProgressDiv: (startTime: string, length: number) => JSX.Element = (startTime, length) => {
 		let timeElapsed: number = 0;
 		let percentage: number = 0;
-		if (length === 0) {
+		if (length === 0 || currentBlockTimestamp === 0) {
 			percentage = 100;
 		} else {
 			timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
-			percentage = timeElapsed / length;
+			percentage = (timeElapsed / length) * 100;
 		}
 
 		return (
