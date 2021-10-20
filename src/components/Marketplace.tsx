@@ -5,13 +5,18 @@ import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
 import { AddressLength, getLengthDisplay, truncateAddress } from '../utils';
 import { Spinner } from './ui/Spinner';
+import { ContractState } from './Main';
+import _ from 'lodash';
 
-export interface MarketPlaceData {
+export interface HashRentalContract {
 	id?: JSX.Element | string;
 	price?: JSX.Element | string | number;
 	speed?: string;
 	length?: string;
 	trade?: JSX.Element | string;
+	buyer?: string;
+	timestamp?: string;
+	state?: string;
 }
 
 interface Header {
@@ -20,10 +25,10 @@ interface Header {
 }
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
-interface CustomTableOptions extends MarketPlaceData, Header {}
+interface CustomTableOptions extends HashRentalContract, Header {}
 
 interface MarketplaceProps {
-	contracts: MarketPlaceData[];
+	contracts: HashRentalContract[];
 	setContractId: Dispatch<SetStateAction<string>>;
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
@@ -51,10 +56,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		}
 	}, [mediaQueryList?.matches]);
 
-	const getTableData: (contracts: MarketPlaceData[]) => MarketPlaceData[] = (contracts) => {
-		const updatedContracts = contracts.map((contract) => {
+	const getTableData: (contracts: HashRentalContract[]) => HashRentalContract[] = (contracts) => {
+		const availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
+		// Add emtpy row for styling
+		availableContracts.unshift({});
+		const updatedContracts = availableContracts.map((contract) => {
 			const updatedContract = { ...contract };
-			if (Object.keys(contract).length !== 0) {
+			if (!_.isEmpty(contract)) {
 				updatedContract.id = (
 					<TableIcon
 						icon={null}

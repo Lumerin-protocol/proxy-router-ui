@@ -177,5 +177,5 @@ export const transferLumerinAsync: (web3: Web3, userAccount: string, sellerAccou
 	const decimalsBN = web3.utils.toBN(8);
 	const amountBN = web3.utils.toBN(amount);
 	const amountAdjustedForDecimals = amountBN.mul(web3.utils.toBN(10).pow(decimalsBN));
-	return await lumerinContractInstance.methods.transfer(sellerAccount, amountAdjustedForDecimals).send({ from: userAccount });
+	return await lumerinContractInstance.methods.transfer(sellerAccount, amountAdjustedForDecimals).send({ from: userAccount, gas: 1000000 });
 };

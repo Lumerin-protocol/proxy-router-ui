@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
-import { HashRentalContract } from '../../Main';
+import { HashRentalContract } from '../../Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import { AddressLength, classNames, printError, truncateAddress } from '../../../utils';
@@ -139,7 +139,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					formData.username,
 					formData.password
 				)
-				.send({ from: userAccount });
+				.send({ from: userAccount, gas: 1000000 });
 			if (receipt?.status) {
 				// Fund the escrow account which is same address as hashrental contract
 				if (web3) {
@@ -149,7 +149,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					if (receipt.status) {
 						// Call setFundContract() to put contract in running state
 						const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
-						const receipt: Receipt = await implementationContractInstance.methods.setFundContract().send({ from: userAccount });
+						const receipt: Receipt = await implementationContractInstance.methods
+							.setFundContract()
+							.send({ from: userAccount, gas: 1000000 });
 						if (!receipt.status) {
 							// TODO: funding failed so surface this to user
 						}

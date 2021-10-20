@@ -15,18 +15,16 @@ import { AbiItem } from 'web3-utils';
 // import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
-import { Marketplace } from './Marketplace';
+import { HashRentalContract, Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
-import { MarketPlaceData } from './Marketplace';
-import { MyOrders, MyOrdersData } from './MyOrders';
+import { MyOrders } from './MyOrders';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
 import { addLumerinTokenToMetaMaskAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync, reconnectWalletAsync } from '../web3/helpers';
 import { AddressLength, classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
-import { EventData } from 'web3-eth-contract';
 import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
 import _ from 'lodash';
@@ -49,12 +47,12 @@ interface Navigation {
 	current: boolean;
 }
 
-// interface ValidatorResponse {
-// 	hashes_done: number;
-// }
-
-export interface HashRentalContract extends MarketPlaceData {}
-export interface MyOrder extends MyOrdersData {}
+export enum ContractState {
+	Available = '0',
+	Active = '1',
+	Running = '2',
+	Complete = '3',
+}
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -65,11 +63,8 @@ export const Main: React.FC = () => {
 	const [web3, setWeb3] = useState<Web3>();
 	const [accounts, setAccounts] = useState<string[]>();
 	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
-	const [addresses, setAddresses] = useState<string[]>([]);
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
-	const [myOrders, setMyOrders] = useState<MyOrder[]>([]);
-	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
@@ -81,8 +76,8 @@ export const Main: React.FC = () => {
 	// Navigation setup
 	const pathName = window.location.pathname;
 	const navigation: Navigation[] = [
-		{ name: 'Marketplace', to: '/', icon: <MarketplaceIcon />, current: pathName === '/' },
-		{ name: 'My Orders', to: 'myorders', icon: <MyOrdersIcon />, current: pathName === '/myorders' },
+		{ name: 'Marketplace', to: PathName.Marketplace, icon: <MarketplaceIcon />, current: pathName === PathName.Marketplace },
+		{ name: 'My Orders', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
 	];
 	// Stage 2 functionality
 	// const createContractNav: JSX.Element = (
@@ -149,26 +144,22 @@ export const Main: React.FC = () => {
 			const price = await implementationContractInstance.methods.price().call();
 			const speed = await implementationContractInstance.methods.speed().call();
 			const length = await implementationContractInstance.methods.length().call();
+			const buyer = await implementationContractInstance?.methods.buyer().call();
+			const timestamp = await implementationContractInstance?.methods.startingBlockTimestamp().call();
+			const state = await implementationContractInstance?.methods.contractState().call();
 
 			return {
 				id: address,
 				price,
 				speed,
 				length,
+				buyer,
+				timestamp,
+				state,
 			} as HashRentalContract;
 		}
 
 		return null;
-	};
-
-	// Don't allow duplicates for active contracts:
-	// this only occurs with test contract and check won't be needed in production
-	const hasContract: (contract: HashRentalContract) => boolean = (contract) => {
-		if (contracts.length > 0) {
-			const filteredContracts = contracts.filter((existingContract) => existingContract.id === contract.id);
-			return filteredContracts.length === 0;
-		}
-		return false;
 	};
 
 	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
@@ -176,11 +167,9 @@ export const Main: React.FC = () => {
 		for await (const address of addresses) {
 			const contract = await createContractAsync(address);
 
-			if (contract && !hasContract(contract)) hashRentalContracts.push(contract);
+			if (contract) hashRentalContracts.push(contract);
 		}
 
-		// add empty row for styling
-		hashRentalContracts.unshift({});
 		// update contracts if deep equality is false
 		if (!_.isEqual(contracts, hashRentalContracts)) {
 			setContracts(hashRentalContracts);
@@ -192,73 +181,12 @@ export const Main: React.FC = () => {
 		try {
 			const addresses: string[] = await marketplaceContract?.methods.getListOfContracts().call();
 			if (addresses) {
-				setAddresses(addresses);
 				addContractsAsync(addresses);
 			}
 		} catch (error) {
 			const typedError = error as Error;
 			printError(typedError.message, typedError.stack as string);
 			// crash app if can't communicate with webfacing contract
-			throw typedError;
-		}
-	};
-
-	const createMyOrderAsync: (contractAddress: string, timestamp: string) => Promise<MyOrder | null> = async (contractAddress, timestamp) => {
-		try {
-			const contractState: string = await marketplaceContract?.methods.getState(contractAddress).call();
-			let contract = null;
-			// Check there is an active contract at this address
-			if (contractState.toLowerCase() === 'active') {
-				contract = contracts.filter((contract) => contract.id === contractAddress)[0] as HashRentalContract;
-			}
-			return {
-				id: contractAddress,
-				started: timestamp,
-				status: contractState,
-				speed: contract ? contract.speed : 0,
-				length: contract ? contract.length : 0,
-			} as MyOrder;
-		} catch (error) {
-			const typedError = error as Error;
-			printError(typedError.message, typedError.stack as string);
-			// don't crash app if validator api is down
-			if (typedError.message !== 'Network Error') throw typedError;
-			return null;
-		}
-	};
-
-	const addMyOrderAsync: (events: EventData[]) => void = async (events) => {
-		const myContractOrders: MyOrder[] = [];
-		// filter contracts by userAccount
-		const eventsForAddress = events.filter((event) => userAccount.toLowerCase() === (event.returnValues._buyer as string).toLowerCase());
-		for await (const event of eventsForAddress) {
-			// get block to use its timestamp
-			const block = await web3?.eth.getBlock(event.blockNumber);
-			const myOrder = await createMyOrderAsync(event.returnValues._contractAddress as string, block?.timestamp as string);
-			if (myOrder) myContractOrders.push(myOrder);
-		}
-
-		// add empty row for styling
-		myContractOrders.unshift({});
-		if (!_.isEqual(myOrders, myContractOrders)) {
-			setMyOrders(myContractOrders);
-		}
-
-		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
-		setCurrentBlockTimestamp(currentBlockTimestamp as number);
-	};
-
-	const createMyOrdersAsync: () => void = async () => {
-		try {
-			const events = await marketplaceContract?.getPastEvents('contractPurchase', {
-				fromBlock: 0, // TODO: update to block# when marketplace is deployed
-				toBlock: 'latest',
-			});
-			if (events) addMyOrderAsync(events);
-		} catch (error) {
-			const typedError = error as Error;
-			printError(typedError.message, typedError.stack as string);
-			// Crash app bc events should exist
 			throw typedError;
 		}
 	};
@@ -275,13 +203,9 @@ export const Main: React.FC = () => {
 	// Set contracts and orders once marketplaceContract exists
 	useEffect(() => createContractsAsync(), [marketplaceContract, accounts, web3]);
 
-	// Set orders once addresses have been retrieved
-	// useEffect(() => createMyOrdersAsync(), [addresses, contracts, accounts]);
-
 	// Get contracts at interval of 20 seconds
 	useInterval(() => {
 		createContractsAsync();
-		// createMyOrdersAsync();
 	}, 20000);
 
 	// Content setup
@@ -296,12 +220,12 @@ export const Main: React.FC = () => {
 		<Suspense fallback={<Spinner />}>
 			<Switch>
 				<Route
-					path='/myorders'
+					path={PathName.MyOrders}
 					exact
-					render={(props: RouteComponentProps) => <MyOrders {...props} orders={myOrders} currentBlockTimestamp={currentBlockTimestamp} />}
+					render={(props: RouteComponentProps) => <MyOrders {...props} userAccount={userAccount} contracts={contracts} web3={web3} />}
 				/>
 				<Route
-					path='/'
+					path={PathName.Marketplace}
 					render={(props: RouteComponentProps) => (
 						<Marketplace {...props} contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />
 					)}
@@ -311,7 +235,7 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
-		if (contracts.length === 0 && myOrders.length === 0 && PathName.MyOrders) {
+		if (contracts.length === 0) {
 			return (
 				<div className='flex flex-col items-center mt-20 mr-50 gap-4'>
 					<LumerinLandingPage />
@@ -334,8 +258,8 @@ export const Main: React.FC = () => {
 
 	const getPageTitle: () => string = () => {
 		if (contracts.length === 0) return '';
-		if (pathName === '/') return 'Marketplace';
-		if (pathName === '/myorders') return 'My Orders';
+		if (pathName === PathName.Marketplace) return 'Marketplace';
+		if (pathName === PathName.MyOrders) return 'My Orders';
 		return '';
 	};
 
@@ -503,7 +427,11 @@ export const Main: React.FC = () => {
 						) : null}
 					</div>
 				</div>
-				<div className={classNames(pathName === '/' && contracts.length > 1 ? 'mt-8 flex flex-col items-center text-18' : 'hidden')}>
+				<div
+					className={classNames(
+						pathName === PathName.Marketplace && contracts.length > 1 ? 'mt-8 flex flex-col items-center text-18' : 'hidden'
+					)}
+				>
 					<p>Welcome to the Lumerin Hashrate marketplace.</p>
 					<p> Tap buy to purchase any of the contracts below.</p>
 				</div>

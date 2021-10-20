@@ -3,19 +3,23 @@ import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
-import { MyOrder } from './Main';
 import { AddressLength, classNames, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
+import { HashRentalContract } from './Marketplace';
+import Web3 from 'web3';
+import { ContractState } from './Main';
 import _ from 'lodash';
 
-export interface MyOrdersData {
-	id?: JSX.Element | string;
-	started?: string;
+export interface MyOrdersData extends HashRentalContract {
 	status?: JSX.Element | string;
-	speed?: number;
-	length?: string;
-	delivered?: string; // Not used in Stage 1
 	progress?: JSX.Element | string;
+}
+
+enum StatusText {
+	Available = 'Available',
+	Active = 'Active',
+	Running = 'Running',
+	Complete = 'Complete',
 }
 
 interface Header {
@@ -27,11 +31,13 @@ interface Header {
 interface CustomTableOptions extends MyOrdersData, Header {}
 
 interface MyOrdersProps {
-	orders: MyOrder[];
-	currentBlockTimestamp: number;
+	userAccount: string;
+	contracts: HashRentalContract[];
+	web3: Web3 | undefined;
 }
 
-export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestamp }) => {
+export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, web3 }) => {
+	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
@@ -54,40 +60,51 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 		}
 	}, [mediaQueryList?.matches]);
 
-	const getStatusDiv: (status: string) => JSX.Element = (status) => {
+	const getCurrentBlockTimestampAsync: () => void = async () => {
+		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
+		setCurrentBlockTimestamp(currentBlockTimestamp as number);
+	};
+	useEffect(() => getCurrentBlockTimestampAsync(), []);
+
+	const getStatusText: (state: string) => string = (state) => {
+		switch (state) {
+			case ContractState.Available:
+				return StatusText.Available;
+			case ContractState.Active:
+				return StatusText.Active;
+			case ContractState.Running:
+				return StatusText.Running;
+			case ContractState.Complete:
+				return StatusText.Complete;
+			default:
+				return StatusText.Complete;
+		}
+	};
+	const getStatusDiv: (state: string) => JSX.Element = (state) => {
 		return (
 			<div>
 				<span
 					className={classNames(
-						status === 'active' ? 'w-20 bg-lumerin-green text-white' : 'w-28 bg-lumerin-dark-gray text-black',
+						state === ContractState.Available || state === ContractState.Running
+							? 'w-20 bg-lumerin-green text-white'
+							: 'w-28 bg-lumerin-dark-gray text-black',
 						'flex justify-center items-center h-8 rounded-5'
 					)}
 				>
-					<p>{_.capitalize(status)}</p>
+					<p>{_.capitalize(getStatusText(state))}</p>
 				</span>
 			</div>
 		);
 	};
 
 	const getProgressDiv: (startTime: string, length: number) => JSX.Element = (startTime, length) => {
-		// Potentially Stage 2 logic
-		// const hashrates = progress.split('/');
-		// const delivered = hashrates[0];
-		// const promised = hashrates[1];
-		// const percentage = (parseInt(delivered) / parseInt(promised)) * 100;
-
-		// Determine progress based on time passed compared to contract length
-		// Length is dummy data
-		// TODO: update when length is accurate
 		let timeElapsed: number = 0;
 		let percentage: number = 0;
 		if (length === 0) {
 			percentage = 100;
 		} else {
 			timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
-			// TODO: use line below when length is not dummy data
-			// percentage = timeElapsed / length;
-			percentage = (timeElapsed / 1000000) * 100;
+			percentage = timeElapsed / length;
 		}
 
 		return (
@@ -100,10 +117,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 		);
 	};
 
-	const getTableData: (orders: MyOrder[]) => MyOrdersData[] = (orders) => {
-		const updatedOrders = orders.map((order) => {
-			const updatedOrder = { ...order };
-			if (Object.keys(order).length !== 0) {
+	const getTableData: (contracts: HashRentalContract[]) => MyOrdersData[] = (orders) => {
+		const buyerOrders = contracts.filter((contract) => contract.buyer === userAccount);
+		// Add emtpy row for styling
+		buyerOrders.unshift({});
+		const updatedOrders = buyerOrders.map((contract) => {
+			const updatedOrder = { ...contract } as MyOrdersData;
+			if (!_.isEmpty(contract)) {
 				updatedOrder.id = (
 					<TableIcon
 						icon={null}
@@ -116,11 +136,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 						justify='start'
 					/>
 				);
-				updatedOrder.status = getStatusDiv(updatedOrder.status as string);
-				updatedOrder.progress = getProgressDiv(updatedOrder.started as string, parseInt(updatedOrder.length as string));
-				updatedOrder.started = DateTime.fromSeconds(parseInt(updatedOrder.started as string)).toFormat('MM/dd/yyyy hh:mm:ss');
+				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
+				updatedOrder.progress = getProgressDiv(updatedOrder.timestamp as string, parseInt(updatedOrder.length as string));
+				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
 			}
-			return updatedOrder;
+			return updatedOrder as MyOrdersData;
 		});
 
 		return updatedOrders;
@@ -129,16 +149,14 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ orders, currentBlockTimestam
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
-			{ Header: 'STARTED', accessor: 'started' },
+			{ Header: 'STARTED', accessor: 'timestamp' },
 			{ Header: 'STATUS', accessor: 'status' },
-			// Add back during Stage 2
-			// { Header: 'DELIVERED VS PROMISED (TH/S)', accessor: 'delivered' },
 			{ Header: 'PROGRESS', accessor: 'progress' },
 		],
 		[]
 	);
 
-	const data = getTableData(orders);
+	const data = getTableData(contracts);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
 	return <Table id='myorders' tableInstance={tableInstance} columnCount={5} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
