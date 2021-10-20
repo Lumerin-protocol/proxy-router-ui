@@ -1,9 +1,8 @@
 import '@testing-library/jest-dom/extend-expect';
 import { App } from '../App';
-import { Marketplace, MarketPlaceData } from '../components/Marketplace';
+import { HashRentalContract, Marketplace } from '../components/Marketplace';
 import { renderWithRouter } from './testhelper';
-import { render } from '@testing-library/react';
-import { MyOrder } from '../components/Main';
+import { act, render } from '@testing-library/react';
 import { MyOrders } from '../components/MyOrders';
 
 // Testing basic behavior and will add more complex tests as needed
@@ -24,13 +23,17 @@ describe('<App />', () => {
 describe('<Marketplace />', () => {
 	it('displays', () => {
 		// Arrange
-		const contracts: MarketPlaceData[] = [
+		const contracts: HashRentalContract[] = [
+			{}, // Represents dummy row for styling purposes
 			{
 				id: '',
 				price: '1',
 				speed: '1',
 				length: '1',
 				trade: '',
+				buyer: '',
+				timestamp: '',
+				state: '',
 			},
 		];
 		const setContractId = jest.fn();
@@ -46,20 +49,26 @@ describe('<Marketplace />', () => {
 });
 
 describe('<MyOrders />', () => {
-	it('displays', () => {
+	it('displays', async () => {
 		// Arrange
-		const myOrders: MyOrder[] = [
+		const contracts: HashRentalContract[] = [
+			{}, // Represents dummy row for styling purposes
 			{
 				id: '',
-				started: '',
-				status: '',
-				delivered: '',
-				progress: '',
+				price: '1',
+				speed: '1',
+				length: '1',
+				trade: '',
+				buyer: '',
+				timestamp: '',
+				state: '',
 			},
 		];
 
 		// Act
-		render(<MyOrders orders={myOrders} currentBlockTimestamp={0} />);
+		await act(async () => {
+			render(<MyOrders contracts={contracts} userAccount='' web3={undefined} />);
+		});
 
 		// Assert
 		const table = document.getElementById('myorders');

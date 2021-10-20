@@ -50,23 +50,22 @@ describe('utils', () => {
 	});
 
 	// getLengthDispay()
-	// TODO: update seconds when contracts updated
 	describe('getLengthDisplay', () => {
 		it('displays days', () => {
 			// Arrange
-			const seconds = 1000;
+			const seconds = 282528;
 
 			// Act
 			const result = getLengthDisplay(seconds);
 
 			// Assert
-			const expectedResult = '115.74 days';
+			const expectedResult = '3.27 days';
 			expect(result).toBe(expectedResult);
 		});
 
 		it('displays day when value is exactly 1 day', () => {
 			// Arrange
-			const seconds = 8.64;
+			const seconds = 86400;
 
 			// Act
 			const result = getLengthDisplay(seconds);
