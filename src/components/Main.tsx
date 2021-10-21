@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, Suspense, useEffect, useState } from 'react';
 import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
