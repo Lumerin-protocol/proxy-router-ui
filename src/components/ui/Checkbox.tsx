@@ -1,10 +1,10 @@
 import { UseFormRegister } from 'react-hook-form';
-import { InputValues } from './BuyForms/BuyForm';
+import { InputValuesBuyForm } from '../../types';
 
 interface CheckboxProps {
 	label: string;
 	description: string;
-	register: UseFormRegister<InputValues>;
+	register: UseFormRegister<InputValuesBuyForm>;
 }
 
 export const Checkbox: React.FC<CheckboxProps> = ({ label, description, register }) => {

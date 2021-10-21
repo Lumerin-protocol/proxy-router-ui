@@ -8,6 +8,7 @@ import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import WebFacingContract from '../contracts/WebFacing.json';
 import LumerinContract from '../contracts/Lumerin.json';
+import { Receipt } from '../types';
 import { printError } from '../utils';
 
 interface Networks {
@@ -166,9 +167,6 @@ export const getLumerinTokenBalanceAsync: (web3: Web3, userAccount: string) => P
 	}
 };
 
-export interface Receipt {
-	status: boolean;
-}
 export const transferLumerinAsync: (web3: Web3, userAccount: string, sellerAccount: string, amount: number) => Promise<Receipt> = async (
 	web3,
 	userAccount,

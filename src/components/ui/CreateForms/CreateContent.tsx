@@ -1,12 +1,12 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
-import { InputValues } from './CreateForm';
 import { classNames } from '../../../utils';
 import { DateTime } from 'luxon';
+import { InputValuesCreateForm } from '../../../types';
 
 interface CreateContentProps {
-	register: UseFormRegister<InputValues>;
-	errors: DeepMap<InputValues, FieldError | undefined>; // undefined bc error for specific input might not exist
+	register: UseFormRegister<InputValuesCreateForm>;
+	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 }
 
 export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }) => {

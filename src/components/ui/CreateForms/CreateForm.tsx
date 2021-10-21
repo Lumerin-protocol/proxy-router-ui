@@ -1,22 +1,14 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
+import { InputValuesCreateForm } from '../../../types';
 import { printError } from '../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CreateContent } from './CreateContent';
-
-// Making fields optional bc a user might not have filled out the input fields
-// when useForm() returns the error object that's typed against InputValues
-export interface InputValues {
-	walletAddress?: string;
-	contractTime?: number;
-	endDate?: Date;
-	listPrice?: number;
-}
+import Web3 from 'web3';
 
 // Used to set initial state for contentData to prevent undefined error
-const initialFormData: InputValues = {
+const initialFormData: InputValuesCreateForm = {
 	walletAddress: '',
 	contractTime: 0,
 	endDate: new Date(),
@@ -39,16 +31,16 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [buttonText, setButtonText] = useState<string>('Create New Contract');
-	const [formData, setFormData] = useState<InputValues>(initialFormData);
+	const [formData, setFormData] = useState<InputValuesCreateForm>(initialFormData);
 
 	// Input validation setup
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
-	} = useForm<InputValues>({ mode: 'onBlur' });
+	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
-	const createContract: (data: InputValues) => void = async (data) => {
+	const createContract: (data: InputValuesCreateForm) => void = async (data) => {
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);

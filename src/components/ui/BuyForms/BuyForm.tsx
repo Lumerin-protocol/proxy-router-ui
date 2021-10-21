@@ -3,34 +3,25 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
-import { HashRentalContract } from '../../Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import { AddressLength, classNames, printError, truncateAddress } from '../../../utils';
 import ImplementationContract from '../../../contracts/Implementation.json';
-import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { Receipt, transferLumerinAsync } from '../../../web3/helpers';
-
-// Making fields optional bc a user might not have filled out the input fields
-// when useForm() returns the error object that's typed against InputValues
-export interface InputValues {
-	withValidator?: boolean;
-	poolAddress?: string;
-	username?: string;
-	password?: string;
-}
-
-export interface FormData extends InputValues {
-	speed: string;
-	price: string;
-}
+import { transferLumerinAsync } from '../../../web3/helpers';
+import { FormData, HashRentalContract, InputValuesBuyForm, Receipt } from '../../../types';
+import Web3 from 'web3';
 
 enum ContentState {
 	Review = 'REVIEW',
 	Confirm = 'CONFIRM',
 	Pending = 'PENDING',
 	Complete = 'COMPLETE',
+}
+
+interface ContractInfo {
+	speed: string;
+	price: string;
 }
 
 interface Text {
@@ -50,11 +41,6 @@ const buttonText: Text = {
 	confirm: 'Confirm Order',
 	completed: 'Close',
 };
-
-interface ContractInfo {
-	speed: string;
-	price: string;
-}
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -87,7 +73,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
-	} = useForm<InputValues>({ mode: 'onBlur' });
+	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
 
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
@@ -98,7 +84,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		};
 	};
 	// Controls contentState and creating a transaction
-	const buyContract: (data: InputValues) => void = (data) => {
+	const buyContract: (data: InputValuesBuyForm) => void = (data) => {
 		// Review
 		if (isValid && contentState === ContentState.Review) {
 			setContentState(ContentState.Confirm);
@@ -152,8 +138,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			if (receipt?.status) {
 				// Fund the escrow account which is same address as hashrental contract
 				if (web3) {
-					// TODO: use when on Ropsten
-					// const isSuccessful = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
 					const receipt: Receipt = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
 					if (receipt.status) {
 						// Call setFundContract() to put contract in running state

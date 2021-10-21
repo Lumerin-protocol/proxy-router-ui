@@ -1,4 +1,4 @@
-import { WalletText } from '../components/Main';
+import { WalletText } from '../types';
 import { reconnectWalletAsync } from './helpers';
 
 // Type as `any` since EthereumProvider doesn't have `on` method

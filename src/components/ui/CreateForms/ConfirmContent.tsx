@@ -1,9 +1,9 @@
 import React from 'react';
-import { InputValues } from './CreateForm';
 import { DateTime } from 'luxon';
+import { InputValuesCreateForm } from '../../../types';
 
 interface ConfirmContentProps {
-	data: InputValues;
+	data: InputValuesCreateForm;
 }
 
 export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { walletAddress, contractTime, endDate, listPrice } }) => {

@@ -5,12 +5,11 @@ import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
 import { AddressLength, classNames, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
-import { HashRentalContract } from './Marketplace';
 import Web3 from 'web3';
-import { ContractState } from './Main';
+import { ContractState, HashRentalContract } from '../types';
 import _ from 'lodash';
 
-export interface MyOrdersData extends HashRentalContract {
+interface MyOrdersData extends HashRentalContract {
 	status?: JSX.Element | string;
 	progress?: JSX.Element | string;
 }

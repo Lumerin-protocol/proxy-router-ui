@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormData } from './BuyForm';
+import { FormData } from '../../../types';
 
 interface ConfirmContentProps {
 	data: FormData;

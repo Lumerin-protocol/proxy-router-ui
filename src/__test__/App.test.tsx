@@ -1,9 +1,10 @@
 import '@testing-library/jest-dom/extend-expect';
 import { App } from '../App';
-import { HashRentalContract, Marketplace } from '../components/Marketplace';
+import { Marketplace } from '../components/Marketplace';
 import { renderWithRouter } from './testhelper';
 import { act, render } from '@testing-library/react';
 import { MyOrders } from '../components/MyOrders';
+import { HashRentalContract } from '../types';
 
 // Testing basic behavior and will add more complex tests as needed
 

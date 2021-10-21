@@ -15,7 +15,7 @@ import { AbiItem } from 'web3-utils';
 // import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
-import { HashRentalContract, Marketplace } from './Marketplace';
+import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
 import { MyOrders } from './MyOrders';
@@ -27,6 +27,7 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
+import { HashRentalContract, WalletText } from '../types';
 import _ from 'lodash';
 
 enum PathName {
@@ -34,24 +35,11 @@ enum PathName {
 	MyOrders = '/myorders',
 }
 
-// Used in `eventListeners.ts`
-export enum WalletText {
-	ConnectViaMetaMask = 'Connect Via MetaMask',
-	Disconnect = 'Disconnect',
-}
-
 interface Navigation {
 	name: string;
 	to: string;
 	icon: JSX.Element;
 	current: boolean;
-}
-
-export enum ContractState {
-	Available = '0',
-	Active = '1',
-	Running = '2',
-	Complete = '3',
 }
 
 // Main contains the basic layout of pages and maintains contract state needed by its children

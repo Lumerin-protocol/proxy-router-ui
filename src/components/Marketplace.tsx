@@ -5,19 +5,8 @@ import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
 import { AddressLength, getLengthDisplay, truncateAddress } from '../utils';
 import { Spinner } from './ui/Spinner';
-import { ContractState } from './Main';
+import { ContractState, HashRentalContract } from '../types';
 import _ from 'lodash';
-
-export interface HashRentalContract {
-	id?: JSX.Element | string;
-	price?: JSX.Element | string | number;
-	speed?: string;
-	length?: string;
-	trade?: JSX.Element | string;
-	buyer?: string;
-	timestamp?: string;
-	state?: string;
-}
 
 interface Header {
 	Header?: string;

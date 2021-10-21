@@ -1,12 +1,12 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
+import { InputValuesBuyForm } from '../../../types';
 import { classNames } from '../../../utils';
 import { Checkbox } from '../Checkbox';
-import { InputValues } from './BuyForm';
 
 interface ReviewContentProps {
-	register: UseFormRegister<InputValues>;
-	errors: DeepMap<InputValues, FieldError | undefined>; // undefined bc error for specific input might not exist
+	register: UseFormRegister<InputValuesBuyForm>;
+	errors: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 }
 export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }) => {
 	const checkboxLabel = 'Titan Validator Service';
