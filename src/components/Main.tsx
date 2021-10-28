@@ -12,8 +12,7 @@ import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { ReactComponent as LumerinLandingPage } from '../images/lumerin_landingpage.svg';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
-// Stage 2
-// import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
+import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
 import { Marketplace } from './Marketplace';
@@ -68,19 +67,19 @@ export const Main: React.FC = () => {
 		{ name: 'Marketplace', to: PathName.Marketplace, icon: <MarketplaceIcon />, current: pathName === PathName.Marketplace },
 		{ name: 'My Orders', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
 	];
-	// Stage 2 functionality
-	// const createContractNav: JSX.Element = (
-	// 	<div
-	// 		className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
-	// 		onClick={() => {
-	// 			setCreateModalOpen(true);
-	// 			setSidebarOpen(false);
-	// 		}}
-	// 	>
-	// 		<CreateContractIcon />
-	// 		<span className='ml-4'>Create Contract</span>
-	// 	</div>
-	// );
+
+	const createContractNav: JSX.Element = (
+		<div
+			className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
+			onClick={() => {
+				setCreateModalOpen(true);
+				setSidebarOpen(false);
+			}}
+		>
+			<CreateContractIcon />
+			<span className='ml-4'>Create Contract</span>
+		</div>
+	);
 
 	// Wallet/MetaMask setup
 	// Get accounts, web3 and contract instances
@@ -336,7 +335,7 @@ export const Main: React.FC = () => {
 											<span className='ml-4'>{item.name}</span>
 										</Link>
 									))}
-									{/* {createContractNav} */}
+									{createContractNav}
 								</nav>
 							</div>
 						</div>
@@ -375,7 +374,7 @@ export const Main: React.FC = () => {
 										<span className='ml-4'>{item.name}</span>
 									</Link>
 								))}
-								{/* {createContractNav} */}
+								{createContractNav}
 							</nav>
 						</div>
 					</div>

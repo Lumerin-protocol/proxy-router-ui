@@ -11,7 +11,7 @@ import Web3 from 'web3';
 const initialFormData: InputValuesCreateForm = {
 	walletAddress: '',
 	contractTime: 0,
-	endDate: new Date(),
+	speed: 0,
 	listPrice: 0,
 };
 

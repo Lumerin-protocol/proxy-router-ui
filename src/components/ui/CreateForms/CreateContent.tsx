@@ -63,23 +63,20 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 
 				<div className='bg-white p-4 p-4'>
 					<label htmlFor='endDate' className='block text-sm font-medium text-gray-700'>
-						End Date *
+						Speed *
 					</label>
 					<div className='mt-1'>
 						<input
-							{...register('endDate', {
-								valueAsDate: true,
-								validate: (value) => DateTime.fromJSDate(value as Date).isValid,
-							})}
-							id='endDate'
-							type='date'
+							{...register('speed')}
+							id='speed'
+							type='number'
 							className={classNames(
-								errors.endDate ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
+								errors.speed ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
 						/>
 					</div>
-					{!errors.endDate && <div className='text-xs text-lumerin-helpertext-gray'>Contract Expiry</div>}
-					{errors.endDate?.type === 'validate' && <div className='text-xs text-red-500'>End Date is required</div>}
+					{!errors.speed && <div className='text-xs text-lumerin-helpertext-gray'>Hashrate per second</div>}
+					{errors.speed?.type === 'validate' && <div className='text-xs text-red-500'>Speed is required</div>}
 				</div>
 			</div>
 			<div className='bg-white p-4 p-4'>

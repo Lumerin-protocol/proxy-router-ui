@@ -6,7 +6,7 @@ interface ConfirmContentProps {
 	data: InputValuesCreateForm;
 }
 
-export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { walletAddress, contractTime, endDate, listPrice } }) => {
+export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { walletAddress, contractTime, speed, listPrice } }) => {
 	return (
 		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm' style={{ minWidth: '30rem' }}>
 			<div className='confirm-div'>
@@ -18,8 +18,8 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { walletAd
 				<p>{contractTime}</p>
 			</div>
 			<div className='confirm-div'>
-				<p>End Date</p>
-				<p>{DateTime.fromJSDate(endDate as Date).toFormat('MM/dd/yyyy')}</p>
+				<p>Speed</p>
+				<p>{speed}</p>
 			</div>
 			<div className='confirm-div'>
 				<p>List Price</p>

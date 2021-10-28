@@ -41,7 +41,7 @@ export interface FormData extends InputValuesBuyForm {
 export interface InputValuesCreateForm {
 	walletAddress?: string;
 	contractTime?: number;
-	endDate?: Date;
+	speed?: number;
 	listPrice?: number;
 }
 
