@@ -1,7 +1,6 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { classNames } from '../../../utils';
-import { DateTime } from 'luxon';
 import { InputValuesCreateForm } from '../../../types';
 
 interface CreateContentProps {
@@ -49,6 +48,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 								required: 'Contract Time is required',
 								valueAsNumber: true,
 							})}
+							min='1'
 							id='contractTime'
 							type='number'
 							placeholder='# of hours'
@@ -68,6 +68,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 					<div className='mt-1'>
 						<input
 							{...register('speed')}
+							min='1'
 							id='speed'
 							type='number'
 							className={classNames(
@@ -75,7 +76,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 							)}
 						/>
 					</div>
-					{!errors.speed && <div className='text-xs text-lumerin-helpertext-gray'>Hashrate per second</div>}
+					{!errors.speed && <div className='text-xs text-lumerin-helpertext-gray'>TH/S</div>}
 					{errors.speed?.type === 'validate' && <div className='text-xs text-red-500'>Speed is required</div>}
 				</div>
 			</div>
@@ -84,6 +85,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 					<label htmlFor='listPrice' className='block text-sm font-medium text-gray-700'>
 						<div className='flex justify-between'>
 							<p>List Price (LMR) *</p>
+							{/* TODO: use usd t0 lmr converter to produce value below */}
 							<p>10 LMR</p>
 						</div>
 					</label>

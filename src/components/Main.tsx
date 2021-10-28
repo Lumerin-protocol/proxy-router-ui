@@ -3,6 +3,7 @@ import { Fragment, Suspense, useEffect, useState } from 'react';
 import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
+import { ReactComponent as ContractIcon } from '../images/contract.svg';
 import { ReactComponent as MarketplaceIcon } from '../images/marketplace.svg';
 import { ReactComponent as MyOrdersIcon } from '../images/myorders.svg';
 import { ReactComponent as MetaMaskIcon } from '../images/metamask.svg';
@@ -12,7 +13,6 @@ import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
 import { ReactComponent as LumerinLandingPage } from '../images/lumerin_landingpage.svg';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
-import { ReactComponent as CreateContractIcon } from '../images/contract.svg';
 import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
 import { Marketplace } from './Marketplace';
@@ -29,10 +29,12 @@ import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
 import { HashRentalContract, WalletText } from '../types';
 import _ from 'lodash';
+import { MyContracts } from './MyContracts';
 
 enum PathName {
 	Marketplace = '/',
 	MyOrders = '/myorders',
+	MyContracts = '/mycontracts',
 }
 
 interface Navigation {
@@ -66,6 +68,7 @@ export const Main: React.FC = () => {
 	const navigation: Navigation[] = [
 		{ name: 'Marketplace', to: PathName.Marketplace, icon: <MarketplaceIcon />, current: pathName === PathName.Marketplace },
 		{ name: 'My Orders', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
+		{ name: 'My Contracts', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
 	];
 
 	const createContractNav: JSX.Element = (
@@ -76,7 +79,7 @@ export const Main: React.FC = () => {
 				setSidebarOpen(false);
 			}}
 		>
-			<CreateContractIcon />
+			<ContractIcon />
 			<span className='ml-4'>Create Contract</span>
 		</div>
 	);
@@ -212,6 +215,7 @@ export const Main: React.FC = () => {
 					exact
 					render={(props: RouteComponentProps) => <MyOrders {...props} userAccount={userAccount} contracts={contracts} web3={web3} />}
 				/>
+				<Route path={PathName.MyContracts} render={(props: RouteComponentProps) => <MyContracts />} />
 				<Route
 					path={PathName.Marketplace}
 					render={(props: RouteComponentProps) => (
@@ -248,6 +252,7 @@ export const Main: React.FC = () => {
 		if (contracts.length === 0) return '';
 		if (pathName === PathName.Marketplace) return 'Marketplace';
 		if (pathName === PathName.MyOrders) return 'My Orders';
+		if (pathName === PathName.MyContracts) return 'My Contracts';
 		return '';
 	};
 
@@ -271,7 +276,7 @@ export const Main: React.FC = () => {
 			<Modal
 				open={createModalOpen}
 				setOpen={setCreateModalOpen}
-				content={<CreateForm userAccount={userAccount} marketplaceContract={marketplaceContract} web3={web3} setOpen={setCreateModalOpen} />}
+				content={<CreateForm userAccount={userAccount} marketplaceContract={marketplaceContract} setOpen={setCreateModalOpen} />}
 			/>
 			{/* collapsable sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>

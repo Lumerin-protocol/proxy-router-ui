@@ -5,7 +5,6 @@ import { InputValuesCreateForm } from '../../../types';
 import { printError } from '../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CreateContent } from './CreateContent';
-import Web3 from 'web3';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: InputValuesCreateForm = {
@@ -18,16 +17,16 @@ const initialFormData: InputValuesCreateForm = {
 enum ContentState {
 	Create = 'CREATE',
 	Confirm = 'CONFIRM',
+	Complete = 'COMPLETE',
 }
 
 interface CreateFormProps {
 	userAccount: string;
 	marketplaceContract: Contract | undefined;
-	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplaceContract, web3, setOpen }) => {
+export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplaceContract, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [buttonText, setButtonText] = useState<string>('Create New Contract');
@@ -50,11 +49,16 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 
 		// Confirm
 		if (isValid && contentState === ContentState.Confirm) {
-			// TODO: update below logic when smart contract finished
 			// Create contract
-			// const receipt = await marketplaceContract?.methods.setCreateContract(data.walletAddress, data.speed, data.length, data.price).send({ from: userAccount });
-			// if (receipt?.status) setContentState(ContentState.Complete);
 			try {
+				// TODO: what should the validator fee be?
+				// TODO: convert usd to lmr (aggregate of exchanges?)
+				const receipt = await marketplaceContract?.methods
+					.setCreateRentalContract(data.listPrice, 0, data.speed, (data.contractTime as number) * 3600, 0)
+					.send({ from: userAccount });
+				if (receipt?.status) {
+					setContentState(ContentState.Complete);
+				}
 				setOpen(false);
 			} catch (error) {
 				const typedError = error as Error;
@@ -101,7 +105,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 				</div>
 			</div>
 			{content}
-			<div className='flex gap-6 bg-white p-4 pt-14'>
+			<div className='flex gap-6 bg-white p-4 pt-14 rounded-b-5'>
 				<button
 					type='submit'
 					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua hover:bg-lumerin-aqua hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
