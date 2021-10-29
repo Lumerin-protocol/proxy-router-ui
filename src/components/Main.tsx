@@ -71,19 +71,6 @@ export const Main: React.FC = () => {
 		{ name: 'My Contracts', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
 	];
 
-	const createContractNav: JSX.Element = (
-		<div
-			className='text-black flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer'
-			onClick={() => {
-				setCreateModalOpen(true);
-				setSidebarOpen(false);
-			}}
-		>
-			<ContractIcon />
-			<span className='ml-4'>Create Contract</span>
-		</div>
-	);
-
 	// Wallet/MetaMask setup
 	// Get accounts, web3 and contract instances
 	const onboarding = new MetaMaskOnboarding();
@@ -340,7 +327,6 @@ export const Main: React.FC = () => {
 											<span className='ml-4'>{item.name}</span>
 										</Link>
 									))}
-									{createContractNav}
 								</nav>
 							</div>
 						</div>
@@ -379,7 +365,6 @@ export const Main: React.FC = () => {
 										<span className='ml-4'>{item.name}</span>
 									</Link>
 								))}
-								{createContractNav}
 							</nav>
 						</div>
 					</div>
@@ -395,12 +380,25 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div
-						className={classNames(
-							walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex flex-col justify-center sm:ml-4 xl:ml-0'
-						)}
-					>
+					<div className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center sm:ml-4 xl:ml-0')}>
 						<p className='text-lg font-semibold'>{getPageTitle()}</p>
+						<div
+							className='text-black flex items-center px-2 text-sm font-medium rounded-md cursor-pointer'
+							onClick={() => {
+								setCreateModalOpen(true);
+								setSidebarOpen(false);
+							}}
+						>
+							<button
+								className={classNames(
+									pathName === PathName.MyContracts
+										? 'w-48 h-12 ml-4 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
+										: 'hidden'
+								)}
+							>
+								Create Contract
+							</button>
+						</div>
 					</div>
 					<div className={buttonDisplay}>
 						<button className='btn-lmr pointer-events-none'>
