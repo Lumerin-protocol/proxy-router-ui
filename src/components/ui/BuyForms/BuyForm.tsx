@@ -6,11 +6,11 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { AddressLength, classNames, printError, truncateAddress } from '../../../utils';
+import { classNames, printError, truncateAddress } from '../../../utils';
 import ImplementationContract from '../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { transferLumerinAsync } from '../../../web3/helpers';
-import { FormData, HashRentalContract, InputValuesBuyForm, Receipt } from '../../../types';
+import { AddressLength, FormData, HashRentalContract, InputValuesBuyForm, Receipt } from '../../../types';
 import Web3 from 'web3';
 
 enum ContentState {

@@ -1,9 +1,6 @@
+import { AddressLength } from './types';
+
 // String helpers
-export enum AddressLength {
-	SHORT,
-	MEDIUM,
-	LONG,
-}
 export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (address, desiredLength) => {
 	let index;
 	switch (desiredLength) {

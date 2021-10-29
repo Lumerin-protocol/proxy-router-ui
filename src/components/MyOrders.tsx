@@ -4,31 +4,14 @@ import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
-import { AddressLength, classNames, truncateAddress } from '../utils';
+import { classNames, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
 import Web3 from 'web3';
-import { ContractState, HashRentalContract } from '../types';
+import { AddressLength, ContractData, ContractState, HashRentalContract, Header, StatusText } from '../types';
 import _ from 'lodash';
 
-interface MyOrdersData extends HashRentalContract {
-	status?: JSX.Element | string;
-	progress?: JSX.Element | string;
-}
-
-enum StatusText {
-	Available = 'Available',
-	Active = 'Active',
-	Running = 'Running',
-	Complete = 'Complete',
-}
-
-interface Header {
-	Header?: string;
-	accessor?: string;
-}
-
 // This interface needs to have all the properties for both data and columns based on index.d.ts
-interface CustomTableOptions extends MyOrdersData, Header {}
+interface CustomTableOptions extends ContractData, Header {}
 
 interface MyOrdersProps {
 	userAccount: string;
@@ -117,12 +100,12 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, web3
 		);
 	};
 
-	const getTableData: (contracts: HashRentalContract[]) => MyOrdersData[] = (orders) => {
+	const getTableData: () => ContractData[] = () => {
 		const buyerOrders = contracts.filter((contract) => contract.buyer === userAccount);
 		// Add emtpy row for styling
 		buyerOrders.unshift({});
 		const updatedOrders = buyerOrders.map((contract) => {
-			const updatedOrder = { ...contract } as MyOrdersData;
+			const updatedOrder = { ...contract } as ContractData;
 			if (!_.isEmpty(contract)) {
 				updatedOrder.id = (
 					<TableIcon
@@ -140,7 +123,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, web3
 				updatedOrder.progress = getProgressDiv(updatedOrder.timestamp as string, parseInt(updatedOrder.length as string));
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
 			}
-			return updatedOrder as MyOrdersData;
+			return updatedOrder as ContractData;
 		});
 
 		return updatedOrders;
@@ -156,7 +139,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, web3
 		[]
 	);
 
-	const data = getTableData(contracts);
+	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
 	return <Table id='myorders' tableInstance={tableInstance} columnCount={5} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;

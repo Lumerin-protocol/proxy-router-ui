@@ -3,14 +3,7 @@ import { Fragment, Suspense, useEffect, useState } from 'react';
 import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
-import { ReactComponent as ContractIcon } from '../images/contract.svg';
-import { ReactComponent as MarketplaceIcon } from '../images/marketplace.svg';
-import { ReactComponent as MyOrdersIcon } from '../images/myorders.svg';
-import { ReactComponent as MetaMaskIcon } from '../images/metamask.svg';
-import { ReactComponent as LogoIcon } from '../images/logo.svg';
-import { ReactComponent as LogoIcon2 } from '../images/logo2.svg';
-import { ReactComponent as LumerinIcon } from '../images/lumerin.svg';
-import { ReactComponent as LumerinLandingPage } from '../images/lumerin_landingpage.svg';
+import { ContractIcon, MarketplaceIcon, MyOrdersIcon, MetaMaskIcon, LogoIcon, LogoIcon2, LumerinIcon, LumerinLandingPage } from '../images/index';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { Alert } from './ui/Alert';
@@ -19,17 +12,17 @@ import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/BuyForms/BuyForm';
 import { MyOrders } from './MyOrders';
+import { MyContracts } from './MyContracts';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
 import { addLumerinTokenToMetaMaskAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync, reconnectWalletAsync } from '../web3/helpers';
-import { AddressLength, classNames, truncateAddress } from '../utils';
+import { classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
-import { HashRentalContract, WalletText } from '../types';
+import { AddressLength, HashRentalContract, WalletText } from '../types';
 import _ from 'lodash';
-import { MyContracts } from './MyContracts';
 
 enum PathName {
 	Marketplace = '/',
@@ -202,7 +195,10 @@ export const Main: React.FC = () => {
 					exact
 					render={(props: RouteComponentProps) => <MyOrders {...props} userAccount={userAccount} contracts={contracts} web3={web3} />}
 				/>
-				<Route path={PathName.MyContracts} render={(props: RouteComponentProps) => <MyContracts />} />
+				<Route
+					path={PathName.MyContracts}
+					render={(props: RouteComponentProps) => <MyContracts {...props} userAccount={userAccount} contracts={contracts} web3={web3} />}
+				/>
 				<Route
 					path={PathName.Marketplace}
 					render={(props: RouteComponentProps) => (
@@ -392,7 +388,7 @@ export const Main: React.FC = () => {
 							<button
 								className={classNames(
 									pathName === PathName.MyContracts
-										? 'w-48 h-12 ml-4 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
+										? 'w-48 h-12 ml-8 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
 										: 'hidden'
 								)}
 							>

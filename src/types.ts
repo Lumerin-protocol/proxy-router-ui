@@ -1,6 +1,7 @@
 // Exported types here
 // Types local to a file will be in that file
 
+// Enums
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
 	Disconnect = 'Disconnect',
@@ -13,6 +14,20 @@ export enum ContractState {
 	Complete = '3',
 }
 
+export enum AddressLength {
+	SHORT,
+	MEDIUM,
+	LONG,
+}
+
+export enum StatusText {
+	Available = 'Available',
+	Active = 'Active',
+	Running = 'Running',
+	Complete = 'Complete',
+}
+
+// Interfaces
 export interface HashRentalContract {
 	id?: JSX.Element | string;
 	price?: JSX.Element | string | number;
@@ -47,4 +62,14 @@ export interface InputValuesCreateForm {
 
 export interface Receipt {
 	status: boolean;
+}
+
+export interface Header {
+	Header?: string;
+	accessor?: string;
+}
+
+export interface ContractData extends HashRentalContract {
+	status?: JSX.Element | string;
+	progress?: JSX.Element | string;
 }

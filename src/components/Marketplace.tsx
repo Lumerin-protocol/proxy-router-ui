@@ -3,15 +3,10 @@ import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
-import { AddressLength, getLengthDisplay, truncateAddress } from '../utils';
+import { getLengthDisplay, truncateAddress } from '../utils';
 import { Spinner } from './ui/Spinner';
-import { ContractState, HashRentalContract } from '../types';
+import { AddressLength, ContractState, HashRentalContract, Header } from '../types';
 import _ from 'lodash';
-
-interface Header {
-	Header?: string;
-	accessor?: string;
-}
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends HashRentalContract, Header {}
