@@ -116,6 +116,7 @@ export const Main: React.FC = () => {
 			const speed = await implementationContractInstance.methods.speed().call();
 			const length = await implementationContractInstance.methods.length().call();
 			const buyer = await implementationContractInstance?.methods.buyer().call();
+			const seller = await implementationContractInstance?.methods.seller().call();
 			const timestamp = await implementationContractInstance?.methods.startingBlockTimestamp().call();
 			const state = await implementationContractInstance?.methods.contractState().call();
 
@@ -125,6 +126,7 @@ export const Main: React.FC = () => {
 				speed,
 				length,
 				buyer,
+				seller,
 				timestamp,
 				state,
 			} as HashRentalContract;

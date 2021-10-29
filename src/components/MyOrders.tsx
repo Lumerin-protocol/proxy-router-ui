@@ -4,7 +4,7 @@ import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
-import { classNames, truncateAddress } from '../utils';
+import { classNames, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
 import Web3 from 'web3';
 import { AddressLength, ContractData, ContractState, HashRentalContract, Header, StatusText } from '../types';
@@ -24,16 +24,16 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, web3
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
-	const mediaQueryList = window.matchMedia('(min-width: 1024px)');
-	// Not an arrow function since parameter is typed as this and arrow function can't have this as parameter
-	function mediaQueryListOnChangeHandler(this: MediaQueryList, ev: MediaQueryListEvent): any {
-		if (this.matches && !isLargeBreakpointOrGreater) {
-			setIsLargeBreakpointOrGreater(true);
-		} else if (isLargeBreakpointOrGreater) {
+	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
+	setMediaQueryListOnChangeHandler(mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
+
+	useEffect(() => {
+		if (!mediaQueryList?.matches) {
 			setIsLargeBreakpointOrGreater(false);
+		} else {
+			setIsLargeBreakpointOrGreater(true);
 		}
-	}
-	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+	}, [mediaQueryList?.matches]);
 
 	useEffect(() => {
 		if (!mediaQueryList?.matches) {

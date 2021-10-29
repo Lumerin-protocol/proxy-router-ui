@@ -35,6 +35,7 @@ export interface HashRentalContract {
 	length?: string;
 	trade?: JSX.Element | string;
 	buyer?: string;
+	seller?: string;
 	timestamp?: string;
 	state?: string;
 }

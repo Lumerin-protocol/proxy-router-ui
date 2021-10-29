@@ -3,7 +3,7 @@ import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
-import { getLengthDisplay, truncateAddress } from '../utils';
+import { getLengthDisplay, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
 import { Spinner } from './ui/Spinner';
 import { AddressLength, ContractState, HashRentalContract, Header } from '../types';
 import _ from 'lodash';
@@ -22,15 +22,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
-	// Not an arrow function since parameter is typed as this and arrow function can't have this as parameter
-	function mediaQueryListOnChangeHandler(this: MediaQueryList, ev: MediaQueryListEvent): any {
-		if (this.matches && !isLargeBreakpointOrGreater) {
-			setIsLargeBreakpointOrGreater(true);
-		} else if (isLargeBreakpointOrGreater) {
-			setIsLargeBreakpointOrGreater(false);
-		}
-	}
-	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+	setMediaQueryListOnChangeHandler(mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
 
 	useEffect(() => {
 		if (!mediaQueryList?.matches) {
@@ -59,7 +51,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 						justify='start'
 					/>
 				);
-				updatedContract.price = <TableIcon icon={null} text={`${updatedContract.price as string} LMR`} justify='start' />;
+				updatedContract.price = <TableIcon icon={null} text={updatedContract.price as string} justify='start' />;
 				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />

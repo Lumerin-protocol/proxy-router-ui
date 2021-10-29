@@ -34,5 +34,23 @@ export const getLengthDisplay: (length: number) => string = (length) => {
 
 	const days = (length / secondsInDay).toFixed(2);
 
-	return days === '1.00' ? '1 day' : `${days} days`;
+	return days;
+
+	// return days === '1.00' ? '1 day' : `${days} days`;
+};
+
+// Media query change handler
+export const setMediaQueryListOnChangeHandler: (
+	mediaQueryList: MediaQueryList,
+	isLargeBreakpointOrGreater: boolean,
+	setIsLargeBreakpointOrGreater: React.Dispatch<React.SetStateAction<boolean>>
+) => void = (mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater) => {
+	function mediaQueryListOnChangeHandler(this: MediaQueryList, event: MediaQueryListEvent): any {
+		if (this.matches && !isLargeBreakpointOrGreater) {
+			setIsLargeBreakpointOrGreater(true);
+		} else if (isLargeBreakpointOrGreater) {
+			setIsLargeBreakpointOrGreater(false);
+		}
+	}
+	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
 };

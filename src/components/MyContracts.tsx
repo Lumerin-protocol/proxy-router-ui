@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Column, useTable } from 'react-table';
 import { AddressLength, ContractData, ContractState, HashRentalContract, Header, StatusText } from '../types';
-import { classNames, truncateAddress } from '../utils';
+import { classNames, getLengthDisplay, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
 import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
@@ -24,15 +24,15 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
-	// Not an arrow function since parameter is typed as this and arrow function can't have this as parameter
-	function mediaQueryListOnChangeHandler(this: MediaQueryList, ev: MediaQueryListEvent): any {
-		if (this.matches && !isLargeBreakpointOrGreater) {
-			setIsLargeBreakpointOrGreater(true);
-		} else if (isLargeBreakpointOrGreater) {
+	setMediaQueryListOnChangeHandler(mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
+
+	useEffect(() => {
+		if (!mediaQueryList?.matches) {
 			setIsLargeBreakpointOrGreater(false);
+		} else {
+			setIsLargeBreakpointOrGreater(true);
 		}
-	}
-	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+	}, [mediaQueryList?.matches]);
 
 	useEffect(() => {
 		if (!mediaQueryList?.matches) {
@@ -89,6 +89,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 		} else {
 			timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
 			percentage = (timeElapsed / length) * 100;
+			percentage = percentage > 100 ? 100 : percentage;
 		}
 
 		return (
@@ -102,7 +103,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 	};
 
 	const getTableData: () => ContractData[] = () => {
-		const sellerContracts = contracts.filter((contract) => contract.buyer === userAccount);
+		const sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
 		// Add emtpy row for styling
 		sellerContracts.unshift({});
 		const updatedOrders = sellerContracts.map((contract) => {
@@ -122,6 +123,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 				);
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(updatedOrder.timestamp as string, parseInt(updatedOrder.length as string));
+				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
 			}
 			return updatedOrder as ContractData;
@@ -132,9 +134,10 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
-			{ Header: 'STARTED', accessor: 'timestamp' },
 			{ Header: 'STATUS', accessor: 'status' },
-			{ Header: 'List Price', accessor: 'price' },
+			{ Header: 'List Price (LMR)', accessor: 'price' },
+			{ Header: 'Duration (DAYS)', accessor: 'length' },
+			{ Header: 'STARTED', accessor: 'timestamp' },
 			{ Header: 'PROGRESS', accessor: 'progress' },
 		],
 		[]
@@ -143,7 +146,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='mycontracts' tableInstance={tableInstance} columnCount={5} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
+	return <Table id='mycontracts' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
 };
 
 MyContracts.displayName = 'MyContracts';
