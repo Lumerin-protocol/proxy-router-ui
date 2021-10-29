@@ -48,6 +48,7 @@ export const Main: React.FC = () => {
 	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
+	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
@@ -107,6 +108,14 @@ export const Main: React.FC = () => {
 	useEffect(() => {
 		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
 	}, [alertOpen]);
+
+	// Get timestamp of current block
+	const getCurrentBlockTimestampAsync: () => void = async () => {
+		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
+		setCurrentBlockTimestamp(currentBlockTimestamp as number);
+	};
+
+	useEffect(() => getCurrentBlockTimestampAsync(), [web3]);
 
 	// Contracts setup
 	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (address) => {
@@ -195,11 +204,15 @@ export const Main: React.FC = () => {
 				<Route
 					path={PathName.MyOrders}
 					exact
-					render={(props: RouteComponentProps) => <MyOrders {...props} userAccount={userAccount} contracts={contracts} web3={web3} />}
+					render={(props: RouteComponentProps) => (
+						<MyOrders {...props} userAccount={userAccount} contracts={contracts} currentBlockTimestamp={currentBlockTimestamp} />
+					)}
 				/>
 				<Route
 					path={PathName.MyContracts}
-					render={(props: RouteComponentProps) => <MyContracts {...props} userAccount={userAccount} contracts={contracts} web3={web3} />}
+					render={(props: RouteComponentProps) => (
+						<MyContracts {...props} userAccount={userAccount} contracts={contracts} currentBlockTimestamp={currentBlockTimestamp} />
+					)}
 				/>
 				<Route
 					path={PathName.Marketplace}

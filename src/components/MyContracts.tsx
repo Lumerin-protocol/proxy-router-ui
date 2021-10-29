@@ -6,7 +6,6 @@ import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
-import Web3 from 'web3';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -15,11 +14,10 @@ interface CustomTableOptions extends ContractData, Header {}
 interface MyContractsProps {
 	userAccount: string;
 	contracts: HashRentalContract[];
-	web3: Web3 | undefined;
+	currentBlockTimestamp: number;
 }
 
-export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts, web3 }) => {
-	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
+export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts, currentBlockTimestamp }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
@@ -41,13 +39,6 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 			setIsLargeBreakpointOrGreater(true);
 		}
 	}, [mediaQueryList?.matches]);
-
-	const getCurrentBlockTimestampAsync: () => void = async () => {
-		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
-		setCurrentBlockTimestamp(currentBlockTimestamp as number);
-	};
-
-	useEffect(() => getCurrentBlockTimestampAsync(), [web3]);
 
 	const getStatusText: (state: string) => string = (state) => {
 		switch (state) {
