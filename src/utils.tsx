@@ -56,7 +56,7 @@ export const setMediaQueryListOnChangeHandler: (
 };
 
 // Display status of contracts
-const getStatusText: (state: string) => string = (state) => {
+export const getStatusText: (state: string) => string = (state) => {
 	switch (state) {
 		case ContractState.Available:
 			return StatusText.Available;

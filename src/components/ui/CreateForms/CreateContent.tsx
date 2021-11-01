@@ -85,7 +85,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 					<label htmlFor='listPrice' className='block text-sm font-medium text-gray-700'>
 						<div className='flex justify-between'>
 							<p>List Price (LMR) *</p>
-							{/* TODO: use usd t0 lmr converter to produce value below */}
+							{/* TODO: use usd to lmr converter to produce value below */}
 							<p>10 LMR</p>
 						</div>
 					</label>

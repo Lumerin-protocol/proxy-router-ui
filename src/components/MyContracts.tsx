@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Column, useTable } from 'react-table';
 import { AddressLength, ContractData, ContractState, HashRentalContract, Header } from '../types';
-import { classNames, getLengthDisplay, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
+import { classNames, getLengthDisplay, getStatusText, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
 import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
@@ -127,6 +127,3 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 
 MyContracts.displayName = 'MyContracts';
 MyContracts.whyDidYouRender = false;
-function getStatusText(state: string): string | undefined {
-	throw new Error('Function not implemented.');
-}

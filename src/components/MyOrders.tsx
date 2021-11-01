@@ -4,9 +4,9 @@ import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
-import { classNames, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
+import { classNames, getStatusText, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
-import { AddressLength, ContractData, ContractState, HashRentalContract, Header } from '../types';
+import { AddressLength, ContractData, ContractState, HashRentalContract, Header, StatusText } from '../types';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -125,6 +125,3 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, curr
 
 MyOrders.displayName = 'MyOrders';
 MyOrders.whyDidYouRender = false;
-function getStatusText(state: string): string | undefined {
-	throw new Error('Function not implemented.');
-}
