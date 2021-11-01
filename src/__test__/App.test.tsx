@@ -5,6 +5,7 @@ import { renderWithRouter } from './testhelper';
 import { act, render } from '@testing-library/react';
 import { MyOrders } from '../components/MyOrders';
 import { HashRentalContract } from '../types';
+import { MyContracts } from '../components/MyContracts';
 
 // Testing basic behavior and will add more complex tests as needed
 
@@ -69,12 +70,37 @@ describe('<MyOrders />', () => {
 		];
 
 		// Act
-		await act(async () => {
-			render(<MyOrders contracts={contracts} userAccount='' currentBlockTimestamp={1000} />);
-		});
+		render(<MyOrders contracts={contracts} userAccount='' currentBlockTimestamp={1000} />);
 
 		// Assert
 		const table = document.getElementById('myorders');
+		expect(table).toBeInTheDocument();
+	});
+});
+
+describe('<MyContracts />', () => {
+	it('displays', () => {
+		// Arrange
+		const contracts: HashRentalContract[] = [
+			{}, // Represents dummy row for styling purposes
+			{
+				id: '',
+				price: '1',
+				speed: '1',
+				length: '1',
+				trade: '',
+				buyer: '',
+				seller: '',
+				timestamp: '',
+				state: '',
+			},
+		];
+
+		// Act
+		render(<MyContracts contracts={contracts} userAccount='' currentBlockTimestamp={1000} />);
+
+		// Assert
+		const table = document.getElementById('mycontracts');
 		expect(table).toBeInTheDocument();
 	});
 });
