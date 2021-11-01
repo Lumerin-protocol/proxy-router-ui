@@ -32,7 +32,7 @@ type Reject = (error: Error) => void;
 type SetAlertOpen = React.Dispatch<React.SetStateAction<boolean>>;
 
 const ethereum: any = window.ethereum;
-const lumerinTokenAddress = '0x47ad3E1eB5c9aaf947BA751Da4bc828297CFd486';
+const lumerinTokenAddress = '0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66';
 
 // Web3 setup helpers
 // Private functions for getWeb3ResultAsync()
@@ -100,7 +100,6 @@ export const getWeb3ResultAsync: (
 		// Get network info
 		// TODO: use below line once off AWS Ganache instance
 		const networkId = await web3.eth.net.getId();
-		// const networkId = 1634856755581;
 		const deployedNetwork = (WebFacingContract as ContractJson).networks[networkId];
 
 		// Use web3 to get the user's accounts

@@ -32,8 +32,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		}
 	}, [mediaQueryList?.matches]);
 
+	let availableContracts: HashRentalContract[] = [];
 	const getTableData: (contracts: HashRentalContract[]) => HashRentalContract[] = (contracts) => {
-		const availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
+		availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
 		// Add emtpy row for styling
 		availableContracts.unshift({});
 		const updatedContracts = availableContracts.map((contract) => {
@@ -80,7 +81,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	// There is always 1 empty contract for styling purposes
 	return (
 		<div className='flex flex-col'>
-			{contracts.length > 1 ? (
+			{availableContracts.length > 1 ? (
 				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 			) : (
 				<div className='flex justify-center mt-50 mr-50'>
