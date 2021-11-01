@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Column, useTable } from 'react-table';
-import { AddressLength, ContractData, ContractState, HashRentalContract, Header, StatusText } from '../types';
+import { AddressLength, ContractData, ContractState, HashRentalContract, Header } from '../types';
 import { classNames, getLengthDisplay, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
 import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
@@ -39,21 +39,6 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 			setIsLargeBreakpointOrGreater(true);
 		}
 	}, [mediaQueryList?.matches]);
-
-	const getStatusText: (state: string) => string = (state) => {
-		switch (state) {
-			case ContractState.Available:
-				return StatusText.Available;
-			case ContractState.Active:
-				return StatusText.Active;
-			case ContractState.Running:
-				return StatusText.Running;
-			case ContractState.Complete:
-				return StatusText.Complete;
-			default:
-				return StatusText.Complete;
-		}
-	};
 
 	const getStatusDiv: (state: string) => JSX.Element = (state) => {
 		return (
@@ -142,3 +127,6 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 
 MyContracts.displayName = 'MyContracts';
 MyContracts.whyDidYouRender = false;
+function getStatusText(state: string): string | undefined {
+	throw new Error('Function not implemented.');
+}

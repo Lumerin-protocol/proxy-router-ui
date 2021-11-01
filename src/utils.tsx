@@ -1,4 +1,4 @@
-import { AddressLength } from './types';
+import { AddressLength, ContractState, StatusText } from './types';
 
 // String helpers
 export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (address, desiredLength) => {
@@ -53,4 +53,20 @@ export const setMediaQueryListOnChangeHandler: (
 		}
 	}
 	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+};
+
+// Display status of contracts
+const getStatusText: (state: string) => string = (state) => {
+	switch (state) {
+		case ContractState.Available:
+			return StatusText.Available;
+		case ContractState.Active:
+			return StatusText.Active;
+		case ContractState.Running:
+			return StatusText.Running;
+		case ContractState.Complete:
+			return StatusText.Complete;
+		default:
+			return StatusText.Complete;
+	}
 };
