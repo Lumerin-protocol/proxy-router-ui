@@ -1,4 +1,5 @@
-import { truncateAddress, classNames, AddressLength, getLengthDisplay } from '../utils';
+import { AddressLength } from '../types';
+import { truncateAddress, classNames, getLengthDisplay } from '../utils';
 
 describe('utils', () => {
 	// truncateAddress()
@@ -59,19 +60,7 @@ describe('utils', () => {
 			const result = getLengthDisplay(seconds);
 
 			// Assert
-			const expectedResult = '3.27 days';
-			expect(result).toBe(expectedResult);
-		});
-
-		it('displays day when value is exactly 1 day', () => {
-			// Arrange
-			const seconds = 86400;
-
-			// Act
-			const result = getLengthDisplay(seconds);
-
-			// Assert
-			const expectedResult = '1 day';
+			const expectedResult = '3.27';
 			expect(result).toBe(expectedResult);
 		});
 	});

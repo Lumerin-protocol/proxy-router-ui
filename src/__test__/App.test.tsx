@@ -10,9 +10,11 @@ import { HashRentalContract } from '../types';
 
 // Top level integration tests
 describe('<App />', () => {
-	it('displays <Main />', () => {
+	it('displays <Main />', async () => {
 		// Act
-		renderWithRouter(<App />, '/');
+		await act(async () => {
+			renderWithRouter(<App />, '/');
+		});
 
 		// Assert
 		const mainDiv = document.getElementById('main');
@@ -68,7 +70,7 @@ describe('<MyOrders />', () => {
 
 		// Act
 		await act(async () => {
-			render(<MyOrders contracts={contracts} userAccount='' web3={undefined} />);
+			render(<MyOrders contracts={contracts} userAccount='' currentBlockTimestamp={1000} />);
 		});
 
 		// Assert
