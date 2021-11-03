@@ -37,7 +37,7 @@ describe('<Marketplace />', () => {
 				trade: '',
 				buyer: '',
 				timestamp: '',
-				state: '',
+				state: '0',
 			},
 		];
 		const setContractId = jest.fn();

@@ -126,16 +126,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
 			if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 			// TODO: encrypt poolAddress, username, password
+			const encryptedBuyerInput = '';
 			const receipt: Receipt = await marketplaceContract?.methods
-				.setPurchaseContract(
-					contract.id,
-					userAccount,
-					validator,
-					formData.withValidator,
-					formData.poolAddress,
-					formData.username,
-					formData.password
-				)
+				.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
 				.send(sendOptions);
 			if (receipt?.status) {
 				// Fund the escrow account which is same address as hashrental contract

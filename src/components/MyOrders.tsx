@@ -6,7 +6,7 @@ import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
 import { classNames, getStatusText, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
 import { DateTime } from 'luxon';
-import { AddressLength, ContractData, ContractState, HashRentalContract, Header, StatusText } from '../types';
+import { AddressLength, ContractData, ContractState, HashRentalContract, Header } from '../types';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
