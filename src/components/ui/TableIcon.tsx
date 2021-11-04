@@ -1,14 +1,15 @@
 import React from 'react';
-import { classNames } from '../../utils';
+import { classNames, getAddressDisplay } from '../../utils';
 
 interface TableIconProps {
 	icon: JSX.Element | null;
-	text: string | number;
+	text: string;
 	justify: string;
+	isLargeBreakpointOrGreater?: boolean;
 	hasLink?: boolean;
 }
 
-export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, hasLink }) => {
+export const TableIcon: React.FC<TableIconProps> = ({ icon, text, isLargeBreakpointOrGreater, justify, hasLink }) => {
 	let updatedJustify = justify ?? 'center';
 	updatedJustify = `justify-${updatedJustify}`;
 
@@ -18,8 +19,8 @@ export const TableIcon: React.FC<TableIconProps> = ({ icon, text, justify, hasLi
 				<span className={icon ? 'mr-2' : ''}>{icon}</span>
 				<span className='font-semibold text-left'>
 					{hasLink ? (
-						<a href={`https://etherscan.io/address/${text}`} target='_blank' rel='noreferrer' className='cursor-pointer'>
-							{text}
+						<a href={`https://ropsten.etherscan.io/address/${text}`} target='_blank' rel='noreferrer' className='cursor-pointer'>
+							{getAddressDisplay(isLargeBreakpointOrGreater as boolean, text)}
 						</a>
 					) : (
 						text

@@ -70,3 +70,8 @@ export const getStatusText: (state: string) => string = (state) => {
 			return StatusText.Complete;
 	}
 };
+
+// Display address based on breakpoint
+export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: string) => string = (isLargeBreakpointOrGreater, address) => {
+	return isLargeBreakpointOrGreater ? truncateAddress(address) : truncateAddress(address, AddressLength.SHORT);
+};

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Column, useTable } from 'react-table';
-import { AddressLength, ContractData, ContractState, HashRentalContract, Header } from '../types';
-import { classNames, getLengthDisplay, getStatusText, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
+import { ContractData, ContractState, HashRentalContract, Header } from '../types';
+import { classNames, getLengthDisplay, getStatusText, setMediaQueryListOnChangeHandler } from '../utils';
 import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
@@ -88,11 +88,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({ userAccount, contracts
 				updatedOrder.id = (
 					<TableIcon
 						icon={null}
-						text={
-							isLargeBreakpointOrGreater
-								? truncateAddress(updatedOrder.id as string)
-								: truncateAddress(updatedOrder.id as string, AddressLength.SHORT)
-						}
+						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
+						text={updatedOrder.id as string}
 						hasLink
 						justify='start'
 					/>

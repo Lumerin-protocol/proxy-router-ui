@@ -103,8 +103,8 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 							{/* dynamically populate options */}
 							<option value={0}>Select amount in USD</option>
 							<option value={100}>100 USD</option>
-							<option value={100}>200 USD</option>
-							<option value={200}>300 USD</option>
+							<option value={200}>200 USD</option>
+							<option value={300}>300 USD</option>
 						</select>
 					</div>
 					{!errors.listPrice && (

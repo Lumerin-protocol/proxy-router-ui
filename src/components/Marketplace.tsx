@@ -3,9 +3,9 @@ import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/BuyButton';
 import { Table } from './ui/Table';
-import { getLengthDisplay, setMediaQueryListOnChangeHandler, truncateAddress } from '../utils';
+import { getLengthDisplay, setMediaQueryListOnChangeHandler } from '../utils';
 import { Spinner } from './ui/Spinner';
-import { AddressLength, ContractState, HashRentalContract, Header } from '../types';
+import { ContractState, HashRentalContract, Header } from '../types';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -43,11 +43,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 				updatedContract.id = (
 					<TableIcon
 						icon={null}
-						text={
-							isLargeBreakpointOrGreater
-								? truncateAddress(updatedContract.id as string)
-								: truncateAddress(updatedContract.id as string, AddressLength.SHORT)
-						}
+						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
+						text={updatedContract.id as string}
 						hasLink
 						justify='start'
 					/>
