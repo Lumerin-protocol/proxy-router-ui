@@ -54,7 +54,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 				// TODO: what should the validator fee be?
 				// TODO: convert usd to lmr (aggregate of exchanges?)
 				const receipt = await marketplaceContract?.methods
-					.setCreateRentalContract(data.listPrice, 0, data.speed, (data.contractTime as number) * 3600, 0)
+					.setCreateRentalContract(data.listPrice, 0, data.speed, (data.contractTime as number) * 3600, 100)
 					.send({ from: userAccount });
 				if (receipt?.status) {
 					setContentState(ContentState.Complete);
