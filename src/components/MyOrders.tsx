@@ -1,12 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useState } from 'react';
-import { ProgressBar } from './ui/ProgressBar';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
-import { classNames, getStatusText, setMediaQueryListOnChangeHandler } from '../utils';
+import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
 import { DateTime } from 'luxon';
-import { ContractData, ContractState, HashRentalContract, Header } from '../types';
+import { ContractData, HashRentalContract, Header } from '../types';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -41,43 +40,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, curr
 		}
 	}, [mediaQueryList?.matches]);
 
-	const getStatusDiv: (state: string) => JSX.Element = (state) => {
-		return (
-			<div>
-				<span
-					className={classNames(
-						state === ContractState.Available || state === ContractState.Running
-							? 'w-20 bg-lumerin-green text-white'
-							: 'w-28 bg-lumerin-dark-gray text-black',
-						'flex justify-center items-center h-8 rounded-5'
-					)}
-				>
-					<p>{_.capitalize(getStatusText(state))}</p>
-				</span>
-			</div>
-		);
-	};
-
-	const getProgressDiv: (startTime: string, length: number) => JSX.Element = (startTime, length) => {
-		let timeElapsed: number = 0;
-		let percentage: number = 0;
-		if (length === 0 || currentBlockTimestamp === 0) {
-			percentage = 100;
-		} else {
-			timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
-			percentage = (timeElapsed / length) * 100;
-		}
-
-		return (
-			<div className='flex items-baseline'>
-				<div>{percentage.toFixed()}%</div>
-				<div className='w-1/2 ml-4'>
-					<ProgressBar width={percentage.toString()} />
-				</div>
-			</div>
-		);
-	};
-
 	const getTableData: () => ContractData[] = () => {
 		const buyerOrders = contracts.filter((contract) => contract.buyer === userAccount);
 		// Add emtpy row for styling
@@ -95,7 +57,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, curr
 					/>
 				);
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
-				updatedOrder.progress = getProgressDiv(updatedOrder.timestamp as string, parseInt(updatedOrder.length as string));
+				updatedOrder.progress = getProgressDiv(
+					updatedOrder.timestamp as string,
+					parseInt(updatedOrder.length as string),
+					currentBlockTimestamp
+				);
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
 			}
 			return updatedOrder as ContractData;
