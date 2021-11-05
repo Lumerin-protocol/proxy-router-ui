@@ -109,9 +109,7 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 		<div>
 			<span
 				className={classNames(
-					state === ContractState.Available || state === ContractState.Running
-						? 'w-20 bg-lumerin-green text-white'
-						: 'w-28 bg-lumerin-dark-gray text-black',
+					state === ContractState.Running ? 'w-24 bg-lumerin-green text-white' : 'w-24 bg-lumerin-dark-gray text-black',
 					'flex justify-center items-center h-8 rounded-5'
 				)}
 			>

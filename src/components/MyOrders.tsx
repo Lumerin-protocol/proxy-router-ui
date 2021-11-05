@@ -5,7 +5,7 @@ import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
 import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
 import { DateTime } from 'luxon';
-import { ContractData, HashRentalContract, Header } from '../types';
+import { ContractData, ContractState, HashRentalContract, Header } from '../types';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -41,7 +41,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, curr
 	}, [mediaQueryList?.matches]);
 
 	const getTableData: () => ContractData[] = () => {
-		const buyerOrders = contracts.filter((contract) => contract.buyer === userAccount);
+		const buyerOrders = contracts.filter(
+			(contract) => contract.buyer === userAccount && (contract.state === ContractState.Running || contract.state === ContractState.Complete)
+		);
 		// Add emtpy row for styling
 		buyerOrders.unshift({});
 		const updatedOrders = buyerOrders.map((contract) => {
