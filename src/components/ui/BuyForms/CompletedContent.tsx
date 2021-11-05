@@ -20,9 +20,8 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ isTransactio
 				</div>
 			)}
 			{isTransactionPending ? (
-				<div className='flex flex-col items-center mb-4'>
-					<p className='w-4/6 text-center text-xl mb-8'>Thank you for purchasing Hashpower from Lumerin!</p>
-					<p className='w-5/6 text-center text-sm'>Your Transaction is pending.</p>
+				<div className='flex flex-col w-full items-center mb-4'>
+					<p className='w-4/6 text-center text-xl mb-8'>Your Transaction is pending.</p>
 				</div>
 			) : null}
 			{isTransactionPending ? <Spinner /> : null}

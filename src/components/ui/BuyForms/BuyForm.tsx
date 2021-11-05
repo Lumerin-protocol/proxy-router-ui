@@ -242,9 +242,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	};
 
 	return (
-		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
+		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 			<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
-				<div className={classNames(contentState === ContentState.Complete ? 'hidden' : 'block')}>
+				<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
 					<p className='text-3xl'>Purchase Hashpower</p>
 					<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
 				</div>
@@ -259,9 +259,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					onClick={() => setOpen(false)}
 				>
-					{contentState === ContentState.Complete ? 'Close' : 'Cancel'}
+					Close
 				</button>
-				{getButton()}
+				{contentState !== ContentState.Pending ? getButton() : null}
 			</div>
 		</div>
 	);
