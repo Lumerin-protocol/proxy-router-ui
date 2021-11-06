@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Contract } from 'web3-eth-contract';
@@ -68,7 +69,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 		}
 	};
 
-	// Pending
+	// Create transaction when in pending state
 	useEffect(() => {
 		if (contentState === ContentState.Pending) {
 			createContractAsync(formData);

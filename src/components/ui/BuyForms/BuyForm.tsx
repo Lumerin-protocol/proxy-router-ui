@@ -18,6 +18,12 @@ interface ContractInfo {
 	price: string;
 }
 
+interface SendOptions {
+	from: string;
+	gas: number;
+	value?: string;
+}
+
 interface Text {
 	review: string;
 	confirm: string;
@@ -59,8 +65,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
-	const [isTransactionPending, setIsTransactionPending] = useState<boolean>(false);
-	const [shouldSendTransaction, setShouldSendTransaction] = useState<boolean>(false);
 
 	// Input validation setup
 	const {
@@ -78,7 +82,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		};
 	};
 	// Controls contentState and creating a transaction
-	const buyContract: (data: InputValuesBuyForm) => void = (data) => {
+	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
 		// Review
 		if (isValid && contentState === ContentState.Review) {
 			setContentState(ContentState.Confirm);
@@ -93,79 +97,71 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 		// Confirm
 		if (isValid && contentState === ContentState.Confirm) {
-			setIsTransactionPending(true);
 			setContentState(ContentState.Pending);
+		}
+
+		// Pending
+		if (isValid && contentState === ContentState.Pending) {
+			// Order of events
+			// 1. Purchase hashrental contract
+			// 2. Transfer contract price (LMR) to escrow account
+			// 3. Call setFundContract to put contract in running state
+			try {
+				// TODO: update with actual validator address and validator fee
+				const validator = formData.withValidator
+					? '0xD12b787E2F318448AE2Fd04e51540c9cBF822e89'
+					: '0x0000000000000000000000000000000000000000';
+				const validatorFee = '100';
+				const gasLimit = 1000000;
+				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
+				if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
+				// TODO: encrypt poolAddress, username, password
+				const encryptedBuyerInput = 'stratum+tcp://mining.dev.pool.titan.io|4242|lance.worker';
+				const receipt: Receipt = await marketplaceContract?.methods
+					.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
+					.send(sendOptions);
+				if (receipt?.status) {
+					// Fund the escrow account which is same address as hashrental contract
+					if (web3) {
+						const receipt: Receipt = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
+						if (receipt.status) {
+							// Call setFundContract() to put contract in running state
+							const implementationContractInstance = new web3.eth.Contract(
+								ImplementationContract.abi as AbiItem[],
+								contract.id as string
+							);
+							const receipt: Receipt = await implementationContractInstance.methods
+								.setFundContract()
+								.send({ from: userAccount, gas: gasLimit });
+							if (!receipt.status) {
+								// TODO: funding failed so surface this to user
+							}
+						} else {
+							// TODO: transfer has failed so surface this to user
+						}
+					}
+				} else {
+					// TODO: purchase has failed so surface this to user
+				}
+				setContentState(ContentState.Complete);
+			} catch (error) {
+				const typedError = error as Error;
+				printError(typedError.message, typedError.stack as string);
+				// crash app if can't communicate with contracts
+				throw typedError;
+			}
 		}
 
 		// Completed
 		if (contentState === ContentState.Complete) setOpen(false);
 	};
 
-	interface SendOptions {
-		from: string;
-		gas: number;
-		value?: string;
-	}
-	const createTransactionAsync: () => void = async () => {
-		// Order of events
-		// 1. Purchase hashrental contract
-		// 2. Transfer contract price (LMR) to escrow account
-		// 3. Call setFundContract to put contract in running state
-		try {
-			// TODO: update with actual validator address and validator fee
-			const validator = formData.withValidator ? '0xD12b787E2F318448AE2Fd04e51540c9cBF822e89' : '0x0000000000000000000000000000000000000000';
-			const validatorFee = '100';
-			const gasLimit = 1000000;
-			let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
-			if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
-			// TODO: encrypt poolAddress, username, password
-			const encryptedBuyerInput = 'stratum+tcp://mining.dev.pool.titan.io|4242|lance.worker';
-			const receipt: Receipt = await marketplaceContract?.methods
-				.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
-				.send(sendOptions);
-			if (receipt?.status) {
-				// Fund the escrow account which is same address as hashrental contract
-				if (web3) {
-					const receipt: Receipt = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
-					if (receipt.status) {
-						// Call setFundContract() to put contract in running state
-						const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
-						const receipt: Receipt = await implementationContractInstance.methods
-							.setFundContract()
-							.send({ from: userAccount, gas: gasLimit });
-						if (!receipt.status) {
-							// TODO: funding failed so surface this to user
-						}
-					} else {
-						// TODO: transfer has failed so surface this to user
-					}
-				}
-			} else {
-				// TODO: purchase has failed so surface this to user
-			}
-
-			setShouldSendTransaction(false);
-			setIsTransactionPending(false);
-			setContentState(ContentState.Complete);
-		} catch (error) {
-			const typedError = error as Error;
-			printError(typedError.message, typedError.stack as string);
-			// crash app if can't communicate with contracts
-			throw typedError;
-		}
-	};
-
-	// Pending
-	if (isValid && contentState === ContentState.Pending && !shouldSendTransaction) {
-		setShouldSendTransaction(true);
-	}
-
-	// Enforcing only 1 transaction sent when buying contract in case of multiple rerenders
+	// Create transaction when in pending state
 	useEffect(() => {
-		if (shouldSendTransaction && contentState === ContentState.Pending && isTransactionPending) {
-			createTransactionAsync();
+		if (contentState === ContentState.Pending) {
+			buyContractAsync(formData);
 		}
-	}, [shouldSendTransaction]);
+	}, [contentState]);
 
 	// Change opacity of Review Order button based on input validation
 	useEffect(() => {
@@ -192,7 +188,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent isTransactionPending={isTransactionPending} />;
+				content = <CompletedContent contentState={contentState} />;
 				break;
 			default:
 				paragraphContent = paragraphText.review;
@@ -227,7 +223,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						: 'hidden'
 				)}
 				style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
-				onClick={handleSubmit((data) => buyContract(data))}
+				onClick={handleSubmit((data) => buyContractAsync(data))}
 			>
 				{buttonContent}
 			</button>
