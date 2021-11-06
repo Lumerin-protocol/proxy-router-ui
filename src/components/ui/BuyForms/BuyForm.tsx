@@ -10,15 +10,8 @@ import { classNames, printError, truncateAddress } from '../../../utils';
 import ImplementationContract from '../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { transferLumerinAsync } from '../../../web3/helpers';
-import { AddressLength, FormData, HashRentalContract, InputValuesBuyForm, Receipt } from '../../../types';
+import { AddressLength, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt } from '../../../types';
 import Web3 from 'web3';
-
-enum ContentState {
-	Review = 'REVIEW',
-	Confirm = 'CONFIRM',
-	Pending = 'PENDING',
-	Complete = 'COMPLETE',
-}
 
 interface ContractInfo {
 	speed: string;
@@ -126,7 +119,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
 			if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 			// TODO: encrypt poolAddress, username, password
-			const encryptedBuyerInput = '';
+			const encryptedBuyerInput = 'stratum+tcp://mining.dev.pool.titan.io|4242|lance.worker';
 			const receipt: Receipt = await marketplaceContract?.methods
 				.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
 				.send(sendOptions);

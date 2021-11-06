@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Contract } from 'web3-eth-contract';
-import { InputValuesCreateForm } from '../../../types';
+import { ContentState, InputValuesCreateForm } from '../../../types';
 import { printError } from '../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CreateContent } from './CreateContent';
@@ -13,12 +13,6 @@ const initialFormData: InputValuesCreateForm = {
 	speed: 0,
 	listPrice: 0,
 };
-
-enum ContentState {
-	Create = 'CREATE',
-	Confirm = 'CONFIRM',
-	Complete = 'COMPLETE',
-}
 
 interface CreateFormProps {
 	userAccount: string;
@@ -39,7 +33,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 		formState: { errors, isValid },
 	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
-	const createContract: (data: InputValuesCreateForm) => void = async (data) => {
+	const createContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
@@ -49,12 +43,17 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 
 		// Confirm
 		if (isValid && contentState === ContentState.Confirm) {
+			setContentState(ContentState.Pending);
+		}
+
+		// Pending
+		if (isValid && contentState === ContentState.Pending) {
 			// Create contract
 			try {
 				// TODO: what should the validator fee be?
 				// TODO: convert usd to lmr (aggregate of exchanges?)
 				const receipt = await marketplaceContract?.methods
-					.setCreateRentalContract(data.listPrice, 0, data.speed, (data.contractTime as number) * 3600, 100)
+					.setCreateRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, 100)
 					.send({ from: userAccount });
 				if (receipt?.status) {
 					setContentState(ContentState.Complete);
@@ -68,6 +67,13 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 			}
 		}
 	};
+
+	// Pending
+	useEffect(() => {
+		if (contentState === ContentState.Pending) {
+			createContractAsync(formData);
+		}
+	}, [contentState]);
 
 	// Change opacity of Review Order button based on input validation
 	useEffect(() => {
@@ -87,8 +93,9 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 			case ContentState.Create:
 				content = <CreateContent register={register} errors={errors} />;
 				break;
+			case ContentState.Pending:
 			case ContentState.Confirm:
-				content = <ConfirmContent data={formData} />;
+				content = <ConfirmContent data={formData} contentState={contentState} />;
 				break;
 			default:
 				content = <CreateContent register={register} errors={errors} />;
@@ -117,7 +124,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 					type='submit'
 					className={`h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
-					onClick={handleSubmit((data) => createContract(data))}
+					onClick={handleSubmit((data) => createContractAsync(data))}
 				>
 					{buttonText}
 				</button>

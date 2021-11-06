@@ -14,6 +14,14 @@ export enum ContractState {
 	Complete = '3',
 }
 
+export enum ContentState {
+	Create = 'CREATE',
+	Review = 'REVIEW',
+	Confirm = 'CONFIRM',
+	Pending = 'PENDING',
+	Complete = 'COMPLETE',
+}
+
 export enum AddressLength {
 	SHORT,
 	MEDIUM,

@@ -29,5 +29,5 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ isTransactio
 	);
 };
 
-CompletedContent.displayName = 'CompletedContent';
+CompletedContent.displayName = 'BuyCompletedContent';
 CompletedContent.whyDidYouRender = false;
