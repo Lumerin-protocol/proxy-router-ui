@@ -1,16 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { classNames, printError, truncateAddress } from '../../../utils';
+import { classNames, getButton, printError, truncateAddress } from '../../../utils';
 import ImplementationContract from '../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { transferLumerinAsync } from '../../../web3/helpers';
-import { AddressLength, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt } from '../../../types';
+import { AddressLength, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../types';
 import Web3 from 'web3';
 
 interface ContractInfo {
@@ -22,12 +21,6 @@ interface SendOptions {
 	from: string;
 	gas: number;
 	value?: string;
-}
-
-interface Text {
-	review: string;
-	confirm: string;
-	completed?: string;
 }
 
 // Form text setup
@@ -158,9 +151,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 	// Create transaction when in pending state
 	useEffect(() => {
-		if (contentState === ContentState.Pending) {
-			buyContractAsync(formData);
-		}
+		if (contentState === ContentState.Pending) buyContractAsync(formData);
 	}, [contentState]);
 
 	// Change opacity of Review Order button based on input validation
@@ -191,8 +182,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				content = <CompletedContent contentState={contentState} />;
 				break;
 			default:
-				paragraphContent = paragraphText.review;
-				buttonContent = buttonText.review;
+				paragraphContent = paragraphText.review as string;
+				buttonContent = buttonText.review as string;
 				content = <ReviewContent register={register} errors={errors} />;
 		}
 	};
@@ -201,34 +192,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	// Set styles and button based on ContentState
 	const display = contentState === ContentState.Pending || contentState === ContentState.Complete ? 'hidden' : 'block';
 	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
-	const getButton: () => JSX.Element = () => {
-		return contentState === ContentState.Complete ? (
-			<Link
-				to='/myorders'
-				className={classNames(
-					contentState === ContentState.Complete
-						? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-modal text-sm font-medium text-white bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
-						: 'hidden'
-				)}
-				onClick={() => setOpen(false)}
-			>
-				<span>View Orders</span>
-			</Link>
-		) : (
-			<button
-				type='submit'
-				className={classNames(
-					contentState !== ContentState.Complete
-						? `h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white ${bgColor} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`
-						: 'hidden'
-				)}
-				style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
-				onClick={handleSubmit((data) => buyContractAsync(data))}
-			>
-				{buttonContent}
-			</button>
-		);
-	};
 
 	return (
 		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
@@ -250,7 +213,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				>
 					Close
 				</button>
-				{contentState !== ContentState.Pending ? getButton() : null}
+				{contentState !== ContentState.Pending
+					? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, buyContractAsync)
+					: null}
 			</div>
 		</div>
 	);

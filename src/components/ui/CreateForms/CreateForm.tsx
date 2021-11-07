@@ -2,10 +2,18 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Contract } from 'web3-eth-contract';
-import { ContentState, InputValuesCreateForm } from '../../../types';
-import { printError } from '../../../utils';
+import { ContentState, InputValuesCreateForm, Text } from '../../../types';
+import { classNames, getButton, printError } from '../../../utils';
+import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { CreateContent } from './CreateContent';
+
+// Form text setup
+const buttonText: Text = {
+	create: 'Create New Contract',
+	confirm: 'Confirm New Contract',
+	completed: 'Close',
+};
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: InputValuesCreateForm = {
@@ -24,7 +32,6 @@ interface CreateFormProps {
 export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplaceContract, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
-	const [buttonText, setButtonText] = useState<string>('Create New Contract');
 	const [formData, setFormData] = useState<InputValuesCreateForm>(initialFormData);
 
 	// Input validation setup
@@ -38,7 +45,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
-			setButtonText('Confirm New Contract');
 			setFormData(data);
 		}
 
@@ -59,7 +65,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 				if (receipt?.status) {
 					setContentState(ContentState.Complete);
 				}
-				setOpen(false);
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
@@ -71,9 +76,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 
 	// Create transaction when in pending state
 	useEffect(() => {
-		if (contentState === ContentState.Pending) {
-			createContractAsync(formData);
-		}
+		if (contentState === ContentState.Pending) createContractAsync(formData);
 	}, [contentState]);
 
 	// Change opacity of Review Order button based on input validation
@@ -88,26 +91,33 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 	// Content setup
 	// Defaults to create state
 	// Initialize since html element needs a value on first render
+	let buttonContent = '';
 	let content = <div></div>;
 	const createContent: () => void = () => {
 		switch (contentState) {
-			case ContentState.Create:
-				content = <CreateContent register={register} errors={errors} />;
+			case ContentState.Confirm:
+				buttonContent = buttonText.confirm;
+				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:
-			case ContentState.Confirm:
-				content = <ConfirmContent data={formData} contentState={contentState} />;
+			case ContentState.Complete:
+				buttonContent = buttonText.completed as string;
+				content = <CompletedContent contentState={contentState} />;
 				break;
 			default:
+				buttonContent = buttonText.create as string;
 				content = <CreateContent register={register} errors={errors} />;
 		}
 	};
 	createContent();
 
+	// Set styles and button based on ContentState
+	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
+
 	return (
-		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ maxWidth: '32rem' }}>
-			<div className='flex justify-between bg-white p-4 border-transparent rounded-t-5'>
-				<div className='text-black'>
+		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
+			<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
+				<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
 					<p className='text-3xl'>Create New Contract</p>
 					<p>Sell your hashpower to the Lumerin Marketplace</p>
 				</div>
@@ -119,16 +129,11 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua hover:bg-lumerin-aqua hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 					onClick={() => setOpen(false)}
 				>
-					Cancel
+					Close
 				</button>
-				<button
-					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white bg-black hover:bg-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-					style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
-					onClick={handleSubmit((data) => createContractAsync(data))}
-				>
-					{buttonText}
-				</button>
+				{contentState !== ContentState.Pending
+					? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, createContractAsync)
+					: null}
 			</div>
 		</div>
 	);

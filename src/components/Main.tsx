@@ -21,14 +21,8 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
-import { AddressLength, HashRentalContract, WalletText } from '../types';
+import { AddressLength, HashRentalContract, PathName, WalletText } from '../types';
 import _ from 'lodash';
-
-enum PathName {
-	Marketplace = '/',
-	MyOrders = '/myorders',
-	MyContracts = '/mycontracts',
-}
 
 interface Navigation {
 	name: string;

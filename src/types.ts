@@ -35,6 +35,12 @@ export enum StatusText {
 	Complete = 'Complete',
 }
 
+export enum PathName {
+	Marketplace = '/',
+	MyOrders = '/myorders',
+	MyContracts = '/mycontracts',
+}
+
 // Interfaces
 export interface HashRentalContract {
 	id?: JSX.Element | string;
@@ -81,4 +87,11 @@ export interface Header {
 export interface ContractData extends HashRentalContract {
 	status?: JSX.Element | string;
 	progress?: JSX.Element | string;
+}
+
+export interface Text {
+	create?: string;
+	review?: string;
+	confirm: string;
+	completed?: string;
 }
