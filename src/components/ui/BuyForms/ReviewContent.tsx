@@ -26,7 +26,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 							})}
 							id='poolAddress'
 							type='text'
-							placeholder='stratum+tcp://IPorHostname'
+							placeholder='stratum+tcp://IPADDRESS'
 							className={classNames(
 								errors.poolAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
@@ -35,7 +35,27 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 					{errors.poolAddress?.type === 'required' && <div className='text-xs text-red-500'>{errors.poolAddress.message}</div>}
 				</div>
 			</div>
-
+			<div className='bg-white modal-input-spacing'>
+				<div>
+					<label htmlFor='portNumber' className='block text-sm font-medium text-gray-700'>
+						Port Number *
+					</label>
+					<div className='mt-1'>
+						<input
+							{...register('portNumber', {
+								required: 'Port Number is required',
+							})}
+							id='portNumber'
+							type='number'
+							placeholder='4242'
+							className={classNames(
+								errors.portNumber ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
+							)}
+						/>
+					</div>
+					{errors.portNumber?.type === 'required' && <div className='text-xs text-red-500'>{errors.portNumber.message}</div>}
+				</div>
+			</div>
 			<div className='bg-white modal-input-spacing'>
 				<label htmlFor='username' className='block text-sm font-medium text-gray-700'>
 					Username *

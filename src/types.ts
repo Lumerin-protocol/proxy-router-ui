@@ -59,6 +59,7 @@ export interface HashRentalContract {
 export interface InputValuesBuyForm {
 	withValidator?: boolean;
 	poolAddress?: string;
+	portNumber?: string;
 	username?: string;
 	password?: string;
 }

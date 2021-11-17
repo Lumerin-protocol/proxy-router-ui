@@ -39,6 +39,7 @@ const buttonText: Text = {
 const initialFormData: FormData = {
 	withValidator: false,
 	poolAddress: '',
+	portNumber: '',
 	username: '',
 	password: '',
 	speed: '',
@@ -81,6 +82,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			setContentState(ContentState.Confirm);
 			setFormData({
 				poolAddress: data.poolAddress,
+				portNumber: data.portNumber,
 				username: data.username,
 				password: data.password,
 				withValidator: data.withValidator,
@@ -109,7 +111,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
 				if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 				// TODO: encrypt poolAddress, username, password
-				const encryptedBuyerInput = 'stratum+tcp://mining.dev.pool.titan.io|4242|lance.worker';
+				const encryptedBuyerInput = `${formData.poolAddress}|${formData.portNumber}|${formData.username}|${formData.password}`;
 				const receipt: Receipt = await marketplaceContract?.methods
 					.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
 					.send(sendOptions);
