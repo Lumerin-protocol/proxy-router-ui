@@ -1,5 +1,5 @@
 import { ProgressBar } from './components/ui/ProgressBar';
-import { AddressLength, ContentState, ContractState, InputValuesBuyForm, InputValuesCreateForm, PathName, StatusText } from './types';
+import { AddressLength, ContentState, ContractState, FormData, InputValuesBuyForm, InputValuesCreateForm, PathName, StatusText } from './types';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
@@ -22,6 +22,16 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 			index = 10;
 	}
 	return `${address.substr(0, index)}...${address.substring(address.length - index, address.length)}`;
+};
+
+// Conver buyer input into RFC2396 URL format
+export const formatToRfc2396: (formData: FormData) => string = (formData) => {
+	const regex = /(^.*):\/\/(.*$)/;
+	const poolAddressGroups = formData.poolAddress?.match(regex) as RegExpMatchArray;
+	const protocol = poolAddressGroups[1];
+	const host = poolAddressGroups[2];
+
+	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
 };
 
 // HTML HELPERS
