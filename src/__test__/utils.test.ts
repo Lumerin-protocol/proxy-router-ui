@@ -1,8 +1,7 @@
-import { AddressLength } from '../types';
-import { truncateAddress, classNames, getLengthDisplay } from '../utils';
+import { AddressLength, FormData } from '../types';
+import { truncateAddress, classNames, getLengthDisplay, formatToRfc2396 } from '../utils';
 
 describe('utils', () => {
-	// truncateAddress()
 	describe('truncateAddress', () => {
 		// Arrange
 		const address = '0xEeD15Bb091bf3F615400f6F8160aC423EaF6a413';
@@ -35,7 +34,6 @@ describe('utils', () => {
 		});
 	});
 
-	// classNames()
 	describe('classNames', () => {
 		it('works', () => {
 			// Arrange
@@ -50,7 +48,6 @@ describe('utils', () => {
 		});
 	});
 
-	// getLengthDispay()
 	describe('getLengthDisplay', () => {
 		it('displays days', () => {
 			// Arrange
@@ -61,6 +58,25 @@ describe('utils', () => {
 
 			// Assert
 			const expectedResult = '3.27';
+			expect(result).toBe(expectedResult);
+		});
+	});
+
+	describe('formatToRfc2396', () => {
+		it('converts to correct format', () => {
+			// Arrange
+			const formData: FormData = {
+				poolAddress: 'stratum+tcp://mining.dev.pool.titan.io',
+				username: 'test.worker',
+				password: 'test1234',
+				portNumber: '4242',
+			};
+
+			// Act
+			const result = formatToRfc2396(formData);
+
+			// Assert
+			const expectedResult = 'stratum+tcp://test.worker:test1234@mining.dev.pool.titan.io:4242';
 			expect(result).toBe(expectedResult);
 		});
 	});

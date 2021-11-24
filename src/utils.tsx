@@ -24,7 +24,7 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 	return `${address.substr(0, index)}...${address.substring(address.length - index, address.length)}`;
 };
 
-// Conver buyer input into RFC2396 URL format
+// Convert buyer input into RFC2396 URL format
 export const formatToRfc2396: (formData: FormData) => string = (formData) => {
 	const regex = /(^.*):\/\/(.*$)/;
 	const poolAddressGroups = formData.poolAddress?.match(regex) as RegExpMatchArray;

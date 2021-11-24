@@ -65,8 +65,8 @@ export interface InputValuesBuyForm {
 }
 
 export interface FormData extends InputValuesBuyForm {
-	speed: string;
-	price: string;
+	speed?: string;
+	price?: string;
 }
 
 export interface InputValuesCreateForm {
