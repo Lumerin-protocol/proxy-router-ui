@@ -261,6 +261,7 @@ export const Main: React.FC = () => {
 						userAccount={userAccount}
 						marketplaceContract={marketplaceContract}
 						web3={web3}
+						lumerinbalance={lumerinBalance}
 						setOpen={setBuyModalOpen}
 					/>
 				}

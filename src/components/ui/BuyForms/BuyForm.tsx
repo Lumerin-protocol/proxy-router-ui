@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
@@ -10,6 +10,7 @@ import ImplementationContract from '../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { transferLumerinAsync } from '../../../web3/helpers';
 import { AddressLength, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../types';
+import { Alert } from '../Alert';
 import Web3 from 'web3';
 
 interface ContractInfo {
@@ -52,13 +53,15 @@ interface BuyFormProps {
 	userAccount: string;
 	marketplaceContract: Contract | undefined;
 	web3: Web3 | undefined;
+	lumerinbalance: number;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
+export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, lumerinbalance, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
+	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	// Input validation setup
 	const {
@@ -101,6 +104,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			// 1. Purchase hashrental contract
 			// 2. Transfer contract price (LMR) to escrow account
 			// 3. Call setFundContract to put contract in running state
+
+			if (contract.price && lumerinbalance.toString() < contract.price) setAlertOpen(true);
+
 			try {
 				// TODO: update with actual validator address and validator fee
 				const validator = formData.withValidator
@@ -196,30 +202,33 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
 
 	return (
-		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
-			<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
-				<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
-					<p className='text-3xl'>Purchase Hashpower</p>
-					<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
+		<Fragment>
+			<Alert message='Insufficient LMR balance.' open={alertOpen} setOpen={setAlertOpen} />
+			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
+				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
+					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
+						<p className='text-3xl'>Purchase Hashpower</p>
+						<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
+					</div>
+				</div>
+				{content}
+				<div className={`${display} bg-white px-10 pt-16 pb-4 sm:mx-auto text-sm`}>
+					<p>{paragraphContent}</p>
+				</div>
+				<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
+					<button
+						type='submit'
+						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+						onClick={() => setOpen(false)}
+					>
+						Close
+					</button>
+					{contentState !== ContentState.Pending
+						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, buyContractAsync)
+						: null}
 				</div>
 			</div>
-			{content}
-			<div className={`${display} bg-white px-10 pt-16 pb-4 sm:mx-auto text-sm`}>
-				<p>{paragraphContent}</p>
-			</div>
-			<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
-				<button
-					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-					onClick={() => setOpen(false)}
-				>
-					Close
-				</button>
-				{contentState !== ContentState.Pending
-					? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, buyContractAsync)
-					: null}
-			</div>
-		</div>
+		</Fragment>
 	);
 };
 

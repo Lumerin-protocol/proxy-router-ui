@@ -22,7 +22,7 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState
 			)}
 			{contentState === ContentState.Pending ? (
 				<div className='flex flex-col w-full items-center mb-4'>
-					<p className='w-4/6 text-center text-xl mb-8'>Your Transaction is pending.</p>
+					<p className='w-4/6 text-center text-xl mb-8'>Your transaction is pending.</p>
 				</div>
 			) : null}
 			{contentState === ContentState.Pending ? <Spinner /> : null}
