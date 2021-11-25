@@ -60,6 +60,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, curr
 				);
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(
+					updatedOrder.state as string,
 					updatedOrder.timestamp as string,
 					parseInt(updatedOrder.length as string),
 					currentBlockTimestamp

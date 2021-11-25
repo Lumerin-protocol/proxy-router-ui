@@ -1,9 +1,9 @@
 import { ProgressBar } from './components/ui/ProgressBar';
 import { AddressLength, ContentState, ContractState, FormData, InputValuesBuyForm, InputValuesCreateForm, PathName, StatusText } from './types';
-import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
+import _ from 'lodash';
 
 // STRING HELPERS
 // Get address based on desired length
@@ -138,15 +138,17 @@ export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: s
 };
 
 // Get progress div
-export const getProgressDiv: (startTime: string, length: number, currentBlockTimestamp: number) => JSX.Element = (
+export const getProgressDiv: (state: string, startTime: string, length: number, currentBlockTimestamp: number) => JSX.Element = (
+	state,
 	startTime,
 	length,
 	currentBlockTimestamp
 ) => {
+	if (state === ContractState.Complete) return <div>100%</div>;
 	let timeElapsed: number = 0;
 	let percentage: number = 0;
-	if (length === 0 || currentBlockTimestamp === 0) {
-		percentage = 100;
+	if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {
+		return <div>0%</div>;
 	} else {
 		timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
 		percentage = (timeElapsed / length) * 100;
@@ -165,15 +167,15 @@ export const getProgressDiv: (startTime: string, length: number, currentBlockTim
 };
 
 // Get status div
+const getStatusClass: (state: string) => string = (state) => {
+	if (state === ContractState.Available) return 'w-24 bg-lumerin-aqua text-white';
+	if (state === ContractState.Running) return 'w-24 bg-lumerin-green text-white';
+	return 'w-24 bg-lumerin-dark-gray text-black';
+};
 export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 	return (
 		<div>
-			<span
-				className={classNames(
-					state === ContractState.Running ? 'w-24 bg-lumerin-green text-white' : 'w-24 bg-lumerin-dark-gray text-black',
-					'flex justify-center items-center h-8 rounded-5'
-				)}
-			>
+			<span className={classNames(getStatusClass(state), 'flex justify-center items-center h-8 rounded-5')}>
 				<p>{_.capitalize(getStatusText(state))}</p>
 			</span>
 		</div>

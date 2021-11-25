@@ -218,7 +218,7 @@ export const Main: React.FC = () => {
 		</Suspense>
 	);
 
-	const getContent: (contracts: HashRentalContract[]) => JSX.Element = (contracts) => {
+	const getContent: () => JSX.Element = () => {
 		if (walletText === WalletText.ConnectViaMetaMask) {
 			return (
 				<div className='flex flex-col items-center mt-20 mr-50 gap-4'>
@@ -432,7 +432,7 @@ export const Main: React.FC = () => {
 					<p>Welcome to the Lumerin Hashrate marketplace.</p>
 					<p> Tap buy to purchase any of the contracts below.</p>
 				</div>
-				<main className='mt-10 ml-16 lg:ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent(contracts)}</main>
+				<main className='mt-10 ml-16 lg:ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent()}</main>
 			</div>
 		</div>
 	);

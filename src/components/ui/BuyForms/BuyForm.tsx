@@ -105,7 +105,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			// 2. Transfer contract price (LMR) to escrow account
 			// 3. Call setFundContract to put contract in running state
 
-			if (contract.price && lumerinbalance.toString() < contract.price) setAlertOpen(true);
+			if (contract.price && lumerinbalance.toString() < contract.price) {
+				setAlertOpen(true);
+				return;
+			}
 
 			try {
 				// TODO: update with actual validator address and validator fee
