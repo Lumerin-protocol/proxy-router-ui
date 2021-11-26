@@ -93,7 +93,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		() => [
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
 			{ Header: 'STATUS', accessor: 'status' },
-			{ Header: 'LIST PRICE (LMR)', accessor: 'price' },
+			{ Header: 'PRICE (LMR)', accessor: 'price' },
 			{ Header: 'DURATION (DAYS)', accessor: 'length' },
 			{ Header: 'STARTED', accessor: 'timestamp' },
 			{ Header: 'PROGRESS', accessor: 'progress' },

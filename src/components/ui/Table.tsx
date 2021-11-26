@@ -66,6 +66,10 @@ const useStyles = createUseStyles({
 			borderLeft: 'none',
 			borderRight: 'none',
 		},
+		'& > tbody > tr > td:nth-child(6)': {
+			borderLeft: 'none',
+			borderRight: 'none',
+		},
 		'& > tbody > tr:last-child > td': {
 			borderBottom: `1px solid ${colors['lumerin-gray']}`,
 		},
