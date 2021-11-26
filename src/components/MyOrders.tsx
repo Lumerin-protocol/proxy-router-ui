@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
@@ -7,6 +7,7 @@ import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header } from '../types';
 import _ from 'lodash';
+import { EditCancelButtonGroup } from './ui/FormButtons/EditCancelButtonGroup';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
@@ -15,9 +16,19 @@ interface MyOrdersProps {
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
+	setContractId: Dispatch<SetStateAction<string>>;
+	editClickHandler: MouseEventHandler<HTMLButtonElement>;
+	cancelClickHandler: MouseEventHandler<HTMLButtonElement>;
 }
 
-export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, currentBlockTimestamp }) => {
+export const MyOrders: React.FC<MyOrdersProps> = ({
+	userAccount,
+	contracts,
+	currentBlockTimestamp,
+	setContractId,
+	editClickHandler,
+	cancelClickHandler,
+}) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
@@ -66,6 +77,14 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, curr
 					currentBlockTimestamp
 				);
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
+				updatedOrder.editCancel = (
+					<EditCancelButtonGroup
+						contractId={contract.id as string}
+						setContractId={setContractId}
+						editClickHandler={editClickHandler}
+						cancelClickHandler={cancelClickHandler}
+					/>
+				);
 			}
 			return updatedOrder as ContractData;
 		});
@@ -79,6 +98,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({ userAccount, contracts, curr
 			{ Header: 'STARTED', accessor: 'timestamp' },
 			{ Header: 'STATUS', accessor: 'status' },
 			{ Header: 'PROGRESS', accessor: 'progress' },
+			{ Header: '', accessor: 'editCancel' },
 		],
 		[]
 	);

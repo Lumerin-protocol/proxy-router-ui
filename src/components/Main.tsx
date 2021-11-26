@@ -46,6 +46,8 @@ export const Main: React.FC = () => {
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
+	const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [toggle, setToggle] = useState<boolean>(false);
 
@@ -199,13 +201,29 @@ export const Main: React.FC = () => {
 					path={PathName.MyOrders}
 					exact
 					render={(props: RouteComponentProps) => (
-						<MyOrders {...props} userAccount={userAccount} contracts={contracts} currentBlockTimestamp={currentBlockTimestamp} />
+						<MyOrders
+							{...props}
+							userAccount={userAccount}
+							contracts={contracts}
+							currentBlockTimestamp={currentBlockTimestamp}
+							setContractId={setContractId}
+							editClickHandler={editClickHander}
+							cancelClickHandler={cancelClickHander}
+						/>
 					)}
 				/>
 				<Route
 					path={PathName.MyContracts}
 					render={(props: RouteComponentProps) => (
-						<MyContracts {...props} userAccount={userAccount} contracts={contracts} currentBlockTimestamp={currentBlockTimestamp} />
+						<MyContracts
+							{...props}
+							userAccount={userAccount}
+							contracts={contracts}
+							currentBlockTimestamp={currentBlockTimestamp}
+							setContractId={setContractId}
+							editClickHandler={editClickHander}
+							cancelClickHandler={cancelClickHander}
+						/>
 					)}
 				/>
 				<Route
@@ -232,9 +250,18 @@ export const Main: React.FC = () => {
 		return routes;
 	};
 
-	// <Marketplace /> click handler
+	// <Marketplace /> buy contract button click handler
 	const buyClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
 		if (!buyModalOpen) setBuyModalOpen(true);
+	};
+
+	// <MyOrders /> and <MyContracts /> edit/cancel button click handlers
+	const editClickHander: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+		if (!editModalOpen) setEditModalOpen(true);
+	};
+
+	const cancelClickHander: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+		if (!cancelModalOpen) setCancelModalOpen(true);
 	};
 
 	// Hide top right button if no contracts

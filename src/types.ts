@@ -88,6 +88,7 @@ export interface Header {
 export interface ContractData extends HashRentalContract {
 	status?: JSX.Element | string;
 	progress?: JSX.Element | string;
+	editCancel?: JSX.Element;
 }
 
 export interface Text {
