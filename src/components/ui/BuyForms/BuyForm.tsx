@@ -9,7 +9,7 @@ import { classNames, formatToRfc2396, getButton, printError, truncateAddress } f
 import ImplementationContract from '../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { transferLumerinAsync } from '../../../web3/helpers';
-import { AddressLength, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../types';
+import { AddressLength, AlertMessage, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../types';
 import { Alert } from '../Alert';
 import Web3 from 'web3';
 
@@ -206,7 +206,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 	return (
 		<Fragment>
-			<Alert message='Insufficient LMR balance.' open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={AlertMessage.InsufficientBalance} open={alertOpen} setOpen={setAlertOpen} />
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>

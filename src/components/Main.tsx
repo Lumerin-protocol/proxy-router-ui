@@ -21,7 +21,8 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/CreateForms/CreateForm';
-import { AddressLength, HashRentalContract, PathName, WalletText } from '../types';
+import { AddressLength, AlertMessage, HashRentalContract, PathName, WalletText } from '../types';
+import { EditForm } from './ui/EditForms/EditForm';
 import _ from 'lodash';
 
 interface Navigation {
@@ -268,7 +269,7 @@ export const Main: React.FC = () => {
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
-			<Alert message={'MetaMask is not connected'} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={AlertMessage.NotConnected} open={alertOpen} setOpen={setAlertOpen} />
 			<Modal
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
@@ -288,6 +289,20 @@ export const Main: React.FC = () => {
 				open={createModalOpen}
 				setOpen={setCreateModalOpen}
 				content={<CreateForm userAccount={userAccount} marketplaceContract={marketplaceContract} setOpen={setCreateModalOpen} />}
+			/>
+			<Modal
+				open={editModalOpen}
+				setOpen={setEditModalOpen}
+				content={
+					<EditForm
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						marketplaceContract={marketplaceContract}
+						web3={web3}
+						setOpen={setEditModalOpen}
+					/>
+				}
 			/>
 			{/* collapsable sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>

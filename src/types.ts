@@ -41,6 +41,12 @@ export enum PathName {
 	MyContracts = '/mycontracts',
 }
 
+export enum AlertMessage {
+	NotConnected = 'MetaMask is not connected',
+	InsufficientBalance = 'Insufficient LMR balance.',
+	NoEdit = 'A running contract cannot be edited by the seller.',
+}
+
 // Interfaces
 export interface HashRentalContract {
 	id?: JSX.Element | string;
