@@ -3,11 +3,11 @@ import React, { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo,
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, useTable } from 'react-table';
-import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
+import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header } from '../types';
-import _ from 'lodash';
 import { EditCancelButtonGroup } from './ui/FormButtons/EditCancelButtonGroup';
+import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
@@ -70,6 +70,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					/>
 				);
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
+				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
 				updatedOrder.progress = getProgressDiv(
 					updatedOrder.state as string,
 					updatedOrder.timestamp as string,
@@ -96,6 +97,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		() => [
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
 			{ Header: 'STARTED', accessor: 'timestamp' },
+			{ Header: 'DURATION (DAYS)', accessor: 'length' },
 			{ Header: 'STATUS', accessor: 'status' },
 			{ Header: 'PROGRESS', accessor: 'progress' },
 			{ Header: '', accessor: 'editCancel' },

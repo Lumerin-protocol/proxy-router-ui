@@ -6,9 +6,10 @@ import { InputValuesCreateForm } from '../../../types';
 interface CreateContentProps {
 	register: UseFormRegister<InputValuesCreateForm>;
 	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
+	data?: InputValuesCreateForm;
 }
 
-export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }) => {
+export const CreateContent: React.FC<CreateContentProps> = ({ register, errors, data }) => {
 	return (
 		<React.Fragment>
 			<div className='bg-white p-4 p-4'>
@@ -23,7 +24,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 							})}
 							id='walletAddress'
 							type='text'
-							placeholder='0x0c34...'
+							placeholder={data?.walletAddress ?? '0x0c34...'}
 							className={classNames(
 								errors.walletAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
@@ -51,7 +52,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 							min='1'
 							id='contractTime'
 							type='number'
-							placeholder='# of hours'
+							placeholder={data?.contractTime?.toString() ?? '# of hours'}
 							className={classNames(
 								errors.contractTime ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
@@ -71,6 +72,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 							min='1'
 							id='speed'
 							type='number'
+							placeholder={data?.speed?.toString() ?? ''}
 							className={classNames(
 								errors.speed ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
@@ -101,7 +103,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors }
 							)}
 						>
 							{/* dynamically populate options */}
-							<option value={0}>Select amount in USD</option>
+							<option value={0}>{data?.listPrice ?? 'Select amount in USD'}</option>
 							<option value={100}>100 USD</option>
 							<option value={200}>200 USD</option>
 							<option value={300}>300 USD</option>

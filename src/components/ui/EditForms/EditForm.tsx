@@ -18,11 +18,13 @@ const buttonText: Text = {
 };
 
 // Used to set initial state for contentData to prevent undefined error
-const initialFormData: InputValuesCreateForm = {
-	walletAddress: '',
-	contractTime: 0,
-	speed: 0,
-	listPrice: 0,
+const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {
+	return {
+		walletAddress: contract.id as string,
+		contractTime: parseInt(contract.length as string),
+		speed: parseInt(contract.speed as string),
+		listPrice: contract.price as number,
+	};
 };
 
 interface EditFormProps {
@@ -35,12 +37,12 @@ interface EditFormProps {
 }
 
 export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
+	const contract = contracts.filter((contract) => contract.id === contractId)[0];
+
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
-	const [formData, setFormData] = useState<InputValuesCreateForm>(initialFormData);
+	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(contract));
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
-
-	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	// Input validation setup
 	const {
@@ -124,7 +126,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 				break;
 			default:
 				buttonContent = buttonText.create as string;
-				content = <CreateContent register={register} errors={errors} />;
+				content = <CreateContent register={register} errors={errors} data={formData} />;
 		}
 	};
 	createContent();
