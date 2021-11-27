@@ -16,7 +16,7 @@ import { MyContracts } from './MyContracts';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
 import { addLumerinTokenToMetaMaskAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync, reconnectWalletAsync } from '../web3/helpers';
-import { classNames, truncateAddress } from '../utils';
+import { buttonClickHandler, classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
@@ -207,8 +207,8 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
-							editClickHandler={editClickHander}
-							cancelClickHandler={cancelClickHander}
+							editClickHandler={(event) => buttonClickHandler(event, editModalOpen, setEditModalOpen)}
+							cancelClickHandler={(event) => buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)}
 						/>
 					)}
 				/>
@@ -221,15 +221,20 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
-							editClickHandler={editClickHander}
-							cancelClickHandler={cancelClickHander}
+							editClickHandler={(event) => buttonClickHandler(event, editModalOpen, setEditModalOpen)}
+							cancelClickHandler={(event) => buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)}
 						/>
 					)}
 				/>
 				<Route
 					path={PathName.Marketplace}
 					render={(props: RouteComponentProps) => (
-						<Marketplace {...props} contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />
+						<Marketplace
+							{...props}
+							contracts={contracts}
+							setContractId={setContractId}
+							buyClickHandler={(event) => buttonClickHandler(event, buyModalOpen, setBuyModalOpen)}
+						/>
 					)}
 				/>
 			</Switch>
@@ -248,20 +253,6 @@ export const Main: React.FC = () => {
 			);
 		}
 		return routes;
-	};
-
-	// <Marketplace /> buy contract button click handler
-	const buyClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		if (!buyModalOpen) setBuyModalOpen(true);
-	};
-
-	// <MyOrders /> and <MyContracts /> edit/cancel button click handlers
-	const editClickHander: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		if (!editModalOpen) setEditModalOpen(true);
-	};
-
-	const cancelClickHander: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		if (!cancelModalOpen) setCancelModalOpen(true);
 	};
 
 	// Hide top right button if no contracts
