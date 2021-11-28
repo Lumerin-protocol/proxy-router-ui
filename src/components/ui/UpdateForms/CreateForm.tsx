@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../types';
 import { classNames, getButton, printError } from '../../../utils';
-import { CompletedContent } from '../CreateForms/CompletedContent';
-import { ConfirmContent } from '../CreateForms/ConfirmContent';
+import { CompletedContent } from './CompletedContent';
+import { ConfirmContent } from './ConfirmContent';
 import { UpdateContent } from './UpdateContent';
 
 // Form text setup

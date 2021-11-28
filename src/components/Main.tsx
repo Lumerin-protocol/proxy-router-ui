@@ -22,8 +22,8 @@ import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/UpdateForms/CreateForm';
 import { AddressLength, AlertMessage, HashRentalContract, PathName, WalletText } from '../types';
-import { SellerEditForm } from './ui/EditForms/SellerEditForm';
-import { BuyerEditForm } from './ui/EditForms/BuyerEditForm';
+import { SellerEditForm } from './ui/UpdateForms/SellerEditForm';
+import { BuyerEditForm } from './ui/UpdateForms/BuyerEditForm';
 import _ from 'lodash';
 
 interface Navigation {

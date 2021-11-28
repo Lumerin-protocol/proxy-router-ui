@@ -105,7 +105,7 @@ export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, 
 							)}
 						>
 							{/* dynamically populate options */}
-							<option value={listPrice}>{`${listPrice} USD` ?? 'Select amount in USD'}</option>
+							<option value={listPrice}>{listPrice > 0 ? `${listPrice} USD` : 'Select amount in USD'}</option>
 							<option value={100}>100 USD</option>
 							<option value={200}>200 USD</option>
 							<option value={300}>300 USD</option>
