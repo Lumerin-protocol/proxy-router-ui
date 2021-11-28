@@ -3,13 +3,15 @@ import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { classNames } from '../../../utils';
 import { InputValuesCreateForm } from '../../../types';
 
-interface CreateContentProps {
+interface UpdateContentProps {
 	register: UseFormRegister<InputValuesCreateForm>;
 	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	data?: InputValuesCreateForm;
 }
 
-export const CreateContent: React.FC<CreateContentProps> = ({ register, errors, data }) => {
+export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, data }) => {
+	const listPrice = data && data.listPrice ? data.listPrice : 0;
+
 	return (
 		<React.Fragment>
 			<div className='bg-white p-4 p-4'>
@@ -103,7 +105,7 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors, 
 							)}
 						>
 							{/* dynamically populate options */}
-							<option value={0}>{data?.listPrice ?? 'Select amount in USD'}</option>
+							<option value={listPrice}>{`${listPrice} USD` ?? 'Select amount in USD'}</option>
 							<option value={100}>100 USD</option>
 							<option value={200}>200 USD</option>
 							<option value={300}>300 USD</option>
@@ -122,5 +124,5 @@ export const CreateContent: React.FC<CreateContentProps> = ({ register, errors, 
 	);
 };
 
-CreateContent.displayName = 'CreateContent';
-CreateContent.whyDidYouRender = false;
+UpdateContent.displayName = 'UpdateContent';
+UpdateContent.whyDidYouRender = false;

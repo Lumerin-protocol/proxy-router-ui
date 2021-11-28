@@ -70,13 +70,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					/>
 				);
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
-				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
 				updatedOrder.progress = getProgressDiv(
 					updatedOrder.state as string,
 					updatedOrder.timestamp as string,
 					parseInt(updatedOrder.length as string),
 					currentBlockTimestamp
 				);
+				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
 				updatedOrder.editCancel = (
 					<EditCancelButtonGroup

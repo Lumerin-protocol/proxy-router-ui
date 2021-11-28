@@ -8,7 +8,7 @@ import { classNames, getButton, printError } from '../../../utils';
 import { Alert } from '../Alert';
 import { CompletedContent } from '../CreateForms/CompletedContent';
 import { ConfirmContent } from '../CreateForms/ConfirmContent';
-import { CreateContent } from '../CreateForms/CreateContent';
+import { UpdateContent } from '../UpdateForms/UpdateContent';
 
 // Form text setup
 const buttonText: Text = {
@@ -27,7 +27,7 @@ const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (co
 	};
 };
 
-interface EditFormProps {
+interface SellerEditFormProps {
 	contracts: HashRentalContract[];
 	contractId: string;
 	userAccount: string;
@@ -36,7 +36,7 @@ interface EditFormProps {
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
+export const SellerEditForm: React.FC<SellerEditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -126,7 +126,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 				break;
 			default:
 				buttonContent = buttonText.create as string;
-				content = <CreateContent register={register} errors={errors} data={formData} />;
+				content = <UpdateContent register={register} errors={errors} data={formData} />;
 		}
 	};
 	createContent();
@@ -162,5 +162,5 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 	);
 };
 
-EditForm.displayName = 'EditForm';
-EditForm.whyDidYouRender = false;
+SellerEditForm.displayName = 'SellerEditForm';
+SellerEditForm.whyDidYouRender = false;

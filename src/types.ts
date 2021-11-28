@@ -99,6 +99,8 @@ export interface ContractData extends HashRentalContract {
 
 export interface Text {
 	create?: string;
+	edit?: string;
+	cancel?: string;
 	review?: string;
 	confirm: string;
 	completed?: string;

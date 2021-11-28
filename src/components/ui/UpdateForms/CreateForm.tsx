@@ -4,9 +4,9 @@ import { useForm } from 'react-hook-form';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../types';
 import { classNames, getButton, printError } from '../../../utils';
-import { CompletedContent } from './CompletedContent';
-import { ConfirmContent } from './ConfirmContent';
-import { CreateContent } from './CreateContent';
+import { CompletedContent } from '../CreateForms/CompletedContent';
+import { ConfirmContent } from '../CreateForms/ConfirmContent';
+import { UpdateContent } from './UpdateContent';
 
 // Form text setup
 const buttonText: Text = {
@@ -106,7 +106,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 				break;
 			default:
 				buttonContent = buttonText.create as string;
-				content = <CreateContent register={register} errors={errors} />;
+				content = <UpdateContent register={register} errors={errors} />;
 		}
 	};
 	createContent();

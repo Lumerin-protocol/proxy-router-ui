@@ -91,7 +91,7 @@ interface TableProps {
 
 export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, isLargeBreakpointOrGreater }) => {
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
-	const paddingLeft = isLargeBreakpointOrGreater ? 'pl-18' : 'pl-4';
+	const paddingLeft = isLargeBreakpointOrGreater ? 'pl-8' : 'pl-4';
 	const classes = useStyles();
 
 	return (

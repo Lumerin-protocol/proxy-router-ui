@@ -20,9 +20,10 @@ import { buttonClickHandler, classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
-import { CreateForm } from './ui/CreateForms/CreateForm';
+import { CreateForm } from './ui/UpdateForms/CreateForm';
 import { AddressLength, AlertMessage, HashRentalContract, PathName, WalletText } from '../types';
-import { EditForm } from './ui/EditForms/EditForm';
+import { SellerEditForm } from './ui/EditForms/SellerEditForm';
+import { BuyerEditForm } from './ui/EditForms/BuyerEditForm';
 import _ from 'lodash';
 
 interface Navigation {
@@ -47,7 +48,8 @@ export const Main: React.FC = () => {
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
-	const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+	const [sellerEditModalOpen, setSellerEditModalOpen] = useState<boolean>(false);
+	const [buyerEditModalOpen, setBuyerEditModalOpen] = useState<boolean>(false);
 	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [toggle, setToggle] = useState<boolean>(false);
@@ -208,7 +210,7 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
-							editClickHandler={(event) => buttonClickHandler(event, editModalOpen, setEditModalOpen)}
+							editClickHandler={(event) => buttonClickHandler(event, buyerEditModalOpen, setBuyerEditModalOpen)}
 							cancelClickHandler={(event) => buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)}
 						/>
 					)}
@@ -222,7 +224,7 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
-							editClickHandler={(event) => buttonClickHandler(event, editModalOpen, setEditModalOpen)}
+							editClickHandler={(event) => buttonClickHandler(event, sellerEditModalOpen, setSellerEditModalOpen)}
 							cancelClickHandler={(event) => buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)}
 						/>
 					)}
@@ -291,19 +293,20 @@ export const Main: React.FC = () => {
 				content={<CreateForm userAccount={userAccount} marketplaceContract={marketplaceContract} setOpen={setCreateModalOpen} />}
 			/>
 			<Modal
-				open={editModalOpen}
-				setOpen={setEditModalOpen}
+				open={sellerEditModalOpen}
+				setOpen={setSellerEditModalOpen}
 				content={
-					<EditForm
+					<SellerEditForm
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
 						marketplaceContract={marketplaceContract}
 						web3={web3}
-						setOpen={setEditModalOpen}
+						setOpen={setSellerEditModalOpen}
 					/>
 				}
 			/>
+			<Modal open={buyerEditModalOpen} setOpen={setBuyerEditModalOpen} content={<BuyerEditForm />} />
 			{/* collapsable sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 lg:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
