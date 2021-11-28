@@ -1,38 +1,48 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
-import { ContentState, InputValuesCreateForm, Text } from '../../../types';
-import { classNames, getButton, printError } from '../../../utils';
+import { AlertMessage, ContentState, ContractState, HashRentalContract, InputValuesCreateForm, Text } from '../../../../types';
+import { classNames, getButton, printError } from '../../../../utils';
+import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { UpdateContent } from './UpdateContent';
 
 // Form text setup
 const buttonText: Text = {
-	create: 'Create New Contract',
-	confirm: 'Confirm New Contract',
+	edit: 'Edit Contract',
+	confirm: 'Confirm Changes',
 	completed: 'Close',
 };
 
 // Used to set initial state for contentData to prevent undefined error
-const initialFormData: InputValuesCreateForm = {
-	walletAddress: '',
-	contractTime: 0,
-	speed: 0,
-	listPrice: 0,
+const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {
+	return {
+		walletAddress: contract.id as string,
+		contractTime: parseInt(contract.length as string),
+		speed: parseInt(contract.speed as string),
+		listPrice: contract.price as number,
+	};
 };
 
-interface CreateFormProps {
+interface EditFormProps {
+	contracts: HashRentalContract[];
+	contractId: string;
 	userAccount: string;
 	marketplaceContract: Contract | undefined;
+	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplaceContract, setOpen }) => {
+export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
+	const contract = contracts.filter((contract) => contract.id === contractId)[0];
+
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
-	const [formData, setFormData] = useState<InputValuesCreateForm>(initialFormData);
+	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(contract));
+	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	// Input validation setup
 	const {
@@ -41,7 +51,12 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 		formState: { errors, isValid },
 	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
+	const isNoEdit: () => boolean = () => {
+		return contract.seller === userAccount && contract.state === ContractState.Running;
+	};
+
 	const createContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
+		if (isNoEdit()) return;
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
@@ -74,6 +89,11 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 		}
 	};
 
+	// Check if user is seller and contract is running
+	useEffect(() => {
+		if (isNoEdit()) setAlertOpen(true);
+	}, []);
+
 	// Create transaction when in pending state
 	useEffect(() => {
 		if (contentState === ContentState.Pending) createContractAsync(formData);
@@ -105,8 +125,8 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 				content = <CompletedContent contentState={contentState} />;
 				break;
 			default:
-				buttonContent = buttonText.create as string;
-				content = <UpdateContent register={register} errors={errors} />;
+				buttonContent = buttonText.edit as string;
+				content = <UpdateContent register={register} errors={errors} data={formData} />;
 		}
 	};
 	createContent();
@@ -115,29 +135,32 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
 
 	return (
-		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
-			<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
-				<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
-					<p className='text-3xl'>Create New Contract</p>
-					<p>Sell your hashpower to the Lumerin Marketplace</p>
+		<Fragment>
+			<Alert message={AlertMessage.NoEdit} open={alertOpen} setOpen={setAlertOpen} />
+			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
+				<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
+					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
+						<p className='text-3xl'>Edit Contract</p>
+						<p>Sell your hashpower to the Lumerin Marketplace</p>
+					</div>
+				</div>
+				{content}
+				<div className='flex gap-6 bg-white p-4 pt-14 rounded-b-5'>
+					<button
+						type='submit'
+						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua hover:bg-lumerin-aqua hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+						onClick={() => setOpen(false)}
+					>
+						Close
+					</button>
+					{contentState !== ContentState.Pending
+						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, createContractAsync)
+						: null}
 				</div>
 			</div>
-			{content}
-			<div className='flex gap-6 bg-white p-4 pt-14 rounded-b-5'>
-				<button
-					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua hover:bg-lumerin-aqua hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-					onClick={() => setOpen(false)}
-				>
-					Close
-				</button>
-				{contentState !== ContentState.Pending
-					? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, createContractAsync)
-					: null}
-			</div>
-		</div>
+		</Fragment>
 	);
 };
 
-CreateForm.displayName = 'CreateForm';
-CreateForm.whyDidYouRender = false;
+EditForm.displayName = 'EditForm';
+EditForm.whyDidYouRender = false;

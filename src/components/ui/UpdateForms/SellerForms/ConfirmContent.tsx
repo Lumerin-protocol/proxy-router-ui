@@ -1,5 +1,5 @@
 import React from 'react';
-import { InputValuesCreateForm } from '../../../types';
+import { InputValuesCreateForm } from '../../../../types';
 
 interface ConfirmContentProps {
 	data: InputValuesCreateForm;

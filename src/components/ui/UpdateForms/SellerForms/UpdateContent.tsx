@@ -1,7 +1,7 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
-import { classNames } from '../../../utils';
-import { InputValuesCreateForm } from '../../../types';
+import { classNames } from '../../../../utils';
+import { InputValuesCreateForm } from '../../../../types';
 
 interface UpdateContentProps {
 	register: UseFormRegister<InputValuesCreateForm>;
@@ -74,7 +74,7 @@ export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, 
 							min='1'
 							id='speed'
 							type='number'
-							placeholder={data?.speed?.toString() ?? ''}
+							placeholder={data?.speed?.toString() ?? '100'}
 							className={classNames(
 								errors.speed ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
@@ -89,7 +89,6 @@ export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, 
 					<label htmlFor='listPrice' className='block text-sm font-medium text-gray-700'>
 						<div className='flex justify-between'>
 							<p>List Price (LMR) *</p>
-							{/* TODO: use usd to lmr converter to produce value below */}
 							<p>10 LMR</p>
 						</div>
 					</label>

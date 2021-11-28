@@ -20,10 +20,10 @@ import { buttonClickHandler, classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
-import { CreateForm } from './ui/UpdateForms/CreateForm';
+import { CreateForm } from './ui/UpdateForms/SellerForms/CreateForm';
 import { AddressLength, AlertMessage, HashRentalContract, PathName, WalletText } from '../types';
-import { SellerEditForm } from './ui/UpdateForms/SellerEditForm';
-import { BuyerEditForm } from './ui/UpdateForms/BuyerEditForm';
+import { EditForm as SellerEditForm } from './ui/UpdateForms/SellerForms/EditForm';
+import { EditForm as BuyerEditForm } from './ui/UpdateForms/BuyerForms/EditForm';
 import _ from 'lodash';
 
 interface Navigation {
