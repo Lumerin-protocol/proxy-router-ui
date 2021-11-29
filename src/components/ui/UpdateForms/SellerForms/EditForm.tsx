@@ -20,7 +20,7 @@ const buttonText: Text = {
 // Used to set initial state for contentData to prevent undefined error
 const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {
 	return {
-		walletAddress: contract.id as string,
+		walletAddress: contract.seller as string,
 		contractTime: parseInt(contract.length as string),
 		speed: parseInt(contract.speed as string),
 		listPrice: contract.price as number,

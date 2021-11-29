@@ -22,6 +22,7 @@ export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('walletAddress', {
+								value: data?.walletAddress ?? '',
 								required: 'Wallet Address is required',
 							})}
 							id='walletAddress'
@@ -48,6 +49,7 @@ export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('contractTime', {
+								value: data && data.contractTime,
 								required: 'Contract Time is required',
 								valueAsNumber: true,
 							})}
@@ -70,7 +72,9 @@ export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, 
 					</label>
 					<div className='mt-1'>
 						<input
-							{...register('speed')}
+							{...register('speed', {
+								value: data && data.speed,
+							})}
 							min='1'
 							id='speed'
 							type='number'

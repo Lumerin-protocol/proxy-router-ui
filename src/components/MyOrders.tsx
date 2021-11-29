@@ -96,9 +96,10 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
-			{ Header: 'STARTED', accessor: 'timestamp' },
-			{ Header: 'DURATION (DAYS)', accessor: 'length' },
 			{ Header: 'STATUS', accessor: 'status' },
+			{ Header: 'PRICE (LMR)', accessor: 'price' },
+			{ Header: 'DURATION (DAYS)', accessor: 'length' },
+			{ Header: 'STARTED', accessor: 'timestamp' },
 			{ Header: 'PROGRESS', accessor: 'progress' },
 			{ Header: '', accessor: 'editCancel' },
 		],
@@ -108,7 +109,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='myorders' tableInstance={tableInstance} columnCount={5} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
+	return <Table id='myorders' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
 };
 
 MyOrders.displayName = 'MyOrders';
