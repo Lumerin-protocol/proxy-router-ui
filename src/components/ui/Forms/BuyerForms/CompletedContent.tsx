@@ -1,8 +1,8 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
-import { Spinner } from '../Spinner';
-import { ContentState } from '../../../types';
+import { Spinner } from '../../Spinner';
+import { ContentState } from '../../../../types';
 const { colors } = require('styles/styles.config.js');
 
 interface CompletedContentProps {

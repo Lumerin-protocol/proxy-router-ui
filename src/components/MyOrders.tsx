@@ -6,7 +6,7 @@ import { Column, useTable } from 'react-table';
 import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header } from '../types';
-import { EditCancelButtonGroup } from './ui/FormButtons/EditCancelButtonGroup';
+import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts

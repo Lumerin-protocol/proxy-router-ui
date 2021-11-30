@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { Column, useTable } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
-import { BuyButton } from './ui/FormButtons/BuyButton';
+import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { Table } from './ui/Table';
 import { getLengthDisplay, setMediaQueryListOnChangeHandler } from '../utils';
 import { Spinner } from './ui/Spinner';

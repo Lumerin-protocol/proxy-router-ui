@@ -1,8 +1,8 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
-import { InputValuesBuyForm } from '../../../types';
-import { classNames } from '../../../utils';
-import { Checkbox } from '../Checkbox';
+import { InputValuesBuyForm } from '../../../../types';
+import { classNames } from '../../../../utils';
+import { Checkbox } from '../../Checkbox';
 
 interface ReviewContentProps {
 	register: UseFormRegister<InputValuesBuyForm>;

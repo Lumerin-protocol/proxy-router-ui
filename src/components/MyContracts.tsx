@@ -6,7 +6,7 @@ import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
 import _ from 'lodash';
-import { EditCancelButtonGroup } from './ui/FormButtons/EditCancelButtonGroup';
+import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}

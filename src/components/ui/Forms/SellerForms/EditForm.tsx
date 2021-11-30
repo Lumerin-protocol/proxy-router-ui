@@ -8,7 +8,7 @@ import { classNames, getButton, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
-import { UpdateContent } from './UpdateContent';
+import { ReviewContent } from './ReviewContent';
 
 // Form text setup
 const buttonText: Text = {
@@ -17,7 +17,7 @@ const buttonText: Text = {
 	completed: 'Close',
 };
 
-// Used to set initial state for contentData to prevent undefined error
+// Set initial state to current contract values
 const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {
 	return {
 		walletAddress: contract.seller as string,
@@ -55,9 +55,9 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 		return contract.seller === userAccount && contract.state === ContractState.Running;
 	};
 
-	const createContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
+	const editContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
 		if (isNoEdit()) return;
-		// Create
+		// Edit
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
 			setFormData(data);
@@ -74,12 +74,13 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 			try {
 				// TODO: what should the validator fee be?
 				// TODO: convert usd to lmr (aggregate of exchanges?)
-				const receipt = await marketplaceContract?.methods
-					.setCreateRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, 100)
-					.send({ from: userAccount });
-				if (receipt?.status) {
-					setContentState(ContentState.Complete);
-				}
+				// const receipt = await marketplaceContract?.methods
+				// 	.setCreateRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, 100)
+				// 	.send({ from: userAccount });
+				// TODO: call edit function(s) in contract when they exist
+				// if (receipt?.status) {
+				// 	setContentState(ContentState.Complete);
+				// }
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
@@ -96,7 +97,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 
 	// Create transaction when in pending state
 	useEffect(() => {
-		if (contentState === ContentState.Pending) createContractAsync(formData);
+		if (contentState === ContentState.Pending) editContractAsync(formData);
 	}, [contentState]);
 
 	// Change opacity of Review Order button based on input validation
@@ -126,7 +127,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 				break;
 			default:
 				buttonContent = buttonText.edit as string;
-				content = <UpdateContent register={register} errors={errors} data={formData} />;
+				content = <ReviewContent register={register} errors={errors} data={formData} />;
 		}
 	};
 	createContent();
@@ -154,7 +155,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, createContractAsync)
+						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, editContractAsync)
 						: null}
 				</div>
 			</div>

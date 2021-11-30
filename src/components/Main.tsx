@@ -10,7 +10,7 @@ import { Alert } from './ui/Alert';
 import { Modal } from './ui/Modal';
 import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
-import { BuyForm } from './ui/BuyForms/BuyForm';
+import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
 import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
 import { Spinner } from './ui/Spinner';
@@ -20,10 +20,10 @@ import { buttonClickHandler, classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
-import { CreateForm } from './ui/UpdateForms/SellerForms/CreateForm';
+import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
 import { AddressLength, AlertMessage, HashRentalContract, PathName, WalletText } from '../types';
-import { EditForm as SellerEditForm } from './ui/UpdateForms/SellerForms/EditForm';
-import { EditForm as BuyerEditForm } from './ui/UpdateForms/BuyerForms/EditForm';
+import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
+import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import _ from 'lodash';
 
 interface Navigation {

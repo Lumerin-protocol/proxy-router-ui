@@ -3,13 +3,13 @@ import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { classNames } from '../../../../utils';
 import { InputValuesCreateForm } from '../../../../types';
 
-interface UpdateContentProps {
+interface ReviewContentProps {
 	register: UseFormRegister<InputValuesCreateForm>;
 	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	data?: InputValuesCreateForm;
 }
 
-export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, data }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, data }) => {
 	const listPrice = data && data.listPrice ? data.listPrice : 0;
 
 	return (
@@ -127,5 +127,5 @@ export const UpdateContent: React.FC<UpdateContentProps> = ({ register, errors, 
 	);
 };
 
-UpdateContent.displayName = 'UpdateContent';
-UpdateContent.whyDidYouRender = false;
+ReviewContent.displayName = 'ReviewContent';
+ReviewContent.whyDidYouRender = false;

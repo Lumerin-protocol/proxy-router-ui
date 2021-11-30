@@ -5,12 +5,12 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { classNames, formatToRfc2396, getButton, printError, truncateAddress } from '../../../utils';
-import ImplementationContract from '../../../contracts/Implementation.json';
+import { classNames, formatToRfc2396, getButton, printError, truncateAddress } from '../../../../utils';
+import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
-import { transferLumerinAsync } from '../../../web3/helpers';
-import { AddressLength, AlertMessage, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../types';
-import { Alert } from '../Alert';
+import { transferLumerinAsync } from '../../../../web3/helpers';
+import { AddressLength, AlertMessage, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../../types';
+import { Alert } from '../../Alert';
 import Web3 from 'web3';
 
 interface ContractInfo {

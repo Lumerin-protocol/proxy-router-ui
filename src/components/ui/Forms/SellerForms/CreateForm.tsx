@@ -6,7 +6,7 @@ import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
 import { classNames, getButton, printError } from '../../../../utils';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
-import { UpdateContent } from './UpdateContent';
+import { ReviewContent } from './ReviewContent';
 
 // Form text setup
 const buttonText: Text = {
@@ -106,7 +106,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 				break;
 			default:
 				buttonContent = buttonText.create as string;
-				content = <UpdateContent register={register} errors={errors} />;
+				content = <ReviewContent register={register} errors={errors} />;
 		}
 	};
 	createContent();
