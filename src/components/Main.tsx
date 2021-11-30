@@ -306,7 +306,21 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Modal open={buyerEditModalOpen} setOpen={setBuyerEditModalOpen} content={<BuyerEditForm />} />
+			<Modal
+				open={buyerEditModalOpen}
+				setOpen={setBuyerEditModalOpen}
+				content={
+					<BuyerEditForm
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						marketplaceContract={marketplaceContract}
+						web3={web3}
+						lumerinbalance={lumerinBalance}
+						setOpen={setBuyModalOpen}
+					/>
+				}
+			/>
 			{/* collapsable sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog as='div' static className='fixed inset-0 flex z-40 lg:hidden' open={sidebarOpen} onClose={setSidebarOpen}>

@@ -7,8 +7,10 @@ import { Checkbox } from '../../Checkbox';
 interface ReviewContentProps {
 	register: UseFormRegister<InputValuesBuyForm>;
 	errors: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
+	isEdit?: boolean;
 }
-export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit }) => {
+	const checkboxLegend = 'Validator';
 	const checkboxLabel = 'Titan Validator Service';
 	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.';
 
@@ -80,7 +82,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors }
 				<div className='mt-1'>
 					<input {...register('password')} id='password' type='password' placeholder='password' className='review-no-errors review-input' />
 				</div>
-				<Checkbox label={checkboxLabel} description={checkboxDescription} register={register} />
+				{!isEdit && <Checkbox legend={checkboxLegend} label={checkboxLabel} description={checkboxDescription} register={register} />}
 			</div>
 		</React.Fragment>
 	);

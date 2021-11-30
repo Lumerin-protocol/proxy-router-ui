@@ -26,7 +26,7 @@ interface SendOptions {
 
 // Form text setup
 const paragraphText: Text = {
-	review: 'Please enter a valid IP Address that is connected to your mining machine as well as the Port Number. Username and PW are optional.',
+	review: 'Please enter a valid IP address that is connected to your mining machine as well as the port number. Username and password are optional.',
 	confirm: 'Please review the following information below is correct. Once submitted, you will not be able to make any changes.',
 };
 

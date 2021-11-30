@@ -2,15 +2,16 @@ import { UseFormRegister } from 'react-hook-form';
 import { InputValuesBuyForm } from '../../types';
 
 interface CheckboxProps {
+	legend: string;
 	label: string;
 	description: string;
 	register: UseFormRegister<InputValuesBuyForm>;
 }
 
-export const Checkbox: React.FC<CheckboxProps> = ({ label, description, register }) => {
+export const Checkbox: React.FC<CheckboxProps> = ({ legend, label, description, register }) => {
 	return (
 		<fieldset className='space-y-5'>
-			<legend className='sr-only'>Validator</legend>
+			<legend className='sr-only'>{legend}</legend>
 			<div className='relative flex items-start'>
 				<div className='flex items-center h-5'>
 					<input
