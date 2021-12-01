@@ -58,6 +58,7 @@ export interface HashRentalContract {
 	seller?: string;
 	timestamp?: string;
 	state?: string;
+	encryptedPoolData?: string;
 }
 
 // Making fields optional bc a user might not have filled out the input fields
@@ -104,4 +105,15 @@ export interface Text {
 	review?: string;
 	confirm: string;
 	completed?: string;
+}
+
+export interface ContractInfo {
+	speed: string;
+	price: string;
+}
+
+export interface SendOptions {
+	from: string;
+	gas: number;
+	value?: string;
 }

@@ -1,5 +1,5 @@
-import { AddressLength, FormData } from '../types';
-import { truncateAddress, classNames, getLengthDisplay, formatToRfc2396 } from '../utils';
+import { AddressLength, FormData, InputValuesBuyForm } from '../types';
+import { truncateAddress, classNames, getLengthDisplay, formatToRfc2396, toInputValuesBuyForm } from '../utils';
 
 describe('utils', () => {
 	describe('truncateAddress', () => {
@@ -78,6 +78,25 @@ describe('utils', () => {
 			// Assert
 			const expectedResult = 'stratum+tcp://test.worker:test1234@mining.dev.pool.titan.io:4242';
 			expect(result).toBe(expectedResult);
+		});
+	});
+
+	describe('toInputValuesBuyForm', () => {
+		it('returns InputValuesBuyForm', () => {
+			// Arrange
+			const encryptedPoolData = 'stratum+tcp://lance.worker:password1234@mining.dev.pool.titan.io:4242';
+
+			// Act
+			const result = toInputValuesBuyForm(encryptedPoolData);
+
+			// Assert
+			const expectedResult: InputValuesBuyForm = {
+				poolAddress: 'stratum+tcp://mining.dev.pool.titan.io',
+				portNumber: '4242',
+				username: 'lance.worker',
+				password: 'password1234',
+			};
+			expect(result).toEqual(expectedResult);
 		});
 	});
 });

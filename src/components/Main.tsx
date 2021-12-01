@@ -127,6 +127,7 @@ export const Main: React.FC = () => {
 			const seller = await implementationContractInstance?.methods.seller().call();
 			const timestamp = await implementationContractInstance?.methods.startingBlockTimestamp().call();
 			const state = await implementationContractInstance?.methods.contractState().call();
+			const encryptedPoolData = await implementationContractInstance?.methods.encryptedPoolData().call();
 
 			return {
 				id: address,
@@ -137,6 +138,7 @@ export const Main: React.FC = () => {
 				seller,
 				timestamp,
 				state,
+				encryptedPoolData,
 			} as HashRentalContract;
 		}
 
@@ -316,8 +318,7 @@ export const Main: React.FC = () => {
 						userAccount={userAccount}
 						marketplaceContract={marketplaceContract}
 						web3={web3}
-						lumerinbalance={lumerinBalance}
-						setOpen={setBuyModalOpen}
+						setOpen={setBuyerEditModalOpen}
 					/>
 				}
 			/>

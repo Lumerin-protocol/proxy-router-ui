@@ -8,8 +8,9 @@ interface ReviewContentProps {
 	register: UseFormRegister<InputValuesBuyForm>;
 	errors: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	isEdit?: boolean;
+	data?: InputValuesBuyForm;
 }
-export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit, data }) => {
 	const checkboxLegend = 'Validator';
 	const checkboxLabel = 'Titan Validator Service';
 	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.';
@@ -24,6 +25,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('poolAddress', {
+								value: data?.poolAddress ?? '',
 								required: 'Pool Address is required',
 							})}
 							id='poolAddress'
@@ -45,6 +47,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('portNumber', {
+								value: data?.portNumber ?? '',
 								required: 'Port Number is required',
 							})}
 							id='portNumber'
@@ -65,6 +68,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 				<div className='mt-1'>
 					<input
 						{...register('username', {
+							value: data?.username ?? '',
 							required: 'Username is required',
 						})}
 						id='username'
@@ -80,7 +84,13 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					Password
 				</label>
 				<div className='mt-1'>
-					<input {...register('password')} id='password' type='password' placeholder='password' className='review-no-errors review-input' />
+					<input
+						{...register('password', { value: data?.password ?? '' })}
+						id='password'
+						type='password'
+						placeholder='password'
+						className='review-no-errors review-input'
+					/>
 				</div>
 				{!isEdit && <Checkbox legend={checkboxLegend} label={checkboxLabel} description={checkboxDescription} register={register} />}
 			</div>

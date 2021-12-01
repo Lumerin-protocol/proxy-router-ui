@@ -1,49 +1,31 @@
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Contract } from 'web3-eth-contract';
-import { AddressLength, AlertMessage, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../../types';
+import {
+	AddressLength,
+	AlertMessage,
+	ContentState,
+	ContractInfo,
+	FormData,
+	HashRentalContract,
+	InputValuesBuyForm,
+	Receipt,
+	SendOptions,
+} from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
-import { classNames, formatToRfc2396, getButton, printError, truncateAddress } from '../../../../utils';
+import { classNames, formatToRfc2396, getButton, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
 import { transferLumerinAsync } from '../../../../web3/helpers';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
 import { Alert } from '../../Alert';
 import Web3 from 'web3';
+import { buttonText, paragraphText } from '../../../../shared';
 
-interface ContractInfo {
-	speed: string;
-	price: string;
-}
-
-interface SendOptions {
-	from: string;
-	gas: number;
-	value?: string;
-}
-
-// Form text setup
-const paragraphText: Text = {
-	review: 'Please enter a valid IP address that is connected to your mining machine as well as the port number. Username and password are optional.',
-	confirm: 'Please review the following information below is correct. Once submitted, you will not be able to make any changes.',
-};
-
-const buttonText: Text = {
-	review: 'Review Order',
-	confirm: 'Confirm Order',
-	completed: 'Close',
-};
-
-// Used to set initial state for contentData to prevent undefined error
-const initialFormData: FormData = {
-	withValidator: false,
-	poolAddress: '',
-	portNumber: '',
-	username: '',
-	password: '',
-	speed: '',
-	price: '',
+// Set initial state to current contract values
+const getFormData: (contract: HashRentalContract) => InputValuesBuyForm = (contract) => {
+	return toInputValuesBuyForm(contract.encryptedPoolData as string);
 };
 
 interface EditFormProps {
@@ -52,14 +34,15 @@ interface EditFormProps {
 	userAccount: string;
 	marketplaceContract: Contract | undefined;
 	web3: Web3 | undefined;
-	lumerinbalance: number;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, lumerinbalance, setOpen }) => {
+export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
+	const contract = contracts.filter((contract) => contract.id === contractId)[0];
+
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
-	const [formData, setFormData] = useState<FormData>(initialFormData);
+	const [formData, setFormData] = useState<FormData>(getFormData(contract));
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	// Input validation setup
@@ -70,7 +53,6 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
 
 	// Contract setup
-	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 	const getContractInfo: () => ContractInfo = () => {
 		return {
 			speed: contract.speed as string,
@@ -103,11 +85,6 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 			// 1. Purchase hashrental contract
 			// 2. Transfer contract price (LMR) to escrow account
 			// 3. Call setFundContract to put contract in running state
-
-			if (contract.price && lumerinbalance.toString() < contract.price) {
-				setAlertOpen(true);
-				return;
-			}
 
 			try {
 				// TODO: update with actual validator address and validator fee
@@ -193,8 +170,8 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 				break;
 			default:
 				paragraphContent = paragraphText.review as string;
-				buttonContent = buttonText.review as string;
-				content = <ReviewContent register={register} errors={errors} />;
+				buttonContent = buttonText.edit as string;
+				content = <ReviewContent register={register} errors={errors} isEdit data={formData} />;
 		}
 	};
 	createContent();

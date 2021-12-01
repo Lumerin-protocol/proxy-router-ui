@@ -9,32 +9,20 @@ import { classNames, formatToRfc2396, getButton, printError, truncateAddress } f
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { transferLumerinAsync } from '../../../../web3/helpers';
-import { AddressLength, AlertMessage, ContentState, FormData, HashRentalContract, InputValuesBuyForm, Receipt, Text } from '../../../../types';
+import {
+	AddressLength,
+	AlertMessage,
+	ContentState,
+	ContractInfo,
+	FormData,
+	HashRentalContract,
+	InputValuesBuyForm,
+	Receipt,
+	SendOptions,
+} from '../../../../types';
 import { Alert } from '../../Alert';
 import Web3 from 'web3';
-
-interface ContractInfo {
-	speed: string;
-	price: string;
-}
-
-interface SendOptions {
-	from: string;
-	gas: number;
-	value?: string;
-}
-
-// Form text setup
-const paragraphText: Text = {
-	review: 'Please enter a valid IP address that is connected to your mining machine as well as the port number. Username and password are optional.',
-	confirm: 'Please review the following information below is correct. Once submitted, you will not be able to make any changes.',
-};
-
-const buttonText: Text = {
-	review: 'Review Order',
-	confirm: 'Confirm Order',
-	completed: 'Close',
-};
+import { buttonText, paragraphText } from '../../../../shared';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
