@@ -60,7 +60,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 		};
 	};
 	// Controls contentState and creating a transaction
-	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
+	const editContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
 		// Review
 		if (isValid && contentState === ContentState.Review) {
 			setContentState(ContentState.Confirm);
@@ -138,7 +138,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 
 	// Create transaction when in pending state
 	useEffect(() => {
-		if (contentState === ContentState.Pending) buyContractAsync(formData);
+		if (contentState === ContentState.Pending) editContractAsync(formData);
 	}, [contentState]);
 
 	// Change opacity of Review Order button based on input validation
@@ -186,7 +186,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
-						<p className='text-3xl'>Purchase Hashpower</p>
+						<p className='text-3xl'>Edit Order</p>
 						<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
 					</div>
 				</div>
@@ -203,7 +203,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, buyContractAsync)
+						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, editContractAsync)
 						: null}
 				</div>
 			</div>

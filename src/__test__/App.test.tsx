@@ -9,6 +9,12 @@ import { MyContracts } from '../components/MyContracts';
 
 // Testing basic behavior and will add more complex tests as needed
 
+// Mocks
+const setContractId = jest.fn();
+const buyClickHandler = jest.fn();
+const editClickHandler = jest.fn();
+const cancelClickHandler = jest.fn();
+
 // Top level integration tests
 describe('<App />', () => {
 	it('displays <Main />', async () => {
@@ -40,8 +46,6 @@ describe('<Marketplace />', () => {
 				state: '0',
 			},
 		];
-		const setContractId = jest.fn();
-		const buyClickHandler = jest.fn();
 
 		// Act
 		render(<Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />);
@@ -70,7 +74,16 @@ describe('<MyOrders />', () => {
 		];
 
 		// Act
-		render(<MyOrders contracts={contracts} userAccount='' currentBlockTimestamp={1000} />);
+		render(
+			<MyOrders
+				contracts={contracts}
+				userAccount=''
+				currentBlockTimestamp={1000}
+				setContractId={setContractId}
+				editClickHandler={editClickHandler}
+				cancelClickHandler={cancelClickHandler}
+			/>
+		);
 
 		// Assert
 		const table = document.getElementById('myorders');
@@ -97,7 +110,16 @@ describe('<MyContracts />', () => {
 		];
 
 		// Act
-		render(<MyContracts contracts={contracts} userAccount='' currentBlockTimestamp={1000} />);
+		render(
+			<MyContracts
+				contracts={contracts}
+				userAccount=''
+				currentBlockTimestamp={1000}
+				setContractId={setContractId}
+				editClickHandler={editClickHandler}
+				cancelClickHandler={cancelClickHandler}
+			/>
+		);
 
 		// Assert
 		const table = document.getElementById('mycontracts');
