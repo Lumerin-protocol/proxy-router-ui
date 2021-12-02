@@ -50,6 +50,10 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		}
 	}, [mediaQueryList?.matches]);
 
+	const getTimestamp: (timestamp: string) => string = (timestamp) => {
+		if (timestamp === '0') return '_____';
+		return DateTime.fromSeconds(parseInt(timestamp)).toFormat('MM/dd/yyyy hh:mm:ss');
+	};
 	const getTableData: () => ContractData[] = () => {
 		const sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
 		// Add emtpy row for styling
@@ -74,7 +78,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 					currentBlockTimestamp
 				);
 				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
-				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
+				updatedOrder.timestamp = getTimestamp(contract.timestamp as string);
 				updatedOrder.editCancel = (
 					<EditCancelButtonGroup
 						contractId={contract.id as string}

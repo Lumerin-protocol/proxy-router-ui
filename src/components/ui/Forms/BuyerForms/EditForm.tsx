@@ -10,12 +10,10 @@ import {
 	HashRentalContract,
 	InputValuesBuyForm,
 	Receipt,
-	SendOptions,
 } from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { classNames, formatToRfc2396, getButton, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
-import { transferLumerinAsync } from '../../../../web3/helpers';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
@@ -87,42 +85,15 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 			// 3. Call setFundContract to put contract in running state
 
 			try {
-				// TODO: update with actual validator address and validator fee
-				const validator = formData.withValidator
-					? '0xD12b787E2F318448AE2Fd04e51540c9cBF822e89'
-					: '0x0000000000000000000000000000000000000000';
-				const validatorFee = '100';
 				const gasLimit = 1000000;
-				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
-				if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 				// TODO: encrypt poolAddress, username, password
 				const encryptedBuyerInput = formatToRfc2396(formData);
-				const receipt: Receipt = await marketplaceContract?.methods
-					.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
-					.send(sendOptions);
-				if (receipt?.status) {
-					// Fund the escrow account which is same address as hashrental contract
-					if (web3) {
-						const receipt: Receipt = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
-						if (receipt.status) {
-							// Call setFundContract() to put contract in running state
-							const implementationContractInstance = new web3.eth.Contract(
-								ImplementationContract.abi as AbiItem[],
-								contract.id as string
-							);
-							const receipt: Receipt = await implementationContractInstance.methods
-								.setFundContract()
-								.send({ from: userAccount, gas: gasLimit });
-							if (!receipt.status) {
-								// TODO: funding failed so surface this to user
-							}
-						} else {
-							// TODO: transfer has failed so surface this to user
-						}
-					}
-				} else {
-					// TODO: purchase has failed so surface this to user
-				}
+				// TODO: call edit function when it's added
+				// if (receipt?.status) {
+				// 	}
+				// } else {
+				// 	// TODO: purchase has failed so surface this to user
+				// }
 				setContentState(ContentState.Complete);
 			} catch (error) {
 				const typedError = error as Error;
