@@ -5,6 +5,7 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
+	ContractState,
 	FormData,
 	HashRentalContract,
 	InputValuesBuyForm,
@@ -13,7 +14,7 @@ import {
 } from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
-import { classNames, formatToRfc2396, getButton, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
+import { classNames, formatToRfc2396, getButton, isNoEditBuyer, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
@@ -25,7 +26,7 @@ const getFormData: (contract: HashRentalContract) => InputValuesBuyForm = (contr
 	return toInputValuesBuyForm(contract.encryptedPoolData as string);
 };
 
-export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
+export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -47,8 +48,11 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			price: contract.price as string,
 		};
 	};
+
 	// Controls contentState and creating a transaction
 	const editContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
+		if (isNoEditBuyer(contract, userAccount)) return;
+
 		// Review
 		if (isValid && contentState === ContentState.Review) {
 			setContentState(ContentState.Confirm);
@@ -97,6 +101,11 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 		if (contentState === ContentState.Complete) setOpen(false);
 	};
 
+	// Check if user is buyer and contract is running
+	useEffect(() => {
+		if (isNoEditBuyer(contract, userAccount)) setAlertOpen(true);
+	}, []);
+
 	// Create transaction when in pending state
 	useEffect(() => {
 		if (contentState === ContentState.Pending) editContractAsync(formData);
@@ -143,7 +152,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.InsufficientBalance} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={AlertMessage.NoEditBuyer} open={alertOpen} setOpen={setAlertOpen} />
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>

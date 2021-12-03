@@ -1,5 +1,15 @@
 import { ProgressBar } from './components/ui/ProgressBar';
-import { AddressLength, ContentState, ContractState, FormData, InputValuesBuyForm, InputValuesCreateForm, PathName, StatusText } from './types';
+import {
+	AddressLength,
+	ContentState,
+	ContractState,
+	FormData,
+	HashRentalContract,
+	InputValuesBuyForm,
+	InputValuesCreateForm,
+	PathName,
+	StatusText,
+} from './types';
 import { Link } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
@@ -80,6 +90,18 @@ export const setMediaQueryListOnChangeHandler: (
 		}
 	}
 	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
+};
+
+export const isNoEditBuyer: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+	return contract.buyer === userAccount && contract.state !== ContractState.Running;
+};
+
+export const isNoEditSeller: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+	return contract.seller === userAccount && contract.state === ContractState.Running;
+};
+
+export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+	return (userAccount !== contract.buyer || userAccount !== contract.seller) && contract.state !== ContractState.Running;
 };
 
 interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}

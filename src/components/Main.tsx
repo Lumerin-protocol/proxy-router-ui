@@ -303,7 +303,6 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						marketplaceContract={marketplaceContract}
 						web3={web3}
 						setOpen={setSellerEditModalOpen}
 					/>
@@ -317,7 +316,6 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						marketplaceContract={marketplaceContract}
 						web3={web3}
 						setOpen={setBuyerEditModalOpen}
 					/>
@@ -327,14 +325,7 @@ export const Main: React.FC = () => {
 				open={cancelModalOpen}
 				setOpen={setCancelModalOpen}
 				content={
-					<CancelForm
-						contracts={contracts}
-						contractId={contractId}
-						userAccount={userAccount}
-						marketplaceContract={marketplaceContract}
-						web3={web3}
-						setOpen={setCancelModalOpen}
-					/>
+					<CancelForm contracts={contracts} contractId={contractId} userAccount={userAccount} web3={web3} setOpen={setCancelModalOpen} />
 				}
 			/>
 			{/* collapsable sidebar: below lg breakpoint */}

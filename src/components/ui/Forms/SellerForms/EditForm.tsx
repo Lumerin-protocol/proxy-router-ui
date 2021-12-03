@@ -2,7 +2,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { AlertMessage, ContentState, ContractState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
-import { classNames, getButton, printError } from '../../../../utils';
+import { classNames, getButton, isNoEditSeller, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
@@ -25,7 +25,7 @@ const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (co
 	};
 };
 
-export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
+export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -40,12 +40,8 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 		formState: { errors, isValid },
 	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
-	const isNoEdit: () => boolean = () => {
-		return contract.seller === userAccount && contract.state === ContractState.Running;
-	};
-
 	const editContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
-		if (isNoEdit()) return;
+		if (isNoEditSeller(contract, userAccount)) return;
 		// Edit
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
@@ -81,7 +77,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 
 	// Check if user is seller and contract is running
 	useEffect(() => {
-		if (isNoEdit()) setAlertOpen(true);
+		if (isNoEditSeller(contract, userAccount)) setAlertOpen(true);
 	}, []);
 
 	// Create transaction when in pending state
@@ -126,7 +122,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.NoEdit} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={AlertMessage.NoEditSeller} open={alertOpen} setOpen={setAlertOpen} />
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
 					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
