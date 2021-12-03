@@ -171,8 +171,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const createContent: () => void = () => {
 		switch (contentState) {
 			case ContentState.Confirm:
-				paragraphContent = paragraphText.confirm;
-				buttonContent = buttonText.confirm;
+				paragraphContent = paragraphText.confirm as string;
+				buttonContent = buttonText.confirm as string;
 				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:

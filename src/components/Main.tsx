@@ -25,6 +25,7 @@ import { AddressLength, AlertMessage, HashRentalContract, PathName, WalletText }
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import _ from 'lodash';
+import { CancelForm } from './ui/Forms/CancelForm';
 
 interface Navigation {
 	name: string;
@@ -319,6 +320,20 @@ export const Main: React.FC = () => {
 						marketplaceContract={marketplaceContract}
 						web3={web3}
 						setOpen={setBuyerEditModalOpen}
+					/>
+				}
+			/>
+			<Modal
+				open={cancelModalOpen}
+				setOpen={setCancelModalOpen}
+				content={
+					<CancelForm
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						marketplaceContract={marketplaceContract}
+						web3={web3}
+						setOpen={setCancelModalOpen}
 					/>
 				}
 			/>

@@ -10,5 +10,6 @@ export const buttonText: Text = {
 	edit: 'Edit Order',
 	review: 'Review Order',
 	confirm: 'Confirm Order',
+	confirmChanges: 'Confirm changes',
 	completed: 'Close',
 };

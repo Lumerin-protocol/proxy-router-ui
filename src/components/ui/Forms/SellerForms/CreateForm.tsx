@@ -96,7 +96,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 	const createContent: () => void = () => {
 		switch (contentState) {
 			case ContentState.Confirm:
-				buttonContent = buttonText.confirm;
+				buttonContent = buttonText.confirm as string;
 				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:

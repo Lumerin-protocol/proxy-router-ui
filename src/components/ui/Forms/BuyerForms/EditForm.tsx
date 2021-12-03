@@ -1,6 +1,5 @@
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Contract } from 'web3-eth-contract';
 import {
 	AddressLength,
 	AlertMessage,
@@ -10,6 +9,7 @@ import {
 	HashRentalContract,
 	InputValuesBuyForm,
 	Receipt,
+	UpdateFormProps,
 } from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
@@ -18,7 +18,6 @@ import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
 import { Alert } from '../../Alert';
-import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 
 // Set initial state to current contract values
@@ -26,16 +25,7 @@ const getFormData: (contract: HashRentalContract) => InputValuesBuyForm = (contr
 	return toInputValuesBuyForm(contract.encryptedPoolData as string);
 };
 
-interface EditFormProps {
-	contracts: HashRentalContract[];
-	contractId: string;
-	userAccount: string;
-	marketplaceContract: Contract | undefined;
-	web3: Web3 | undefined;
-	setOpen: Dispatch<SetStateAction<boolean>>;
-}
-
-export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
+export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -94,7 +84,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 				// } else {
 				// 	// TODO: purchase has failed so surface this to user
 				// }
-				setContentState(ContentState.Complete);
+				// setContentState(ContentState.Complete);
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
@@ -130,8 +120,8 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 	const createContent: () => void = () => {
 		switch (contentState) {
 			case ContentState.Confirm:
-				paragraphContent = paragraphText.confirm;
-				buttonContent = buttonText.confirm;
+				paragraphContent = paragraphText.confirm as string;
+				buttonContent = buttonText.confirmChanges as string;
 				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:

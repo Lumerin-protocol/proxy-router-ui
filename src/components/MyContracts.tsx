@@ -5,8 +5,8 @@ import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChan
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
-import _ from 'lodash';
 import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
+import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}

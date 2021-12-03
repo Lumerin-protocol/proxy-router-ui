@@ -1,6 +1,10 @@
 // Exported types here
 // Types local to a file will be in that file
 
+import { Dispatch, SetStateAction } from 'react';
+import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
+
 // Enums
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
@@ -20,6 +24,7 @@ export enum ContentState {
 	Confirm = 'CONFIRM',
 	Pending = 'PENDING',
 	Complete = 'COMPLETE',
+	Cancel = 'CANCEL',
 }
 
 export enum AddressLength {
@@ -103,7 +108,8 @@ export interface Text {
 	edit?: string;
 	cancel?: string;
 	review?: string;
-	confirm: string;
+	confirm?: string;
+	confirmChanges?: string;
 	completed?: string;
 }
 
@@ -116,4 +122,13 @@ export interface SendOptions {
 	from: string;
 	gas: number;
 	value?: string;
+}
+
+export interface UpdateFormProps {
+	contracts: HashRentalContract[];
+	contractId: string;
+	userAccount: string;
+	marketplaceContract: Contract | undefined;
+	web3: Web3 | undefined;
+	setOpen: Dispatch<SetStateAction<boolean>>;
 }

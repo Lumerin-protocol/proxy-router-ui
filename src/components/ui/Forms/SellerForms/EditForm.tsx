@@ -1,9 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
-import { AlertMessage, ContentState, ContractState, HashRentalContract, InputValuesCreateForm, Text } from '../../../../types';
+import { AlertMessage, ContentState, ContractState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
 import { classNames, getButton, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
@@ -27,16 +25,7 @@ const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (co
 	};
 };
 
-interface EditFormProps {
-	contracts: HashRentalContract[];
-	contractId: string;
-	userAccount: string;
-	marketplaceContract: Contract | undefined;
-	web3: Web3 | undefined;
-	setOpen: Dispatch<SetStateAction<boolean>>;
-}
-
-export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
+export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -117,7 +106,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contracts, contractId, userA
 	const createContent: () => void = () => {
 		switch (contentState) {
 			case ContentState.Confirm:
-				buttonContent = buttonText.confirm;
+				buttonContent = buttonText.confirm as string;
 				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:
