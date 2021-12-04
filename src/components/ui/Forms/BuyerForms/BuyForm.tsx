@@ -93,7 +93,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			// 2. Transfer contract price (LMR) to escrow account
 			// 3. Call setFundContract to put contract in running state
 
-			if (contract.price && lumerinbalance.toString() < contract.price) {
+			if (contract.price && lumerinbalance < parseInt(contract.price as string)) {
 				setAlertOpen(true);
 				return;
 			}

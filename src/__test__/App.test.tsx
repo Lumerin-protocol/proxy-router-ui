@@ -4,7 +4,7 @@ import { Marketplace } from '../components/Marketplace';
 import { renderWithRouter } from './testhelper';
 import { act, render } from '@testing-library/react';
 import { MyOrders } from '../components/MyOrders';
-import { HashRentalContract } from '../types';
+import { ContractState, HashRentalContract } from '../types';
 import { MyContracts } from '../components/MyContracts';
 
 // Testing basic behavior and will add more complex tests as needed
@@ -42,8 +42,9 @@ describe('<Marketplace />', () => {
 				length: '1',
 				trade: '',
 				buyer: '',
+				seller: '',
 				timestamp: '',
-				state: '0',
+				state: ContractState.Available,
 			},
 		];
 
@@ -68,8 +69,9 @@ describe('<MyOrders />', () => {
 				length: '1',
 				trade: '',
 				buyer: '',
+				seller: '',
 				timestamp: '',
-				state: '',
+				state: ContractState.Running,
 			},
 		];
 

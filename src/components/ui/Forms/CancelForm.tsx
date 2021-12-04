@@ -52,9 +52,6 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 				setContentState(ContentState.Complete);
 			}
 		}
-
-		// Completed
-		if (contentState === ContentState.Complete) setOpen(false);
 	};
 
 	// Check if user is buyer or seller and contract is running
@@ -115,6 +112,11 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 							<p className='bg-white modal-input-spacing border-transparent pt-0 mb-8 text-xl'>Your transaction is pending.</p>
 						</div>
 						<Spinner />
+					</div>
+				) : null}
+				{contentState === ContentState.Complete ? (
+					<div className='flex bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
+						<p className='mb-1'>The contract has been cancelled successfully, and its status will update shortly.</p>
 					</div>
 				) : null}
 			</div>
