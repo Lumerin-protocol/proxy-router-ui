@@ -1,8 +1,10 @@
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
-import { AlertMessage, ContentState, ContractState, UpdateFormProps } from '../../../types';
-import { isNoCancel } from '../../../utils';
+import { AlertMessage, ContentState, ContractState, Receipt, UpdateFormProps } from '../../../types';
+import { isNoCancel, printError } from '../../../utils';
 import { Alert } from '../Alert';
 import { Spinner } from '../Spinner';
+import ImplementationContract from '../../../contracts/Implementation.json';
+import { AbiItem } from 'web3-utils';
 
 export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
@@ -17,7 +19,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 		setContentState(ContentState.Confirm);
 	};
 
-	const cancelContractAsync: () => void = () => {
+	const cancelContractAsync: () => void = async () => {
 		// Confirm
 		if (contentState === ContentState.Confirm) {
 			if (contract.state !== ContractState.Available && contract.state !== ContractState.Running) {
@@ -31,7 +33,24 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 		// Pending
 		if (contentState === ContentState.Pending) {
 			if (isNoCancel(contract, userAccount)) return;
-			// setContentState(ContentState.Complete);
+
+			try {
+				if (web3) {
+					const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const receipt: Receipt = await implementationContractInstance.methods
+						.setContractCloseOut()
+						.send({ from: userAccount, gas: 1000000 });
+					if (receipt.status) {
+						setContentState(ContentState.Complete);
+					} else {
+						// TODO: cancellation has failed so surface to user
+					}
+				}
+			} catch (error) {
+				const typedError = error as Error;
+				printError(typedError.message, typedError.stack as string);
+				setContentState(ContentState.Complete);
+			}
 		}
 
 		// Completed
