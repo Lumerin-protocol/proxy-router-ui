@@ -6,6 +6,7 @@ import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
 import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
+import { Spinner } from './ui/Spinner';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -54,8 +55,10 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		if (timestamp === '0') return '_____';
 		return DateTime.fromSeconds(parseInt(timestamp)).toFormat('MM/dd/yyyy hh:mm:ss');
 	};
+
+	let sellerContracts: HashRentalContract[] = [];
 	const getTableData: () => ContractData[] = () => {
-		const sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
+		sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
 		// Add emtpy row for styling
 		sellerContracts.unshift({});
 		const updatedOrders = sellerContracts.map((contract) => {
@@ -109,7 +112,17 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='mycontracts' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
+	return (
+		<div className='flex flex-col'>
+			{sellerContracts.length > 1 ? (
+				<Table id='mycontracts' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
+			) : (
+				<div className='flex justify-center mt-50 mr-50'>
+					<Spinner />
+				</div>
+			)}
+		</div>
+	);
 };
 
 MyContracts.displayName = 'MyContracts';

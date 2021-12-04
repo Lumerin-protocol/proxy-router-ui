@@ -7,6 +7,7 @@ import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChan
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header } from '../types';
 import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
+import { Spinner } from './ui/Spinner';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -51,8 +52,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 	}, [mediaQueryList?.matches]);
 
+	let buyerOrders: HashRentalContract[] = [];
 	const getTableData: () => ContractData[] = () => {
-		const buyerOrders = contracts.filter(
+		buyerOrders = contracts.filter(
 			(contract) => contract.buyer === userAccount && (contract.state === ContractState.Running || contract.state === ContractState.Complete)
 		);
 		// Add emtpy row for styling
@@ -109,7 +111,17 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	return <Table id='myorders' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />;
+	return (
+		<div className='flex flex-col'>
+			{buyerOrders.length > 1 ? (
+				<Table id='myorders' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
+			) : (
+				<div className='flex justify-center mt-50 mr-50'>
+					<Spinner />
+				</div>
+			)}
+		</div>
+	);
 };
 
 MyOrders.displayName = 'MyOrders';
