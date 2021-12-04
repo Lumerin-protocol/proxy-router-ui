@@ -50,7 +50,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.Edit} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={AlertMessage.NoCancel} open={alertOpen} setOpen={setAlertOpen} />
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				{!isConfirmModal && contentState === ContentState.Review ? (
 					<Fragment>

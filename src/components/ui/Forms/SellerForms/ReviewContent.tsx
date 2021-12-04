@@ -7,9 +7,10 @@ interface ReviewContentProps {
 	register: UseFormRegister<InputValuesCreateForm>;
 	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	data?: InputValuesCreateForm;
+	isCreate?: boolean;
 }
 
-export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, data }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, data, isCreate }) => {
 	const listPrice = data && data.listPrice ? data.listPrice : 0;
 
 	return (
@@ -25,9 +26,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 								value: data?.walletAddress ?? '',
 								required: 'Wallet Address is required',
 							})}
+							disabled
 							id='walletAddress'
 							type='text'
-							placeholder={data?.walletAddress ?? '0x0c34...'}
 							className={classNames(
 								errors.walletAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
 							)}
@@ -49,7 +50,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('contractTime', {
-								value: data && data.contractTime,
+								value: !isCreate && data ? data.contractTime : undefined,
 								required: 'Contract Time is required',
 								valueAsNumber: true,
 							})}
@@ -62,7 +63,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							)}
 						/>
 					</div>
-					{!errors.contractTime && <div className='text-xs text-lumerin-helpertext-gray'>Contract Length (min 1 hour)</div>}
+					{!errors.contractTime && <div className='text-xs text-lumerin-helpertext-gray'>Contract Length (hours)</div>}
 					{errors.contractTime?.type === 'required' && <div className='text-xs text-red-500'>{errors.contractTime.message}</div>}
 				</div>
 
@@ -73,7 +74,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('speed', {
-								value: data && data.speed,
+								value: !isCreate && data ? data.speed : undefined,
 							})}
 							min='1'
 							id='speed'

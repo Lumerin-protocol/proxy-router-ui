@@ -101,7 +101,7 @@ export const isNoEditSeller: (contract: HashRentalContract, userAccount: string)
 };
 
 export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
-	return (userAccount !== contract.buyer || userAccount !== contract.seller) && contract.state !== ContractState.Running;
+	return (userAccount !== contract.buyer && userAccount !== contract.seller) || contract.state !== ContractState.Running;
 };
 
 interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}

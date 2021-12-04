@@ -3,7 +3,6 @@
 
 import { Dispatch, SetStateAction } from 'react';
 import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
 
 // Enums
 export enum WalletText {
@@ -52,6 +51,7 @@ export enum AlertMessage {
 	Edit = 'A contract must be running or available to be edited.',
 	NoEditSeller = 'A running contract cannot be edited by the seller.',
 	NoEditBuyer = 'A contract must be running to be edited.',
+	NoCancel = 'A contract must be running to be cancelled.',
 }
 
 // Interfaces

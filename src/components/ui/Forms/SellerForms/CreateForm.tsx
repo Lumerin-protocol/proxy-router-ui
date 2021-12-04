@@ -15,12 +15,14 @@ const buttonText: Text = {
 	completed: 'Close',
 };
 
-// Used to set initial state for contentData to prevent undefined error
-const initialFormData: InputValuesCreateForm = {
-	walletAddress: '',
-	contractTime: 0,
-	speed: 0,
-	listPrice: 0,
+// Set initial state for formData
+const getFormData: (userAccount: string) => InputValuesCreateForm = (userAccount) => {
+	return {
+		walletAddress: userAccount,
+		contractTime: 0,
+		speed: 0,
+		listPrice: 0,
+	};
 };
 
 interface CreateFormProps {
@@ -32,7 +34,7 @@ interface CreateFormProps {
 export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplaceContract, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
-	const [formData, setFormData] = useState<InputValuesCreateForm>(initialFormData);
+	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
 
 	// Input validation setup
 	const {
@@ -106,7 +108,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 				break;
 			default:
 				buttonContent = buttonText.create as string;
-				content = <ReviewContent register={register} errors={errors} />;
+				content = <ReviewContent register={register} errors={errors} data={formData} isCreate />;
 		}
 	};
 	createContent();

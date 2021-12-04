@@ -19,7 +19,7 @@ const buttonText: Text = {
 const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {
 	return {
 		walletAddress: contract.seller as string,
-		contractTime: parseInt(contract.length as string),
+		contractTime: parseInt(contract.length as string) / 3600,
 		speed: parseInt(contract.speed as string),
 		listPrice: contract.price as number,
 	};
