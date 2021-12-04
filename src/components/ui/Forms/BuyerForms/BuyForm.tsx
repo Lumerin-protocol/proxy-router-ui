@@ -5,7 +5,7 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { classNames, formatToRfc2396, getButton, printError, truncateAddress } from '../../../../utils';
+import { classNames, getButton, printError, toRfc2396, truncateAddress } from '../../../../utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { transferLumerinAsync } from '../../../../web3/helpers';
@@ -108,7 +108,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
 				if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 				// TODO: encrypt poolAddress, username, password
-				const encryptedBuyerInput = formatToRfc2396(formData);
+				const encryptedBuyerInput = toRfc2396(formData);
 				const receipt: Receipt = await marketplaceContract?.methods
 					.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
 					.send(sendOptions);

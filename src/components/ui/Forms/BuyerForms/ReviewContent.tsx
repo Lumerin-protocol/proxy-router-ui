@@ -1,7 +1,7 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { InputValuesBuyForm } from '../../../../types';
-import { classNames } from '../../../../utils';
+import { classNames, isValidPoolAddress } from '../../../../utils';
 import { Checkbox } from '../../Checkbox';
 
 interface ReviewContentProps {
@@ -27,6 +27,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							{...register('poolAddress', {
 								value: data?.poolAddress ?? '',
 								required: 'Pool Address is required',
+								validate: (poolAddress) => isValidPoolAddress(poolAddress as string),
 							})}
 							id='poolAddress'
 							type='text'

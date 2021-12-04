@@ -1,5 +1,5 @@
 import { AddressLength, FormData, InputValuesBuyForm } from '../types';
-import { truncateAddress, classNames, getLengthDisplay, formatToRfc2396, toInputValuesBuyForm } from '../utils';
+import { truncateAddress, classNames, getLengthDisplay, toInputValuesBuyForm, isValidPoolAddress, toRfc2396 } from '../utils';
 
 describe('utils', () => {
 	describe('truncateAddress', () => {
@@ -62,7 +62,7 @@ describe('utils', () => {
 		});
 	});
 
-	describe('formatToRfc2396', () => {
+	describe('toRfc2396', () => {
 		it('converts to correct format', () => {
 			// Arrange
 			const formData: FormData = {
@@ -73,11 +73,35 @@ describe('utils', () => {
 			};
 
 			// Act
-			const result = formatToRfc2396(formData);
+			const result = toRfc2396(formData);
 
 			// Assert
 			const expectedResult = 'stratum+tcp://test.worker:test1234@mining.dev.pool.titan.io:4242';
 			expect(result).toBe(expectedResult);
+		});
+	});
+
+	describe('isValidPoolAddress', () => {
+		it('works', () => {
+			// Arrange
+			const validPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io';
+
+			// Act
+			const result = isValidPoolAddress(validPoolAddress);
+
+			// Assert
+			expect(result).toBeTruthy();
+		});
+
+		it('returns false with invalid pool address', () => {
+			// Arrange
+			const invalidPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io:4242';
+
+			// Act
+			const result = isValidPoolAddress(invalidPoolAddress);
+
+			// Assert
+			expect(result).toBeFalsy();
 		});
 	});
 

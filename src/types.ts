@@ -52,6 +52,7 @@ export enum AlertMessage {
 	NoEditSeller = 'A running contract cannot be edited by the seller.',
 	NoEditBuyer = 'A contract must be running to be edited.',
 	NoCancel = 'A contract must be running to be cancelled.',
+	InvalidPoolAddress = 'The pool address is invalid.',
 }
 
 // Interfaces

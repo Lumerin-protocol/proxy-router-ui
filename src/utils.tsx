@@ -35,13 +35,21 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const formatToRfc2396: (formData: FormData) => string = (formData) => {
+export const toRfc2396: (formData: FormData) => string | undefined = (formData) => {
 	const regex = /(^.*):\/\/(.*$)/;
 	const poolAddressGroups = formData.poolAddress?.match(regex) as RegExpMatchArray;
+	if (!poolAddressGroups) return;
 	const protocol = poolAddressGroups[1];
 	const host = poolAddressGroups[2];
 
 	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
+};
+
+export const isValidPoolAddress: (poolAddress: string) => boolean = (poolAddress) => {
+	const regexPortNumber = /:\d+/;
+	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
+	const regexAddress = /(^.*):\/\/(.*$)/;
+	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
 };
 
 export const toInputValuesBuyForm: (encryptedPoolData: string) => InputValuesBuyForm = (encryptedPoolData) => {

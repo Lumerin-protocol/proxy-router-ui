@@ -14,7 +14,7 @@ import {
 } from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
-import { classNames, formatToRfc2396, getButton, isNoEditBuyer, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
+import { classNames, toRfc2396, getButton, isNoEditBuyer, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
@@ -81,7 +81,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			try {
 				const gasLimit = 1000000;
 				// TODO: encrypt poolAddress, username, password
-				const encryptedBuyerInput = formatToRfc2396(formData);
+				const encryptedBuyerInput = toRfc2396(formData);
 				// TODO: call edit function when it's added
 				// if (receipt?.status) {
 				// 	}
