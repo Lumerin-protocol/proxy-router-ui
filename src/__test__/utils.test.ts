@@ -82,7 +82,7 @@ describe('utils', () => {
 	});
 
 	describe('isValidPoolAddress', () => {
-		it('works', () => {
+		it('return true for valid pool address', () => {
 			// Arrange
 			const validPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io';
 

@@ -8,6 +8,7 @@ import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header } from '../types';
 import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
 import { Spinner } from './ui/Spinner';
+import { useInterval } from './hooks/useInterval';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -31,6 +32,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	cancelClickHandler,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
+	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
@@ -111,14 +113,22 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
+	// Remove spinner if no orders after a minute
+	useInterval(() => {
+		if (showSpinner) setShowSpinner(false);
+	}, 60000);
+
 	return (
 		<div className='flex flex-col'>
 			{buyerOrders.length > 1 ? (
 				<Table id='myorders' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
-			) : (
+			) : null}
+			{buyerOrders.length === 1 && showSpinner ? (
 				<div className='flex justify-center mt-50 mr-50'>
 					<Spinner />
 				</div>
+			) : (
+				<div className='text-2xl'>You have no orders.</div>
 			)}
 		</div>
 	);
