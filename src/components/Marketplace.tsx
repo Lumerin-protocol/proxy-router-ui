@@ -6,6 +6,7 @@ import { Table } from './ui/Table';
 import { getLengthDisplay, setMediaQueryListOnChangeHandler } from '../utils';
 import { Spinner } from './ui/Spinner';
 import { ContractState, HashRentalContract, Header } from '../types';
+import { useInterval } from './hooks/useInterval';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -19,6 +20,7 @@ interface MarketplaceProps {
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContractId, buyClickHandler }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
+	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
@@ -75,16 +77,23 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	const data = getTableData(contracts);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
+	// Remove spinner if no contracts after 30 seconds
+	useInterval(() => {
+		if (showSpinner) setShowSpinner(false);
+	}, 30000);
+
 	// There is always 1 empty contract for styling purposes
 	return (
 		<div className='flex flex-col'>
 			{availableContracts.length > 1 ? (
 				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
-			) : (
+			) : null}
+			{availableContracts.length === 1 && showSpinner ? (
 				<div className='flex justify-center mt-50 mr-50'>
 					<Spinner />
 				</div>
-			)}
+			) : null}
+			{availableContracts.length === 1 && !showSpinner ? <div className='text-2xl'>There are no available contracts for purchase.</div> : null}
 		</div>
 	);
 };

@@ -21,7 +21,7 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
-import { AddressLength, AlertMessage, HashRentalContract, PathName, WalletText } from '../types';
+import { AddressLength, AlertMessage, ContractState, HashRentalContract, PathName, WalletText } from '../types';
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import _ from 'lodash';
@@ -272,6 +272,8 @@ export const Main: React.FC = () => {
 		return '';
 	};
 
+	const isAvailableContract: boolean = contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
+
 	return (
 		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
 			<Alert message={AlertMessage.NotConnected} open={alertOpen} setOpen={setAlertOpen} />
@@ -483,7 +485,7 @@ export const Main: React.FC = () => {
 				</div>
 				<div
 					className={classNames(
-						pathName === PathName.Marketplace && contracts.length > 1 ? 'mt-8 flex flex-col items-center text-18' : 'hidden'
+						pathName === PathName.Marketplace && isAvailableContract ? 'mt-8 flex flex-col items-center text-18' : 'hidden'
 					)}
 				>
 					<p>Welcome to the Lumerin Hashrate marketplace.</p>

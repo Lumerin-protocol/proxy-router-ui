@@ -48,10 +48,10 @@ export enum PathName {
 export enum AlertMessage {
 	NotConnected = 'MetaMask is not connected',
 	InsufficientBalance = 'Insufficient LMR balance.',
-	Edit = 'A contract must be running or available to be edited.',
 	NoEditSeller = 'A running contract cannot be edited by the seller.',
-	NoEditBuyer = 'A contract must be running to be edited.',
-	NoCancel = 'A contract must be running to be cancelled.',
+	NoEditBuyer = 'An order must be running to be edited.',
+	NoCancelSeller = 'A contract must be running to be cancelled.',
+	NoCancelBuyer = 'An order must be running to be cancelled.',
 	InvalidPoolAddress = 'The pool address is invalid.',
 }
 
