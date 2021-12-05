@@ -36,7 +36,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					</div>
 					{!errors.walletAddress && (
 						<div className='text-xs text-lumerin-helpertext-gray'>
-							Funds will be paid into this account once the contract if fulfilled.
+							Funds will be paid into this account once the contract is fulfilled.
 						</div>
 					)}
 					{errors.walletAddress?.type === 'required' && <div className='text-xs text-red-500'>{errors.walletAddress.message}</div>}

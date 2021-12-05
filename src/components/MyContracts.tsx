@@ -114,10 +114,10 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	// Remove spinner if no contracts after a minute
+	// Remove spinner if no contracts after 30 seconds
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 60000);
+	}, 30000);
 
 	return (
 		<div className='flex flex-col'>
@@ -128,9 +128,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 				<div className='flex justify-center mt-50 mr-50'>
 					<Spinner />
 				</div>
-			) : (
-				<div className='text-2xl'>You have no contracts.</div>
-			)}
+			) : null}
+			{sellerContracts.length === 1 && !showSpinner ? <div className='text-2xl'>You have no contracts.</div> : null}
 		</div>
 	);
 };
