@@ -1,6 +1,9 @@
 import { AddressLength, FormData, InputValuesBuyForm } from '../types';
 import { truncateAddress, classNames, getLengthDisplay, toInputValuesBuyForm, isValidPoolAddress, toRfc2396 } from '../utils';
 
+// Mocks
+const setAlertOpen = jest.fn();
+
 describe('utils', () => {
 	describe('truncateAddress', () => {
 		// Arrange
@@ -87,7 +90,7 @@ describe('utils', () => {
 			const validPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io';
 
 			// Act
-			const result = isValidPoolAddress(validPoolAddress);
+			const result = isValidPoolAddress(validPoolAddress, setAlertOpen);
 
 			// Assert
 			expect(result).toBeTruthy();
@@ -98,7 +101,7 @@ describe('utils', () => {
 			const invalidPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io:4242';
 
 			// Act
-			const result = isValidPoolAddress(invalidPoolAddress);
+			const result = isValidPoolAddress(invalidPoolAddress, setAlertOpen);
 
 			// Assert
 			expect(result).toBeFalsy();

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
-import { InputValuesBuyForm } from '../../../../types';
+import { AlertMessage, InputValuesBuyForm } from '../../../../types';
 import { classNames, isValidPoolAddress } from '../../../../utils';
+import { Alert } from '../../Alert';
 import { Checkbox } from '../../Checkbox';
 
 interface ReviewContentProps {
@@ -11,12 +12,15 @@ interface ReviewContentProps {
 	data?: InputValuesBuyForm;
 }
 export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit, data }) => {
+	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+
 	const checkboxLegend = 'Validator';
 	const checkboxLabel = 'Titan Validator Service';
 	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.';
 
 	return (
 		<React.Fragment>
+			<Alert message={AlertMessage.RemovePort} open={alertOpen} setOpen={setAlertOpen} />
 			<div className='bg-white modal-input-spacing'>
 				<div>
 					<label htmlFor='poolAddress' className='block text-sm font-medium text-gray-700'>
@@ -27,7 +31,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							{...register('poolAddress', {
 								value: data?.poolAddress ?? '',
 								required: 'Pool Address is required',
-								validate: (poolAddress) => isValidPoolAddress(poolAddress as string),
+								validate: (poolAddress) => isValidPoolAddress(poolAddress as string, setAlertOpen),
 							})}
 							id='poolAddress'
 							type='text'

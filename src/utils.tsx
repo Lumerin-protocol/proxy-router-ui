@@ -45,9 +45,13 @@ export const toRfc2396: (formData: FormData) => string | undefined = (formData) 
 	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
 };
 
-export const isValidPoolAddress: (poolAddress: string) => boolean = (poolAddress) => {
+export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>) => boolean = (
+	poolAddress,
+	setAlertOpen
+) => {
 	const regexPortNumber = /:\d+/;
 	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
+	if (hasPortNumber) setAlertOpen(true);
 	const regexAddress = /(^.*):\/\/(.*$)/;
 	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
 };
