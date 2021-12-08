@@ -23,6 +23,8 @@ build-development:
         - dedicated
         - amd
     script:
+        - echo "Pruning images..."
+        - docker image prune -f
         - echo "Building image..."
         - docker build -t $REPOSITORY_URL:latest .
         - echo "Tagging image..."
