@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AlertMessage, ContentState, ContractState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
+import { AlertMessage, ContentState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
 import { classNames, getButton, isNoEditSeller, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';

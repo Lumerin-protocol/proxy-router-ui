@@ -190,7 +190,7 @@ export const Main: React.FC = () => {
 	// Get contracts at interval of 20 seconds
 	useInterval(() => {
 		createContractsAsync();
-	}, 20000);
+	}, 60000);
 
 	// Content setup
 	const ActionButton: JSX.Element = (

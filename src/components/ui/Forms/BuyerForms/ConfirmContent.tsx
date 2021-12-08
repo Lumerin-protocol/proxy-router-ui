@@ -25,7 +25,7 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddr
 				<p>{speed}</p>
 			</div>
 			<div className='confirm-div'>
-				<p>Price (ETH)</p>
+				<p>Price (LMR)</p>
 				<p>{price}</p>
 			</div>
 			<div className='confirm-div'>
