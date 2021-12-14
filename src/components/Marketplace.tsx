@@ -1,9 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Column, useTable } from 'react-table';
+import { Column, useTable, useSortBy, SortByFn, Row } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { Table } from './ui/Table';
-import { getLengthDisplay, setMediaQueryListOnChangeHandler } from '../utils';
+import { getLengthDisplay, setMediaQueryListOnChangeHandler, sortByInt } from '../utils';
 import { Spinner } from './ui/Spinner';
 import { ContractState, HashRentalContract, Header } from '../types';
 import { useInterval } from './hooks/useInterval';
@@ -34,9 +35,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		}
 	}, [mediaQueryList?.matches]);
 
-	let availableContracts: HashRentalContract[] = [];
 	const getTableData: (contracts: HashRentalContract[]) => HashRentalContract[] = (contracts) => {
-		availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
+		const availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
 		// Add emtpy row for styling
 		availableContracts.unshift({});
 		const updatedContracts = availableContracts.map((contract) => {
@@ -51,7 +51,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 						justify='start'
 					/>
 				);
-				updatedContract.price = <TableIcon icon={null} text={updatedContract.price as string} justify='start' />;
 				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
@@ -63,21 +62,45 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		return updatedContracts;
 	};
 
+	const customSort: any = (rowA: Row, rowB: Row, columnId: string, desc: boolean) => {
+		if (_.isEmpty(rowA.original)) {
+			return desc ? 1 : -1;
+		}
+		if (_.isEmpty(rowB.original)) {
+			return desc ? -1 : 1;
+		}
+
+		switch (columnId) {
+			case 'price':
+				return sortByInt(rowA.values.price, rowB.values.price);
+			case 'speed':
+				return sortByInt(rowA.values.speed, rowB.values.speed);
+			case 'length':
+				return sortByInt(rowA.values.length, rowB.values.length);
+			default:
+				return 0;
+		}
+	};
+
+	const sortTypes: Record<string, SortByFn<CustomTableOptions>> = {
+		customSort: customSort,
+	};
+
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
-			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
-			{ Header: 'PRICE (LMR)', accessor: 'price' },
-			{ Header: 'SPEED (TH/S)', accessor: 'speed' },
-			{ Header: 'DURATION (DAYS)', accessor: 'length' },
-			{ Header: 'TRADE', accessor: 'trade' },
+			{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
+			{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
+			{ Header: 'SPEED (TH/S)', accessor: 'speed', sortType: 'customSort' },
+			{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
+			{ Header: 'TRADE', accessor: 'trade', disableSortBy: true },
 		],
 		[]
 	);
 
-	const data = getTableData(contracts);
-	const tableInstance = useTable<CustomTableOptions>({ columns, data });
+	const data = useMemo(() => getTableData(contracts), [contracts]);
+	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
 
-	// Remove spinner if no contracts after 30 seconds
+	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
 	}, 60000);
@@ -85,15 +108,15 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	// There is always 1 empty contract for styling purposes
 	return (
 		<div className='flex flex-col'>
-			{availableContracts.length > 1 ? (
+			{data.length > 1 ? (
 				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 			) : null}
-			{availableContracts.length === 1 && showSpinner ? (
+			{data.length === 1 && showSpinner ? (
 				<div className='flex justify-center mt-50 mr-50'>
 					<Spinner />
 				</div>
 			) : null}
-			{availableContracts.length === 1 && !showSpinner ? <div className='text-2xl'>There are no available contracts for purchase.</div> : null}
+			{data.length === 1 && !showSpinner ? <div className='text-2xl'>There are no available contracts for purchase.</div> : null}
 		</div>
 	);
 };

@@ -113,7 +113,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const data = getTableData();
 	const tableInstance = useTable<CustomTableOptions>({ columns, data });
 
-	// Remove spinner if no orders after 30 seconds
+	// Remove spinner if no orders after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
 	}, 60000);

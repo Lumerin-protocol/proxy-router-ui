@@ -32,7 +32,6 @@ type Reject = (error: Error) => void;
 type SetAlertOpen = React.Dispatch<React.SetStateAction<boolean>>;
 
 const ethereum: any = window.ethereum;
-// const lumerinTokenAddress = '0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66';
 const lumerinTokenAddress = '0x84E00a18a36dFa31560aC216da1A9bef2164647D';
 
 // Web3 setup helpers

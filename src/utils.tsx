@@ -116,6 +116,14 @@ export const isNoCancel: (contract: HashRentalContract, userAccount: string) => 
 	return (userAccount !== contract.buyer && userAccount !== contract.seller) || contract.state !== ContractState.Running;
 };
 
+export const sortByInt: (rowA: string, rowB: string) => number = (rowA, rowB) => {
+	const rowAInt = parseInt(rowA);
+	const rowBInt = parseInt(rowB);
+	if (rowAInt > rowBInt) return -1;
+	if (rowBInt > rowAInt) return 1;
+	return 0;
+};
+
 interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}
 export const getButton: (
 	contentState: string,

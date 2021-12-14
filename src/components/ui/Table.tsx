@@ -101,7 +101,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 					<tr {...headerGroup.getHeaderGroupProps()}>
 						{headerGroup.headers.map((column) => (
 							<th
-								{...column.getHeaderProps()}
+								{...column.getHeaderProps(column.getSortByToggleProps())}
 								className={`sticky ${paddingLeft} text-justify top-0 bg-lumerin-dark-gray`}
 								style={{ width: `${Math.floor(100 / columnCount)}%` }}
 							>
