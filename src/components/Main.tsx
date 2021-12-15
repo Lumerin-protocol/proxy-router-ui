@@ -24,8 +24,9 @@ import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
 import { AddressLength, AlertMessage, ContractState, HashRentalContract, PathName, WalletText } from '../types';
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
-import _ from 'lodash';
 import { CancelForm } from './ui/Forms/CancelForm';
+import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
+import _ from 'lodash';
 
 interface Navigation {
 	name: string;
@@ -53,6 +54,7 @@ export const Main: React.FC = () => {
 	const [buyerEditModalOpen, setBuyerEditModalOpen] = useState<boolean>(false);
 	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
+	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
 	const [toggle, setToggle] = useState<boolean>(false);
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
@@ -228,7 +230,7 @@ export const Main: React.FC = () => {
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
 							editClickHandler={(event) => buttonClickHandler(event, sellerEditModalOpen, setSellerEditModalOpen)}
-							cancelClickHandler={(event) => buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)}
+							claimLmrClickHandler={(event) => buttonClickHandler(event, claimLmrModalOpen, setClaimLmrModalOpen)}
 						/>
 					)}
 				/>
@@ -328,6 +330,19 @@ export const Main: React.FC = () => {
 				setOpen={setCancelModalOpen}
 				content={
 					<CancelForm contracts={contracts} contractId={contractId} userAccount={userAccount} web3={web3} setOpen={setCancelModalOpen} />
+				}
+			/>
+			<Modal
+				open={claimLmrModalOpen}
+				setOpen={setClaimLmrModalOpen}
+				content={
+					<ClaimLmrForm
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						web3={web3}
+						setOpen={setClaimLmrModalOpen}
+					/>
 				}
 			/>
 			{/* collapsable sidebar: below lg breakpoint */}

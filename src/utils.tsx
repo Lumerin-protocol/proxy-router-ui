@@ -22,7 +22,7 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 	let index;
 	switch (desiredLength) {
 		case AddressLength.SHORT:
-			return `${address.substr(0, 5)}...`;
+			return `${address.substring(0, 5)}...`;
 		case AddressLength.MEDIUM:
 			index = 5;
 			break;
@@ -32,7 +32,7 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 		default:
 			index = 10;
 	}
-	return `${address.substr(0, index)}...${address.substring(address.length - index, address.length)}`;
+	return `${address.substring(0, index)}...${address.substring(address.length - index, address.length)}`;
 };
 
 // Convert buyer input into RFC2396 URL format

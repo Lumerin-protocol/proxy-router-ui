@@ -11,6 +11,18 @@ const useStyles = createUseStyles({
 			borderSpacing: 0,
 			color: colors['lumerin-table-text-color'],
 		},
+		'& > thead > tr > th:hover': {
+			backgroundColor: colors['lumerin-aqua'],
+			color: 'white',
+		},
+		'& > thead > tr > th:first-child:hover': {
+			backgroundColor: 'inherit',
+			color: 'inherit',
+		},
+		'& > thead > tr > th:last-child:hover': {
+			backgroundColor: 'inherit',
+			color: 'inherit',
+		},
 		'& > thead > tr > th:first-child': {
 			border: '0px solid transparent',
 			borderRadius: '5px 0 0 5px',
@@ -105,7 +117,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 								className={`sticky ${paddingLeft} text-justify top-0 bg-lumerin-dark-gray`}
 								style={{
 									width: `${Math.floor(100 / columnCount)}%`,
-									cursor: column.id !== 'id' && column.id !== 'editCancel' ? 'pointer' : 'text',
+									cursor: column.id !== 'id' && column.id !== 'editCancel' && column.id !== 'trade' ? 'pointer' : 'text',
 								}}
 							>
 								{column.render('Header')}

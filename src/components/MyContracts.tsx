@@ -6,8 +6,8 @@ import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChan
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
-import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
 import { Spinner } from './ui/Spinner';
+import { EditClaimButtonGroup } from './ui/Forms/FormButtons/EditClaimButtonGroup';
 import { useInterval } from './hooks/useInterval';
 import _ from 'lodash';
 
@@ -20,7 +20,7 @@ interface MyContractsProps {
 	currentBlockTimestamp: number;
 	setContractId: Dispatch<SetStateAction<string>>;
 	editClickHandler: MouseEventHandler<HTMLButtonElement>;
-	cancelClickHandler: MouseEventHandler<HTMLButtonElement>;
+	claimLmrClickHandler: MouseEventHandler<HTMLButtonElement>;
 }
 
 export const MyContracts: React.FC<MyContractsProps> = ({
@@ -29,7 +29,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	currentBlockTimestamp,
 	setContractId,
 	editClickHandler,
-	cancelClickHandler,
+	claimLmrClickHandler,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
@@ -84,12 +84,12 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 				);
 				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
 				updatedOrder.timestamp = getTimestamp(contract.timestamp as string);
-				updatedOrder.editCancel = (
-					<EditCancelButtonGroup
+				updatedOrder.editClaim = (
+					<EditClaimButtonGroup
 						contractId={contract.id as string}
 						setContractId={setContractId}
 						editClickHandler={editClickHandler}
-						cancelClickHandler={cancelClickHandler}
+						claimLmrClickHandler={claimLmrClickHandler}
 					/>
 				);
 			}
@@ -100,7 +100,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	};
 
 	// TODO: if same as <MyOrders /> pull out into util function
-	const customSort: any = (rowA: Row, rowB: Row, columnId: string, desc: boolean) => {
+	const customSort: SortByFn<CustomTableOptions> = (rowA: Row, rowB: Row, columnId: string, desc?: boolean) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 
@@ -132,12 +132,12 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 			{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
 			{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
 			{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
-			{ Header: '', accessor: 'editCancel', disableSortBy: true },
+			{ Header: '', accessor: 'editClaim', disableSortBy: true },
 		],
 		[]
 	);
 
-	const data = useMemo(() => getTableData(), [contracts]);
+	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
 
 	// Remove spinner if no contracts after 1 minute

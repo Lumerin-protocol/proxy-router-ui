@@ -62,7 +62,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		return updatedContracts;
 	};
 
-	const customSort: any = (rowA: Row, rowB: Row, columnId: string, desc: boolean) => {
+	const customSort: SortByFn<CustomTableOptions> = (rowA: Row, rowB: Row, columnId: string, desc?: boolean) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 
@@ -93,7 +93,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		[]
 	);
 
-	const data = useMemo(() => getTableData(), [contracts]);
+	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
 
 	// Remove spinner if no contracts after 1 minute

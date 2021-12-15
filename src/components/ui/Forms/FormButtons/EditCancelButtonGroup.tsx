@@ -16,3 +16,6 @@ export const EditCancelButtonGroup: React.FC<EditCancelButtonGroupProps> = ({ co
 		</span>
 	);
 };
+
+EditCancelButtonGroup.displayName = 'EditCancelButtonGroup';
+EditCancelButtonGroup.whyDidYouRender = false;
