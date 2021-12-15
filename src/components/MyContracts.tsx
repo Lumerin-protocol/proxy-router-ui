@@ -7,8 +7,10 @@ import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
 import { Spinner } from './ui/Spinner';
-import { EditClaimButtonGroup } from './ui/Forms/FormButtons/EditClaimButtonGroup';
 import { useInterval } from './hooks/useInterval';
+import { ButtonGroup } from './ui/ButtonGroup';
+import { EditButton } from './ui/Forms/FormButtons/EditButton';
+import { ClaimLmrButton } from './ui/Forms/FormButtons/ClaimLmrButton';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -85,11 +87,15 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
 				updatedOrder.timestamp = getTimestamp(contract.timestamp as string);
 				updatedOrder.editClaim = (
-					<EditClaimButtonGroup
-						contractId={contract.id as string}
-						setContractId={setContractId}
-						editClickHandler={editClickHandler}
-						claimLmrClickHandler={claimLmrClickHandler}
+					<ButtonGroup
+						button1={<EditButton contractId={contract.id as string} setContractId={setContractId} editClickHandler={editClickHandler} />}
+						button2={
+							<ClaimLmrButton
+								contractId={contract.id as string}
+								setContractId={setContractId}
+								claimLmrClickHandler={claimLmrClickHandler}
+							/>
+						}
 					/>
 				);
 			}

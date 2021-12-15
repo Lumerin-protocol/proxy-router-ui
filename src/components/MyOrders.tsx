@@ -6,10 +6,12 @@ import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
 import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
-import { EditCancelButtonGroup } from './ui/Forms/FormButtons/EditCancelButtonGroup';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
 import _ from 'lodash';
+import { ButtonGroup } from './ui/ButtonGroup';
+import { EditButton } from './ui/Forms/FormButtons/EditButton';
+import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
@@ -82,11 +84,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
 				updatedOrder.editCancel = (
-					<EditCancelButtonGroup
-						contractId={contract.id as string}
-						setContractId={setContractId}
-						editClickHandler={editClickHandler}
-						cancelClickHandler={cancelClickHandler}
+					<ButtonGroup
+						button1={<EditButton contractId={contract.id as string} setContractId={setContractId} editClickHandler={editClickHandler} />}
+						button2={
+							<CancelButton contractId={contract.id as string} setContractId={setContractId} cancelClickHandler={cancelClickHandler} />
+						}
 					/>
 				);
 			}
