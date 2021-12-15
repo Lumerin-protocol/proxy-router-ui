@@ -96,6 +96,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		return updatedOrders;
 	};
 
+	// TODO: if same as <MyContracts /> pull out into util function
 	const customSort: any = (rowA: Row, rowB: Row, columnId: string, desc: boolean) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;

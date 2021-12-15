@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Column, useTable } from 'react-table';
-import { ContractData, HashRentalContract, Header } from '../types';
-import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
+import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
+import { ContractData, HashRentalContract, Header, SortByType } from '../types';
+import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
@@ -58,9 +59,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		return DateTime.fromSeconds(parseInt(timestamp)).toFormat('MM/dd/yyyy hh:mm:ss');
 	};
 
-	let sellerContracts: HashRentalContract[] = [];
 	const getTableData: () => ContractData[] = () => {
-		sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
+		const sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
 		// Add emtpy row for styling
 		sellerContracts.unshift({});
 		const updatedOrders = sellerContracts.map((contract) => {
@@ -98,21 +98,47 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 		return updatedOrders;
 	};
+
+	// TODO: if same as <MyOrders /> pull out into util function
+	const customSort: any = (rowA: Row, rowB: Row, columnId: string, desc: boolean) => {
+		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
+		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
+
+		switch (columnId) {
+			case 'status':
+				return sortByNumber(rowA.values.status.key, rowB.values.status.key, SortByType.Int);
+			case 'price':
+				return sortByNumber(rowA.values.price, rowB.values.price, SortByType.Int);
+			case 'length':
+				return sortByNumber(rowA.values.length, rowB.values.length, SortByType.Float);
+			case 'started':
+				return sortByNumber(rowA.values.timestamp, rowB.values.timestamp, SortByType.Int);
+			case 'progress':
+				return sortByNumber(rowA.values.progress.key, rowB.values.progress.key, SortByType.Int);
+			default:
+				return 0;
+		}
+	};
+
+	const sortTypes: Record<string, SortByFn<CustomTableOptions>> = {
+		customSort: customSort,
+	};
+
 	const columns: Column<CustomTableOptions>[] = useMemo(
 		() => [
-			{ Header: 'CONTRACT ADDRESS', accessor: 'id' },
-			{ Header: 'STATUS', accessor: 'status' },
-			{ Header: 'PRICE (LMR)', accessor: 'price' },
-			{ Header: 'DURATION (DAYS)', accessor: 'length' },
-			{ Header: 'STARTED', accessor: 'timestamp' },
-			{ Header: 'PROGRESS', accessor: 'progress' },
-			{ Header: '', accessor: 'editCancel' },
+			{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
+			{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
+			{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
+			{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
+			{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
+			{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
+			{ Header: '', accessor: 'editCancel', disableSortBy: true },
 		],
 		[]
 	);
 
-	const data = getTableData();
-	const tableInstance = useTable<CustomTableOptions>({ columns, data });
+	const data = useMemo(() => getTableData(), [contracts]);
+	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
 
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
@@ -121,15 +147,15 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	return (
 		<div className='flex flex-col'>
-			{sellerContracts.length > 1 ? (
+			{data.length > 1 ? (
 				<Table id='mycontracts' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 			) : null}
-			{sellerContracts.length === 1 && showSpinner ? (
+			{data.length === 1 && showSpinner ? (
 				<div className='flex justify-center mt-50 mr-50'>
 					<Spinner />
 				</div>
 			) : null}
-			{sellerContracts.length === 1 && !showSpinner ? <div className='text-2xl'>You have no contracts.</div> : null}
+			{data.length === 1 && !showSpinner ? <div className='text-2xl'>You have no contracts.</div> : null}
 		</div>
 	);
 };

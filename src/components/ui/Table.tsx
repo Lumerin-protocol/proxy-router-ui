@@ -103,7 +103,10 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 							<th
 								{...column.getHeaderProps(column.getSortByToggleProps())}
 								className={`sticky ${paddingLeft} text-justify top-0 bg-lumerin-dark-gray`}
-								style={{ width: `${Math.floor(100 / columnCount)}%` }}
+								style={{
+									width: `${Math.floor(100 / columnCount)}%`,
+									cursor: column.id !== 'id' && column.id !== 'editCancel' ? 'pointer' : 'text',
+								}}
 							>
 								{column.render('Header')}
 							</th>
