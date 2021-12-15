@@ -24,7 +24,7 @@ import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
 import { AddressLength, AlertMessage, ContractState, HashRentalContract, PathName, WalletText } from '../types';
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
-import { CancelForm } from './ui/Forms/CancelForm';
+import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 

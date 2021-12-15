@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -92,8 +93,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				// crash app if can't communicate with contracts
-				throw typedError;
+				setOpen(false);
 			}
 		}
 
@@ -103,7 +103,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 
 	// Check if user is buyer and contract is running
 	useEffect(() => {
-		if (isNoEditBuyer(contract, userAccount)) setAlertOpen(true);
+		let timeoutId: NodeJS.Timeout;
+		if (isNoEditBuyer(contract, userAccount)) {
+			setAlertOpen(true);
+			timeoutId = setTimeout(() => setOpen(false), 3000);
+		}
+
+		return () => clearTimeout(timeoutId);
 	}, []);
 
 	// Create transaction when in pending state

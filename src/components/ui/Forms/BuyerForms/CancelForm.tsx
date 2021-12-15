@@ -1,12 +1,13 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
-import { AlertMessage, ContentState, ContractState, Receipt, UpdateFormProps } from '../../../types';
-import { isNoCancel, printError } from '../../../utils';
-import { Alert } from '../Alert';
-import { Spinner } from '../Spinner';
-import ImplementationContract from '../../../contracts/Implementation.json';
+import { AlertMessage, ContentState, ContractState, Receipt, UpdateFormProps } from '../../../../types';
+import { isNoCancel, printError } from '../../../../utils';
+import { Alert } from '../../Alert';
+import { Spinner } from '../../Spinner';
+import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 
-export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3 }) => {
+export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -50,14 +51,23 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				setContentState(ContentState.Complete);
+				setOpen(false);
 			}
 		}
 	};
 
+	// Completed
+	if (contentState === ContentState.Complete) setOpen(false);
+
 	// Check if user is buyer or seller and contract is running
 	useEffect(() => {
-		if (isNoCancel(contract, userAccount)) setAlertOpen(true);
+		let timeoutId: NodeJS.Timeout;
+		if (isNoCancel(contract, userAccount)) {
+			setAlertOpen(true);
+			timeoutId = setTimeout(() => setOpen(false), 3000);
+		}
+
+		return () => clearTimeout(timeoutId);
 	}, []);
 
 	// Create transaction when in pending state
@@ -69,7 +79,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 
 	return (
 		<Fragment>
-			<Alert message={isBuyer ? AlertMessage.NoCancelBuyer : AlertMessage.NoCancelSeller} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={AlertMessage.NoCancelBuyer} open={alertOpen} setOpen={setAlertOpen} />
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				{!isConfirmModal && contentState === ContentState.Review ? (
 					<Fragment>

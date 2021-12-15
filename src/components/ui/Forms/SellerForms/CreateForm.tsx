@@ -70,8 +70,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				// crash app if can't communicate with webfacing contract
-				throw typedError;
+				setOpen(false);
 			}
 		}
 	};

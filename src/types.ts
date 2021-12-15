@@ -50,7 +50,6 @@ export enum AlertMessage {
 	InsufficientBalance = 'Insufficient LMR balance.',
 	NoEditSeller = 'A running contract cannot be edited by the seller.',
 	NoEditBuyer = 'An order must be running to be edited.',
-	NoCancelSeller = 'A contract must be running to be cancelled.',
 	NoCancelBuyer = 'An order must be running to be cancelled.',
 	InvalidPoolAddress = 'The pool address is invalid.',
 	RemovePort = 'Please remove the port number from the pool address, and enter it in the Port Number field.',

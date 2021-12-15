@@ -139,8 +139,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				// crash app if can't communicate with contracts
-				throw typedError;
+				setOpen(false);
 			}
 		}
 

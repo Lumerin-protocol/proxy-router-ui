@@ -69,15 +69,23 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				// crash app if can't communicate with webfacing contract
-				throw typedError;
+				setOpen(false);
 			}
 		}
+
+		// Completed
+		if (contentState === ContentState.Complete) setOpen(false);
 	};
 
 	// Check if user is seller and contract is running
 	useEffect(() => {
-		if (isNoEditSeller(contract, userAccount)) setAlertOpen(true);
+		let timeoutId: NodeJS.Timeout;
+		if (isNoEditSeller(contract, userAccount)) {
+			setAlertOpen(true);
+			timeoutId = setTimeout(() => setOpen(false), 3000);
+		}
+
+		return () => clearTimeout(timeoutId);
 	}, []);
 
 	// Create transaction when in pending state

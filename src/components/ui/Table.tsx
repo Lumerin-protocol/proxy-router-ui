@@ -11,6 +11,9 @@ const useStyles = createUseStyles({
 			borderSpacing: 0,
 			color: colors['lumerin-table-text-color'],
 		},
+		'& > thead > tr > th::selection': {
+			display: 'none',
+		},
 		'& > thead > tr > th:hover': {
 			backgroundColor: colors['lumerin-aqua'],
 			color: 'white',
