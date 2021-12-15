@@ -8,6 +8,7 @@ import {
 	InputValuesBuyForm,
 	InputValuesCreateForm,
 	PathName,
+	SortByType,
 	StatusText,
 } from './types';
 import { Link } from 'react-router-dom';
@@ -116,11 +117,21 @@ export const isNoCancel: (contract: HashRentalContract, userAccount: string) => 
 	return (userAccount !== contract.buyer && userAccount !== contract.seller) || contract.state !== ContractState.Running;
 };
 
-export const sortByInt: (rowA: string, rowB: string) => number = (rowA, rowB) => {
-	const rowAInt = parseInt(rowA);
-	const rowBInt = parseInt(rowB);
-	if (rowAInt > rowBInt) return -1;
-	if (rowBInt > rowAInt) return 1;
+export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) => number = (rowA, rowB, sortByType) => {
+	let rowASortType;
+	let rowBSortType;
+	switch (sortByType) {
+		case SortByType.Int:
+			rowASortType = parseInt(rowA);
+			rowBSortType = parseInt(rowB);
+			break;
+		case SortByType.Float:
+			rowASortType = parseFloat(rowA);
+			rowBSortType = parseFloat(rowB);
+	}
+
+	if (rowASortType > rowBSortType) return -1;
+	if (rowBSortType > rowASortType) return 1;
 	return 0;
 };
 
@@ -225,7 +236,7 @@ export const getProgressDiv: (state: string, startTime: string, length: number, 
 	}
 
 	return (
-		<div className='flex items-baseline'>
+		<div key={percentage.toFixed()} className='flex items-baseline'>
 			<div>{percentage.toFixed()}%</div>
 			<div className='w-1/2 ml-4'>
 				<ProgressBar width={percentage.toString()} />
@@ -242,7 +253,7 @@ const getStatusClass: (state: string) => string = (state) => {
 };
 export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 	return (
-		<div>
+		<div key={state}>
 			<span className={classNames(getStatusClass(state), 'flex justify-center items-center h-8 rounded-5')}>
 				<p>{_.capitalize(getStatusText(state))}</p>
 			</span>

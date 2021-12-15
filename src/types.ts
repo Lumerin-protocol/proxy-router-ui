@@ -56,6 +56,11 @@ export enum AlertMessage {
 	RemovePort = 'Please remove the port number from the pool address, and enter it in the Port Number field.',
 }
 
+export enum SortByType {
+	Int,
+	Float,
+}
+
 // Interfaces
 export interface HashRentalContract {
 	id?: JSX.Element | string;

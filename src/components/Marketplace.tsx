@@ -4,9 +4,9 @@ import { Column, useTable, useSortBy, SortByFn, Row } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { Table } from './ui/Table';
-import { getLengthDisplay, setMediaQueryListOnChangeHandler, sortByInt } from '../utils';
+import { getLengthDisplay, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { Spinner } from './ui/Spinner';
-import { ContractState, HashRentalContract, Header } from '../types';
+import { ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { useInterval } from './hooks/useInterval';
 import _ from 'lodash';
 
@@ -35,7 +35,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		}
 	}, [mediaQueryList?.matches]);
 
-	const getTableData: (contracts: HashRentalContract[]) => HashRentalContract[] = (contracts) => {
+	const getTableData: () => HashRentalContract[] = () => {
 		const availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
 		// Add emtpy row for styling
 		availableContracts.unshift({});
@@ -63,20 +63,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 	};
 
 	const customSort: any = (rowA: Row, rowB: Row, columnId: string, desc: boolean) => {
-		if (_.isEmpty(rowA.original)) {
-			return desc ? 1 : -1;
-		}
-		if (_.isEmpty(rowB.original)) {
-			return desc ? -1 : 1;
-		}
+		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
+		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 
 		switch (columnId) {
 			case 'price':
-				return sortByInt(rowA.values.price, rowB.values.price);
+				return sortByNumber(rowA.values.price, rowB.values.price, SortByType.Int);
 			case 'speed':
-				return sortByInt(rowA.values.speed, rowB.values.speed);
+				return sortByNumber(rowA.values.speed, rowB.values.speed, SortByType.Int);
 			case 'length':
-				return sortByInt(rowA.values.length, rowB.values.length);
+				return sortByNumber(rowA.values.length, rowB.values.length, SortByType.Float);
 			default:
 				return 0;
 		}
@@ -97,7 +93,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 		[]
 	);
 
-	const data = useMemo(() => getTableData(contracts), [contracts]);
+	const data = useMemo(() => getTableData(), [contracts]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
 
 	// Remove spinner if no contracts after 1 minute
