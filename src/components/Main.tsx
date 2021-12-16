@@ -184,10 +184,16 @@ export const Main: React.FC = () => {
 			if (lumerinTokenBalance) setLumerinBalance(lumerinTokenBalance);
 		}
 	};
-	useEffect(() => updateLumerinTokenBalanceAsync(), [web3, accounts]);
+
+	const isCorrectNetwork = (window.ethereum as any)?.networkVersion === '3';
+	useEffect(() => {
+		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
+	}, [web3, accounts]);
 
 	// Set contracts and orders once marketplaceContract exists
-	useEffect(() => createContractsAsync(), [marketplaceContract, accounts, web3]);
+	useEffect(() => {
+		if (isCorrectNetwork) createContractsAsync();
+	}, [marketplaceContract, accounts, web3]);
 
 	// Get contracts at interval of 20 seconds
 	useInterval(() => {
@@ -278,7 +284,7 @@ export const Main: React.FC = () => {
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
-			<Alert message={AlertMessage.NotConnected} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={isCorrectNetwork ? AlertMessage.NotConnected : AlertMessage.WrongNetwork} open={alertOpen} setOpen={setAlertOpen} />
 			<Modal
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
