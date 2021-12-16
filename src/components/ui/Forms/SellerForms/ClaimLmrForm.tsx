@@ -1,148 +1,116 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { AlertMessage, ContentState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
-import { classNames, getButton, isNoEditSeller, printError } from '../../../../utils';
-import { Alert } from '../../Alert';
-import { CompletedContent } from './CompletedContent';
-import { ConfirmContent } from './ConfirmContent';
-import { ReviewContent } from './ReviewContent';
+import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
+import { ContentState, Receipt, UpdateFormProps } from '../../../../types';
+import { isNoClaim, printError } from '../../../../utils';
+import { Spinner } from '../../Spinner';
+import ImplementationContract from '../../../../contracts/Implementation.json';
+import { AbiItem } from 'web3-utils';
 
-// Form text setup
-const buttonText: Text = {
-	edit: 'Edit Contract',
-	confirm: 'Confirm Changes',
-	completed: 'Close',
-};
+export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen }) => {
+	const [contentState, setContentState] = useState<string>(ContentState.Review);
+	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
 
-// Set initial state to current contract values
-const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {
-	return {
-		walletAddress: contract.seller as string,
-		contractTime: parseInt(contract.length as string) / 3600,
-		speed: parseInt(contract.speed as string),
-		listPrice: contract.price as number,
-	};
-};
-
-export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
-	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
-	const [contentState, setContentState] = useState<string>(ContentState.Create);
-	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(contract));
-	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const claimSubmitHandler: MouseEventHandler<HTMLButtonElement> = (event) => {
+		if (isNoClaim(userAccount, contract.seller as string)) return;
+		setIsConfirmModal(true);
+		setContentState(ContentState.Confirm);
+	};
 
-	// Input validation setup
-	const {
-		register,
-		handleSubmit,
-		formState: { errors, isValid },
-	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
-
-	const editContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
-		if (isNoEditSeller(contract, userAccount)) return;
-		// Edit
-		if (isValid && contentState === ContentState.Create) {
-			setContentState(ContentState.Confirm);
-			setFormData(data);
-		}
-
+	const claimLmrAsync: () => void = async () => {
 		// Confirm
-		if (isValid && contentState === ContentState.Confirm) {
+		if (contentState === ContentState.Confirm) {
+			setIsConfirmModal(false);
 			setContentState(ContentState.Pending);
 		}
 
 		// Pending
-		if (isValid && contentState === ContentState.Pending) {
-			// Create contract
+		if (contentState === ContentState.Pending) {
+			if (isNoClaim(userAccount, contract.seller as string)) return;
+
 			try {
-				// TODO: what should the validator fee be?
-				// TODO: convert usd to lmr (aggregate of exchanges?)
-				// const receipt = await marketplaceContract?.methods
-				// 	.setCreateRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, 100)
-				// 	.send({ from: userAccount });
-				// TODO: call edit function(s) in contract when they exist
-				// if (receipt?.status) {
-				// 	setContentState(ContentState.Complete);
-				// }
+				if (web3) {
+					// TODO: update when contract has claim functionality
+					// const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					// const receipt: Receipt = await implementationContractInstance.methods
+					// 	.setContractCloseOut()
+					// 	.send({ from: userAccount, gas: 1000000 });
+					// if (receipt.status) {
+					// 	setContentState(ContentState.Complete);
+					// } else {
+					// 	// TODO: cancellation has failed so surface to user
+					// }
+				}
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				// crash app if can't communicate with webfacing contract
-				throw typedError;
+				setOpen(false);
 			}
 		}
 	};
 
-	// Check if user is seller and contract is running
-	useEffect(() => {
-		if (isNoEditSeller(contract, userAccount)) setAlertOpen(true);
-	}, []);
+	// Completed
+	if (contentState === ContentState.Complete) setOpen(false);
 
 	// Create transaction when in pending state
 	useEffect(() => {
-		if (contentState === ContentState.Pending) editContractAsync(formData);
+		if (contentState === ContentState.Pending) claimLmrAsync();
 	}, [contentState]);
-
-	// Change opacity of Review Order button based on input validation
-	useEffect(() => {
-		if (isValid) {
-			setButtonOpacity('100');
-		} else {
-			setButtonOpacity('25');
-		}
-	}, [isValid]);
-
-	// Content setup
-	// Defaults to create state
-	// Initialize since html element needs a value on first render
-	let buttonContent = '';
-	let content = <div></div>;
-	const createContent: () => void = () => {
-		switch (contentState) {
-			case ContentState.Confirm:
-				buttonContent = buttonText.confirm as string;
-				content = <ConfirmContent data={formData} />;
-				break;
-			case ContentState.Pending:
-			case ContentState.Complete:
-				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} />;
-				break;
-			default:
-				buttonContent = buttonText.edit as string;
-				content = <ReviewContent register={register} errors={errors} data={formData} />;
-		}
-	};
-	createContent();
-
-	// Set styles and button based on ContentState
-	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.NoEditSeller} open={alertOpen} setOpen={setAlertOpen} />
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
-				<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
-					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
-						<p className='text-3xl'>Edit Contract</p>
-						<p>Sell your hashpower to the Lumerin Marketplace</p>
+				{!isConfirmModal && contentState === ContentState.Review ? (
+					<Fragment>
+						<div className='flex justify-center bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
+							<div>
+								<p className='text-3xl text-black'>Claim LMR Tokens</p>
+							</div>
+						</div>
+						<div className='bg-white modal-input-spacing text-center'>You are about to claim your LMR tokens.</div>
+						<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
+							<button
+								type='submit'
+								className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+								onClick={claimSubmitHandler}
+							>
+								Continue
+							</button>
+						</div>
+					</Fragment>
+				) : null}
+				{isConfirmModal && contentState === ContentState.Confirm ? (
+					<Fragment>
+						<div className='flex flex-col text-black'>
+							<p className='bg-white modal-input-spacing border-transparent rounded-t-5 text-center'>
+								Do you want to claim your tokens?
+							</p>
+						</div>
+						<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
+							<button
+								type='submit'
+								className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+								onClick={claimLmrAsync}
+							>
+								Claim Tokens
+							</button>
+						</div>
+					</Fragment>
+				) : null}
+				{contentState === ContentState.Pending ? (
+					<div className='flex flex-col items-center bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
+						<div className='flex justify-center'>
+							<p className='bg-white modal-input-spacing border-transparent pt-0 mb-8 text-xl'>Your transaction is pending.</p>
+						</div>
+						<Spinner />
 					</div>
-				</div>
-				{content}
-				<div className='flex gap-6 bg-white p-4 pt-14 rounded-b-5'>
-					<button
-						type='submit'
-						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua hover:bg-lumerin-aqua hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-						onClick={() => setOpen(false)}
-					>
-						Close
-					</button>
-					{contentState !== ContentState.Pending
-						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, editContractAsync)
-						: null}
-				</div>
+				) : null}
+				{contentState === ContentState.Complete ? (
+					<div className='flex bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
+						<p className='mb-1'>Your LMR tokens have been claimed successfully.</p>
+					</div>
+				) : null}
 			</div>
 		</Fragment>
 	);

@@ -13,7 +13,6 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
-	const isBuyer = userAccount === contract.buyer;
 
 	const cancelSubmitHandler: MouseEventHandler<HTMLButtonElement> = (event) => {
 		if (isNoCancel(contract, userAccount)) return;
@@ -75,8 +74,6 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 		if (contentState === ContentState.Pending) cancelContractAsync();
 	}, [contentState]);
 
-	const text = isBuyer ? 'Order' : 'Contract';
-
 	return (
 		<Fragment>
 			<Alert message={AlertMessage.NoCancelBuyer} open={alertOpen} setOpen={setAlertOpen} />
@@ -85,11 +82,11 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 					<Fragment>
 						<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 							<div>
-								<p className='text-3xl text-red-500'>Cancel {text}</p>
+								<p className='text-3xl text-red-500'>Cancel Order</p>
 							</div>
 						</div>
 						<div className='bg-white modal-input-spacing'>
-							You are about to cancel your {text.toLowerCase()}, and the purchased hashrate will no longer be delivered.
+							You are about to cancel your order, and the purchased hashrate will no longer be delivered.
 						</div>
 						<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
 							<button
@@ -97,7 +94,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 								className={`h-16 w-full py-2 px-4 btn-modal border-red-500 bg-white text-sm font-medium text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
 								onClick={cancelSubmitHandler}
 							>
-								Cancel {text}
+								Cancel Order
 							</button>
 						</div>
 					</Fragment>
@@ -105,9 +102,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 				{isConfirmModal && contentState === ContentState.Confirm ? (
 					<Fragment>
 						<div className='flex flex-col text-red-500'>
-							<p className='bg-white modal-input-spacing border-transparent rounded-t-5'>
-								Make sure you want to cancel the {text.toLowerCase()}.
-							</p>
+							<p className='bg-white modal-input-spacing border-transparent rounded-t-5'>Make sure you want to cancel the order.</p>
 							<p className='bg-white modal-input-spacing border-transparent pt-0'>The cancellation is permanent.</p>
 						</div>
 						<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
@@ -131,7 +126,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 				) : null}
 				{contentState === ContentState.Complete ? (
 					<div className='flex bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
-						<p className='mb-1'>The {text.toLowerCase()} has been cancelled successfully, and its status will update shortly.</p>
+						<p className='mb-1'>The order has been cancelled successfully, and its status will update shortly.</p>
 					</div>
 				) : null}
 			</div>

@@ -105,6 +105,10 @@ export const setMediaQueryListOnChangeHandler: (
 	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
 };
 
+export const isNoClaim: (userAccount: string, sellerAccount: string) => boolean = (userAccount, sellerAccount) => {
+	return userAccount !== sellerAccount;
+};
+
 export const isNoEditBuyer: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
 	return contract.buyer === userAccount && contract.state !== ContractState.Running;
 };
