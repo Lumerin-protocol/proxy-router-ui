@@ -2,6 +2,7 @@
 // Types local to a file will be in that file
 
 import { Dispatch, SetStateAction } from 'react';
+import { HttpProvider } from 'web3-core';
 import Web3 from 'web3';
 
 // Enums
@@ -62,6 +63,16 @@ export enum SortByType {
 }
 
 // Interfaces
+export interface Ethereum extends HttpProvider {
+	networkVersion: string;
+	on: <T>(method: string, callback: (input: T) => void) => void;
+	request: (options: {}) => void;
+}
+
+export interface ConnectInfo {
+	chainId: string;
+}
+
 export interface HashRentalContract {
 	id?: JSX.Element | string;
 	price?: JSX.Element | string | number;

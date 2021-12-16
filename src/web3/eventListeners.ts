@@ -1,9 +1,7 @@
-import { WalletText } from '../types';
+import { ConnectInfo, Ethereum, WalletText } from '../types';
 import { reconnectWalletAsync } from './helpers';
 
-// Type as `any` since EthereumProvider doesn't have `on` method
-// and isn't exported so can't extend with interface merging
-const ethereum: any = window.ethereum;
+const ethereum = window.ethereum as Ethereum;
 
 export const registerEventListeners: (
 	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>,
@@ -14,10 +12,6 @@ export const registerEventListeners: (
 	const changeWalletText = setWalletText;
 	const changeAccounts = setAccounts;
 
-	// connect
-	interface ConnectInfo {
-		chainId: string;
-	}
 	const handleOnConnect: (connectInfo: ConnectInfo) => void = (connectInfo) => {
 		console.log(`on connect: ${connectInfo.chainId}`);
 		changeWalletText(WalletText.Disconnect);

@@ -8,7 +8,7 @@ import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import WebFacingContract from '../contracts/WebFacing.json';
 import LumerinContract from '../contracts/Lumerin.json';
-import { Receipt } from '../types';
+import { Ethereum, Receipt } from '../types';
 import { printError } from '../utils';
 
 interface Networks {
@@ -31,7 +31,7 @@ type Resolve = (web3: Web3) => void;
 type Reject = (error: Error) => void;
 type SetAlertOpen = React.Dispatch<React.SetStateAction<boolean>>;
 
-const ethereum: any = window.ethereum;
+const ethereum = window.ethereum as Ethereum;
 const lumerinTokenAddress = '0x84E00a18a36dFa31560aC216da1A9bef2164647D';
 
 // Web3 setup helpers

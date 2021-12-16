@@ -21,7 +21,7 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
-import { AddressLength, AlertMessage, ContractState, HashRentalContract, PathName, WalletText } from '../types';
+import { AddressLength, AlertMessage, ContractState, Ethereum, HashRentalContract, PathName, WalletText } from '../types';
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
@@ -58,6 +58,8 @@ export const Main: React.FC = () => {
 	const [toggle, setToggle] = useState<boolean>(false);
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
+	const ethereum = window.ethereum as Ethereum;
+	const isCorrectNetwork = ethereum?.networkVersion === '3';
 
 	// Navigation setup
 	const pathName = window.location.pathname;
@@ -185,7 +187,6 @@ export const Main: React.FC = () => {
 		}
 	};
 
-	const isCorrectNetwork = (window.ethereum as any)?.networkVersion === '3';
 	useEffect(() => {
 		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
 	}, [web3, accounts]);
