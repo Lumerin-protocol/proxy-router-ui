@@ -27,11 +27,11 @@ const getFormData: (userAccount: string) => InputValuesCreateForm = (userAccount
 
 interface CreateFormProps {
 	userAccount: string;
-	marketplaceContract: Contract | undefined;
+	cloneFactoryContract: Contract | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplaceContract, setOpen }) => {
+export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactoryContract, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
@@ -59,10 +59,11 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, marketplace
 		if (isValid && contentState === ContentState.Pending) {
 			// Create contract
 			try {
-				// TODO: what should the validator fee be?
+				// TODO: update to actual validatory address
+				const validatorAddress = '0x7d0d7d13dE5b58510D98BF149b75000369CEE8fE';
 				// TODO: convert usd to lmr (aggregate of exchanges?)
-				const receipt = await marketplaceContract?.methods
-					.setCreateRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, 100)
+				const receipt = await cloneFactoryContract?.methods
+					.setCreateNewRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, validatorAddress)
 					.send({ from: userAccount });
 				if (receipt?.status) {
 					setContentState(ContentState.Complete);

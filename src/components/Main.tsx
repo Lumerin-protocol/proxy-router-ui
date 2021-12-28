@@ -43,7 +43,7 @@ export const Main: React.FC = () => {
 	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
 	const [web3, setWeb3] = useState<Web3>();
 	const [accounts, setAccounts] = useState<string[]>();
-	const [marketplaceContract, setMarketplaceContract] = useState<Contract>();
+	const [cloneFactoryContract, setCloneFactoryContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
@@ -77,7 +77,7 @@ export const Main: React.FC = () => {
 		if (web3Result) {
 			const { accounts, contractInstance, web3 } = web3Result;
 			setAccounts(accounts);
-			setMarketplaceContract(contractInstance);
+			setCloneFactoryContract(contractInstance);
 			setWeb3(web3);
 			setWalletText(WalletText.Disconnect);
 		}
@@ -167,7 +167,7 @@ export const Main: React.FC = () => {
 	// Orders setup
 	const createContractsAsync: () => void = async () => {
 		try {
-			const addresses: string[] = await marketplaceContract?.methods.getListOfContracts().call();
+			const addresses: string[] = await cloneFactoryContract?.methods.getContractList().call();
 			if (addresses) {
 				addContractsAsync(addresses);
 			}
@@ -191,10 +191,10 @@ export const Main: React.FC = () => {
 		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
 	}, [web3, accounts]);
 
-	// Set contracts and orders once marketplaceContract exists
+	// Set contracts and orders once cloneFactoryContract exists
 	useEffect(() => {
 		if (isCorrectNetwork) createContractsAsync();
-	}, [marketplaceContract, accounts, web3]);
+	}, [cloneFactoryContract, accounts, web3]);
 
 	// Get contracts at interval of 20 seconds
 	useInterval(() => {
@@ -294,7 +294,7 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						marketplaceContract={marketplaceContract}
+						cloneFactoryContract={cloneFactoryContract}
 						web3={web3}
 						lumerinbalance={lumerinBalance}
 						setOpen={setBuyModalOpen}
@@ -304,7 +304,7 @@ export const Main: React.FC = () => {
 			<Modal
 				open={createModalOpen}
 				setOpen={setCreateModalOpen}
-				content={<CreateForm userAccount={userAccount} marketplaceContract={marketplaceContract} setOpen={setCreateModalOpen} />}
+				content={<CreateForm userAccount={userAccount} cloneFactoryContract={cloneFactoryContract} setOpen={setCreateModalOpen} />}
 			/>
 			<Modal
 				open={sellerEditModalOpen}

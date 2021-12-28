@@ -6,7 +6,7 @@ import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
-import WebFacingContract from '../contracts/WebFacing.json';
+import CloneFactory from '../contracts/CloneFactory.json';
 import LumerinContract from '../contracts/Lumerin.json';
 import { Ethereum, Receipt } from '../types';
 import { printError } from '../utils';
@@ -49,14 +49,14 @@ const connectToMetaMaskAsync: (
 	if (provider && provider === ethereum) {
 		// TODO: update to mainnet when in production
 		// Check connected to correct network
-		if ((provider as any).networkVersion !== '3') setAlertOpen(true);
+		if ((provider as Ethereum).networkVersion !== '3') setAlertOpen(true);
 		registerEventListeners(setAlertOpen, setWalletText, setAccounts);
 		const web3 = new Web3(provider);
 		try {
 			// Request account access if needed
 			// Interface EthereumProvider is not an exported member
 			// so can't extend it with interface merging to add request()
-			await (ethereum as any).request({ method: 'eth_requestAccounts' });
+			await ethereum.request({ method: 'eth_requestAccounts' });
 			// Accounts now exposed
 			resolve(web3);
 		} catch (error) {
@@ -103,7 +103,7 @@ export const getWeb3ResultAsync: (
 		// Get network info
 		// TODO: use below line once off AWS Ganache instance
 		const networkId = await web3.eth.net.getId();
-		const deployedNetwork = (WebFacingContract as ContractJson).networks[networkId];
+		const deployedNetwork = (CloneFactory as ContractJson).networks[networkId];
 
 		// Use web3 to get the user's accounts
 		const accounts = await web3.eth.getAccounts();
@@ -111,7 +111,7 @@ export const getWeb3ResultAsync: (
 			setOpenAlert(true);
 		}
 		// Get the contract instance
-		const contractInstance = new web3.eth.Contract(WebFacingContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
+		const contractInstance = new web3.eth.Contract(CloneFactory.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 		return { accounts, contractInstance, web3 };
 	} catch (error) {
 		const typedError = error as Error;
@@ -123,7 +123,7 @@ export const getWeb3ResultAsync: (
 // Wallet helpers
 // Allows user choose which account they want to use in MetaMask
 export const reconnectWalletAsync: () => void = async () => {
-	await (ethereum as any)?.request({
+	await ethereum?.request({
 		method: 'wallet_requestPermissions',
 		params: [
 			{

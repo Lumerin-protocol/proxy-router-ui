@@ -95,7 +95,7 @@ export const setMediaQueryListOnChangeHandler: (
 	isLargeBreakpointOrGreater: boolean,
 	setIsLargeBreakpointOrGreater: React.Dispatch<React.SetStateAction<boolean>>
 ) => void = (mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater) => {
-	function mediaQueryListOnChangeHandler(this: MediaQueryList, event: MediaQueryListEvent): any {
+	function mediaQueryListOnChangeHandler(this: MediaQueryList, event: MediaQueryListEvent): void {
 		if (this.matches && !isLargeBreakpointOrGreater) {
 			setIsLargeBreakpointOrGreater(true);
 		} else if (isLargeBreakpointOrGreater) {

@@ -39,13 +39,13 @@ interface BuyFormProps {
 	contracts: HashRentalContract[];
 	contractId: string;
 	userAccount: string;
-	marketplaceContract: Contract | undefined;
+	cloneFactoryContract: Contract | undefined;
 	web3: Web3 | undefined;
 	lumerinbalance: number;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, marketplaceContract, web3, lumerinbalance, setOpen }) => {
+export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, cloneFactoryContract, web3, lumerinbalance, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -109,7 +109,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 				// TODO: encrypt poolAddress, username, password
 				const encryptedBuyerInput = toRfc2396(formData);
-				const receipt: Receipt = await marketplaceContract?.methods
+				const receipt: Receipt = await cloneFactoryContract?.methods
 					.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
 					.send(sendOptions);
 				if (receipt?.status) {
