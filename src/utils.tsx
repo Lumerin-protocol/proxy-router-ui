@@ -204,14 +204,10 @@ export const getStatusText: (state: string) => string = (state) => {
 	switch (state) {
 		case ContractState.Available:
 			return StatusText.Available;
-		case ContractState.Active:
-			return StatusText.Active;
 		case ContractState.Running:
 			return StatusText.Running;
-		case ContractState.Complete:
-			return StatusText.Complete;
 		default:
-			return StatusText.Complete;
+			return StatusText.Available;
 	}
 };
 
@@ -227,7 +223,6 @@ export const getProgressDiv: (state: string, startTime: string, length: number, 
 	length,
 	currentBlockTimestamp
 ) => {
-	if (state === ContractState.Complete) return <div>100%</div>;
 	let timeElapsed: number = 0;
 	let percentage: number = 0;
 	if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {

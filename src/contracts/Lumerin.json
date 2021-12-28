@@ -12802,6 +12802,9 @@
 			"links": {},
 			"address": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66",
 			"transactionHash": "0x2d1fd272de46b31b7591964050f48320421ab1850476ce27666d60db714e3823"
+		},
+		"3": {
+			"address": "0x84E00a18a36dFa31560aC216da1A9bef2164647D"
 		}
 	},
 	"schemaVersion": "3.4.2",

@@ -8,18 +8,8 @@ import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import CloneFactory from '../contracts/CloneFactory.json';
 import LumerinContract from '../contracts/Lumerin.json';
-import { Ethereum, Receipt } from '../types';
+import { ContractJson, Ethereum, Receipt } from '../types';
 import { printError } from '../utils';
-
-interface Networks {
-	[networkId: number]: {
-		address: string;
-	};
-}
-
-interface ContractJson {
-	networks: Networks;
-}
 
 interface Web3Result {
 	accounts: string[];
@@ -175,7 +165,9 @@ export const transferLumerinAsync: (web3: Web3, userAccount: string, sellerAccou
 	sellerAccount,
 	amount
 ) => {
-	const lumerinContractInstance = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
+	const networkId = await web3.eth.net.getId();
+	const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
+	const lumerinContractInstance = new web3.eth.Contract(LumerinContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 	const decimalsBN = web3.utils.toBN(8);
 	const amountBN = web3.utils.toBN(amount);
 	const amountAdjustedForDecimals = amountBN.mul(web3.utils.toBN(10).pow(decimalsBN));

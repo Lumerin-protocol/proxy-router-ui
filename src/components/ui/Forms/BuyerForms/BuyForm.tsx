@@ -6,14 +6,14 @@ import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import { classNames, getButton, printError, toRfc2396, truncateAddress } from '../../../../utils';
-import ImplementationContract from '../../../../contracts/Implementation.json';
+import LumerinContract from '../../../../contracts/Lumerin.json';
 import { AbiItem } from 'web3-utils';
-import { transferLumerinAsync } from '../../../../web3/helpers';
 import {
 	AddressLength,
 	AlertMessage,
 	ContentState,
 	ContractInfo,
+	ContractJson,
 	FormData,
 	HashRentalContract,
 	InputValuesBuyForm,
@@ -99,41 +99,36 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			}
 
 			try {
-				// TODO: update with actual validator address and validator fee
-				const validator = formData.withValidator
-					? '0xD12b787E2F318448AE2Fd04e51540c9cBF822e89'
-					: '0x0000000000000000000000000000000000000000';
-				const validatorFee = '100';
+				// const validatorFee = '100';
 				const gasLimit = 1000000;
 				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
-				if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
-				// TODO: encrypt poolAddress, username, password
-				const encryptedBuyerInput = toRfc2396(formData);
-				const receipt: Receipt = await cloneFactoryContract?.methods
-					.setPurchaseContract(contract.id, userAccount, validator, formData.withValidator, encryptedBuyerInput)
-					.send(sendOptions);
-				if (receipt?.status) {
-					// Fund the escrow account which is same address as hashrental contract
-					if (web3) {
-						const receipt: Receipt = await transferLumerinAsync(web3, userAccount, contract.id as string, contract.price as number);
-						if (receipt.status) {
-							// Call setFundContract() to put contract in running state
-							const implementationContractInstance = new web3.eth.Contract(
-								ImplementationContract.abi as AbiItem[],
-								contract.id as string
-							);
-							const receipt: Receipt = await implementationContractInstance.methods
-								.setFundContract()
-								.send({ from: userAccount, gas: gasLimit });
-							if (!receipt.status) {
-								// TODO: funding failed so surface this to user
-							}
-						} else {
-							// TODO: transfer has failed so surface this to user
+				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
+
+				if (web3 && formData) {
+					// Approve clone factory contract to transfer LMR on buyer's behalf
+					const networkId = await web3.eth.net.getId();
+					const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
+					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
+					const allowance = await lumerinTokenContract.methods.allowance(userAccount, cloneFactoryContract?.options.address).call();
+					const decimalsBN = web3.utils.toBN(8);
+					const amountBN = web3.utils.toBN(formData.price as string);
+					const amountAdjustedForDecimals = amountBN.mul(web3.utils.toBN(10).pow(decimalsBN));
+					const receipt = await lumerinTokenContract.methods
+						.increaseAllowance(cloneFactoryContract?.options.address, amountAdjustedForDecimals)
+						.send(sendOptions);
+					if (receipt?.status) {
+						// Purchase contract
+						// TODO: encrypt poolAddress, username, password
+						const encryptedBuyerInput = toRfc2396(formData);
+						const receipt: Receipt = await cloneFactoryContract?.methods
+							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
+							.send(sendOptions);
+						if (!receipt.status) {
+							// TODO: purchasing contract has failed, surface to user
 						}
+					} else {
+						// TODO: call to increaseAllowance() has failed, surface to user
 					}
-				} else {
-					// TODO: purchase has failed so surface this to user
 				}
 				setContentState(ContentState.Complete);
 			} catch (error) {

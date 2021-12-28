@@ -13,9 +13,7 @@ export enum WalletText {
 
 export enum ContractState {
 	Available = '0',
-	Active = '1',
-	Running = '2',
-	Complete = '3',
+	Running = '1',
 }
 
 export enum ContentState {
@@ -35,9 +33,7 @@ export enum AddressLength {
 
 export enum StatusText {
 	Available = 'Available',
-	Active = 'Active',
 	Running = 'Running',
-	Complete = 'Complete',
 }
 
 export enum PathName {
@@ -151,4 +147,14 @@ export interface UpdateFormProps {
 	userAccount: string;
 	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+interface Networks {
+	[networkId: number]: {
+		address: string;
+	};
+}
+
+export interface ContractJson {
+	networks: Networks;
 }
