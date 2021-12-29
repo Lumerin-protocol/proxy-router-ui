@@ -218,6 +218,7 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<MyOrders
 							{...props}
+							web3={web3}
 							userAccount={userAccount}
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
@@ -232,6 +233,7 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<MyContracts
 							{...props}
+							web3={web3}
 							userAccount={userAccount}
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
@@ -246,6 +248,7 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<Marketplace
 							{...props}
+							web3={web3}
 							contracts={contracts}
 							setContractId={setContractId}
 							buyClickHandler={(event) => buttonClickHandler(event, buyModalOpen, setBuyModalOpen)}
@@ -304,7 +307,9 @@ export const Main: React.FC = () => {
 			<Modal
 				open={createModalOpen}
 				setOpen={setCreateModalOpen}
-				content={<CreateForm userAccount={userAccount} cloneFactoryContract={cloneFactoryContract} setOpen={setCreateModalOpen} />}
+				content={
+					<CreateForm userAccount={userAccount} cloneFactoryContract={cloneFactoryContract} web3={web3} setOpen={setCreateModalOpen} />
+				}
 			/>
 			<Modal
 				open={sellerEditModalOpen}

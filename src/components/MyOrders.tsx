@@ -8,15 +8,18 @@ import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
-import _ from 'lodash';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
+import { getContractPrice } from '../web3/helpers';
+import Web3 from 'web3';
+import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
 
 interface MyOrdersProps {
+	web3: Web3 | undefined;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
@@ -26,6 +29,7 @@ interface MyOrdersProps {
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
+	web3,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
@@ -72,6 +76,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						justify='start'
 					/>
 				);
+				updatedOrder.price = web3 ? getContractPrice(web3, updatedOrder.price as number) : updatedOrder.price;
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(
 					updatedOrder.state as string,

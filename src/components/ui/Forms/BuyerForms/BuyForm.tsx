@@ -23,6 +23,7 @@ import {
 import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
+import { getContractPrice } from '../../../../web3/helpers';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -93,7 +94,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			// 2. Transfer contract price (LMR) to escrow account
 			// 3. Call setFundContract to put contract in running state
 
-			if (contract.price && lumerinbalance < parseInt(contract.price as string)) {
+			if (web3 && contract.price && lumerinbalance < getContractPrice(web3, contract.price as number)) {
 				setAlertOpen(true);
 				return;
 			}
@@ -109,7 +110,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					const networkId = await web3.eth.net.getId();
 					const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
-					const allowance = await lumerinTokenContract.methods.allowance(userAccount, cloneFactoryContract?.options.address).call();
 					const decimalsBN = web3.utils.toBN(8);
 					const amountBN = web3.utils.toBN(formData.price as string);
 					const amountAdjustedForDecimals = amountBN.mul(web3.utils.toBN(10).pow(decimalsBN));

@@ -11,12 +11,15 @@ import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { ClaimLmrButton } from './ui/Forms/FormButtons/ClaimLmrButton';
+import Web3 from 'web3';
+import { getContractPrice } from '../web3/helpers';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
 
 interface MyContractsProps {
+	web3: Web3 | undefined;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
@@ -26,6 +29,7 @@ interface MyContractsProps {
 }
 
 export const MyContracts: React.FC<MyContractsProps> = ({
+	web3,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
@@ -77,6 +81,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 						justify='start'
 					/>
 				);
+				updatedOrder.price = web3 ? getContractPrice(web3, updatedOrder.price as number) : updatedOrder.price;
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(
 					updatedOrder.state as string,

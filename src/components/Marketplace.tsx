@@ -8,18 +8,21 @@ import { getLengthDisplay, setMediaQueryListOnChangeHandler, sortByNumber } from
 import { Spinner } from './ui/Spinner';
 import { ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { useInterval } from './hooks/useInterval';
+import Web3 from 'web3';
+import { getContractPrice } from '../web3/helpers';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends HashRentalContract, Header {}
 
 interface MarketplaceProps {
+	web3: Web3 | undefined;
 	contracts: HashRentalContract[];
 	setContractId: Dispatch<SetStateAction<string>>;
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContractId, buyClickHandler }) => {
+export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setContractId, buyClickHandler }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
@@ -51,6 +54,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ contracts, setContract
 						justify='start'
 					/>
 				);
+				updatedContract.price = web3 ? getContractPrice(web3, updatedContract.price as number) : updatedContract.price;
 				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />

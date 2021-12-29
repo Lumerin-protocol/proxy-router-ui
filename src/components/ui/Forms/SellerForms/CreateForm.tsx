@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
 import { classNames, getButton, printError } from '../../../../utils';
@@ -28,10 +29,11 @@ const getFormData: (userAccount: string) => InputValuesCreateForm = (userAccount
 interface CreateFormProps {
 	userAccount: string;
 	cloneFactoryContract: Contract | undefined;
+	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactoryContract, setOpen }) => {
+export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactoryContract, web3, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
@@ -59,14 +61,25 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 		if (isValid && contentState === ContentState.Pending) {
 			// Create contract
 			try {
-				// TODO: update to actual validatory address
-				const validatorAddress = '0x7d0d7d13dE5b58510D98BF149b75000369CEE8fE';
-				// TODO: convert usd to lmr (aggregate of exchanges?)
-				const receipt = await cloneFactoryContract?.methods
-					.setCreateNewRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, validatorAddress)
-					.send({ from: userAccount });
-				if (receipt?.status) {
-					setContentState(ContentState.Complete);
+				if (web3) {
+					// TODO: update to actual validatory address
+					const validatorAddress = '0x7d0d7d13dE5b58510D98BF149b75000369CEE8fE';
+					// TODO: convert usd to lmr (aggregate of exchanges?)
+					const decimalsBN = web3.utils.toBN(8);
+					const priceBN = web3.utils.toBN(formData.listPrice as number);
+					const priceAdjustedForDecimals = priceBN.mul(web3.utils.toBN(10).pow(decimalsBN));
+					const receipt = await cloneFactoryContract?.methods
+						.setCreateNewRentalContract(
+							priceAdjustedForDecimals,
+							0,
+							formData.speed,
+							(formData.contractTime as number) * 3600,
+							validatorAddress
+						)
+						.send({ from: userAccount });
+					if (receipt?.status) {
+						setContentState(ContentState.Complete);
+					}
 				}
 			} catch (error) {
 				const typedError = error as Error;
