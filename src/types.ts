@@ -58,6 +58,13 @@ export enum SortByType {
 	Float,
 }
 
+export enum CloseOutType {
+	BuyerOrValidatorCancel = 0,
+	SellerClaimNoClose = 1,
+	CloseNoClaimAtCompletion = 2,
+	CloseAndClaimAtCompletion = 3,
+}
+
 // Interfaces
 export interface Ethereum extends HttpProvider {
 	networkVersion: string;

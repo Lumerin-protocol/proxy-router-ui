@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
-import { AlertMessage, ContentState, ContractState, Receipt, UpdateFormProps } from '../../../../types';
+import { AlertMessage, CloseOutType, ContentState, ContractState, Receipt, UpdateFormProps } from '../../../../types';
 import { isNoCancel, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { Spinner } from '../../Spinner';
@@ -39,7 +39,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 				if (web3) {
 					const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 					const receipt: Receipt = await implementationContractInstance.methods
-						.setContractCloseOut()
+						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
 						.send({ from: userAccount, gas: 1000000 });
 					if (receipt.status) {
 						setContentState(ContentState.Complete);
@@ -54,9 +54,6 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 			}
 		}
 	};
-
-	// Completed
-	if (contentState === ContentState.Complete) setOpen(false);
 
 	// Check if user is buyer or seller and contract is running
 	useEffect(() => {
