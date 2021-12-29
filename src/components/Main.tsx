@@ -353,6 +353,7 @@ export const Main: React.FC = () => {
 						contractId={contractId}
 						userAccount={userAccount}
 						web3={web3}
+						currentBlockTimestamp={currentBlockTimestamp}
 						setOpen={setClaimLmrModalOpen}
 					/>
 				}

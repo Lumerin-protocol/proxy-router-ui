@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
-import { ContentState, Receipt, UpdateFormProps } from '../../../../types';
+import { CloseOutType, ContentState, ContractState, HashRentalContract, Receipt, UpdateFormProps } from '../../../../types';
 import { isNoClaim, printError } from '../../../../utils';
 import { Spinner } from '../../Spinner';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 
-export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen }) => {
+export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen, currentBlockTimestamp }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
 
@@ -16,6 +16,18 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 		if (isNoClaim(userAccount, contract.seller as string)) return;
 		setIsConfirmModal(true);
 		setContentState(ContentState.Confirm);
+	};
+
+	const getCloseOutType: (contract: HashRentalContract) => CloseOutType = (contract) => {
+		if (currentBlockTimestamp) {
+			const contractDuration = currentBlockTimestamp - parseInt(contract.timestamp as string);
+			const isComplete = contractDuration >= parseInt(contract.length as string);
+			if (contract.state === ContractState.Available) return CloseOutType.SellerClaimNoClose;
+			if (contract.state === ContractState.Running && !isComplete) return CloseOutType.SellerClaimNoClose;
+			if (contract.state === ContractState.Running && isComplete) return CloseOutType.CloseAndClaimAtCompletion;
+			return CloseOutType.SellerClaimNoClose;
+		}
+		return CloseOutType.SellerClaimNoClose;
 	};
 
 	const claimLmrAsync: () => void = async () => {
@@ -31,16 +43,17 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 
 			try {
 				if (web3) {
-					// TODO: update when contract has claim functionality
-					// const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
-					// const receipt: Receipt = await implementationContractInstance.methods
-					// 	.setContractCloseOut()
-					// 	.send({ from: userAccount, gas: 1000000 });
-					// if (receipt.status) {
-					// 	setContentState(ContentState.Complete);
-					// } else {
-					// 	// TODO: cancellation has failed so surface to user
-					// }
+					const gasLimit = 1000000;
+					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const closeOutType = getCloseOutType(contract);
+					const receipt: Receipt = await implementationContract.methods
+						.setContractCloseOut(closeOutType)
+						.send({ from: userAccount, gas: gasLimit });
+					if (receipt.status) {
+						setContentState(ContentState.Complete);
+					} else {
+						// TODO: claim has failed, surface to user
+					}
 				}
 			} catch (error) {
 				const typedError = error as Error;
@@ -49,9 +62,6 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 			}
 		}
 	};
-
-	// Completed
-	if (contentState === ContentState.Complete) setOpen(false);
 
 	// Create transaction when in pending state
 	useEffect(() => {

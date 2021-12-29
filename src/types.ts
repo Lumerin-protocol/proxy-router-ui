@@ -64,6 +64,7 @@ export enum CloseOutType {
 	SellerClaimNoClose = 1,
 	CloseNoClaimAtCompletion = 2,
 	CloseAndClaimAtCompletion = 3,
+	Revert = 4,
 }
 
 // Interfaces
@@ -155,6 +156,7 @@ export interface UpdateFormProps {
 	userAccount: string;
 	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
+	currentBlockTimestamp?: number;
 }
 
 interface Networks {

@@ -82,7 +82,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 					const receipt = await implementationContract.methods
 						.setUpdateMiningInformation(encryptedBuyerInput)
-						.send({ from: userAccount, gasLimit });
+						.send({ from: userAccount, gas: gasLimit });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
 					} else {

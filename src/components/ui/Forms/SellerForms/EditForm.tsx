@@ -68,7 +68,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 					const priceAdjustedForDecimals = priceBN.mul(web3.utils.toBN(10).pow(decimalsBN));
 					const receipt = await implementationContract.methods
 						.setUpdatePurchaseInformation(priceAdjustedForDecimals, 0, formData.speed, (formData.contractTime as number) * 3600)
-						.send({ from: userAccount, gasLimit });
+						.send({ from: userAccount, gas: gasLimit });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
 					}
