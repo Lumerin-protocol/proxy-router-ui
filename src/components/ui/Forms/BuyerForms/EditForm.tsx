@@ -74,22 +74,21 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 
 		// Pending
 		if (isValid && contentState === ContentState.Pending) {
-			// Order of events
-			// 1. Purchase hashrental contract
-			// 2. Transfer contract price (LMR) to escrow account
-			// 3. Call setFundContract to put contract in running state
-
 			try {
-				const gasLimit = 1000000;
-				// TODO: encrypt poolAddress, username, password
-				const encryptedBuyerInput = toRfc2396(formData);
-				// TODO: call edit function when it's added
-				// if (receipt?.status) {
-				// 	}
-				// } else {
-				// 	// TODO: purchase has failed so surface this to user
-				// }
-				// setContentState(ContentState.Complete);
+				if (web3) {
+					const gasLimit = 1000000;
+					// TODO: encrypt poolAddress, username, password
+					const encryptedBuyerInput = toRfc2396(formData);
+					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const receipt = await implementationContract.methods
+						.setUpdateMiningInformation(encryptedBuyerInput)
+						.send({ from: userAccount, gasLimit });
+					if (receipt?.status) {
+						setContentState(ContentState.Complete);
+					} else {
+						// TODO: edit has failed, surface this to user
+					}
+				}
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
@@ -137,12 +136,12 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirmChanges as string;
-				content = <ConfirmContent data={formData} />;
+				content = <ConfirmContent web3={web3} data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} />;
+				content = <CompletedContent contentState={contentState} isEdit />;
 				break;
 			default:
 				paragraphContent = paragraphText.review as string;

@@ -11,8 +11,8 @@ const buyText = {
 };
 
 const editText = {
-	thankYou: 'Thank you for using the Lumerin Hashpower Marketplace!',
-	view: 'Your changes will will be available shortly.',
+	thankYou: 'Thank you for updating your Hashpower Order.',
+	view: 'Your changes will be effective shortly.',
 };
 
 interface CompletedContentProps {
@@ -26,7 +26,7 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState
 				<div className='flex flex-col items-center'>
 					<FontAwesomeIcon className='my-8' icon={faCheckCircle} size='5x' color={colors['lumerin-aqua']} />
 					<p className='w-4/6 text-center text-xl mb-8'>{isEdit ? editText.thankYou : buyText.thankYou}</p>
-					<p className='w-5/6 text-center text-sm'>{isEdit ? editText.view : buyText.view} You can find details on your order below.</p>
+					<p className='w-5/6 text-center text-sm'>{isEdit ? editText.view : buyText.view}</p>
 				</div>
 			)}
 			{contentState === ContentState.Pending ? (

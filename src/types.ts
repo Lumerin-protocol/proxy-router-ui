@@ -51,6 +51,7 @@ export enum AlertMessage {
 	NoCancelBuyer = 'An order must be running to be cancelled.',
 	InvalidPoolAddress = 'The pool address is invalid.',
 	RemovePort = 'Please remove the port number from the pool address, and enter it in the Port Number field.',
+	ContractIsPurchased = 'The contract has already been purchased, and its status will update shortly.',
 }
 
 export enum SortByType {

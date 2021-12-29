@@ -7,6 +7,7 @@ import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import { classNames, getButton, printError, toRfc2396, truncateAddress } from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
+import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import {
 	AddressLength,
@@ -14,6 +15,7 @@ import {
 	ContentState,
 	ContractInfo,
 	ContractJson,
+	ContractState,
 	FormData,
 	HashRentalContract,
 	InputValuesBuyForm,
@@ -49,6 +51,7 @@ interface BuyFormProps {
 export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, cloneFactoryContract, web3, lumerinbalance, setOpen }) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
+	const [isAvailable, setIsAvailable] = useState<boolean>(true);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
@@ -96,6 +99,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 			if (web3 && contract.price && lumerinbalance < getContractPrice(web3, contract.price as number)) {
 				setAlertOpen(true);
+				setIsAvailable(true);
 				return;
 			}
 
@@ -106,6 +110,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
+					// Check contract is available before increasing allowance
+					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const contractState = await implementationContract.methods.contractState().call();
+					if (contractState !== ContractState.Available) {
+						setIsAvailable(false);
+						setAlertOpen(true);
+						return;
+					}
 					// Approve clone factory contract to transfer LMR on buyer's behalf
 					const networkId = await web3.eth.net.getId();
 					const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
@@ -167,7 +179,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirm as string;
-				content = <ConfirmContent data={formData} />;
+				content = <ConfirmContent web3={web3} data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:
@@ -188,7 +200,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.InsufficientBalance} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={!isAvailable ? AlertMessage.ContractIsPurchased : AlertMessage.InsufficientBalance}
+				open={alertOpen}
+				setOpen={setAlertOpen}
+			/>
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>

@@ -37,8 +37,8 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 
 			try {
 				if (web3) {
-					const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
-					const receipt: Receipt = await implementationContractInstance.methods
+					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const receipt: Receipt = await implementationContract.methods
 						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
 						.send({ from: userAccount, gas: 1000000 });
 					if (receipt.status) {
