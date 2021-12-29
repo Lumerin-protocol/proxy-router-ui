@@ -2,16 +2,19 @@ import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { classNames } from '../../../../utils';
 import { InputValuesCreateForm } from '../../../../types';
+import Web3 from 'web3';
+import { getContractPrice } from '../../../../web3/helpers';
 
 interface ReviewContentProps {
+	web3?: Web3 | undefined;
 	register: UseFormRegister<InputValuesCreateForm>;
 	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	data?: InputValuesCreateForm;
 	isCreate?: boolean;
 }
 
-export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, data, isCreate }) => {
-	const listPrice = data && data.listPrice ? data.listPrice : 0;
+export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, errors, data, isCreate }) => {
+	const listPrice = web3 && data && data.listPrice ? getContractPrice(web3, data.listPrice) : 0;
 
 	return (
 		<React.Fragment>

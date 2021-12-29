@@ -7,6 +7,8 @@ import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
+import { AbiItem } from 'web3-utils';
+import ImplementationContract from '../../../../contracts/Implementation.json';
 
 // Form text setup
 const buttonText: Text = {
@@ -25,7 +27,7 @@ const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (co
 	};
 };
 
-export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, setOpen }) => {
+export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractId, userAccount, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -57,15 +59,20 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 		if (isValid && contentState === ContentState.Pending) {
 			// Create contract
 			try {
-				// TODO: what should the validator fee be?
 				// TODO: convert usd to lmr (aggregate of exchanges?)
-				// const receipt = await marketplaceContract?.methods
-				// 	.setCreateRentalContract(formData.listPrice, 0, formData.speed, (formData.contractTime as number) * 3600, 100)
-				// 	.send({ from: userAccount });
-				// TODO: call edit function(s) in contract when they exist
-				// if (receipt?.status) {
-				// 	setContentState(ContentState.Complete);
-				// }
+				if (web3) {
+					const gasLimit = 1000000;
+					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const decimalsBN = web3.utils.toBN(8);
+					const priceBN = web3.utils.toBN(formData.listPrice as number);
+					const priceAdjustedForDecimals = priceBN.mul(web3.utils.toBN(10).pow(decimalsBN));
+					const receipt = await implementationContract.methods
+						.setUpdatePurchaseInformation(priceAdjustedForDecimals, 0, formData.speed, (formData.contractTime as number) * 3600)
+						.send({ from: userAccount, gasLimit });
+					if (receipt?.status) {
+						setContentState(ContentState.Complete);
+					}
+				}
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
@@ -116,11 +123,11 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} />;
+				content = <CompletedContent contentState={contentState} isEdit />;
 				break;
 			default:
 				buttonContent = buttonText.edit as string;
-				content = <ReviewContent register={register} errors={errors} data={formData} />;
+				content = <ReviewContent web3={web3} register={register} errors={errors} data={formData} />;
 		}
 	};
 	createContent();
