@@ -122,11 +122,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					const networkId = await web3.eth.net.getId();
 					const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
-					const decimalsBN = web3.utils.toBN(8);
-					const amountBN = web3.utils.toBN(formData.price as string);
-					const amountAdjustedForDecimals = amountBN.mul(web3.utils.toBN(10).pow(decimalsBN));
 					const receipt = await lumerinTokenContract.methods
-						.increaseAllowance(cloneFactoryContract?.options.address, amountAdjustedForDecimals)
+						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
 					if (receipt?.status) {
 						// Purchase contract
