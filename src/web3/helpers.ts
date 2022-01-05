@@ -39,15 +39,12 @@ const connectToMetaMaskAsync: (
 	if (provider && provider === ethereum) {
 		// TODO: update to mainnet when in production
 		// Check connected to correct network
-		if ((provider as Ethereum).networkVersion !== '3') setAlertOpen(true);
+		if (ethereum.networkVersion !== '3') setAlertOpen(true);
 		registerEventListeners(setAlertOpen, setWalletText, setAccounts);
-		const web3 = new Web3(provider);
 		try {
-			// Request account access if needed
-			// Interface EthereumProvider is not an exported member
-			// so can't extend it with interface merging to add request()
+			// Expose Accounts
 			await ethereum.request({ method: 'eth_requestAccounts' });
-			// Accounts now exposed
+			const web3 = new Web3(provider);
 			resolve(web3);
 		} catch (error) {
 			const typedError = error as Error;
@@ -83,24 +80,19 @@ const getWeb3Async: (
 
 // Get accounts, web3 and contract instances
 export const getWeb3ResultAsync: (
-	setOpenAlert: React.Dispatch<React.SetStateAction<boolean>>,
+	SetAlertOpen: React.Dispatch<React.SetStateAction<boolean>>,
 	setWalletText: React.Dispatch<React.SetStateAction<string>>,
 	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>
-) => Promise<Web3Result | null> = async (setOpenAlert, setWalletText, setAccounts) => {
+) => Promise<Web3Result | null> = async (SetAlertOpen, setWalletText, setAccounts) => {
 	try {
-		// Get network provider and web3 instance
-		const web3 = await getWeb3Async(setOpenAlert, setWalletText, setAccounts);
-		// Get network info
-		// TODO: use below line once off AWS Ganache instance
+		const web3 = await getWeb3Async(SetAlertOpen, setWalletText, setAccounts);
 		const networkId = await web3.eth.net.getId();
 		const deployedNetwork = (CloneFactory as ContractJson).networks[networkId];
 
-		// Use web3 to get the user's accounts
 		const accounts = await web3.eth.getAccounts();
 		if (accounts.length === 0 || accounts[0] === '') {
-			setOpenAlert(true);
+			SetAlertOpen(true);
 		}
-		// Get the contract instance
 		const contractInstance = new web3.eth.Contract(CloneFactory.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 		return { accounts, contractInstance, web3 };
 	} catch (error) {
