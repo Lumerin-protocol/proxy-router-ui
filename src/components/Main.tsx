@@ -429,12 +429,12 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
-			<div className={classNames(contracts.length === 0 ? 'm-8' : 'hidden')}>
+			<div className={contracts.length === 0 ? 'm-8' : 'hidden'}>
 				<LogoIcon />
 			</div>
 
 			{/* Static sidebar for desktop */}
-			<div className={classNames(contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0')}>
+			<div className={contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0'}>
 				<div className='flex flex-col w-64'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
@@ -473,7 +473,7 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className={classNames(walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center sm:ml-4 xl:ml-0')}>
+					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center sm:ml-4 xl:ml-0'}>
 						<p className='text-lg font-semibold'>{getPageTitle()}</p>
 						<div
 							className='text-black flex items-center px-2 text-sm font-medium rounded-md cursor-pointer'
@@ -483,11 +483,11 @@ export const Main: React.FC = () => {
 							}}
 						>
 							<button
-								className={classNames(
+								className={
 									pathName === PathName.MyContracts
 										? 'w-48 h-12 ml-8 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
 										: 'hidden'
-								)}
+								}
 							>
 								Create Contract
 							</button>
@@ -511,11 +511,7 @@ export const Main: React.FC = () => {
 						) : null}
 					</div>
 				</div>
-				<div
-					className={classNames(
-						pathName === PathName.Marketplace && isAvailableContract ? 'mt-8 flex flex-col items-center text-18' : 'hidden'
-					)}
-				>
+				<div className={pathName === PathName.Marketplace && isAvailableContract ? 'mt-8 flex flex-col items-center text-18' : 'hidden'}>
 					<p>Welcome to the Lumerin Hashrate marketplace.</p>
 					<p> Tap buy to purchase any of the contracts below.</p>
 				</div>

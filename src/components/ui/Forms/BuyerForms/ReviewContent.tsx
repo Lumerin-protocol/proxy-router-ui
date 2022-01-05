@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
-import { classNames, isValidPoolAddress } from '../../../../utils';
+import { isValidPoolAddress } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { Checkbox } from '../../Checkbox';
 
@@ -36,9 +36,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							id='poolAddress'
 							type='text'
 							placeholder='stratum+tcp://IPADDRESS'
-							className={classNames(
-								errors.poolAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
-							)}
+							className={errors.poolAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
 						/>
 					</div>
 					{errors.poolAddress?.type === 'required' && <div className='text-xs text-red-500'>{errors.poolAddress.message}</div>}
@@ -58,9 +56,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							id='portNumber'
 							type='number'
 							placeholder='4242'
-							className={classNames(
-								errors.portNumber ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
-							)}
+							className={errors.portNumber ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
 						/>
 					</div>
 					{errors.portNumber?.type === 'required' && <div className='text-xs text-red-500'>{errors.portNumber.message}</div>}

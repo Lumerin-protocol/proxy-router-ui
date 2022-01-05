@@ -15,7 +15,7 @@ import {
 } from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
-import { classNames, toRfc2396, getButton, isNoEditBuyer, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
+import { toRfc2396, getButton, isNoEditBuyer, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
@@ -160,7 +160,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			<Alert message={AlertMessage.NoEditBuyer} open={alertOpen} setOpen={setAlertOpen} />
 			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
-					<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
+					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
 						<p className='text-3xl'>Edit Order</p>
 						<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
 					</div>

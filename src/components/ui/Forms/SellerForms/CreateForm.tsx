@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
-import { classNames, getButton, printError } from '../../../../utils';
+import { getButton, printError } from '../../../../utils';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
@@ -132,7 +132,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 	return (
 		<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
 			<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
-				<div className={classNames(contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block')}>
+				<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
 					<p className='text-3xl'>Create New Contract</p>
 					<p>Sell your hashpower to the Lumerin Marketplace</p>
 				</div>

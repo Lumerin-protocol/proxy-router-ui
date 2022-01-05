@@ -1,6 +1,5 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
-import { classNames } from '../../../../utils';
 import { InputValuesCreateForm } from '../../../../types';
 import Web3 from 'web3';
 import { getContractPrice } from '../../../../web3/helpers';
@@ -32,9 +31,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							disabled
 							id='walletAddress'
 							type='text'
-							className={classNames(
+							className={
 								errors.walletAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
-							)}
+							}
 						/>
 					</div>
 					{!errors.walletAddress && (
@@ -61,9 +60,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							id='contractTime'
 							type='number'
 							placeholder={data?.contractTime?.toString() ?? '# of hours'}
-							className={classNames(
+							className={
 								errors.contractTime ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
-							)}
+							}
 						/>
 					</div>
 					{!errors.contractTime && <div className='text-xs text-lumerin-helpertext-gray'>Contract Length (hours)</div>}
@@ -83,9 +82,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							id='speed'
 							type='number'
 							placeholder={data?.speed?.toString() ?? '100'}
-							className={classNames(
-								errors.speed ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
-							)}
+							className={errors.speed ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
 						/>
 					</div>
 					{!errors.speed && <div className='text-xs text-lumerin-helpertext-gray'>TH/S</div>}
@@ -107,9 +104,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 								validate: (value) => value !== 0,
 							})}
 							id='listPrice'
-							className={classNames(
-								errors.listPrice ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
-							)}
+							className={errors.listPrice ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
 						>
 							{/* dynamically populate options */}
 							<option value={listPrice}>{listPrice > 0 ? `${listPrice} USD` : 'Select amount in USD'}</option>

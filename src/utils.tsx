@@ -167,11 +167,11 @@ export const getButton: (
 	return contentState === ContentState.Complete ? (
 		<Link
 			to={pathName}
-			className={classNames(
+			className={
 				contentState === ContentState.Complete
 					? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-modal text-sm font-medium text-white bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
 					: 'hidden'
-			)}
+			}
 			onClick={() => setOpen(false)}
 		>
 			<span>{`View ${viewText}`}</span>
