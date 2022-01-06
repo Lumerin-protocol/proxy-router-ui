@@ -19,11 +19,11 @@ const useStyles = createUseStyles({
 			color: 'white',
 		},
 		'& > thead > tr > th:first-child:hover': {
-			backgroundColor: 'inherit',
+			backgroundColor: colors['lumerin-dark-gray'],
 			color: 'inherit',
 		},
 		'& > thead > tr > th:last-child:hover': {
-			backgroundColor: 'inherit',
+			backgroundColor: colors['lumerin-dark-gray'],
 			color: 'inherit',
 		},
 		'& > thead > tr > th:first-child': {
