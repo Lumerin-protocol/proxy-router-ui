@@ -473,7 +473,7 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center sm:ml-4 xl:ml-0'}>
+					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center ml-4 xl:ml-0'}>
 						<p className='text-lg font-semibold'>{getPageTitle()}</p>
 						<div
 							className='text-black flex items-center px-2 text-sm font-medium rounded-md cursor-pointer'

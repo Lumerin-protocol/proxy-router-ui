@@ -13,7 +13,7 @@
 	}
 
 	.btn-connected {
-		@apply w-40 h-12 mt-4 flex items-center justify-center rounded-5 py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-Inter font-medium;
+		@apply w-40 h-12 mt-4 hidden sm:flex items-center justify-center rounded-5 py-2 px-4 bg-lumerin-light-aqua text-sm text-black font-Inter font-medium;
 	}
 
 	.btn-lmr {
@@ -21,7 +21,7 @@
 	}
 
 	.btn-add-lmr {
-		@apply w-40 h-12 mt-4 flex items-center justify-center rounded-5 py-2 px-4 bg-lumerin-aqua text-sm text-white font-Inter font-medium;
+		@apply w-40 h-12 mt-4 hidden md:block items-center justify-center rounded-5 py-2 px-4 bg-lumerin-aqua text-sm text-white font-Inter font-medium;
 	}
 
 	.btn-modal {
