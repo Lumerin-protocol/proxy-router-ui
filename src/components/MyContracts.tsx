@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
-import { ContractData, HashRentalContract, Header, SortByType } from '../types';
+import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
@@ -60,8 +60,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		}
 	}, [mediaQueryList?.matches]);
 
-	const getTimestamp: (timestamp: string) => string = (timestamp) => {
-		if (timestamp === '0') return '_____';
+	const getTimestamp: (timestamp: string, state: string) => string = (timestamp, state) => {
+		if (timestamp === '0' || state === ContractState.Available) return '_____';
 		return DateTime.fromSeconds(parseInt(timestamp)).toFormat('MM/dd/yyyy hh:mm:ss');
 	};
 
@@ -90,7 +90,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 					currentBlockTimestamp
 				);
 				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
-				updatedOrder.timestamp = getTimestamp(contract.timestamp as string);
+				updatedOrder.timestamp = getTimestamp(contract.timestamp as string, updatedOrder.state as string);
 				updatedOrder.editClaim = (
 					<ButtonGroup
 						button1={<EditButton contractId={contract.id as string} setContractId={setContractId} editClickHandler={editClickHandler} />}

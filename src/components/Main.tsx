@@ -125,14 +125,17 @@ export const Main: React.FC = () => {
 	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (address) => {
 		if (web3) {
 			const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], address);
-			const price = await implementationContractInstance.methods.price().call();
-			const speed = await implementationContractInstance.methods.speed().call();
-			const length = await implementationContractInstance.methods.length().call();
-			const buyer = await implementationContractInstance?.methods.buyer().call();
-			const seller = await implementationContractInstance?.methods.seller().call();
-			const timestamp = await implementationContractInstance?.methods.startingBlockTimestamp().call();
-			const state = await implementationContractInstance?.methods.contractState().call();
-			const encryptedPoolData = await implementationContractInstance?.methods.encryptedPoolData().call();
+			const {
+				0: state,
+				1: price,
+				2: limit,
+				3: speed,
+				4: length,
+				5: timestamp,
+				6: buyer,
+				7: seller,
+				8: encryptedPoolData,
+			} = await implementationContractInstance.methods.getPublicVariables().call();
 
 			return {
 				id: address,
@@ -196,10 +199,10 @@ export const Main: React.FC = () => {
 		if (isCorrectNetwork) createContractsAsync();
 	}, [cloneFactoryContract, accounts, web3]);
 
-	// Get contracts at interval of 20 seconds
+	// Get contracts at interval of 5 seconds
 	useInterval(() => {
 		createContractsAsync();
-	}, 60000);
+	}, 5000);
 
 	// Content setup
 	const ActionButton: JSX.Element = (
@@ -496,7 +499,7 @@ export const Main: React.FC = () => {
 					<div className={buttonDisplay}>
 						<button className='btn-lmr pointer-events-none'>
 							<LumerinIcon />
-							<span className='ml-2'>{lumerinBalance} LMR</span>
+							<span className='ml-2'>{lumerinBalance.toLocaleString()} LMR</span>
 						</button>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>

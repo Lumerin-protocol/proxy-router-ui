@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AlertMessage, ContentState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
+import { AlertMessage, CloseOutType, ContentState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
 import { getButton, isNoEditSeller, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
@@ -67,7 +67,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 					const priceBN = web3.utils.toBN(formData.listPrice as number);
 					const priceAdjustedForDecimals = priceBN.mul(web3.utils.toBN(10).pow(decimalsBN));
 					const receipt = await implementationContract.methods
-						.setUpdatePurchaseInformation(priceAdjustedForDecimals, 0, formData.speed, (formData.contractTime as number) * 3600)
+						.setUpdatePurchaseInformation(
+							priceAdjustedForDecimals,
+							0,
+							formData.speed,
+							(formData.contractTime as number) * 3600,
+							CloseOutType.CloseNoClaimAtCompletion
+						)
 						.send({ from: userAccount, gas: gasLimit });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);

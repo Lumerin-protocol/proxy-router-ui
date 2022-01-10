@@ -41,8 +41,8 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 		if (contentState === ContentState.Pending) {
 			if (isNoClaim(userAccount, contract.seller as string)) return;
 
-			try {
-				if (web3) {
+			if (web3) {
+				try {
 					const gasLimit = 1000000;
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 					const closeOutType = getCloseOutType(contract);
@@ -52,13 +52,13 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 					if (receipt.status) {
 						setContentState(ContentState.Complete);
 					} else {
-						// TODO: claim has failed, surface to user
+						setContentState(ContentState.Review);
 					}
+				} catch (error) {
+					const typedError = error as Error;
+					printError(typedError.message, typedError.stack as string);
+					setOpen(false);
 				}
-			} catch (error) {
-				const typedError = error as Error;
-				printError(typedError.message, typedError.stack as string);
-				setOpen(false);
 			}
 		}
 	};
@@ -117,7 +117,7 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 					</div>
 				) : null}
 				{contentState === ContentState.Complete ? (
-					<div className='flex bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
+					<div className='flex bg-white text-lumerin-aqua modal-input-spacing pb-8 border-transparent rounded-5'>
 						<p className='mb-1'>Your LMR tokens have been claimed successfully.</p>
 					</div>
 				) : null}
