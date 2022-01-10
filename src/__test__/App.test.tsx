@@ -6,6 +6,7 @@ import { act, render } from '@testing-library/react';
 import { MyOrders } from '../components/MyOrders';
 import { ContractState, HashRentalContract } from '../types';
 import { MyContracts } from '../components/MyContracts';
+import Web3 from 'web3';
 
 // Testing basic behavior and will add more complex tests as needed
 
@@ -14,6 +15,9 @@ const setContractId = jest.fn();
 const buyClickHandler = jest.fn();
 const editClickHandler = jest.fn();
 const cancelClickHandler = jest.fn();
+const claimLmrClickHandler = jest.fn();
+
+const web3 = new Web3(Web3.givenProvider);
 
 // Top level integration tests
 describe('<App />', () => {
@@ -49,7 +53,7 @@ describe('<Marketplace />', () => {
 		];
 
 		// Act
-		render(<Marketplace contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />);
+		render(<Marketplace web3={web3} contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />);
 
 		// Assert
 		const table = document.getElementById('marketplace');
@@ -78,6 +82,7 @@ describe('<MyOrders />', () => {
 		// Act
 		render(
 			<MyOrders
+				web3={web3}
 				contracts={contracts}
 				userAccount=''
 				currentBlockTimestamp={1000}
@@ -114,12 +119,13 @@ describe('<MyContracts />', () => {
 		// Act
 		render(
 			<MyContracts
+				web3={web3}
 				contracts={contracts}
 				userAccount=''
 				currentBlockTimestamp={1000}
 				setContractId={setContractId}
 				editClickHandler={editClickHandler}
-				cancelClickHandler={cancelClickHandler}
+				claimLmrClickHandler={claimLmrClickHandler}
 			/>
 		);
 
