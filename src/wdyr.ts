@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === 'development') {
 	whyDidYouRender(React, {
 		// trackAllPureComponents: true,
 		// trackHooks: true,
-		// trackExtraHooks: ['useElementDimensions', 'useHttp', 'useHttpV2', 'useReactBridgeSubscription'],
+		// trackExtraHooks: [],
 		// logOnDifferentValues: true,
 	});
 }

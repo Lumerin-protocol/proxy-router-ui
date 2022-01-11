@@ -265,7 +265,7 @@ export const Main: React.FC = () => {
 	const getContent: () => JSX.Element = () => {
 		if (walletText === WalletText.ConnectViaMetaMask) {
 			return (
-				<div className='flex flex-col items-center mt-20 mr-50 gap-4'>
+				<div className='flex flex-col items-center mt-20 xl:mr-50 gap-4 text-center'>
 					<LumerinLandingPage />
 					<p className='mt-4 text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
 					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
@@ -432,7 +432,7 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
-			<div className={contracts.length === 0 ? 'm-8' : 'hidden'}>
+			<div className={contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
 				<LogoIcon />
 			</div>
 

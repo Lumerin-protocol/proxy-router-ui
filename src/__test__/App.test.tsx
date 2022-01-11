@@ -4,7 +4,7 @@ import { Marketplace } from '../components/Marketplace';
 import { renderWithRouter } from './testhelper';
 import { act, render } from '@testing-library/react';
 import { MyOrders } from '../components/MyOrders';
-import { ContractState, HashRentalContract } from '../types';
+import { ContractState, HashRentalContract, PathName } from '../types';
 import { MyContracts } from '../components/MyContracts';
 import Web3 from 'web3';
 
@@ -24,7 +24,7 @@ describe('<App />', () => {
 	it('displays <Main />', async () => {
 		// Act
 		await act(async () => {
-			renderWithRouter(<App />, '/');
+			renderWithRouter(<App />, PathName.Marketplace);
 		});
 
 		// Assert
