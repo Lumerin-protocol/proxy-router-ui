@@ -267,7 +267,7 @@ export const Main: React.FC = () => {
 			return (
 				<div className='flex flex-col items-center mt-20 xl:mr-50 gap-4 text-center'>
 					<LumerinLandingPage />
-					<p className='mt-4 text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
+					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
 					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
 					<div>{ActionButton}</div>
 				</div>
@@ -514,11 +514,15 @@ export const Main: React.FC = () => {
 						) : null}
 					</div>
 				</div>
-				<div className={pathName === PathName.Marketplace && isAvailableContract ? 'mt-8 flex flex-col items-center text-18' : 'hidden'}>
+				<div
+					className={
+						pathName === PathName.Marketplace && isAvailableContract ? 'mt-8 flex flex-col items-center text-sm sm:text-18' : 'hidden'
+					}
+				>
 					<p>Welcome to the Lumerin Hashrate marketplace.</p>
 					<p> Tap buy to purchase any of the contracts below.</p>
 				</div>
-				<main className='mt-10 ml-16 lg:ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent()}</main>
+				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent()}</main>
 			</div>
 		</div>
 	);

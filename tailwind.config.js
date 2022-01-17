@@ -9,6 +9,7 @@ module.exports = {
 				Inter: ['Inter', 'sans-serif'],
 			},
 			fontSize: {
+				xxs: '.625rem',
 				xs: '.8125rem',
 				18: '1.125rem',
 				50: '3.125rem',
@@ -31,6 +32,7 @@ module.exports = {
 				75: '75px',
 			},
 			width: {
+				95: '95%',
 				99: '99%',
 			},
 		},

@@ -93,6 +93,7 @@ const useStyles = createUseStyles({
 		},
 		'& > tbody > tr:last-child > td:last-child': {
 			borderBottomRightRadius: '5px',
+			paddingRight: '0.5rem',
 		},
 	},
 });
@@ -110,8 +111,8 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 	const classes = useStyles();
 
 	return (
-		<table id={id} {...getTableProps()} className={classNames(classes.table, 'w-99 relative border-separate h-10')}>
-			<thead className='bg-lumerin-dark-gray h-16 text-xs'>
+		<table id={id} {...getTableProps()} className={classNames(classes.table, 'w-95 md:w-99 relative border-separate h-10')}>
+			<thead className='bg-lumerin-dark-gray h-16 text-xxs sm:text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
 						{headerGroup.headers.map((column) => (
@@ -136,7 +137,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 						<tr {...row.getRowProps()} className='h-75 text-center'>
 							{row.cells.map((cell) => {
 								return (
-									<td {...cell.getCellProps()} className={`${paddingLeft} text-justify font-semibold text-sm`}>
+									<td {...cell.getCellProps()} className={`${paddingLeft} text-justify font-semibold text-xxs sm:text-sm`}>
 										{cell.render('Cell')}
 									</td>
 								);
