@@ -467,7 +467,7 @@ export const Main: React.FC = () => {
 				</div>
 			</div>
 			<div className='flex flex-col w-0 flex-1 overflow-hidden bg-white'>
-				<div className='relative z-10 flex-shrink-0 flex h-20 bg-white'>
+				<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20 bg-white'}>
 					<button
 						type='button'
 						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden'
