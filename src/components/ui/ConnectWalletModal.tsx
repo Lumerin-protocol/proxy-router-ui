@@ -12,7 +12,7 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, se
 	return (
 		<Transition.Root show={open} as={Fragment}>
 			<Dialog as='div' auto-reopen='true' className='fixed z-10 inset-0 overflow-y-auto' onClose={setOpen}>
-				<div className='flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
+				<div className='flex items-end justify-center items-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
 					<Transition.Child
 						as={Fragment}
 						enter='enter-300'

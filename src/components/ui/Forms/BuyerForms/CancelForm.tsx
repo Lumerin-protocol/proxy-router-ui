@@ -74,7 +74,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 	return (
 		<Fragment>
 			<Alert message={AlertMessage.NoCancelBuyer} open={alertOpen} setOpen={setAlertOpen} />
-			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '26rem', maxWidth: '32rem' }}>
+			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '21rem', maxWidth: '32rem' }}>
 				{!isConfirmModal && contentState === ContentState.Review ? (
 					<Fragment>
 						<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
