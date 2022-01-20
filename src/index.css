@@ -28,6 +28,10 @@
 		@apply border border-transparent rounded-5 shadow-sm;
 	}
 
+	.btn-edit-cancel {
+		@apply w-12 h-4 flex justify-center items-center text-xxs sm:w-20 sm:h-6 sm:text-xs border;
+	}
+
 	.modal-input-spacing {
 		@apply px-8 pt-8;
 	}
@@ -69,5 +73,9 @@
 	/* divs */
 	.confirm-div {
 		@apply flex justify-between my-2;
+	}
+
+	.spinner {
+		@apply flex justify-center mt-36 sm:mt-50 lg:mr-50;
 	}
 }

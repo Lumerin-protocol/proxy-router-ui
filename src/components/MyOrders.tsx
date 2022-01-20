@@ -38,27 +38,28 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	cancelClickHandler,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
+	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
-	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
-	setMediaQueryListOnChangeHandler(mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
+	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
+	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
+	setMediaQueryListOnChangeHandler(mediaQueryListLarge, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
+	setMediaQueryListOnChangeHandler(mediaQueryListMedium, isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow);
 
 	useEffect(() => {
-		if (!mediaQueryList?.matches) {
+		if (!mediaQueryListLarge?.matches) {
 			setIsLargeBreakpointOrGreater(false);
 		} else {
 			setIsLargeBreakpointOrGreater(true);
 		}
-	}, [mediaQueryList?.matches]);
 
-	useEffect(() => {
-		if (!mediaQueryList?.matches) {
-			setIsLargeBreakpointOrGreater(false);
+		if (mediaQueryListMedium?.matches) {
+			setIsMediumBreakpointOrBelow(true);
 		} else {
-			setIsLargeBreakpointOrGreater(true);
+			setIsMediumBreakpointOrBelow(false);
 		}
-	}, [mediaQueryList?.matches]);
+	}, [mediaQueryListLarge?.matches, mediaQueryListMedium?.matches]);
 
 	const getTableData: () => ContractData[] = () => {
 		const buyerOrders = contracts.filter((contract) => contract.buyer === userAccount && contract.state === ContractState.Running);
@@ -85,7 +86,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					currentBlockTimestamp
 				);
 				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
-				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy hh:mm:ss');
+				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy');
 				updatedOrder.editCancel = (
 					<ButtonGroup
 						button1={<EditButton contractId={contract.id as string} setContractId={setContractId} editClickHandler={editClickHandler} />}
@@ -126,18 +127,25 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		customSort: customSort,
 	};
 
-	const columns: Column<CustomTableOptions>[] = useMemo(
-		() => [
-			{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
-			{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
-			{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
-			{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
-			{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
-			{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
-			{ Header: '', accessor: 'editCancel', disableSortBy: true },
-		],
-		[]
-	);
+	const columns: Column<CustomTableOptions>[] = useMemo(() => {
+		return isMediumBreakpointOrBelow
+			? [
+					{ Header: 'CONTRACT', accessor: 'id', disableSortBy: true },
+					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
+					{ Header: 'DURATION', accessor: 'length', sortType: 'customSort' },
+					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
+					{ Header: 'EDIT', accessor: 'editCancel', disableSortBy: true },
+			  ]
+			: [
+					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
+					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
+					{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
+					{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
+					{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
+					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
+					{ Header: 'EDIT', accessor: 'editCancel', disableSortBy: true },
+			  ];
+	}, [isMediumBreakpointOrBelow]);
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
@@ -148,12 +156,12 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	}, 120000);
 
 	return (
-		<div className='flex flex-col'>
+		<div className='flex flex-col items-center'>
 			{data.length > 1 ? (
 				<Table id='myorders' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 			) : null}
 			{data.length === 1 && showSpinner ? (
-				<div className='flex justify-center mt-50 mr-50'>
+				<div className='spinner'>
 					<Spinner />
 				</div>
 			) : null}

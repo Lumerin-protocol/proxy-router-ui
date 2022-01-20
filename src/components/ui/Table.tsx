@@ -107,18 +107,17 @@ interface TableProps {
 
 export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, isLargeBreakpointOrGreater }) => {
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
-	const paddingLeft = isLargeBreakpointOrGreater ? 'pl-8' : 'pl-4';
 	const classes = useStyles();
 
 	return (
 		<table id={id} {...getTableProps()} className={classNames(classes.table, 'w-95 md:w-99 relative border-separate h-10')}>
-			<thead className='bg-lumerin-dark-gray h-16 text-xxs sm:text-xs'>
+			<thead className='bg-lumerin-dark-gray h-50 sm:h-16 text-xxs sm:text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
 						{headerGroup.headers.map((column) => (
 							<th
 								{...column.getHeaderProps(column.getSortByToggleProps())}
-								className={`sticky ${paddingLeft} text-justify top-0 bg-lumerin-dark-gray`}
+								className={`sticky pl-2 md:pl-4 text-justify top-0 bg-lumerin-dark-gray`}
 								style={{
 									width: `${Math.floor(100 / columnCount)}%`,
 									cursor: column.id !== 'id' && column.id !== 'editCancel' && column.id !== 'trade' ? 'pointer' : 'text',
@@ -134,10 +133,10 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 				{rows.map((row) => {
 					prepareRow(row);
 					return (
-						<tr {...row.getRowProps()} className='h-75 text-center'>
+						<tr {...row.getRowProps()} className='h-40 sm:h-75 text-center'>
 							{row.cells.map((cell) => {
 								return (
-									<td {...cell.getCellProps()} className={`${paddingLeft} text-justify font-semibold text-xxs sm:text-sm`}>
+									<td {...cell.getCellProps()} className={`pl-2 md:pl-4 text-justify font-semibold text-xxs sm:text-sm`}>
 										{cell.render('Cell')}
 									</td>
 								);

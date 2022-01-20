@@ -235,9 +235,9 @@ export const getProgressDiv: (state: string, startTime: string, length: number, 
 	}
 
 	return (
-		<div key={percentage.toFixed()} className='flex items-baseline'>
+		<div key={percentage.toFixed()} className='flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row'>
 			<div>{percentage.toFixed()}%</div>
-			<div className='w-1/2 ml-4'>
+			<div className='w-1/2 sm:ml-4'>
 				<ProgressBar width={percentage.toString()} />
 			</div>
 		</div>
@@ -246,16 +246,19 @@ export const getProgressDiv: (state: string, startTime: string, length: number, 
 
 // Get status div
 const getStatusClass: (state: string) => string = (state) => {
-	if (state === ContractState.Available) return 'w-24 bg-lumerin-aqua text-white';
-	if (state === ContractState.Running) return 'w-24 bg-lumerin-green text-white';
-	return 'w-24 bg-lumerin-dark-gray text-black';
+	if (state === ContractState.Available) return 'bg-lumerin-aqua text-white';
+	if (state === ContractState.Running) return 'bg-lumerin-green text-white';
+	return 'bg-lumerin-dark-gray text-black';
 };
 export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 	return (
 		<div key={state}>
-			<span className={classNames(getStatusClass(state), 'flex justify-center items-center h-8 rounded-5')}>
+			<span className={classNames(getStatusClass(state), 'hidden sm:flex w-16 sm:w-24 justify-center items-center h-8 rounded-5')}>
 				<p>{_.capitalize(getStatusText(state))}</p>
 			</span>
+			<p className={classNames(state === ContractState.Running ? 'text-lumerin-green' : 'text-lumerin-aqua', 'sm:hidden')}>
+				{_.capitalize(getStatusText(state))}
+			</p>
 		</div>
 	);
 };

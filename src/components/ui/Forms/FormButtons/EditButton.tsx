@@ -15,7 +15,7 @@ export const EditButton: React.FC<EditButtonProps> = ({ contractId, setContractI
 	return (
 		<button
 			type='button'
-			className='w-20 h-8 rounded-5 p-auto bg-lumerin-dark-gray text-black font-medium'
+			className='btn-edit-cancel border-gray-300 rounded-5 p-auto bg-lumerin-dark-gray text-black font-medium'
 			onClick={(event) => clickHandler(event)}
 		>
 			<span>Edit</span>

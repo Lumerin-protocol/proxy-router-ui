@@ -112,7 +112,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 			) : null}
 			{data.length === 1 && showSpinner ? (
-				<div className='flex justify-center mt-36 sm:mt-50 lg:mr-50'>
+				<div className='spinner'>
 					<Spinner />
 				</div>
 			) : null}

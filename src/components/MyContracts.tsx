@@ -162,7 +162,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 				<Table id='mycontracts' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
 			) : null}
 			{data.length === 1 && showSpinner ? (
-				<div className='flex justify-center mt-50 mr-50'>
+				<div className='spinner'>
 					<Spinner />
 				</div>
 			) : null}
