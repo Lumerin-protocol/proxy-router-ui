@@ -70,7 +70,7 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 
 	return (
 		<Fragment>
-			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '21rem', maxWidth: '32rem' }}>
+			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
 				{!isConfirmModal && contentState === ContentState.Review ? (
 					<Fragment>
 						<div className='flex justify-center bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>

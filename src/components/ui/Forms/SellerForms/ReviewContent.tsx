@@ -94,29 +94,25 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 					<label htmlFor='listPrice' className='block text-sm font-medium text-gray-700'>
 						<div className='flex justify-between'>
 							<p>List Price (LMR) *</p>
-							<p>10 LMR</p>
 						</div>
 					</label>
-					<div className='mt-1'>
-						<select
+					<div className='w-1/2 mt-1 pr-4'>
+						<input
 							{...register('listPrice', {
+								value: !isCreate ? listPrice : undefined,
 								valueAsNumber: true,
 								validate: (value) => value !== 0,
 							})}
+							min='1'
 							id='listPrice'
+							type='number'
+							placeholder='100'
 							className={errors.listPrice ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
-						>
-							{/* dynamically populate options */}
-							<option value={listPrice}>{listPrice > 0 ? `${listPrice} USD` : 'Select amount in USD'}</option>
-							<option value={100}>100 USD</option>
-							<option value={200}>200 USD</option>
-							<option value={300}>300 USD</option>
-						</select>
+						/>
 					</div>
 					{!errors.listPrice && (
 						<div className='text-xs text-lumerin-helpertext-gray'>
 							<p>This is the price you will deploy your contract to the marketplace.</p>
-							<p className='italic'>The average list price is around TBA</p>
 						</div>
 					)}
 					{errors.listPrice?.type === 'validate' && <div className='text-xs text-red-500'>List Price is required</div>}

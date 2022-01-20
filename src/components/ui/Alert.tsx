@@ -11,7 +11,7 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen }) => {
 	return (
 		<Transition.Root show={open} as={Fragment}>
 			<Dialog as='div' auto-reopen='true' className='fixed z-10 inset-0 overflow-y-auto' onClose={setOpen}>
-				<div className='flex items-end justify-center items-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
+				<div className='flex items-center justify-center items-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
 					<Transition.Child
 						as={Fragment}
 						enter='enter-300'
@@ -37,7 +37,7 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen }) => {
 						leaveFrom='enter-to-100'
 						leaveTo='enter-from-95'
 					>
-						<div className='inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6'>
+						<div className='inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6'>
 							<div className='rounded-md bg-red-50 p-4'>
 								<div className='flex'>
 									<button

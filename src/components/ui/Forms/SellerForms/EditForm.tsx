@@ -144,7 +144,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 	return (
 		<Fragment>
 			<Alert message={AlertMessage.NoEditSeller} open={alertOpen} setOpen={setAlertOpen} />
-			<div className={`flex flex-col justify-center w-full font-Inter font-medium`} style={{ minWidth: '21rem', maxWidth: '32rem' }}>
+			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
 				<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
 					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
 						<p className='text-3xl'>Edit Contract</p>
@@ -155,7 +155,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 				<div className='flex gap-6 bg-white p-4 pt-14 rounded-b-5'>
 					<button
 						type='submit'
-						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua hover:bg-lumerin-aqua hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
+						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 						onClick={() => setOpen(false)}
 					>
 						Close

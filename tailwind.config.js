@@ -18,6 +18,13 @@ module.exports = {
 			spacing: {
 				50: '12.5rem',
 			},
+			minWidth: {
+				21: '21rem',
+				26: '26rem',
+			},
+			maxWidth: {
+				32: '32rem',
+			},
 			borderRadius: {
 				5: '5px',
 				30: '30px',
