@@ -41,7 +41,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
-	// Adjust contract address length when breakpoint > lg
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
 	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
 	setMediaQueryListOnChangeHandler(mediaQueryListLarge, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
@@ -153,7 +152,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	// Remove spinner if no orders after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 120000);
+	}, 60000);
 
 	return (
 		<div className='flex flex-col items-center'>

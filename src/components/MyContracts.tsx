@@ -154,7 +154,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 120000);
+	}, 60000);
 
 	return (
 		<div className='flex flex-col'>

@@ -34,7 +34,6 @@ const useStyles = createUseStyles({
 			borderRadius: '0 5px 5px 0',
 		},
 		'& > tbody > tr:first-child': {
-			height: '32px',
 			pointerEvents: 'none',
 		},
 		'& > tbody > tr:first-child > td': {
@@ -130,10 +129,10 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 				))}
 			</thead>
 			<tbody {...getTableBodyProps()} className='divide-y'>
-				{rows.map((row) => {
+				{rows.map((row, index) => {
 					prepareRow(row);
 					return (
-						<tr {...row.getRowProps()} className='h-40 sm:h-75 text-center'>
+						<tr {...row.getRowProps()} className={index === 0 ? 'h-10 sm:h-32 text-center' : 'h-32 sm:h-75 text-center'}>
 							{row.cells.map((cell) => {
 								return (
 									<td {...cell.getCellProps()} className={`pl-2 md:pl-4 text-justify font-semibold text-xxs sm:text-sm`}>

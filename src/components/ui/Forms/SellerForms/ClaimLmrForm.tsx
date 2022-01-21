@@ -111,7 +111,9 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 				{contentState === ContentState.Pending ? (
 					<div className='flex flex-col items-center bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
 						<div className='flex justify-center'>
-							<p className='bg-white modal-input-spacing border-transparent pt-0 mb-8 text-xl'>Your transaction is pending.</p>
+							<p className='bg-white modal-input-spacing border-transparent pt-0 mb-8 text-xl text-center'>
+								Your transaction is pending.
+							</p>
 						</div>
 						<Spinner />
 					</div>

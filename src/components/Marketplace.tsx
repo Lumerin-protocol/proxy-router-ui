@@ -103,7 +103,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 120000);
+	}, 60000);
 
 	// There is always 1 empty contract for styling purposes
 	return (
