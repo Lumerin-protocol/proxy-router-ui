@@ -109,8 +109,8 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 	const classes = useStyles();
 
 	return (
-		<table id={id} {...getTableProps()} className={classNames(classes.table, 'w-95 md:w-99 relative border-separate h-10')}>
-			<thead className='bg-lumerin-dark-gray h-50 sm:h-16 text-xxs sm:text-xs'>
+		<table id={id} {...getTableProps()} className={classNames(classes.table, 'w-95 md:w-99 relative border-separate')}>
+			<thead className='bg-lumerin-dark-gray h-500 sm:h-16 text-xxs sm:text-xs'>
 				{headerGroups.map((headerGroup) => (
 					<tr {...headerGroup.getHeaderGroupProps()}>
 						{headerGroup.headers.map((column) => (
@@ -132,7 +132,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 				{rows.map((row, index) => {
 					prepareRow(row);
 					return (
-						<tr {...row.getRowProps()} className={index === 0 ? 'h-10 sm:h-32 text-center' : 'h-32 sm:h-75 text-center'}>
+						<tr {...row.getRowProps()} className={index === 0 ? 'h-100 sm:h-320 text-center' : 'h-320 sm:h-750 text-center'}>
 							{row.cells.map((cell) => {
 								return (
 									<td {...cell.getCellProps()} className={`pl-2 md:pl-4 text-justify font-semibold text-xxs sm:text-sm`}>
