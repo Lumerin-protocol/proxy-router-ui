@@ -101,10 +101,9 @@ interface TableProps {
 	id: string;
 	tableInstance: TableInstance;
 	columnCount: number;
-	isLargeBreakpointOrGreater: boolean;
 }
 
-export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, isLargeBreakpointOrGreater }) => {
+export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount }) => {
 	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
 	const classes = useStyles();
 
@@ -132,7 +131,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, is
 				{rows.map((row, index) => {
 					prepareRow(row);
 					return (
-						<tr {...row.getRowProps()} className={index === 0 ? 'h-100 sm:h-320 text-center' : 'h-320 sm:h-750 text-center'}>
+						<tr {...row.getRowProps()} className={index === 0 ? 'h-100 sm:h-320 text-center' : 'h-600 sm:h-750 text-center'}>
 							{row.cells.map((cell) => {
 								return (
 									<td {...cell.getCellProps()} className={`pl-2 md:pl-4 text-justify font-semibold text-xxs sm:text-sm`}>

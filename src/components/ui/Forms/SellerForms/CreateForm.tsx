@@ -62,7 +62,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 			// Create contract
 			try {
 				if (web3) {
-					// TODO: update to actual validatory address
+					// TODO: update to actual validator address
 					const validatorAddress = '0x0000000000000000000000000000000000000000';
 					// TODO: convert usd to lmr (aggregate of exchanges?)
 					const decimalsBN = web3.utils.toBN(8);

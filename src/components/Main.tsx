@@ -265,7 +265,7 @@ export const Main: React.FC = () => {
 	const getContent: () => JSX.Element = () => {
 		if (walletText === WalletText.ConnectViaMetaMask) {
 			return (
-				<div className='flex flex-col items-center mt-20 xl:mr-50 gap-4 text-center'>
+				<div className='flex flex-col items-center mt-20 md:mt-40 xl:mr-50 gap-4 text-center'>
 					<LumerinLandingPage />
 					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
 					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
@@ -476,10 +476,12 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center ml-4 xl:ml-0'}>
-						<p className='text-lg font-semibold'>{getPageTitle()}</p>
+					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center md:ml-4 xl:ml-0'}>
+						<p className={classNames(pathName === PathName.MyContracts ? 'hidden xl:block' : '', 'text-lg font-semibold')}>
+							{getPageTitle()}
+						</p>
 						<div
-							className='text-black flex items-center px-2 text-sm font-medium rounded-md cursor-pointer'
+							className='text-black flex items-center px-2 text-xs md:text-sm font-medium rounded-md cursor-pointer'
 							onClick={() => {
 								setCreateModalOpen(true);
 								setSidebarOpen(false);
@@ -488,7 +490,7 @@ export const Main: React.FC = () => {
 							<button
 								className={
 									pathName === PathName.MyContracts
-										? 'w-48 h-12 ml-8 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
+										? 'w-28 h-8 md:w-48 md:h-12 ml-0 xl:ml-8 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
 										: 'hidden'
 								}
 							>
@@ -497,9 +499,9 @@ export const Main: React.FC = () => {
 						</div>
 					</div>
 					<div className={buttonDisplay}>
-						<button className='btn-lmr pointer-events-none'>
+						<button className='btn-lmr pl-0 pointer-events-none'>
 							<LumerinIcon />
-							<span className='ml-2'>{lumerinBalance.toLocaleString()} LMR</span>
+							<span className='ml-2 text-xs md:text-sm'>{lumerinBalance.toLocaleString()} LMR</span>
 						</button>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>

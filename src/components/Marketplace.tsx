@@ -108,9 +108,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 	// There is always 1 empty contract for styling purposes
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? (
-				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
-			) : null}
+			{data.length > 1 ? <Table id='marketplace' tableInstance={tableInstance} columnCount={6} /> : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>
 					<Spinner />

@@ -15,7 +15,7 @@ export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({ contractId, setC
 	return (
 		<button
 			type='button'
-			className='-ml-px inline-flex items-center w-20 h-8 px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50'
+			className='btn-edit-cancel rounded-5 border border-gray-300 bg-white font-medium text-black hover:bg-gray-50'
 			onClick={(event) => clickHandler(event)}
 		>
 			<span>Claim</span>

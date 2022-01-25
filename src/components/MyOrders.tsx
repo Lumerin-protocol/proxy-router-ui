@@ -129,7 +129,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const columns: Column<CustomTableOptions>[] = useMemo(() => {
 		return isMediumBreakpointOrBelow
 			? [
-					{ Header: 'CONTRACT', accessor: 'id', disableSortBy: true },
+					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
 					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
 					{ Header: 'DURATION', accessor: 'length', sortType: 'customSort' },
 					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
@@ -156,9 +156,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? (
-				<Table id='myorders' tableInstance={tableInstance} columnCount={6} isLargeBreakpointOrGreater={isLargeBreakpointOrGreater} />
-			) : null}
+			{data.length > 1 ? <Table id='myorders' tableInstance={tableInstance} columnCount={6} /> : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>
 					<Spinner />
