@@ -476,7 +476,7 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center md:ml-4 xl:ml-0'}>
+					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
 						<p className={classNames(pathName === PathName.MyContracts ? 'hidden xl:block' : '', 'text-lg font-semibold')}>
 							{getPageTitle()}
 						</p>
