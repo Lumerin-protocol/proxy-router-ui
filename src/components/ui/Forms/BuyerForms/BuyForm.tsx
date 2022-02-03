@@ -25,7 +25,7 @@ import {
 import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
-import { getContractPrice } from '../../../../web3/helpers';
+import { divideByDigits } from '../../../../web3/helpers';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -97,7 +97,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			// 2. Transfer contract price (LMR) to escrow account
 			// 3. Call setFundContract to put contract in running state
 
-			if (web3 && contract.price && lumerinbalance < getContractPrice(web3, contract.price as number)) {
+			if (contract.price && lumerinbalance < divideByDigits(contract.price as number)) {
 				setAlertOpen(true);
 				setIsAvailable(true);
 				return;

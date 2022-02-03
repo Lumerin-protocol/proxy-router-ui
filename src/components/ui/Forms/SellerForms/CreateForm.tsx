@@ -5,6 +5,7 @@ import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
 import { getButton, printError } from '../../../../utils';
+import { multiplyByDigits } from '../../../../web3/helpers';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
@@ -65,17 +66,9 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 					// TODO: update to actual validator address
 					const validatorAddress = '0x0000000000000000000000000000000000000000';
 					// TODO: convert usd to lmr (aggregate of exchanges?)
-					const decimalsBN = web3.utils.toBN(8);
-					const priceBN = web3.utils.toBN(formData.listPrice as number);
-					const priceAdjustedForDecimals = priceBN.mul(web3.utils.toBN(10).pow(decimalsBN));
+					const price = multiplyByDigits(formData.listPrice as number);
 					const receipt = await cloneFactoryContract?.methods
-						.setCreateNewRentalContract(
-							priceAdjustedForDecimals,
-							0,
-							formData.speed,
-							(formData.contractTime as number) * 3600,
-							validatorAddress
-						)
+						.setCreateNewRentalContract(price, 0, formData.speed, (formData.contractTime as number) * 3600, validatorAddress)
 						.send({ from: userAccount });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
@@ -130,7 +123,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
 
 	return (
-		<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
+		<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 md:min-w-28 font-Inter font-medium`}>
 			<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
 				<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
 					<p className='text-3xl'>Create New Contract</p>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Web3 from 'web3';
 import { FormData } from '../../../../types';
-import { getContractPrice } from '../../../../web3/helpers';
+import { divideByDigits } from '../../../../web3/helpers';
 
 interface ConfirmContentProps {
 	web3: Web3 | undefined;
@@ -29,7 +29,7 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { po
 			</div>
 			<div className='confirm-div'>
 				<p>Price (LMR)</p>
-				<p>{web3 && price ? getContractPrice(web3, parseInt(price)) : price}</p>
+				<p>{price ? divideByDigits(parseInt(price)) : price}</p>
 			</div>
 			<div className='confirm-div'>
 				<p>Use Titan Validator Service</p>

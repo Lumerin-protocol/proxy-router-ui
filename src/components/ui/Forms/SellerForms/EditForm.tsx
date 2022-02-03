@@ -9,6 +9,7 @@ import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
+import { multiplyByDigits } from '../../../../web3/helpers';
 
 // Form text setup
 const buttonText: Text = {
@@ -63,12 +64,10 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 				if (web3) {
 					const gasLimit = 1000000;
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
-					const decimalsBN = web3.utils.toBN(8);
-					const priceBN = web3.utils.toBN(formData.listPrice as number);
-					const priceAdjustedForDecimals = priceBN.mul(web3.utils.toBN(10).pow(decimalsBN));
+					const price = multiplyByDigits(formData.listPrice as number);
 					const receipt = await implementationContract.methods
 						.setUpdatePurchaseInformation(
-							priceAdjustedForDecimals,
+							price,
 							0,
 							formData.speed,
 							(formData.contractTime as number) * 3600,

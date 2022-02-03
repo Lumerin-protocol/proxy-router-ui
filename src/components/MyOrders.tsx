@@ -11,7 +11,7 @@ import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
-import { getContractPrice } from '../web3/helpers';
+import { divideByDigits } from '../web3/helpers';
 import Web3 from 'web3';
 import _ from 'lodash';
 
@@ -76,7 +76,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						justify='start'
 					/>
 				);
-				updatedOrder.price = web3 ? getContractPrice(web3, updatedOrder.price as number) : updatedOrder.price;
+				updatedOrder.price = divideByDigits(updatedOrder.price as number);
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(
 					updatedOrder.state as string,

@@ -12,7 +12,7 @@ import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { ClaimLmrButton } from './ui/Forms/FormButtons/ClaimLmrButton';
 import Web3 from 'web3';
-import { getContractPrice } from '../web3/helpers';
+import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -81,7 +81,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 						justify='start'
 					/>
 				);
-				updatedOrder.price = web3 ? getContractPrice(web3, updatedOrder.price as number) : updatedOrder.price;
+				updatedOrder.price = divideByDigits(updatedOrder.price as number);
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress =
 					updatedOrder.state === ContractState.Available

@@ -1,15 +1,26 @@
-import { getContractPrice } from '../web3/helpers';
-import Web3 from 'web3';
+import { divideByDigits, multiplyByDigits } from '../web3/helpers';
 
 describe('helpers', () => {
-	describe('getContractPrice', () => {
+	describe('multiplyByDigits', () => {
 		it('works', () => {
 			// Arrange
-			const web3 = new Web3(Web3.givenProvider);
+			const price = 1;
+
+			// Act
+			const result = multiplyByDigits(price);
+
+			// Assert
+			const expectedPrice = 100000000;
+			expect(result).toBe(expectedPrice);
+		});
+	});
+	describe('divideByDigits', () => {
+		it('works', () => {
+			// Arrange
 			const price = 100000000;
 
 			// Act
-			const result = getContractPrice(web3, price);
+			const result = divideByDigits(price);
 
 			// Assert
 			const expectedPrice = 1;

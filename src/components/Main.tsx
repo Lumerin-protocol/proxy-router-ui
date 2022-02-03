@@ -512,10 +512,16 @@ export const Main: React.FC = () => {
 						</div>
 					</div>
 					<div className={buttonDisplay}>
-						<button className='btn-lmr pl-0 pointer-events-none'>
-							<LumerinIcon />
-							<span className='ml-2 text-xs md:text-sm'>{lumerinBalance.toLocaleString()} LMR</span>
-						</button>
+						<div className='flex'>
+							<div className='flex items-center'>
+								<LumerinIcon />
+							</div>
+							<button className='btn-lmr pl-0 pointer-events-none'>
+								<span className='ml-2 text-xs md:text-sm'>
+									{lumerinBalance.toLocaleString('en-US', { maximumFractionDigits: 8 })} LMR
+								</span>
+							</button>
+						</div>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
 								<button className='btn-add-lmr p-0 mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>

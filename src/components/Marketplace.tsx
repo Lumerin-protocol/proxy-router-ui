@@ -9,7 +9,7 @@ import { Spinner } from './ui/Spinner';
 import { ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { useInterval } from './hooks/useInterval';
 import Web3 from 'web3';
-import { getContractPrice } from '../web3/helpers';
+import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
@@ -54,7 +54,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 						justify='start'
 					/>
 				);
-				updatedContract.price = web3 ? getContractPrice(web3, updatedContract.price as number) : updatedContract.price;
+				updatedContract.price = divideByDigits(updatedContract.price as number);
 				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />

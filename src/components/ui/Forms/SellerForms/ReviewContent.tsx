@@ -2,7 +2,7 @@ import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { InputValuesCreateForm } from '../../../../types';
 import Web3 from 'web3';
-import { getContractPrice } from '../../../../web3/helpers';
+import { divideByDigits } from '../../../../web3/helpers';
 
 interface ReviewContentProps {
 	web3?: Web3 | undefined;
@@ -13,7 +13,7 @@ interface ReviewContentProps {
 }
 
 export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, errors, data, isCreate }) => {
-	const listPrice = web3 && data && data.listPrice ? getContractPrice(web3, data.listPrice) : 0;
+	const listPrice = data && data.listPrice ? divideByDigits(data.listPrice) : 0;
 
 	return (
 		<React.Fragment>
