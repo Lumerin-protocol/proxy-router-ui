@@ -39,7 +39,6 @@ const connectToMetaMaskAsync: (
 	if (provider && provider === ethereum) {
 		// TODO: update to mainnet when in production
 		// Check connected to correct network
-		if (ethereum.networkVersion !== '3') setAlertOpen(true);
 		registerEventListeners(setAlertOpen, setWalletText, setAccounts);
 		try {
 			// Expose Accounts

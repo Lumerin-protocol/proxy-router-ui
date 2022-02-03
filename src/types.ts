@@ -44,7 +44,7 @@ export enum PathName {
 
 export enum AlertMessage {
 	NotConnected = 'MetaMask is not connected',
-	WrongNetwork = 'Please connect to the Ropsten testnet.',
+	WrongNetwork = 'Click to connect to the Ropsten testnet.',
 	InsufficientBalance = 'Insufficient LMR balance.',
 	NoEditSeller = 'A running contract cannot be edited by the seller.',
 	NoEditBuyer = 'An order must be running to be edited.',

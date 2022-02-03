@@ -5,9 +5,10 @@ interface AlertProps {
 	message: string;
 	open: boolean;
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	onClick?: () => void;
 }
 
-export const Alert: React.FC<AlertProps> = ({ message, open, setOpen }) => {
+export const Alert: React.FC<AlertProps> = ({ message, open, setOpen, onClick }) => {
 	return (
 		<Transition.Root show={open} as={Fragment}>
 			<Dialog as='div' auto-reopen='true' className='fixed z-10 inset-0 overflow-y-auto' onClose={setOpen}>
@@ -43,7 +44,7 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen }) => {
 									<button
 										type='button'
 										className='inline-flex justify-center w-full bg-red-50 text-base text-color-white font-medium'
-										onClick={() => {}}
+										onClick={onClick ? () => onClick() : () => {}}
 									>
 										<div className='ml-3'>
 											<h3 className='text-sm font-medium text-red-600'>{message}</h3>

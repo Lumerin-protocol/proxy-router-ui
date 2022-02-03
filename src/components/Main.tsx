@@ -75,6 +75,7 @@ export const Main: React.FC = () => {
 	const connectWallet: () => void = async () => {
 		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText, setAccounts);
 		if (web3Result) {
+			if (ethereum.networkVersion !== '3') setAlertOpen(true);
 			const { accounts, contractInstance, web3 } = web3Result;
 			setAccounts(accounts);
 			setCloneFactoryContract(contractInstance);
@@ -161,13 +162,10 @@ export const Main: React.FC = () => {
 			if (contract) hashRentalContracts.push(contract);
 		}
 
-		// update contracts if deep equality is false
-		if (!_.isEqual(contracts, hashRentalContracts)) {
-			setContracts(hashRentalContracts);
-		}
+		// Update contracts if deep equality is false
+		if (!_.isEqual(contracts, hashRentalContracts)) setContracts(hashRentalContracts);
 	};
 
-	// Orders setup
 	const createContractsAsync: () => void = async () => {
 		try {
 			const addresses: string[] = await cloneFactoryContract?.methods.getContractList().call();
@@ -201,7 +199,7 @@ export const Main: React.FC = () => {
 
 	// Get contracts at interval of 5 seconds
 	useInterval(() => {
-		createContractsAsync();
+		if (isCorrectNetwork) createContractsAsync();
 	}, 5000);
 
 	// Content setup
@@ -287,11 +285,26 @@ export const Main: React.FC = () => {
 		return '';
 	};
 
+	const changeNetworkAsync: () => void = async () => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		await ethereum.request({
+			method: 'wallet_switchEthereumChain',
+			params: [{ chainId: web3?.utils.toHex(3) }],
+		});
+		setAlertOpen(false);
+		connectWallet();
+	};
+
 	const isAvailableContract: boolean = contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
-			<Alert message={isCorrectNetwork ? AlertMessage.NotConnected : AlertMessage.WrongNetwork} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={isCorrectNetwork ? AlertMessage.NotConnected : AlertMessage.WrongNetwork}
+				open={alertOpen}
+				setOpen={setAlertOpen}
+				onClick={changeNetworkAsync}
+			/>
 			<Modal
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
