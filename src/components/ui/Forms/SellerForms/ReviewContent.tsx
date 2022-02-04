@@ -55,8 +55,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 								value: !isCreate && data ? data.contractTime : undefined,
 								required: 'Contract Time is required',
 								valueAsNumber: true,
+								validate: (value) => {
+									if (value || value === 0) return value >= 24;
+								},
 							})}
-							min='1'
+							min='24'
 							id='contractTime'
 							type='number'
 							placeholder={data?.contractTime?.toString() ?? '# of hours'}
@@ -67,6 +70,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 					</div>
 					{!errors.contractTime && <div className='text-xs text-lumerin-helpertext-gray'>Contract Length (hours)</div>}
 					{errors.contractTime?.type === 'required' && <div className='text-xs text-red-500'>{errors.contractTime.message}</div>}
+					{errors.contractTime?.type === 'validate' && <div className='text-xs text-red-500'>Minimim time is 24 hours</div>}
 				</div>
 
 				<div className='bg-white p-4 p-4'>
@@ -77,6 +81,10 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 						<input
 							{...register('speed', {
 								value: !isCreate && data ? data.speed : undefined,
+								required: 'Speed is required',
+								validate: (value) => {
+									if (value || value === 0) return value > 0;
+								},
 							})}
 							min='1'
 							id='speed'
@@ -86,6 +94,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 						/>
 					</div>
 					{!errors.speed && <div className='text-xs text-lumerin-helpertext-gray'>TH/S</div>}
+					{errors.speed?.type === 'required' && <div className='text-xs text-red-500'>{errors.speed.message}</div>}
 					{errors.speed?.type === 'validate' && <div className='text-xs text-red-500'>Speed is required</div>}
 				</div>
 			</div>
@@ -101,7 +110,10 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							{...register('listPrice', {
 								value: !isCreate ? listPrice : undefined,
 								valueAsNumber: true,
-								validate: (value) => value !== 0,
+								required: 'Price is required',
+								validate: (value) => {
+									if (value || value === 0) return Number.isInteger(value) && value !== 0;
+								},
 							})}
 							min='1'
 							id='listPrice'
@@ -115,7 +127,8 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							<p>This is the price you will deploy your contract to the marketplace.</p>
 						</div>
 					)}
-					{errors.listPrice?.type === 'validate' && <div className='text-xs text-red-500'>List Price is required</div>}
+					{errors.listPrice?.type === 'required' && <div className='text-xs text-red-500'>{errors.listPrice.message}</div>}
+					{errors.listPrice?.type === 'validate' && <div className='text-xs text-red-500'>Price must be a whole number</div>}
 				</div>
 			</div>
 		</React.Fragment>
