@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Column, useTable, useSortBy, SortByFn, Row } from 'react-table';
+import { Column, useTable, useSortBy, SortByFn, Row, usePagination } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { Table } from './ui/Table';
@@ -98,7 +98,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 	);
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
-	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
+	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes, initialState: { pageSize: 5 } }, useSortBy, usePagination);
 
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
@@ -108,7 +108,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 	// There is always 1 empty contract for styling purposes
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? <Table id='marketplace' tableInstance={tableInstance} columnCount={6} /> : null}
+			{data.length > 1 ? <Table id='marketplace' tableInstance={tableInstance} columnCount={6} pagination /> : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>
 					<Spinner />

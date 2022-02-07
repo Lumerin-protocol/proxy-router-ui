@@ -28,13 +28,6 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 
-interface Navigation {
-	name: string;
-	to: string;
-	icon: JSX.Element;
-	current: boolean;
-}
-
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
 	// State and constants
@@ -62,6 +55,12 @@ export const Main: React.FC = () => {
 	const isCorrectNetwork = ethereum?.networkVersion === '3';
 
 	// Navigation setup
+	interface Navigation {
+		name: string;
+		to: string;
+		icon: JSX.Element;
+		current: boolean;
+	}
 	const pathName = window.location.pathname;
 	const navigation: Navigation[] = [
 		{ name: 'Marketplace', to: PathName.Marketplace, icon: <MarketplaceIcon />, current: pathName === PathName.Marketplace },
@@ -188,10 +187,6 @@ export const Main: React.FC = () => {
 		}
 	};
 
-	useEffect(() => {
-		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
-	}, [web3, accounts]);
-
 	// Set contracts and orders once cloneFactoryContract exists
 	useEffect(() => {
 		if (isCorrectNetwork) createContractsAsync();
@@ -201,6 +196,10 @@ export const Main: React.FC = () => {
 	useInterval(() => {
 		if (isCorrectNetwork) createContractsAsync();
 	}, 5000);
+
+	useEffect(() => {
+		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
+	}, [web3, accounts]);
 
 	// Content setup
 	const ActionButton: JSX.Element = (
