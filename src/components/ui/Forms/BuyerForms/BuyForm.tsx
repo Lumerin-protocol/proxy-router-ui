@@ -5,7 +5,7 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { getButton, printError, toRfc2396, truncateAddress } from '../../../../utils';
+import { encryptFormDataAsync, getButton, printError, truncateAddress } from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -26,6 +26,15 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
+import { Transaction } from 'web3-core';
+declare module 'web3-core' {
+	interface Transaction {
+		r: string;
+		s: string;
+		v: string;
+		chainId: string;
+	}
+}
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -70,7 +79,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			price: contract.price as string,
 		};
 	};
-	// Controls contentState and creating a transaction
+
 	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
 		// Review
 		if (isValid && contentState === ContentState.Review) {
@@ -118,19 +127,30 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						setAlertOpen(true);
 						return;
 					}
+
 					// Approve clone factory contract to transfer LMR on buyer's behalf
 					const networkId = await web3.eth.net.getId();
 					const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
-					const receipt = await lumerinTokenContract.methods
+					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
 					if (receipt?.status) {
 						// Purchase contract
-						// TODO: encrypt poolAddress, username, password
-						const encryptedBuyerInput = toRfc2396(formData);
+						// Extract transaction from event to generate seller public key to use for encryption
+						const events = await cloneFactoryContract?.getPastEvents('contractCreated', {
+							filter: { _address: contract.id as string },
+							fromBlock: 0,
+							toBlock: 'latest',
+						});
+						if (!events || events.length === 0) return;
+						const transactionHash = events[0].transactionHash;
+						const transaction: Transaction = await web3.eth.getTransaction(transactionHash);
+						const testPublicKey =
+							'04be310f89a9689ee6994b7d4eab576b7a9dba3bf58b6055a0e04e04f1c7ba96c357012d0c121ca95be8ccfb311f6d869a5aa6988788895d55b4c88f50d64e8bbf';
+						const encryptedBuyerInput = await encryptFormDataAsync(testPublicKey, formData);
 						const receipt: Receipt = await cloneFactoryContract?.methods
-							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
+							.setPurchaseRentalContract(contract.id, encryptedBuyerInput.toString('hex'))
 							.send(sendOptions);
 						if (!receipt.status) {
 							// TODO: purchasing contract has failed, surface to user

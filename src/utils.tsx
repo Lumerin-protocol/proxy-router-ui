@@ -14,6 +14,7 @@ import {
 import { Link } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
+import { encrypt } from 'ecies-geth';
 import _ from 'lodash';
 
 // STRING HELPERS
@@ -267,4 +268,27 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 // Print error message and stacktrace
 export const printError: (message: string, stacktrace: string) => void = (message, stacktrace) => {
 	console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
+};
+
+// Encryption helpers
+// https://gist.github.com/lancecarlson/6003283
+export const hexToBytes: (hex: string) => number[] = (hex) => {
+	const bytes = [];
+	for (let c = 0; c < hex.length; c += 2) bytes.push(parseInt(hex.substring(c, c + 2), 16));
+	return bytes;
+};
+
+// https://gist.github.com/lancecarlson/6003283
+export const bytesToHex: (bytes: number[]) => string = (bytes) => {
+	const hex = [];
+	for (let i = 0; i < bytes.length; i++) {
+		let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+		hex.push((current >>> 4).toString(16)); // upper nibble to string
+		hex.push((current & 0xf).toString(16)); // lower nibble to string
+	}
+	return hex.join('');
+};
+
+export const encryptFormDataAsync: (publicKey: string, formData: FormData) => Promise<Buffer> = async (publicKey, formData) => {
+	return await encrypt(Buffer.from(hexToBytes(publicKey)), Buffer.from(toRfc2396(formData) as string));
 };
