@@ -1,16 +1,6 @@
 import { AddressLength, FormData, InputValuesBuyForm } from '../types';
-import {
-	truncateAddress,
-	classNames,
-	getLengthDisplay,
-	toInputValuesBuyForm,
-	isValidPoolAddress,
-	toRfc2396,
-	hexToBytes,
-	encryptFormDataAsync,
-} from '../utils';
+import { truncateAddress, classNames, getLengthDisplay, toInputValuesBuyForm, isValidPoolAddress, toRfc2396, hexToBytes } from '../utils';
 import { bufferToHex } from 'ethereumjs-util';
-import { decrypt } from 'ecies-geth';
 const elliptic_1 = require('elliptic');
 const ec = new elliptic_1.ec('secp256k1');
 
@@ -163,29 +153,6 @@ describe('utils', () => {
 
 			// Assert
 			expect(result).toBe(publicKey);
-		});
-	});
-
-	describe('encryptFormDataAsync', () => {
-		it('works', async () => {
-			// Arrange
-			const formData: FormData = {
-				poolAddress: 'stratum+tcp://127.0.0.1',
-				portNumber: '12',
-				username: 'test',
-				password: '',
-				withValidator: false,
-				speed: '100',
-				price: '10000000000',
-			};
-			const message = toRfc2396(formData);
-
-			// Act
-			const encryptedFormData = await encryptFormDataAsync(publicKey, formData);
-			const result = await decrypt(Buffer.from(hexToBytes(privateKey)), encryptedFormData);
-
-			// Assert
-			expect(result).toBe(message);
 		});
 	});
 });

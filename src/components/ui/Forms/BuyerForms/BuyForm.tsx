@@ -5,7 +5,7 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { encryptFormDataAsync, getButton, printError, truncateAddress } from '../../../../utils';
+import { getButton, getPublicKeyFromTransactionAsync, hexToBytes, printError, toRfc2396, truncateAddress } from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -26,7 +26,7 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
-import { Transaction } from 'web3-core';
+import { decrypt, encrypt } from 'ecies-geth';
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
@@ -119,6 +119,18 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
+					const events = await cloneFactoryContract?.getPastEvents('contractCreated', {
+						filter: { _address: contract.id as string },
+						fromBlock: 0,
+						toBlock: 'latest',
+					});
+					if (!events || events.length === 0) return;
+					const transactionHash = events[0].transactionHash;
+					const publicKey = await getPublicKeyFromTransactionAsync(web3, transactionHash);
+					const publicKeyHex = `04${publicKey.toString('hex')}`;
+					const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
+					const decryptedInput = await decrypt(Buffer.from(hexToBytes('')), encryptedBuyerInput);
+
 					// Check contract is available before increasing allowance
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 					const contractState = await implementationContract.methods.contractState().call();
@@ -145,10 +157,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						});
 						if (!events || events.length === 0) return;
 						const transactionHash = events[0].transactionHash;
-						const transaction: Transaction = await web3.eth.getTransaction(transactionHash);
-						const testPublicKey =
-							'04be310f89a9689ee6994b7d4eab576b7a9dba3bf58b6055a0e04e04f1c7ba96c357012d0c121ca95be8ccfb311f6d869a5aa6988788895d55b4c88f50d64e8bbf';
-						const encryptedBuyerInput = await encryptFormDataAsync(testPublicKey, formData);
+						const publicKey = await getPublicKeyFromTransactionAsync(web3, transactionHash);
+						const publicKeyHex = `04${publicKey.toString('hex')}`;
+						const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
 						const receipt: Receipt = await cloneFactoryContract?.methods
 							.setPurchaseRentalContract(contract.id, encryptedBuyerInput.toString('hex'))
 							.send(sendOptions);

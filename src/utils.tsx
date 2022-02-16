@@ -14,8 +14,10 @@ import {
 import { Link } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
-import { encrypt } from 'ecies-geth';
 import _ from 'lodash';
+import { Transaction as EthJsTx } from 'ethereumjs-tx';
+import * as ethJsUtil from 'ethereumjs-util';
+import Web3 from 'web3';
 
 // STRING HELPERS
 // Get address based on desired length
@@ -289,6 +291,37 @@ export const bytesToHex: (bytes: number[]) => string = (bytes) => {
 	return hex.join('');
 };
 
-export const encryptFormDataAsync: (publicKey: string, formData: FormData) => Promise<Buffer> = async (publicKey, formData) => {
-	return await encrypt(Buffer.from(hexToBytes(publicKey)), Buffer.from(toRfc2396(formData) as string));
+const getV: (v: string, chainId: number, web3: Web3) => string = (v, chainId, web3) => {
+	switch (v) {
+		case '0x0':
+		case '0x1':
+			return web3.utils.toHex(parseInt(v, 16) + chainId * 2 + 35);
+		default:
+			return v;
+	}
+};
+
+export const getPublicKeyFromTransactionAsync: (web3: Web3, transactionHash: string) => Promise<Buffer> = async (web3, transactionHash) => {
+	// const txHash = '0xaa1a88c927c6ef6b773fe32f9c8d3986cd7b78250a4a55a4ff5956526678d74e';
+	const transaction = await web3.eth.getTransaction(transactionHash);
+	const chainId = 3;
+	const ethTx = new EthJsTx(
+		{
+			nonce: transaction.nonce,
+			gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
+			gasLimit: transaction.gas,
+			to: transaction.to as string,
+			value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
+			data: transaction.input,
+			r: transaction.r,
+			s: transaction.s,
+			v: getV(transaction.v, chainId, web3),
+		},
+		{
+			chain: chainId,
+			hardfork: 'spuriousDragon',
+		}
+	);
+	const publicKey = ethTx.getSenderPublicKey();
+	return publicKey;
 };
