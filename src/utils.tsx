@@ -3,6 +3,7 @@ import {
 	AddressLength,
 	ContentState,
 	ContractState,
+	Ethereum,
 	FormData,
 	HashRentalContract,
 	InputValuesBuyForm,
@@ -15,9 +16,17 @@ import { Link } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
-import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import * as ethJsUtil from 'ethereumjs-util';
 import Web3 from 'web3';
+import { Transaction as EthJsTx } from 'ethereumjs-tx';
+declare module 'web3-core' {
+	interface Transaction {
+		r: string;
+		s: string;
+		v: string;
+		chainId: string;
+	}
+}
 
 // STRING HELPERS
 // Get address based on desired length
@@ -301,27 +310,52 @@ const getV: (v: string, chainId: number, web3: Web3) => string = (v, chainId, we
 	}
 };
 
-export const getPublicKeyFromTransactionAsync: (web3: Web3, transactionHash: string) => Promise<Buffer> = async (web3, transactionHash) => {
-	// const txHash = '0xaa1a88c927c6ef6b773fe32f9c8d3986cd7b78250a4a55a4ff5956526678d74e';
-	const transaction = await web3.eth.getTransaction(transactionHash);
-	const chainId = 3;
-	const ethTx = new EthJsTx(
-		{
-			nonce: transaction.nonce,
-			gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
-			gasLimit: transaction.gas,
-			to: transaction.to as string,
-			value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
-			data: transaction.input,
-			r: transaction.r,
-			s: transaction.s,
-			v: getV(transaction.v, chainId, web3),
-		},
-		{
-			chain: chainId,
-			hardfork: 'spuriousDragon',
-		}
-	);
-	const publicKey = ethTx.getSenderPublicKey();
-	return publicKey;
+export const getPublicKeyFromTransactionAsync: (web3: Web3, transactionHash: string) => Promise<Buffer | undefined> = async (
+	web3,
+	transactionHash
+) => {
+	try {
+		const transaction = await web3.eth.getTransaction(transactionHash);
+		const chainId = 3;
+		const ethTx = new EthJsTx(
+			{
+				nonce: transaction.nonce,
+				gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
+				gasLimit: transaction.gas,
+				to: transaction.to as string,
+				value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
+				data: transaction.input,
+				r: transaction.r,
+				s: transaction.s,
+				v: getV(transaction.v, chainId, web3),
+			},
+			{
+				chain: chainId,
+			}
+		);
+		const publicKey = ethTx.getSenderPublicKey();
+		return publicKey;
+	} catch (error) {
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
+	}
+};
+
+export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = async (from) => {
+	const ethereum = window.ethereum as Ethereum;
+	const message =
+		'Sign to generate your public key which will be used by the buyer to encrypt their destination details. No sensitive data is exposed by signing.';
+	try {
+		const msg = `0x${Buffer.from(message, 'utf8').toString('hex')}`;
+		const sign = await ethereum.request({
+			method: 'personal_sign',
+			params: [msg, from, 'password'],
+		});
+		const msgHash = ethJsUtil.hashPersonalMessage(ethJsUtil.toBuffer(msg));
+		const sigParams = ethJsUtil.fromRpcSig(sign as unknown as string);
+		return ethJsUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
+	} catch (error) {
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
+	}
 };
