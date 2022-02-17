@@ -17,14 +17,14 @@ import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
-import Web3 from 'web3';
+import { Transaction as Web3Transaction } from 'web3-eth';
 import { Transaction as EthJsTx } from 'ethereumjs-tx';
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
 		s: string;
 		v: string;
-		chainId: string;
+		chainId?: string;
 	}
 }
 
@@ -300,45 +300,36 @@ export const bytesToHex: (bytes: number[]) => string = (bytes) => {
 	return hex.join('');
 };
 
-const getV: (v: string, chainId: number, web3: Web3) => string = (v, chainId, web3) => {
+const getV: (v: string, chainId: number) => string = (v, chainId) => {
 	switch (v) {
 		case '0x0':
 		case '0x1':
-			return web3.utils.toHex(parseInt(v, 16) + chainId * 2 + 35);
+			return `0x${(parseInt(v, 16) + chainId * 2 + 35).toString(16)}`;
 		default:
 			return v;
 	}
 };
 
-export const getPublicKeyFromTransactionAsync: (web3: Web3, transactionHash: string) => Promise<Buffer | undefined> = async (
-	web3,
-	transactionHash
-) => {
-	try {
-		const transaction = await web3.eth.getTransaction(transactionHash);
-		const chainId = 3;
-		const ethTx = new EthJsTx(
-			{
-				nonce: transaction.nonce,
-				gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
-				gasLimit: transaction.gas,
-				to: transaction.to as string,
-				value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
-				data: transaction.input,
-				r: transaction.r,
-				s: transaction.s,
-				v: getV(transaction.v, chainId, web3),
-			},
-			{
-				chain: chainId,
-			}
-		);
-		const publicKey = ethTx.getSenderPublicKey();
-		return publicKey;
-	} catch (error) {
-		const typedError = error as Error;
-		printError(typedError.message, typedError.stack as string);
-	}
+export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (transaction) => {
+	const chainId = 3; // Ropsten
+	const ethTx = new EthJsTx(
+		{
+			nonce: transaction.nonce,
+			gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
+			gasLimit: transaction.gas,
+			to: transaction.to as string,
+			value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
+			data: transaction.input,
+			r: transaction.r,
+			s: transaction.s,
+			v: getV(transaction.v, chainId),
+		},
+		{
+			chain: chainId,
+		}
+	);
+	const publicKey = ethTx.getSenderPublicKey();
+	return publicKey;
 };
 
 export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = async (from) => {
