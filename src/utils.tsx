@@ -69,23 +69,6 @@ export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispa
 	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
 };
 
-export const toInputValuesBuyForm: (encryptedPoolData: string) => InputValuesBuyForm = (encryptedPoolData) => {
-	const regex = /(^.*:\/\/)(.*):(.*)@(.*):(\d+)/;
-	const groups = encryptedPoolData.match(regex) as RegExpMatchArray;
-	const protocol = groups[1];
-	const username = groups[2];
-	const password = groups[3];
-	const poolAddress = `${protocol}${groups[4]}`;
-	const portNumber = groups[5];
-
-	return {
-		poolAddress,
-		portNumber,
-		username,
-		password,
-	};
-};
-
 // HTML HELPERS
 // Dynamically set classes for html elements
 export const classNames: (...classes: string[]) => string = (...classes) => {

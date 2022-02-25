@@ -9,9 +9,8 @@ interface ReviewContentProps {
 	register: UseFormRegister<InputValuesBuyForm>;
 	errors: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	isEdit?: boolean;
-	data?: InputValuesBuyForm;
 }
-export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit, data }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit }) => {
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	const checkboxLegend = 'Validator';
@@ -29,7 +28,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('poolAddress', {
-								value: data?.poolAddress ?? '',
+								value: '',
 								required: 'Pool Address is required',
 								validate: (poolAddress) => isValidPoolAddress(poolAddress as string, setAlertOpen),
 							})}
@@ -50,7 +49,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 					<div className='mt-1'>
 						<input
 							{...register('portNumber', {
-								value: data?.portNumber ?? '',
+								value: '',
 								required: 'Port Number is required',
 							})}
 							id='portNumber'
@@ -69,7 +68,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 				<div className='mt-1'>
 					<input
 						{...register('username', {
-							value: data?.username ?? '',
+							value: '',
 							required: 'Username is required',
 						})}
 						id='username'
@@ -86,7 +85,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 				</label>
 				<div className='mt-1'>
 					<input
-						{...register('password', { value: data?.password ?? '' })}
+						{...register('password', { value: '' })}
 						id='password'
 						type='password'
 						placeholder='password'

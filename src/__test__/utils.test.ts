@@ -1,15 +1,5 @@
 import { AddressLength, FormData, InputValuesBuyForm } from '../types';
-import {
-	truncateAddress,
-	classNames,
-	getLengthDisplay,
-	toInputValuesBuyForm,
-	isValidPoolAddress,
-	toRfc2396,
-	hexToBytes,
-	getPublicKeyFromTransactionAsync,
-	getPublicKeyFromTransaction,
-} from '../utils';
+import { truncateAddress, classNames, getLengthDisplay, isValidPoolAddress, toRfc2396, hexToBytes, getPublicKeyFromTransaction } from '../utils';
 import { bufferToHex } from 'ethereumjs-util';
 const elliptic_1 = require('elliptic');
 const ec = new elliptic_1.ec('secp256k1');
@@ -132,25 +122,6 @@ describe('utils', () => {
 
 			// Assert
 			expect(result).toBeFalsy();
-		});
-	});
-
-	describe('toInputValuesBuyForm', () => {
-		it('returns InputValuesBuyForm', () => {
-			// Arrange
-			const encryptedPoolData = 'stratum+tcp://lance.worker:password1234@mining.dev.pool.titan.io:4242';
-
-			// Act
-			const result = toInputValuesBuyForm(encryptedPoolData);
-
-			// Assert
-			const expectedResult: InputValuesBuyForm = {
-				poolAddress: 'stratum+tcp://mining.dev.pool.titan.io',
-				portNumber: '4242',
-				username: 'lance.worker',
-				password: 'password1234',
-			};
-			expect(result).toEqual(expectedResult);
 		});
 	});
 

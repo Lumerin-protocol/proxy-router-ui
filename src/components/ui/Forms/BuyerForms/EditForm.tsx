@@ -1,38 +1,32 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import {
-	AddressLength,
-	AlertMessage,
-	ContentState,
-	ContractInfo,
-	ContractState,
-	FormData,
-	HashRentalContract,
-	InputValuesBuyForm,
-	Receipt,
-	UpdateFormProps,
-} from '../../../../types';
+import { AddressLength, AlertMessage, ContentState, ContractInfo, FormData, InputValuesBuyForm, Receipt, UpdateFormProps } from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
-import { toRfc2396, getButton, isNoEditBuyer, printError, toInputValuesBuyForm, truncateAddress } from '../../../../utils';
+import { toRfc2396, getButton, isNoEditBuyer, printError, truncateAddress } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
 import { Alert } from '../../Alert';
 import { buttonText, paragraphText } from '../../../../shared';
 
-// Set initial state to current contract values
-const getFormData: (contract: HashRentalContract) => InputValuesBuyForm = (contract) => {
-	return toInputValuesBuyForm(contract.encryptedPoolData as string);
+// Used to set initial state for contentData to prevent undefined error
+const initialFormData: FormData = {
+	withValidator: false,
+	poolAddress: '',
+	portNumber: '',
+	username: '',
+	password: '',
+	speed: '',
+	price: '',
 };
-
 export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
-	const [formData, setFormData] = useState<FormData>(getFormData(contract));
+	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	// Input validation setup
@@ -80,7 +74,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 					// TODO: encrypt poolAddress, username, password
 					const encryptedBuyerInput = toRfc2396(formData);
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
-					const receipt = await implementationContract.methods
+					const receipt: Receipt = await implementationContract.methods
 						.setUpdateMiningInformation(encryptedBuyerInput)
 						.send({ from: userAccount, gas: gasLimit });
 					if (receipt?.status) {
@@ -146,7 +140,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			default:
 				paragraphContent = paragraphText.review as string;
 				buttonContent = buttonText.edit as string;
-				content = <ReviewContent register={register} errors={errors} isEdit data={formData} />;
+				content = <ReviewContent register={register} errors={errors} isEdit />;
 		}
 	};
 	createContent();

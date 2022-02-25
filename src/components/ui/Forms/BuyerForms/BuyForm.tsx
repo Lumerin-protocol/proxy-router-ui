@@ -133,7 +133,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						// const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
 						// const publicKeyHex = `04${publicKey.toString('hex')}`;
 						// const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
-						const encryptedBuyerInput = toRfc2396(formData) as string;
+						const encryptedBuyerInput = toRfc2396(formData);
 						const receipt: Receipt = await cloneFactoryContract?.methods
 							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
 							.send(sendOptions);

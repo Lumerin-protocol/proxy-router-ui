@@ -515,11 +515,11 @@ export const Main: React.FC = () => {
 							<div className='flex items-center'>
 								<LumerinIcon />
 							</div>
-							<button className='btn-lmr pl-0 pointer-events-none'>
+							<div className='btn-lmr w-auto pl-0 pointer-events-none'>
 								<span className='ml-2 text-xs md:text-sm'>
 									{lumerinBalance.toLocaleString('en-US', { maximumFractionDigits: 8 })} LMR
 								</span>
-							</button>
+							</div>
 						</div>
 						{walletText === WalletText.Disconnect ? (
 							<div className='flex'>
