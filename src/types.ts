@@ -8,6 +8,7 @@ import Web3 from 'web3';
 // Enums
 export enum WalletText {
 	ConnectViaMetaMask = 'Connect Via MetaMask',
+	ConnectViaWalletConnect = 'WalletConnect',
 	Disconnect = 'Disconnect',
 }
 
@@ -44,7 +45,8 @@ export enum PathName {
 
 export enum AlertMessage {
 	NotConnected = 'MetaMask is not connected',
-	WrongNetwork = 'Click to connect to the Ropsten testnet.',
+	WrongNetworkMetaMask = 'Click to connect MetaMask to the Ropsten testnet.',
+	WrongNetworkWalletConnect = 'Please connect your wallet to the Ropsten testnet.',
 	InsufficientBalance = 'Insufficient LMR balance.',
 	NoEditSeller = 'A running contract cannot be edited by the seller.',
 	NoEditBuyer = 'An order must be running to be edited.',

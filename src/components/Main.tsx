@@ -3,7 +3,17 @@ import { Fragment, Suspense, useEffect, useState } from 'react';
 import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
-import { ContractIcon, MarketplaceIcon, MyOrdersIcon, MetaMaskIcon, LogoIcon, LogoIcon2, LumerinIcon, LumerinLandingPage } from '../images/index';
+import {
+	ContractIcon,
+	MarketplaceIcon,
+	MyOrdersIcon,
+	MetaMaskIcon,
+	LogoIcon,
+	LogoIcon2,
+	LumerinIcon,
+	LumerinLandingPage,
+	WalletConnectIcon,
+} from '../images/index';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { Alert } from './ui/Alert';
@@ -26,6 +36,7 @@ import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
+import WalletConnectProvider from '@walletconnect/web3-provider';
 import _ from 'lodash';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
@@ -33,7 +44,7 @@ export const Main: React.FC = () => {
 	// State and constants
 	// TODO: as webapp grows think of using context
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-	const [walletText, setWalletText] = useState<string>(WalletText.ConnectViaMetaMask);
+	const [isConnected, setIsConnected] = useState<boolean>(false);
 	const [web3, setWeb3] = useState<Web3>();
 	const [accounts, setAccounts] = useState<string[]>();
 	const [cloneFactoryContract, setCloneFactoryContract] = useState<Contract>();
@@ -49,10 +60,12 @@ export const Main: React.FC = () => {
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
 	const [toggle, setToggle] = useState<boolean>(false);
+	const [chainId, setChainId] = useState<number>(0);
+	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 	const ethereum = window.ethereum as Ethereum;
-	const isCorrectNetwork = ethereum?.networkVersion === '3';
+	const isCorrectNetwork = chainId === 3;
 
 	// Navigation setup
 	interface Navigation {
@@ -70,33 +83,40 @@ export const Main: React.FC = () => {
 
 	// Wallet/MetaMask setup
 	// Get accounts, web3 and contract instances
-	const onboarding = new MetaMaskOnboarding();
-	const connectWallet: () => void = async () => {
-		const web3Result = await getWeb3ResultAsync(setAlertOpen, setWalletText, setAccounts);
-		if (web3Result) {
-			if (ethereum.networkVersion !== '3') setAlertOpen(true);
-			const { accounts, contractInstance, web3 } = web3Result;
-			setAccounts(accounts);
-			setCloneFactoryContract(contractInstance);
-			setWeb3(web3);
-			setWalletText(WalletText.Disconnect);
+	const disconnectWalletConnectAsync: () => void = async () => {
+		if (!isMetaMask) {
+			await (web3?.currentProvider as unknown as WalletConnectProvider).disconnect();
+			setIsConnected(false);
 		}
 	};
 
 	// Onboard metamask and set wallet text
-	const walletClickHandler: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
+	const onboarding = new MetaMaskOnboarding();
+	const onboardMetaMask: () => void = () => {
 		// Onboard metamask if not installed
 		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
 			onboarding.startOnboarding();
 		} else {
 			onboarding.stopOnboarding();
 		}
+	};
+	const connectWallet: (walletName: string) => void = async (walletName) => {
+		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
 
-		if (walletText === WalletText.ConnectViaMetaMask) {
-			connectWallet();
-		} else {
-			reconnectWalletAsync();
-			setWalletText(WalletText.ConnectViaMetaMask);
+		const web3Result = await getWeb3ResultAsync(setAlertOpen, setIsConnected, setAccounts, walletName);
+		if (web3Result) {
+			const { accounts, contractInstance, web3 } = web3Result;
+			const chainId = await web3.eth.net.getId();
+			if (chainId !== 3) {
+				setAlertOpen(true);
+				disconnectWalletConnectAsync();
+			}
+			setAccounts(accounts);
+			setCloneFactoryContract(contractInstance);
+			setWeb3(web3);
+			setIsConnected(true);
+			setChainId(chainId);
+			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
 		}
 	};
 
@@ -110,7 +130,7 @@ export const Main: React.FC = () => {
 
 	// When a user disconnects MetaMask, alertOpen will be true
 	useEffect(() => {
-		if (alertOpen) setWalletText(WalletText.ConnectViaMetaMask);
+		if (alertOpen) setIsConnected(false);
 	}, [alertOpen]);
 
 	// Get timestamp of current block
@@ -202,11 +222,25 @@ export const Main: React.FC = () => {
 	}, [web3, accounts]);
 
 	// Content setup
-	const ActionButton: JSX.Element = (
-		<button type='button' className='btn-wallet w-60 h-12 mt-4 mb-20 rounded-5 bg-lumerin-aqua text-sm font-Inter' onClick={walletClickHandler}>
-			<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
-			<MetaMaskIcon />
-		</button>
+	const ActionButtons: JSX.Element = (
+		<div className='flex flex-col items-center mt-4 font-medium'>
+			<button
+				type='button'
+				className='btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
+				onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}
+			>
+				<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
+				<MetaMaskIcon />
+			</button>
+			<button
+				type='button'
+				className='btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
+				onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}
+			>
+				<span className='mr-4'>{WalletText.ConnectViaWalletConnect}</span>
+				<WalletConnectIcon />
+			</button>
+		</div>
 	);
 
 	const routes = (
@@ -260,13 +294,13 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: () => JSX.Element = () => {
-		if (walletText === WalletText.ConnectViaMetaMask) {
+		if (!isConnected) {
 			return (
 				<div className='flex flex-col items-center mt-20 md:mt-40 xl:mr-50 gap-4 text-center'>
 					<LumerinLandingPage />
 					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
 					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
-					<div>{ActionButton}</div>
+					<div>{ActionButtons}</div>
 				</div>
 			);
 		}
@@ -284,6 +318,11 @@ export const Main: React.FC = () => {
 		return '';
 	};
 
+	const getAlertMessage: () => string = () => {
+		if (isCorrectNetwork && !isConnected) return AlertMessage.NotConnected;
+		return isMetaMask ? AlertMessage.WrongNetworkMetaMask : AlertMessage.WrongNetworkWalletConnect;
+	};
+
 	const changeNetworkAsync: () => void = async () => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		await ethereum.request({
@@ -291,19 +330,14 @@ export const Main: React.FC = () => {
 			params: [{ chainId: web3?.utils.toHex(3) }],
 		});
 		setAlertOpen(false);
-		connectWallet();
+		connectWallet(WalletText.ConnectViaMetaMask);
 	};
 
 	const isAvailableContract: boolean = contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
-			<Alert
-				message={isCorrectNetwork ? AlertMessage.NotConnected : AlertMessage.WrongNetwork}
-				open={alertOpen}
-				setOpen={setAlertOpen}
-				onClick={changeNetworkAsync}
-			/>
+			<Alert message={getAlertMessage()} open={alertOpen} setOpen={setAlertOpen} onClick={isMetaMask ? changeNetworkAsync : () => {}} />
 			<Modal
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
@@ -479,7 +513,7 @@ export const Main: React.FC = () => {
 				</div>
 			</div>
 			<div className='flex flex-col w-0 flex-1 overflow-hidden bg-white'>
-				<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20 bg-white'}>
+				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20 bg-white'}>
 					<button
 						type='button'
 						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden'
@@ -488,7 +522,7 @@ export const Main: React.FC = () => {
 						<span className='sr-only'>Open sidebar</span>
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
-					<div className={walletText === WalletText.ConnectViaMetaMask ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
+					<div className={!isConnected ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
 						<p className={classNames(pathName === PathName.MyContracts ? 'hidden xl:block' : '', 'text-lg font-semibold')}>
 							{getPageTitle()}
 						</p>
@@ -521,22 +555,32 @@ export const Main: React.FC = () => {
 								</span>
 							</div>
 						</div>
-						{walletText === WalletText.Disconnect ? (
+						{isConnected ? (
 							<div className='flex'>
 								<button className='btn-add-lmr p-0 mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
 									<span>Add LMR to Wallet</span>
 								</button>
 								<button className='btn-connected w-64 cursor-default'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
-									<MetaMaskIcon />
+									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
 								</button>
+								{!isMetaMask ? (
+									<button
+										className='btn-add-lmr w-auto p-0 ml-4 mr-4 bg-white text-lumerin-aqua font-semibold'
+										onClick={() => disconnectWalletConnectAsync()}
+									>
+										<span>Disconnect</span>
+									</button>
+								) : null}
 							</div>
 						) : null}
 					</div>
 				</div>
 				<div
 					className={
-						pathName === PathName.Marketplace && isAvailableContract ? 'mt-8 flex flex-col items-center text-sm sm:text-18' : 'hidden'
+						pathName === PathName.Marketplace && isConnected && isAvailableContract
+							? 'mt-8 flex flex-col items-center text-sm sm:text-18'
+							: 'hidden'
 					}
 				>
 					<p>Welcome to the Lumerin Hashrate marketplace.</p>
