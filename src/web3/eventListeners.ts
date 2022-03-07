@@ -3,15 +3,11 @@ import { reconnectWalletAsync } from './helpers';
 
 const ethereum = window.ethereum as Ethereum;
 
-export const registerEventListeners: (
+export const registerEventListenersMetaMask: (
 	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>,
 	setIsConnected: React.Dispatch<React.SetStateAction<boolean>>,
 	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>
 ) => void = (setAlertOpen, setIsConnected, setAccounts) => {
-	const showAlert = setAlertOpen;
-	const changeIsConnected = setIsConnected;
-	const changeAccounts = setAccounts;
-
 	const handleOnConnect: (connectInfo: ConnectInfo) => void = (connectInfo) => {
 		console.log(`on connect: ${connectInfo.chainId}`);
 		setIsConnected(false);
@@ -19,8 +15,8 @@ export const registerEventListeners: (
 
 	const handleOnDisconnect: (error: Error) => void = (error) => {
 		console.log(`on disconnect: ${error.message}`);
-		showAlert(true);
-		changeIsConnected(false);
+		setAlertOpen(true);
+		setIsConnected(false);
 		reconnectWalletAsync();
 	};
 
@@ -35,9 +31,9 @@ export const registerEventListeners: (
 		console.log('on accounts changed');
 		if (accounts.length === 0 || accounts[0] === '') {
 			// MetaMask is locked or the user has not connected any accounts
-			showAlert(true);
+			setAlertOpen(true);
 		} else {
-			changeAccounts(accounts);
+			setAccounts(accounts);
 		}
 	};
 

@@ -85,7 +85,7 @@ export const Main: React.FC = () => {
 	// Get accounts, web3 and contract instances
 	const disconnectWalletConnectAsync: () => void = async () => {
 		if (!isMetaMask) {
-			await (web3?.currentProvider as unknown as WalletConnectProvider).disconnect();
+			await (web3?.currentProvider as unknown as WalletConnectProvider)?.disconnect();
 			setIsConnected(false);
 		}
 	};
@@ -174,7 +174,7 @@ export const Main: React.FC = () => {
 	};
 
 	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
-		const hashRentalContracts = await Promise.all(addresses.map((address) => createContractAsync(address)));
+		const hashRentalContracts = await Promise.all(addresses.map(async (address) => await createContractAsync(address)));
 
 		// Update contracts if deep equality is false
 		if (!_.isEqual(contracts, hashRentalContracts)) setContracts(hashRentalContracts as HashRentalContract[]);
@@ -214,7 +214,7 @@ export const Main: React.FC = () => {
 
 	useEffect(() => {
 		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
-	}, [web3, accounts]);
+	}, [web3, accounts, chainId]);
 
 	// Content setup
 	const ActionButtons: JSX.Element = (
@@ -540,7 +540,7 @@ export const Main: React.FC = () => {
 						</div>
 					</div>
 					<div className={buttonDisplay}>
-						<div className='flex'>
+						<div className={!isMetaMask ? 'hidden xl:flex' : 'flex'}>
 							<div className='flex items-center'>
 								<LumerinIcon />
 							</div>
@@ -560,10 +560,7 @@ export const Main: React.FC = () => {
 									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
 								</button>
 								{!isMetaMask ? (
-									<button
-										className='btn-add-lmr w-auto p-0 ml-4 mr-4 bg-white text-lumerin-aqua font-semibold'
-										onClick={() => disconnectWalletConnectAsync()}
-									>
+									<button className='btn-disconnect w-auto p-0 ml-4 mr-4' onClick={() => disconnectWalletConnectAsync()}>
 										<span>Disconnect</span>
 									</button>
 								) : null}

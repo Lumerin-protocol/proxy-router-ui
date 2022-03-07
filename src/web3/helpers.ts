@@ -5,7 +5,7 @@ import lumerin from '../images/lumerin_metamask.png';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
-import { registerEventListeners } from './eventListeners';
+import { registerEventListenersMetaMask } from './eventListeners';
 import CloneFactory from '../contracts/CloneFactory.json';
 import LumerinContract from '../contracts/Lumerin.json';
 import { ContractJson, Ethereum, Receipt, WalletText } from '../types';
@@ -53,7 +53,7 @@ export const getWeb3ResultAsync: (
 	try {
 		const provider = await getProviderAsync(walletName);
 		if (provider) {
-			registerEventListeners(setAlertOpen, setIsConnected, setAccounts);
+			registerEventListenersMetaMask(setAlertOpen, setIsConnected, setAccounts);
 			// Expose accounts
 			if (walletName === WalletText.ConnectViaMetaMask) await ethereum.request({ method: 'eth_requestAccounts' });
 			else await (provider as WalletConnectProvider).enable();
