@@ -1,6 +1,8 @@
 FROM node:lts-alpine as build
 WORKDIR '/app'
 COPY ./package.json ./
+
+RUN apk add git
 RUN npm install
 COPY . .
 RUN npm run build

@@ -100,7 +100,6 @@ export const Main: React.FC = () => {
 			if (chainId !== 3) {
 				disconnectWalletConnectAsync(walletName === WalletText.ConnectViaMetaMask, web3, setIsConnected);
 				setAlertOpen(true);
-				return;
 			}
 			setAccounts(accounts);
 			setCloneFactoryContract(contractInstance);
