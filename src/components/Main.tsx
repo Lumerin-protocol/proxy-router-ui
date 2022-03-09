@@ -25,7 +25,7 @@ import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
-import { addLumerinTokenToMetaMaskAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync, reconnectWalletAsync } from '../web3/helpers';
+import { addLumerinTokenToMetaMaskAsync, disconnectWalletConnectAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync } from '../web3/helpers';
 import { buttonClickHandler, classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
@@ -36,7 +36,6 @@ import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
-import WalletConnectProvider from '@walletconnect/web3-provider';
 import _ from 'lodash';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
@@ -81,15 +80,6 @@ export const Main: React.FC = () => {
 		{ name: 'My Contracts', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
 	];
 
-	// Wallet/MetaMask setup
-	// Get accounts, web3 and contract instances
-	const disconnectWalletConnectAsync: () => void = async () => {
-		if (!isMetaMask) {
-			await (web3?.currentProvider as unknown as WalletConnectProvider)?.disconnect();
-			setIsConnected(false);
-		}
-	};
-
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
 	const onboardMetaMask: () => void = () => {
@@ -108,8 +98,9 @@ export const Main: React.FC = () => {
 			const { accounts, contractInstance, web3 } = web3Result;
 			const chainId = await web3.eth.net.getId();
 			if (chainId !== 3) {
+				disconnectWalletConnectAsync(walletName === WalletText.ConnectViaMetaMask, web3, setIsConnected);
 				setAlertOpen(true);
-				disconnectWalletConnectAsync();
+				return;
 			}
 			setAccounts(accounts);
 			setCloneFactoryContract(contractInstance);
@@ -560,7 +551,10 @@ export const Main: React.FC = () => {
 									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
 								</button>
 								{!isMetaMask ? (
-									<button className='btn-disconnect w-auto p-0 ml-4 mr-4' onClick={() => disconnectWalletConnectAsync()}>
+									<button
+										className='btn-disconnect w-auto p-0 ml-4 mr-4'
+										onClick={() => disconnectWalletConnectAsync(isMetaMask, web3 as Web3, setIsConnected)}
+									>
 										<span>Disconnect</span>
 									</button>
 								) : null}

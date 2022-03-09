@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import Web3 from 'web3';
 import detectEthereumProvider from '@metamask/detect-provider';
 import lumerin from '../images/lumerin_metamask.png';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
-import { registerEventListenersMetaMask } from './eventListeners';
+import { registerEventListeners } from './eventListeners';
 import CloneFactory from '../contracts/CloneFactory.json';
 import LumerinContract from '../contracts/Lumerin.json';
 import { ContractJson, Ethereum, Receipt, WalletText } from '../types';
@@ -53,14 +53,19 @@ export const getWeb3ResultAsync: (
 	try {
 		const provider = await getProviderAsync(walletName);
 		if (provider) {
-			registerEventListenersMetaMask(setAlertOpen, setIsConnected, setAccounts);
+			registerEventListeners(
+				walletName,
+				walletName === WalletText.ConnectViaWalletConnect ? (provider as WalletConnectProvider) : null,
+				setAlertOpen,
+				setIsConnected,
+				setAccounts
+			);
 			// Expose accounts
 			if (walletName === WalletText.ConnectViaMetaMask) await ethereum.request({ method: 'eth_requestAccounts' });
 			else await (provider as WalletConnectProvider).enable();
 			const web3 = new Web3(provider as provider);
 			const networkId = await web3.eth.net.getId();
 			const deployedNetwork = (CloneFactory as ContractJson).networks[networkId];
-
 			const accounts = await web3.eth.getAccounts();
 			if (accounts.length === 0 || accounts[0] === '') {
 				setAlertOpen(true);
@@ -87,6 +92,17 @@ export const reconnectWalletAsync: () => void = async () => {
 			},
 		],
 	});
+};
+
+export const disconnectWalletConnectAsync: (isMetaMask: boolean, web3: Web3, setIsConnected: Dispatch<SetStateAction<boolean>>) => void = async (
+	isMetaMask,
+	web3,
+	setIsConnected
+) => {
+	if (!isMetaMask) {
+		await (web3?.currentProvider as unknown as WalletConnectProvider)?.disconnect();
+		setIsConnected(false);
+	}
 };
 
 // https://docs.metamask.io/guide/registering-your-token.html#example

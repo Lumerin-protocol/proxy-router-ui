@@ -44,7 +44,7 @@ export enum PathName {
 }
 
 export enum AlertMessage {
-	NotConnected = 'MetaMask is not connected',
+	NotConnected = 'Your wallet is not connected',
 	WrongNetworkMetaMask = 'Click to connect MetaMask to the Ropsten testnet.',
 	WrongNetworkWalletConnect = 'Please connect your wallet to the Ropsten testnet.',
 	InsufficientBalance = 'Insufficient LMR balance.',
