@@ -36,6 +36,7 @@ import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
+import { Widget } from '@maticnetwork/wallet-widget';
 import _ from 'lodash';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
@@ -80,6 +81,19 @@ export const Main: React.FC = () => {
 		{ name: 'My Contracts', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
 	];
 
+	// Polygon Wallet Widget Setup
+	const polygonWalletWidget = new Widget({
+		target: '#btnMaticWidget',
+		appName: 'polygon-bridge',
+		autoShowTime: 0,
+		position: 'center',
+		height: 630,
+		width: 540,
+		overlay: true,
+		network: 'testnet',
+		closable: true,
+	});
+
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
 	const onboardMetaMask: () => void = () => {
@@ -106,6 +120,7 @@ export const Main: React.FC = () => {
 			setWeb3(web3);
 			setIsConnected(true);
 			setChainId(chainId);
+			polygonWalletWidget.create();
 			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
 		}
 	};
@@ -544,6 +559,9 @@ export const Main: React.FC = () => {
 							<div className='flex'>
 								<button className='btn-add-lmr p-0 mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
 									<span>Add LMR to Wallet</span>
+								</button>
+								<button id='btnMaticWidget' className='btn-add-lmr bg-lumerin-polygon p-0 mr-4'>
+									<span>Move LMR to Polygon</span>
 								</button>
 								<button className='btn-connected w-64 cursor-default'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
