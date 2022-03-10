@@ -65,7 +65,8 @@ export const Main: React.FC = () => {
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 	const ethereum = window.ethereum as Ethereum;
-	const isCorrectNetwork = chainId === 3;
+	const mumbaiChainId = 80001;
+	const isCorrectNetwork = chainId === mumbaiChainId;
 
 	// Navigation setup
 	interface Navigation {
@@ -111,7 +112,7 @@ export const Main: React.FC = () => {
 		if (web3Result) {
 			const { accounts, contractInstance, web3 } = web3Result;
 			const chainId = await web3.eth.net.getId();
-			if (chainId !== 3) {
+			if (chainId !== mumbaiChainId) {
 				disconnectWalletConnectAsync(walletName === WalletText.ConnectViaMetaMask, web3, setIsConnected);
 				setAlertOpen(true);
 			}
@@ -327,7 +328,7 @@ export const Main: React.FC = () => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
-			params: [{ chainId: web3?.utils.toHex(3) }],
+			params: [{ chainId: web3?.utils.toHex(mumbaiChainId) }],
 		});
 		setAlertOpen(false);
 		connectWallet(WalletText.ConnectViaMetaMask);
