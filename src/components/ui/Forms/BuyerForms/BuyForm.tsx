@@ -56,6 +56,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
+	const lumerinTokenAddress = '0x84E00a18a36dFa31560aC216da1A9bef2164647D';
+
 	// Input validation setup
 	const {
 		register,
@@ -121,9 +123,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					}
 
 					// Approve clone factory contract to transfer LMR on buyer's behalf
-					const networkId = await web3.eth.net.getId();
-					const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
-					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
+					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);

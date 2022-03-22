@@ -536,15 +536,17 @@ export const Main: React.FC = () => {
 							</div>
 							<div className='btn-lmr w-auto pl-0 pointer-events-none'>
 								<span className='ml-2 text-xs md:text-sm'>
-									{lumerinBalance.toLocaleString('en-US', { maximumFractionDigits: 8 })} LMR
+									{Math.ceil(lumerinBalance).toLocaleString()} <span className='hidden lg:inline'>LMR</span>
 								</span>
 							</div>
 						</div>
 						{isConnected ? (
 							<div className='flex'>
-								<button className='btn-add-lmr p-0 mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
-									<span>Add LMR to Wallet</span>
-								</button>
+								{isMetaMask ? (
+									<button className='btn-add-lmr sm:w-64 sm:text-sm mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
+										<span>Import LMR into MetaMask</span>
+									</button>
+								) : null}
 								<button className='btn-connected w-64 cursor-default'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
 									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
