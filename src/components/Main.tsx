@@ -36,7 +36,6 @@ import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
-import { Widget } from '@maticnetwork/wallet-widget';
 import _ from 'lodash';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
@@ -65,8 +64,7 @@ export const Main: React.FC = () => {
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 	const ethereum = window.ethereum as Ethereum;
-	const mumbaiChainId = 80001;
-	const isCorrectNetwork = chainId === mumbaiChainId;
+	const isCorrectNetwork = chainId === 3;
 
 	// Navigation setup
 	interface Navigation {
@@ -81,19 +79,6 @@ export const Main: React.FC = () => {
 		{ name: 'My Orders', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
 		{ name: 'My Contracts', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
 	];
-
-	// Polygon Wallet Widget Setup
-	const polygonWalletWidget = new Widget({
-		target: '#btnMaticWidget',
-		appName: 'polygon-bridge',
-		autoShowTime: 0,
-		position: 'center',
-		height: 630,
-		width: 540,
-		overlay: true,
-		network: 'testnet',
-		closable: true,
-	});
 
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
@@ -112,7 +97,7 @@ export const Main: React.FC = () => {
 		if (web3Result) {
 			const { accounts, contractInstance, web3 } = web3Result;
 			const chainId = await web3.eth.net.getId();
-			if (chainId !== mumbaiChainId) {
+			if (chainId !== 3) {
 				disconnectWalletConnectAsync(walletName === WalletText.ConnectViaMetaMask, web3, setIsConnected);
 				setAlertOpen(true);
 			}
@@ -121,7 +106,6 @@ export const Main: React.FC = () => {
 			setWeb3(web3);
 			setIsConnected(true);
 			setChainId(chainId);
-			polygonWalletWidget.create();
 			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
 		}
 	};
@@ -328,7 +312,7 @@ export const Main: React.FC = () => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
-			params: [{ chainId: web3?.utils.toHex(mumbaiChainId) }],
+			params: [{ chainId: web3?.utils.toHex(3) }],
 		});
 		setAlertOpen(false);
 		connectWallet(WalletText.ConnectViaMetaMask);
@@ -552,18 +536,17 @@ export const Main: React.FC = () => {
 							</div>
 							<div className='btn-lmr w-auto pl-0 pointer-events-none'>
 								<span className='ml-2 text-xs md:text-sm'>
-									{lumerinBalance.toLocaleString('en-US', { maximumFractionDigits: 8 })} LMR
+									{Math.ceil(lumerinBalance).toLocaleString()} <span className='hidden lg:inline'>LMR</span>
 								</span>
 							</div>
 						</div>
 						{isConnected ? (
 							<div className='flex'>
-								<button className='btn-add-lmr p-0 mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
-									<span>Add LMR to Wallet</span>
-								</button>
-								<button id='btnMaticWidget' className='btn-add-lmr bg-lumerin-polygon p-0 mr-4'>
-									<span>Move LMR to Polygon</span>
-								</button>
+								{isMetaMask ? (
+									<button className='btn-add-lmr sm:w-64 sm:text-sm mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
+										<span>Import LMR into MetaMask</span>
+									</button>
+								) : null}
 								<button className='btn-connected w-64 cursor-default'>
 									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
 									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}

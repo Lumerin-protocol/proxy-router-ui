@@ -57,6 +57,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const lumerinTokenAddress = '0x5f66750779ae5fa5CCC0D13Bea7ac353A91D8F77';
 
+	const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B';
+
 	// Input validation setup
 	const {
 		register,

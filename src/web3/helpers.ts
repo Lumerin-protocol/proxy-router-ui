@@ -8,7 +8,7 @@ import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import CloneFactory from '../contracts/CloneFactory.json';
 import LumerinContract from '../contracts/Lumerin.json';
-import { Ethereum, Receipt, WalletText } from '../types';
+import { ContractJson, Ethereum, Receipt, WalletText } from '../types';
 import { printError } from '../utils';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 
@@ -19,11 +19,9 @@ interface Web3Result {
 }
 
 const ethereum = window.ethereum as Ethereum;
-const lumerinTokenAddress = '0x5f66750779ae5fa5CCC0D13Bea7ac353A91D8F77';
-const cloneFactoryAddress = '0xd3e516261052C75Df5b40905dFC97d4204Bfed5b';
+const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B';
 
 // Web3 setup helpers
-const mumbaiChainId = 80001;
 const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (walletName) => {
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
@@ -31,15 +29,15 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 		default:
 			return new WalletConnectProvider({
 				rpc: {
-					137: 'https://polygon-mainnet.infura.io/v3/79ad289032a049f4864b456319c01742',
-					80001: 'https://polygon-mumbai.infura.io/v3/79ad289032a049f4864b456319c01742',
+					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
+					3: 'https://ropsten.connect.bloq.cloud/v1/stable-relax-science',
 				},
-				chainId: mumbaiChainId,
+				chainId: 3,
 				clientMeta: {
-					description: 'Welcome to the Global Hashpower Marketplace.  Purchase hashpower here!!',
-					url: '',
+					description: 'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',
+					url: 'https://token.sbx.lumerin.io',
 					icons: [''],
-					name: 'Lumerin Hashpower Marketplace',
+					name: 'Lumerin Token Distribution',
 				},
 			});
 	}
@@ -66,11 +64,13 @@ export const getWeb3ResultAsync: (
 			if (walletName === WalletText.ConnectViaMetaMask) await ethereum.request({ method: 'eth_requestAccounts' });
 			else await (provider as WalletConnectProvider).enable();
 			const web3 = new Web3(provider as provider);
+			const networkId = await web3.eth.net.getId();
+			const deployedNetwork = (CloneFactory as ContractJson).networks[networkId];
 			const accounts = await web3.eth.getAccounts();
 			if (accounts.length === 0 || accounts[0] === '') {
 				setAlertOpen(true);
 			}
-			const contractInstance = new web3.eth.Contract(CloneFactory.abi as AbiItem[], cloneFactoryAddress);
+			const contractInstance = new web3.eth.Contract(CloneFactory.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 			return { accounts, contractInstance, web3 };
 		}
 		return null;
@@ -145,7 +145,9 @@ export const transferLumerinAsync: (web3: Web3, userAccount: string, sellerAccou
 	sellerAccount,
 	amount
 ) => {
-	const lumerinContractInstance = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
+	const networkId = await web3.eth.net.getId();
+	const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
+	const lumerinContractInstance = new web3.eth.Contract(LumerinContract.abi as AbiItem[], deployedNetwork && deployedNetwork.address);
 	return await lumerinContractInstance.methods.transfer(sellerAccount, multiplyByDigits(amount)).send({ from: userAccount, gas: 1000000 });
 };
 

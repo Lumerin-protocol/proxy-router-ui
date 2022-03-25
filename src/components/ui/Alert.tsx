@@ -38,16 +38,16 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen, onClick })
 						leaveFrom='enter-to-100'
 						leaveTo='enter-from-95'
 					>
-						<div className='inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6'>
-							<div className='rounded-md bg-red-50 p-4'>
+						<div className='inline-block align-bottom bg-white rounded-lg px-2 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6'>
+							<div className='rounded-md bg-white p-2'>
 								<div className='flex'>
 									<button
 										type='button'
-										className='inline-flex justify-center w-full bg-red-50 text-base text-color-white font-medium'
+										className='inline-flex justify-center w-full bg-white text-base text-color-white font-medium'
 										onClick={onClick ? () => onClick() : () => {}}
 									>
 										<div className='ml-3'>
-											<h3 className='text-sm font-medium text-red-600'>{message}</h3>
+											<h3 className='text-md font-medium text-lumerin-aqua'>{message}</h3>
 										</div>
 									</button>
 								</div>
