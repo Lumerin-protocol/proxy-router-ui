@@ -3,20 +3,18 @@ variables:
 #   CI_AWS_ECS_CLUSTER: titan-proxy-router
 #   CI_AWS_ECS_SERVICE: titan-proxy-router-ui-service
 #   CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
-
   CI_AWS_ECR_REPO: titan-proxy-router-ui
-  CI_AWS_ECS_SERVICE: titan-proxy-router-ui-service
-  CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
-  CI_AWS_ECS_SERVICE_GLB: #svc-lmn-tkn-dst-use1-1
   CI_AWS_ECS_CLUSTER_PREFIX: ecs-prx-rtr-ui
   CI_AWS_ECS_CLUSTER_REGION: use1-1
+  CI_AWS_ECS_SERVICE_GLB: svc-prx-rtr-ui-use1-1
+  CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
 
 stages:
     # -test
     - build
     - review
     - deploy
-    
+
 bedrock-00-build:
     stage: build
     only:
