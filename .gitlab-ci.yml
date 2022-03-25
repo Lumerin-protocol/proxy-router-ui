@@ -171,7 +171,7 @@ titanio-03-stg:
 titanio-04-lmn-PROD:
     stage: deploy
     only:
-        - developmnet
+        - development
         - lmn
         - stg
         - dev
