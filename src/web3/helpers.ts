@@ -19,7 +19,7 @@ interface Web3Result {
 }
 
 const ethereum = window.ethereum as Ethereum;
-const lumerinTokenAddress = '0x84E00a18a36dFa31560aC216da1A9bef2164647D';
+const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B';
 
 // Web3 setup helpers
 const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (walletName) => {
