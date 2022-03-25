@@ -7,6 +7,8 @@ bedrock-00-build:
     stage: build
     only:
         - sbx
+        - dev
+        - development
     # when: manual
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
@@ -35,6 +37,7 @@ bedrock-00-build:
 titanio-01-sbx:
     stage: review
     only:
+        - development
         - dev
         - sbx
     # when: manual
@@ -124,6 +127,7 @@ titanio-02-dev:
 titanio-03-stg:
     stage: deploy
     only:
+        - development
         - stg
         - dev
         - sbx
@@ -167,6 +171,7 @@ titanio-03-stg:
 titanio-04-lmn-PROD:
     stage: deploy
     only:
+        - developmnet
         - lmn
         - stg
         - dev
