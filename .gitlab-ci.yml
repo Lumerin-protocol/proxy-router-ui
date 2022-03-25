@@ -1,14 +1,3 @@
-variables:
-#   REPOSITORY_URL: 092029861612.dkr.ecr.us-west-2.amazonaws.com/titan-proxy-router-ui
-#   CI_AWS_ECS_CLUSTER: titan-proxy-router
-#   CI_AWS_ECS_SERVICE: titan-proxy-router-ui-service
-#   CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
-  CI_AWS_ECR_REPO: titan-proxy-router-ui
-  CI_AWS_ECS_CLUSTER_PREFIX: ecs-prx-rtr-ui
-  CI_AWS_ECS_CLUSTER_REGION: use1-1
-  CI_AWS_ECS_SERVICE_GLB: svc-prx-rtr-ui-use1-1
-  CI_AWS_ECS_TASK_DEFINITION: titan-proxy-router-ui-task
-
 stages:
     # -test
     - build
@@ -27,7 +16,7 @@ bedrock-00-build:
         - titanio-sbx
         - shell
     variables: 
-        TGT_ACCOUNT: 092029861612
+        TGT_ACCOUNT: $CI_AWS_ACCOUNT_SBX
         TGT_ENV: sbx
     script:
         - echo "Logging in..."
@@ -57,7 +46,7 @@ titanio-01-sbx:
         - titanio-sbx
         - shell
     variables: 
-        TGT_ACCOUNT: 092029861612
+        TGT_ACCOUNT: $CI_AWS_ACCOUNT_SBX
         TGT_ENV: sbx
     script:
         - echo Deploying to $TGT_ACCOUNT, titanio-$TGT_ENV Environment
@@ -73,7 +62,7 @@ titanio-01-sbx:
         - echo $(cat input.json | jq '.taskDefinition') > input.json
         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
   
-        - sed -i 's/092029861612/'$TGT_ACCOUNT'/g' input.json
+        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
         - echo "Review input.json file...."
         - cat input.json
         - echo "Registering new container definition..."
@@ -102,7 +91,7 @@ titanio-02-dev:
         - titanio-dev
         - shell
     variables: 
-        TGT_ACCOUNT: 434960487817
+        TGT_ACCOUNT: $CI_AWS_ACCOUNT_DEV
         TGT_ENV: dev
     script:
         - echo Deploying to $TGT_ACCOUNT, titanio-$TGT_ENV Environment
@@ -118,7 +107,7 @@ titanio-02-dev:
         - echo $(cat input.json | jq '.taskDefinition') > input.json
         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
                
-        - sed -i 's/092029861612/'$TGT_ACCOUNT'/g' input.json
+        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
         
         - echo "Review input.json file...."
         - cat input.json
@@ -147,7 +136,7 @@ titanio-03-stg:
         - titanio-stg
         - shell
     variables: 
-        TGT_ACCOUNT: 464450398935
+        TGT_ACCOUNT: $CI_AWS_ACCOUNT_STG
         TGT_ENV: stg
     script:
         - echo Deploying to $TGT_ACCOUNT, titanio-$TGT_ENV Environment
@@ -163,7 +152,7 @@ titanio-03-stg:
         - echo $(cat input.json | jq '.taskDefinition') > input.json
         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
               
-        - sed -i 's/092029861612/'$TGT_ACCOUNT'/g' input.json
+        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
         - echo "Review input.json file...."
         - cat input.json
         - echo "Registering new container definition..."
@@ -191,7 +180,7 @@ titanio-04-lmn-PROD:
         - titanio-lmn
         - shell
     variables: 
-        TGT_ACCOUNT: 330280307271
+        TGT_ACCOUNT: $CI_AWS_ACCOUNT_LMN
         TGT_ENV: lmn
     script:
         - echo "Logging in..."
@@ -207,7 +196,7 @@ titanio-04-lmn-PROD:
         - echo $(cat input.json | jq '.taskDefinition') > input.json
         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
                
-        - sed -i 's/092029861612/'$TGT_ACCOUNT'/g' input.json
+        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
         - echo "Review input.json file...."
         - cat input.json
         - echo "Registering new container definition..."
