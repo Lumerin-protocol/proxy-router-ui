@@ -7,6 +7,8 @@ bedrock-00-build:
     stage: build
     only:
         - sbx
+        - dev
+        - development
     # when: manual
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
@@ -35,6 +37,7 @@ bedrock-00-build:
 titanio-01-sbx:
     stage: review
     only:
+        - development
         - dev
         - sbx
     # when: manual
@@ -124,6 +127,7 @@ titanio-02-dev:
 titanio-03-stg:
     stage: deploy
     only:
+        - development
         - stg
         - dev
         - sbx
@@ -167,6 +171,7 @@ titanio-03-stg:
 titanio-04-lmn-PROD:
     stage: deploy
     only:
+        - development
         - lmn
         - stg
         - dev
@@ -207,46 +212,3 @@ titanio-04-lmn-PROD:
         - echo $CI_AWS_ECS_SERVIC
         - echo "Updating the SBX Industrialized service..."
         - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
-
-# before_script:
-#     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-#     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-#     - aws configure set region $AWS_DEFAULT_REGION
-#     - eval $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION | sed 's|https://||')
-#     - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
-
-# build-development:
-#     stage: build
-#     only: 
-#         - development
-#     tags:
-#         - dedicated
-#         - amd
-#     script:
-#         - echo "Pruning images..."
-#         - docker image prune -f
-#         - echo "Building image..."
-#         - docker build -t $REPOSITORY_URL:latest .
-#         - echo "Tagging image..."
-#         - docker tag $REPOSITORY_URL:latest $REPOSITORY_URL:$IMAGE_TAG
-#         - echo "Pushing image..."
-#         - docker push $REPOSITORY_URL:latest
-#         - docker push $REPOSITORY_URL:$IMAGE_TAG
-
-# deploy-development:
-#     stage: deploy
-#     only: 
-#         - development
-#     tags:
-#         - dedicated
-#     script:
-#         - echo $REPOSITORY_URL:$IMAGE_TAG
-#         - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
-#         - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$REPOSITORY_URL:$IMAGE_TAG'"') > input.json
-#         - echo $(cat input.json | jq '.taskDefinition') > input.json
-#         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)') > input.json
-#         - echo "Registering new container definition..."
-#         - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-#         - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-#         - echo "Updating the service..."
-#         - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER --service $CI_AWS_ECS_SERVICE --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
