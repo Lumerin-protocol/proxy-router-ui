@@ -19,7 +19,7 @@ export const TableIcon: React.FC<TableIconProps> = ({ icon, text, isLargeBreakpo
 				<span className={icon ? 'mr-2' : ''}>{icon}</span>
 				<span className='font-semibold text-left'>
 					{hasLink ? (
-						<a href={`https://mumbai.polygonscan.com/address/${text}`} target='_blank' rel='noreferrer' className='cursor-pointer'>
+						<a href={`https://ropsten.etherscan.io/address/address/${text}`} target='_blank' rel='noreferrer' className='cursor-pointer'>
 							{getAddressDisplay(isLargeBreakpointOrGreater as boolean, text)}
 						</a>
 					) : (
