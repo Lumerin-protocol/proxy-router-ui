@@ -56,7 +56,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 								required: 'Contract Time is required',
 								valueAsNumber: true,
 								validate: (value) => {
-									if (value || value === 0) return value >= 24 || value === 10;
+									if (value || value === 0) return value > 0;
 								},
 							})}
 							min='24'
