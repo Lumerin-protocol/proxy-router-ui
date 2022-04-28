@@ -15,7 +15,9 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { walletAd
 			</div>
 			<div className='confirm-div'>
 				<p>Contract Time</p>
-				<p>{contractTime} hours</p>
+				<p>
+					{contractTime} {contractTime === 10 ? 'minutes' : 'hours'}{' '}
+				</p>
 			</div>
 			<div className='confirm-div'>
 				<p>Speed</p>
