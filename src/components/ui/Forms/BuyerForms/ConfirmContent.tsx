@@ -8,7 +8,7 @@ interface ConfirmContentProps {
 	data: FormData;
 }
 
-export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { poolAddress, portNumber, username, speed, price, withValidator } }) => {
+export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { poolAddress, portNumber, username, speed, price, withValidator, length } }) => {
 	return (
 		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm'>
 			<div className='confirm-div'>
@@ -26,6 +26,10 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { po
 			<div className='confirm-div'>
 				<p>Speed (TH/S)</p>
 				<p>{speed}</p>
+			</div>
+			<div className='confirm-div'>
+				<p>Duration (HOURS)</p>
+				<p>{length}</p>
 			</div>
 			<div className='confirm-div'>
 				<p>Price (LMR)</p>

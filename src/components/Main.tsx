@@ -76,8 +76,8 @@ export const Main: React.FC = () => {
 	const pathName = window.location.pathname;
 	const navigation: Navigation[] = [
 		{ name: 'Marketplace', to: PathName.Marketplace, icon: <MarketplaceIcon />, current: pathName === PathName.Marketplace },
-		{ name: 'My Orders', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
-		{ name: 'My Contracts', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
+		{ name: 'Buyer Hub', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
+		{ name: 'Seller Hub', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
 	];
 
 	// Onboard metamask and set wallet text
@@ -298,8 +298,8 @@ export const Main: React.FC = () => {
 	const getPageTitle: () => string = () => {
 		if (contracts.length === 0) return '';
 		if (pathName === PathName.Marketplace) return 'Marketplace';
-		if (pathName === PathName.MyOrders) return 'My Orders';
-		if (pathName === PathName.MyContracts) return 'My Contracts';
+		if (pathName === PathName.MyOrders) return 'Buyer Hub';
+		if (pathName === PathName.MyContracts) return 'Seller Hub';
 		return '';
 	};
 
