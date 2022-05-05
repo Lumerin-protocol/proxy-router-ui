@@ -1,7 +1,6 @@
 import React from 'react';
 import { FormData } from '../../../../types';
 import { divideByDigits } from '../../../../web3/helpers';
-import { getLengthDisplay } from '../../../../utils';
 
 interface ConfirmContentProps {
 	data: FormData;
@@ -27,8 +26,8 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { poolAddr
 				<p>{speed}</p>
 			</div>
 			<div className='confirm-div'>
-				<p>Duration (DAYS)</p>
-				<p>{getLengthDisplay(parseInt(length as string))}</p>
+				<p>Duration (HOURS)</p>
+				<p>{length}</p>
 			</div>
 			<div className='confirm-div'>
 				<p>Price (LMR)</p>
