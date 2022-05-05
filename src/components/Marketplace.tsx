@@ -4,7 +4,7 @@ import { Column, useTable, useSortBy, SortByFn, Row, usePagination } from 'react
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { Table } from './ui/Table';
-import { getLengthDisplay, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
+import { setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { Spinner } from './ui/Spinner';
 import { ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { useInterval } from './hooks/useInterval';
@@ -55,7 +55,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 					/>
 				);
 				updatedContract.price = divideByDigits(updatedContract.price as number);
-				updatedContract.length = getLengthDisplay(parseInt(updatedContract.length as string));
+				updatedContract.length = updatedContract.length as string;
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
 				);
@@ -91,7 +91,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 			{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
 			{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
 			{ Header: 'SPEED (TH/S)', accessor: 'speed', sortType: 'customSort' },
-			{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
+			{ Header: 'DURATION (HOURS)', accessor: 'length', sortType: 'customSort' },
 			{ Header: 'TRADE', accessor: 'trade', disableSortBy: true },
 		],
 		[]
