@@ -3,7 +3,7 @@ import React, { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo,
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
-import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
+import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { Spinner } from './ui/Spinner';
@@ -81,7 +81,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					parseInt(updatedOrder.length as string),
 					currentBlockTimestamp
 				);
-				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
+				updatedOrder.length = updatedOrder.length as string;
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy');
 				updatedOrder.editCancel = (
 					<ButtonGroup
@@ -135,7 +135,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
 					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
 					{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
-					{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
+					{ Header: 'DURATION (HOURS)', accessor: 'length', sortType: 'customSort' },
 					{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
 					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
 					{ Header: 'EDIT', accessor: 'editCancel', disableSortBy: true },
