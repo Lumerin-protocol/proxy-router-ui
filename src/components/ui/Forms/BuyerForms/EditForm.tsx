@@ -41,6 +41,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
+			length: contract.length as string,
 		};
 	};
 
