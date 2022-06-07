@@ -570,8 +570,9 @@ export const Main: React.FC = () => {
 							: 'hidden'
 					}
 				>
-					<p>Welcome to the Lumerin Hashpower Marketplace Demo.</p>
-					<p>Tap buy to purchase any of the contracts below.</p>
+					<p>Welcome to the Lumerin Marketplace Beta,</p>
+					<p>please provide feedback or submit any bugs you notice at:</p>
+					<p><a className="link" href="https://github.com/Lumerin-protocol/proxy-router/issues">https://github.com/Lumerin-protocol/proxy-router/issues</a></p>
 				</div>
 				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent()}</main>
 			</div>

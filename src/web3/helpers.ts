@@ -156,5 +156,5 @@ export const multiplyByDigits: (amount: number) => number = (amount) => {
 };
 
 export const divideByDigits: (amount: number) => number = (amount) => {
-	return amount / 10 ** 8;
+	return parseInt(String(amount / 10 ** 8));
 };
