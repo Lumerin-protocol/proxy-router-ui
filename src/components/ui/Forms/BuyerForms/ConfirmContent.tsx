@@ -35,10 +35,6 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { po
 				<p>Price (LMR)</p>
 				<p>{price ? divideByDigits(parseInt(price)) : price}</p>
 			</div>
-			{/* <div className='confirm-div'>
-				<p>Use Titan Validator Service</p>
-				<p>{withValidator ? 'Yes' : 'No'}</p>
-			</div> */}
 		</div>
 	);
 };
