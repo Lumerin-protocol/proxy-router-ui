@@ -1,16 +1,18 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { InputValuesCreateForm } from '../../../../types';
+import Web3 from 'web3';
 import { divideByDigits } from '../../../../web3/helpers';
 
 interface ReviewContentProps {
+	web3?: Web3 | undefined;
 	register: UseFormRegister<InputValuesCreateForm>;
 	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	data?: InputValuesCreateForm;
 	isCreate?: boolean;
 }
 
-export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, data, isCreate }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, errors, data, isCreate }) => {
 	const listPrice = data && data.listPrice ? divideByDigits(data.listPrice) : 0;
 
 	return (
@@ -54,7 +56,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 								required: 'Contract Time is required',
 								valueAsNumber: true,
 								validate: (value) => {
-									if (value || value === 0) return value >= 24;
+									if (value || value === 0) return value > 0;
 								},
 							})}
 							min='24'

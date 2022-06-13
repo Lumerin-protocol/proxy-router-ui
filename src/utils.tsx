@@ -15,8 +15,18 @@ import {
 import { Link } from 'react-router-dom';
 import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
-import * as ethJsUtil from 'ethereumjs-util';
 import _ from 'lodash';
+import * as ethJsUtil from 'ethereumjs-util';
+import { Transaction as Web3Transaction } from 'web3-eth';
+import { Transaction as EthJsTx } from 'ethereumjs-tx';
+declare module 'web3-core' {
+	interface Transaction {
+		r: string;
+		s: string;
+		v: string;
+		chainId?: string;
+	}
+}
 
 // STRING HELPERS
 // Get address based on desired length
@@ -137,10 +147,12 @@ export const getButton: (
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
+		// Buying contract
 		case PathName.Marketplace:
 			pathName = PathName.MyOrders;
 			viewText = 'Orders';
 			break;
+		// Creating contract
 		case PathName.MyContracts:
 			pathName = PathName.MyContracts;
 			viewText = 'Contracts';
@@ -199,6 +211,7 @@ export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: s
 	return isLargeBreakpointOrGreater ? truncateAddress(address) : truncateAddress(address, AddressLength.SHORT);
 };
 
+// Get progress div
 export const getProgressDiv: (state: string, startTime: string, length: number, currentBlockTimestamp: number) => JSX.Element = (
 	state,
 	startTime,
@@ -245,6 +258,63 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 	);
 };
 
+// ERROR LOGGING
+// Print error message and stacktrace
+export const printError: (message: string, stacktrace: string) => void = (message, stacktrace) => {
+	console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
+};
+
+// Encryption helpers
+// https://gist.github.com/lancecarlson/6003283
+export const hexToBytes: (hex: string) => number[] = (hex) => {
+	const bytes = [];
+	for (let c = 0; c < hex.length; c += 2) bytes.push(parseInt(hex.substring(c, c + 2), 16));
+	return bytes;
+};
+
+// https://gist.github.com/lancecarlson/6003283
+export const bytesToHex: (bytes: number[]) => string = (bytes) => {
+	const hex = [];
+	for (let i = 0; i < bytes.length; i++) {
+		let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+		hex.push((current >>> 4).toString(16)); // upper nibble to string
+		hex.push((current & 0xf).toString(16)); // lower nibble to string
+	}
+	return hex.join('');
+};
+
+const getV: (v: string, chainId: number) => string = (v, chainId) => {
+	switch (v) {
+		case '0x0':
+		case '0x1':
+			return `0x${(parseInt(v, 16) + chainId * 2 + 35).toString(16)}`;
+		default:
+			return v;
+	}
+};
+
+export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (transaction) => {
+	const chainId = 3; // Ropsten
+	const ethTx = new EthJsTx(
+		{
+			nonce: transaction.nonce,
+			gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
+			gasLimit: transaction.gas,
+			to: transaction.to as string,
+			value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
+			data: transaction.input,
+			r: transaction.r,
+			s: transaction.s,
+			v: getV(transaction.v, chainId),
+		},
+		{
+			chain: chainId,
+		}
+	);
+	const publicKey = ethTx.getSenderPublicKey();
+	return publicKey;
+};
+
 export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = async (from) => {
 	const ethereum = window.ethereum as Ethereum;
 	const message =
@@ -262,10 +332,4 @@ export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = 
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);
 	}
-};
-
-// ERROR LOGGING
-// Print error message and stacktrace
-export const printError: (message: string, stacktrace: string) => void = (message, stacktrace) => {
-	console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
 };

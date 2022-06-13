@@ -14,7 +14,10 @@ const ErrorFallback: React.ComponentType<FallbackProps> = ({ error, resetErrorBo
 	return <ErrorPage error={error} />;
 };
 
+// add reset logic if needed
 const onResetHandler: () => void = () => {};
+
+// log to local filestore or localStorage if needed
 const errorHandler: (error: Error, info: { componentStack: string }) => void = (error, info) => {};
 
 ReactDOM.render(

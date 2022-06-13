@@ -82,4 +82,8 @@
 	.spinner {
 		@apply flex justify-center mt-36 sm:mt-50 lg:mr-50;
 	}
+	
+	.link:hover {
+		@apply text-lumerin-aqua ease-in duration-200;
+	}
 }

@@ -8,6 +8,8 @@ import { ContractState, HashRentalContract, PathName } from '../types';
 import { MyContracts } from '../components/MyContracts';
 import Web3 from 'web3';
 
+// Testing basic behavior and will add more complex tests as needed
+
 // Mocks
 const setContractId = jest.fn();
 const buyClickHandler = jest.fn();
@@ -80,6 +82,7 @@ describe('<MyOrders />', () => {
 		// Act
 		render(
 			<MyOrders
+				web3={web3}
 				contracts={contracts}
 				userAccount=''
 				currentBlockTimestamp={1000}
@@ -116,6 +119,7 @@ describe('<MyContracts />', () => {
 		// Act
 		render(
 			<MyContracts
+				web3={web3}
 				contracts={contracts}
 				userAccount=''
 				currentBlockTimestamp={1000}

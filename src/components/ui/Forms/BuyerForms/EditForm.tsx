@@ -41,6 +41,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
+			length: contract.length as string,
 		};
 	};
 
@@ -71,15 +72,14 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			try {
 				if (web3) {
 					const gasLimit = 1000000;
-					const buyerInput = toRfc2396(formData);
+					const encryptedBuyerInput = toRfc2396(formData);
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 					const receipt: Receipt = await implementationContract.methods
-						.setUpdateMiningInformation(buyerInput)
+						.setUpdateMiningInformation(encryptedBuyerInput)
 						.send({ from: userAccount, gas: gasLimit });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
-					} else {
-					}
+					} else {}
 				}
 			} catch (error) {
 				const typedError = error as Error;
@@ -128,7 +128,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirmChanges as string;
-				content = <ConfirmContent data={formData} />;
+				content = <ConfirmContent web3={web3} data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:
