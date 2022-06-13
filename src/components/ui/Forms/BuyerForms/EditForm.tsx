@@ -72,7 +72,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 			try {
 				if (web3) {
 					const gasLimit = 1000000;
-					// TODO: encrypt poolAddress, username, password
 					const encryptedBuyerInput = toRfc2396(formData);
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 					const receipt: Receipt = await implementationContract.methods
@@ -80,9 +79,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 						.send({ from: userAccount, gas: gasLimit });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
-					} else {
-						// TODO: edit has failed, surface this to user
-					}
+					} else {}
 				}
 			} catch (error) {
 				const typedError = error as Error;

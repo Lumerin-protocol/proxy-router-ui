@@ -41,7 +41,6 @@ import _ from 'lodash';
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
 	// State and constants
-	// TODO: as webapp grows think of using context
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [isConnected, setIsConnected] = useState<boolean>(false);
 	const [web3, setWeb3] = useState<Web3>();
@@ -283,7 +282,7 @@ export const Main: React.FC = () => {
 			return (
 				<div className='flex flex-col items-center mt-20 md:mt-40 xl:mr-50 gap-4 text-center'>
 					<LumerinLandingPage />
-					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace Demo</p>
+					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
 					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
 					<div>{ActionButtons}</div>
 				</div>

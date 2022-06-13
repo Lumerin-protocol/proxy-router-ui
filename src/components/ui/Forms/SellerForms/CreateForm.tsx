@@ -65,7 +65,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 				if (web3) {
 					const contractDuration =
 						(formData.contractTime as number) < 24 ? (formData.contractTime as number) * 600 : (formData.contractTime as number) * 3600;
-					// TODO: update to actual validator address
 					const validatorAddress = '0x0000000000000000000000000000000000000000';
 					const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
 					const publicKeyHex = `04${publicKey.toString('hex')}`;

@@ -108,10 +108,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			}
 
 			try {
-				// const validatorFee = '100';
 				const gasLimit = 1000000;
 				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
-				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
 					// Check contract is available before increasing allowance
@@ -129,21 +127,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
 					if (receipt?.status) {
-						// Purchase contract
-						// TODO: encrypt with seller public key
-						// const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
-						// const publicKeyHex = `04${publicKey.toString('hex')}`;
-						// const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
+						// Purchase contract					
 						const encryptedBuyerInput = toRfc2396(formData);
 						const receipt: Receipt = await cloneFactoryContract?.methods
 							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
 							.send(sendOptions);
-						if (!receipt.status) {
-							// TODO: purchasing contract has failed, surface to user
-						}
-					} else {
-						// TODO: call to increaseAllowance() has failed, surface to user
-					}
+						if (!receipt.status) {}
+					} else {}
 				}
 				setContentState(ContentState.Complete);
 			} catch (error) {

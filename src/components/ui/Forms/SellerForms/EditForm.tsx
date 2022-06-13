@@ -60,7 +60,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 		if (isValid && contentState === ContentState.Pending) {
 			// Create contract
 			try {
-				// TODO: convert usd to lmr (aggregate of exchanges?)
 				if (web3) {
 					const gasLimit = 1000000;
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);

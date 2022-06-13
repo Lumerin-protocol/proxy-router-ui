@@ -1,7 +1,7 @@
 {
-	"name": "titan-proxyrouter-ui",
+	"name": "lumerin-proxyrouter-ui",
 	"version": "0.1.0",
-	"private": true,
+	"license": "MIT",
 	"dependencies": {
 		"@craco/craco": "^6.2.0",
 		"@fortawesome/fontawesome-svg-core": "^6.1.0",

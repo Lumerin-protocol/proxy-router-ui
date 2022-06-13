@@ -43,9 +43,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({ contracts, contractId, u
 						.send({ from: userAccount, gas: 1000000 });
 					if (receipt.status) {
 						setContentState(ContentState.Complete);
-					} else {
-						// TODO: cancellation has failed so surface to user
-					}
+					} else {}
 				}
 			} catch (error) {
 				const typedError = error as Error;
