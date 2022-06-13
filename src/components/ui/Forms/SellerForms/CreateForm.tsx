@@ -63,19 +63,15 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 			// Create contract
 			try {
 				if (web3) {
+					const contractDuration =
+						(formData.contractTime as number) < 24 ? (formData.contractTime as number) * 600 : (formData.contractTime as number) * 3600;
+					// TODO: update to actual validator address
 					const validatorAddress = '0x0000000000000000000000000000000000000000';
 					const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
 					const publicKeyHex = `04${publicKey.toString('hex')}`;
 					const price = multiplyByDigits(formData.listPrice as number);
 					const receipt = await cloneFactoryContract?.methods
-						.setCreateNewRentalContract(
-							price,
-							0,
-							formData.speed,
-							(formData.contractTime as number) * 3600,
-							validatorAddress,
-							publicKeyHex
-						)
+						.setCreateNewRentalContract(price, 0, formData.speed, contractDuration, validatorAddress, '')
 						.send({ from: userAccount });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);

@@ -3,7 +3,7 @@ import React, { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo,
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
-import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
+import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { Spinner } from './ui/Spinner';
@@ -12,12 +12,14 @@ import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
 import { divideByDigits } from '../web3/helpers';
+import Web3 from 'web3';
 import _ from 'lodash';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
 
 interface MyOrdersProps {
+	web3: Web3 | undefined;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
@@ -27,6 +29,7 @@ interface MyOrdersProps {
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
+	web3,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
@@ -81,7 +84,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					parseInt(updatedOrder.length as string),
 					currentBlockTimestamp
 				);
-				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
+				updatedOrder.length = updatedOrder.length as string;
 				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy');
 				updatedOrder.editCancel = (
 					<ButtonGroup
@@ -98,6 +101,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		return updatedOrders;
 	};
 
+	// TODO: if same as <MyContracts /> pull out into util function
 	const customSort: SortByFn<CustomTableOptions> = (rowA: Row, rowB: Row, columnId: string, desc?: boolean) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
@@ -135,7 +139,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
 					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
 					{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
-					{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
+					{ Header: 'DURATION (HOURS)', accessor: 'length', sortType: 'customSort' },
 					{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
 					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
 					{ Header: 'EDIT', accessor: 'editCancel', disableSortBy: true },
@@ -148,7 +152,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	// Remove spinner if no orders after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 60000);
+	}, 7000);
 
 	return (
 		<div className='flex flex-col items-center'>

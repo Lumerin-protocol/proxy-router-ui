@@ -14,6 +14,7 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
+	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
@@ -25,6 +26,7 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
+import { encrypt } from 'ecies-geth';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -69,6 +71,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
+			length: contract.length as string,
 		};
 	};
 
@@ -96,7 +99,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			// Order of events
 			// 1. Purchase hashrental contract
 			// 2. Transfer contract price (LMR) to escrow account
-			// 3. Call setPurchaseRentalContract to put contract in running state
+			// 3. Call setFundContract to put contract in running state
 
 			if (contract.price && lumerinbalance < divideByDigits(contract.price as number)) {
 				setAlertOpen(true);
@@ -105,8 +108,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			}
 
 			try {
+				// const validatorFee = '100';
 				const gasLimit = 1000000;
 				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
+				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
 					// Check contract is available before increasing allowance
@@ -125,13 +130,19 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						.send(sendOptions);
 					if (receipt?.status) {
 						// Purchase contract
-						const buyerInput = toRfc2396(formData);
+						// TODO: encrypt with seller public key
+						// const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
+						// const publicKeyHex = `04${publicKey.toString('hex')}`;
+						// const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
+						const encryptedBuyerInput = toRfc2396(formData);
 						const receipt: Receipt = await cloneFactoryContract?.methods
-							.setPurchaseRentalContract(contract.id, buyerInput)
+							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
 							.send(sendOptions);
 						if (!receipt.status) {
+							// TODO: purchasing contract has failed, surface to user
 						}
 					} else {
+						// TODO: call to increaseAllowance() has failed, surface to user
 					}
 				}
 				setContentState(ContentState.Complete);
@@ -171,7 +182,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirm as string;
-				content = <ConfirmContent data={formData} />;
+				content = <ConfirmContent web3={web3} data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:
