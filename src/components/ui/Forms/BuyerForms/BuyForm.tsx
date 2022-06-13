@@ -14,6 +14,7 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
+	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
@@ -25,6 +26,7 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
+import { encrypt } from 'ecies-geth';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -69,6 +71,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
+			length: contract.length as string,
 		};
 	};
 
@@ -96,7 +99,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			// Order of events
 			// 1. Purchase hashrental contract
 			// 2. Transfer contract price (LMR) to escrow account
-			// 3. Call setPurchaseRentalContract to put contract in running state
+			// 3. Call setFundContract to put contract in running state
 
 			if (contract.price && lumerinbalance < divideByDigits(contract.price as number)) {
 				setAlertOpen(true);
@@ -124,15 +127,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
 					if (receipt?.status) {
-						// Purchase contract
-						const buyerInput = toRfc2396(formData);
+						// Purchase contract					
+						const encryptedBuyerInput = toRfc2396(formData);
 						const receipt: Receipt = await cloneFactoryContract?.methods
-							.setPurchaseRentalContract(contract.id, buyerInput)
+							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
 							.send(sendOptions);
-						if (!receipt.status) {
-						}
-					} else {
-					}
+						if (!receipt.status) {}
+					} else {}
 				}
 				setContentState(ContentState.Complete);
 			} catch (error) {
@@ -171,7 +172,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirm as string;
-				content = <ConfirmContent data={formData} />;
+				content = <ConfirmContent web3={web3} data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:

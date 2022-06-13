@@ -131,7 +131,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 				break;
 			default:
 				buttonContent = buttonText.edit as string;
-				content = <ReviewContent register={register} errors={errors} data={formData} />;
+				content = <ReviewContent web3={web3} register={register} errors={errors} data={formData} />;
 		}
 	};
 	createContent();

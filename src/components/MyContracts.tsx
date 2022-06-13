@@ -2,7 +2,7 @@
 import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
-import { getLengthDisplay, getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
+import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
@@ -11,6 +11,7 @@ import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { ClaimLmrButton } from './ui/Forms/FormButtons/ClaimLmrButton';
+import Web3 from 'web3';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
 
@@ -18,6 +19,7 @@ import _ from 'lodash';
 interface CustomTableOptions extends ContractData, Header {}
 
 interface MyContractsProps {
+	web3: Web3 | undefined;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
@@ -27,6 +29,7 @@ interface MyContractsProps {
 }
 
 export const MyContracts: React.FC<MyContractsProps> = ({
+	web3,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
@@ -89,7 +92,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 								parseInt(updatedOrder.length as string),
 								currentBlockTimestamp
 						  );
-				updatedOrder.length = getLengthDisplay(parseInt(updatedOrder.length as string));
+				updatedOrder.length = updatedOrder.length as string;
 				updatedOrder.timestamp = getTimestamp(contract.timestamp as string, updatedOrder.state as string);
 				updatedOrder.editClaim = (
 					<ButtonGroup
@@ -147,7 +150,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
 					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
 					{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
-					{ Header: 'DURATION (DAYS)', accessor: 'length', sortType: 'customSort' },
+					{ Header: 'DURATION (HOURS)', accessor: 'length', sortType: 'customSort' },
 					{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
 					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
 					{ Header: 'EDIT', accessor: 'editClaim', disableSortBy: true },
@@ -160,10 +163,10 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 60000);
+	}, 7000);
 
 	return (
-		<div className='flex flex-col'>
+		<div className='flex flex-col items-center'>
 			{data.length > 1 ? <Table id='mycontracts' tableInstance={tableInstance} columnCount={6} /> : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>

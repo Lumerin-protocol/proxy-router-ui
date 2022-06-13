@@ -29,15 +29,15 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 		default:
 			return new WalletConnectProvider({
 				rpc: {
-					1: '',
-					3: '',
+					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
+					3: 'https://ropsten.connect.bloq.cloud/v1/stable-relax-science',
 				},
 				chainId: 3,
 				clientMeta: {
-					description: 'Welcome to the Global Hashpower Marketplace.',
-					url: '',
+					description: 'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',
+					url: 'https://token.sbx.lumerin.io',
 					icons: [''],
-					name: 'Global Hashpower Marketplace',
+					name: 'Lumerin Token Distribution',
 				},
 			});
 	}
@@ -82,7 +82,7 @@ export const getWeb3ResultAsync: (
 };
 
 // Wallet helpers
-// Allows user to choose which account they want to use in MetaMask
+// Allows user choose which account they want to use in MetaMask
 export const reconnectWalletAsync: () => void = async () => {
 	await ethereum?.request({
 		method: 'wallet_requestPermissions',
@@ -156,5 +156,5 @@ export const multiplyByDigits: (amount: number) => number = (amount) => {
 };
 
 export const divideByDigits: (amount: number) => number = (amount) => {
-	return amount / 10 ** 8;
+	return parseInt(String(amount / 10 ** 8));
 };
