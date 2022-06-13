@@ -13,10 +13,6 @@ interface ReviewContentProps {
 export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit }) => {
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
-	const checkboxLegend = 'Validator';
-	const checkboxLabel = 'Titan Validator Service';
-	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.';
-
 	return (
 		<React.Fragment>
 			<Alert message={AlertMessage.RemovePort} open={alertOpen} setOpen={setAlertOpen} />
@@ -92,7 +88,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 						className='review-no-errors review-input'
 					/>
 				</div>
-				{!isEdit && <Checkbox legend={checkboxLegend} label={checkboxLabel} description={checkboxDescription} register={register} />}
 			</div>
 		</React.Fragment>
 	);

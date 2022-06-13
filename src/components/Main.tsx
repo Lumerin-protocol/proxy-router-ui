@@ -75,8 +75,8 @@ export const Main: React.FC = () => {
 	const pathName = window.location.pathname;
 	const navigation: Navigation[] = [
 		{ name: 'Marketplace', to: PathName.Marketplace, icon: <MarketplaceIcon />, current: pathName === PathName.Marketplace },
-		{ name: 'My Orders', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
-		{ name: 'My Contracts', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
+		{ name: 'Buyer Hub', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
+		{ name: 'Seller Hub', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
 	];
 
 	// Onboard metamask and set wallet text
@@ -122,6 +122,7 @@ export const Main: React.FC = () => {
 		if (alertOpen) setIsConnected(false);
 	}, [alertOpen]);
 
+	// Get timestamp of current block
 	const getCurrentBlockTimestampAsync: () => void = async () => {
 		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
 		setCurrentBlockTimestamp(currentBlockTimestamp as number);
@@ -136,7 +137,7 @@ export const Main: React.FC = () => {
 			const {
 				0: state,
 				1: price,
-				2: limit, // not used at the moment
+				2: limit,
 				3: speed,
 				4: length,
 				5: timestamp,
@@ -235,6 +236,7 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<MyOrders
 							{...props}
+							web3={web3}
 							userAccount={userAccount}
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
@@ -249,6 +251,7 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<MyContracts
 							{...props}
+							web3={web3}
 							userAccount={userAccount}
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
@@ -294,8 +297,8 @@ export const Main: React.FC = () => {
 	const getPageTitle: () => string = () => {
 		if (contracts.length === 0) return '';
 		if (pathName === PathName.Marketplace) return 'Marketplace';
-		if (pathName === PathName.MyOrders) return 'My Orders';
-		if (pathName === PathName.MyContracts) return 'My Contracts';
+		if (pathName === PathName.MyOrders) return 'Buyer Hub';
+		if (pathName === PathName.MyContracts) return 'Seller Hub';
 		return '';
 	};
 
@@ -566,8 +569,9 @@ export const Main: React.FC = () => {
 							: 'hidden'
 					}
 				>
-					<p>Welcome to the Lumerin Hashrate marketplace.</p>
-					<p> Tap buy to purchase any of the contracts below.</p>
+					<p>Welcome to the Lumerin Marketplace Beta,</p>
+					<p>please provide feedback or submit any bugs you notice at:</p>
+					<p><a className="link" href="https://github.com/Lumerin-protocol/proxy-router/issues">https://github.com/Lumerin-protocol/proxy-router/issues</a></p>
 				</div>
 				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent()}</main>
 			</div>

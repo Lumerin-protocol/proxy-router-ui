@@ -1,6 +1,6 @@
 # Proxy Router UI
 
-UI for buying and selling hashrate
+UI for controlling a miner through a smart contract
 
 # Getting Started with Create React App
 

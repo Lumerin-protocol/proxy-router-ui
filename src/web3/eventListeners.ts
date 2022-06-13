@@ -24,6 +24,7 @@ export const registerEventListeners: (
 		if (walletName === WalletText.ConnectViaMetaMask) reconnectWalletAsync();
 	};
 
+	// chainChanged
 	const handleChainChanged: (chainId: string) => void = async (chainId) => {
 		console.log(`on chain changed: ${chainId}`);
 		if (walletName === WalletText.ConnectViaWalletConnect) {
@@ -38,6 +39,7 @@ export const registerEventListeners: (
 		window.location.reload();
 	};
 
+	// accountsChanged
 	const handleAccountsChanged: (accounts: string[]) => void = (accounts) => {
 		console.log('on accounts changed');
 		if (accounts.length === 0 || accounts[0] === '') {

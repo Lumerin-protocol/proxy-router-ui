@@ -39,8 +39,8 @@ export enum StatusText {
 
 export enum PathName {
 	Marketplace = '/',
-	MyOrders = '/myorders',
-	MyContracts = '/mycontracts',
+	MyOrders = '/buyerhub',
+	MyContracts = '/sellerhub',
 }
 
 export enum AlertMessage {
@@ -106,6 +106,7 @@ export interface InputValuesBuyForm {
 export interface FormData extends InputValuesBuyForm {
 	speed?: string;
 	price?: string;
+	length?: string;
 }
 
 export interface InputValuesCreateForm {
