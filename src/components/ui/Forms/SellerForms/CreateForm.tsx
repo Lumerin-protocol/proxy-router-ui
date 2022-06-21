@@ -70,8 +70,14 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 					const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
 					const publicKeyHex = `04${publicKey.toString('hex')}`;
 					const price = multiplyByDigits(formData.listPrice as number);
+					let speed;
+					if (formData && formData.speed) {
+						speed = (formData.speed) * 10 ** 12;
+					} else {
+						speed = 0;
+					}
 					const receipt = await cloneFactoryContract?.methods
-						.setCreateNewRentalContract(price, 0, formData.speed, contractDuration, validatorAddress, '')
+						.setCreateNewRentalContract(price, 0, speed, contractDuration, validatorAddress, '')
 						.send({ from: userAccount });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
