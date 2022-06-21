@@ -77,7 +77,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 						speed = 0;
 					}
 					const receipt = await cloneFactoryContract?.methods
-						.setCreateNewRentalContract(price, 0, speed.toFixed(20), contractDuration, validatorAddress, '')
+						.setCreateNewRentalContract(price, 0, speed.toFixed(12), contractDuration, validatorAddress, '')
 						.send({ from: userAccount });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
