@@ -65,11 +65,17 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 					const gasLimit = 1000000;
 					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
 					const price = multiplyByDigits(formData.listPrice as number);
+					let speed;
+					if (formData && formData.speed) {
+						speed = (formData.speed) * 10 ** 12;
+					} else {
+						speed = 0;
+					}
 					const receipt = await implementationContract.methods
 						.setUpdatePurchaseInformation(
 							price,
 							0,
-							formData.speed,
+							speed,
 							(formData.contractTime as number) * 3600,
 							CloseOutType.CloseNoClaimAtCompletion
 						)
