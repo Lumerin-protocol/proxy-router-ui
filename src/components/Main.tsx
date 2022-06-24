@@ -463,12 +463,12 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
-			<div className={contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
+			<div className={!isConnected && contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
 				<LogoIcon />
 			</div>
 
 			{/* Static sidebar for desktop */}
-			<div className={contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0'}>
+			<div className={!isConnected && contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0'}>
 				<div className='flex flex-col w-64'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
