@@ -55,7 +55,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 					/>
 				);
 				updatedContract.price = divideByDigits(updatedContract.price as number);
-				updatedContract.length = updatedContract.length as string;
+				updatedContract.speed = String(Number(updatedContract.speed) / 10 ** 12);
+				updatedContract.length = String(parseInt(updatedContract.length as string) / 3600);
 				updatedContract.trade = (
 					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
 				);
