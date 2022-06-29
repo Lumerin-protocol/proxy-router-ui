@@ -92,7 +92,9 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 								parseInt(updatedOrder.length as string),
 								currentBlockTimestamp
 						  );
-				updatedOrder.length = updatedOrder.length as string;
+				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
+				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
+				//updatedOrder.length = updatedOrder.length as string;
 				updatedOrder.timestamp = getTimestamp(contract.timestamp as string, updatedOrder.state as string);
 				updatedOrder.editClaim = (
 					<ButtonGroup
