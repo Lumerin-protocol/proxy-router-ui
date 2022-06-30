@@ -32,7 +32,7 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 			return new WalletConnectProvider({
 				rpc: {
 					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
-					3: 'https://ropsten.connect.bloq.cloud/v1/stable-relax-science',
+					3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
 				},
 				chainId: 3,
 				clientMeta: {
