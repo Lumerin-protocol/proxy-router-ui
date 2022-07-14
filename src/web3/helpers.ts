@@ -68,7 +68,8 @@ export const getWeb3ResultAsync: (
 			const web3 = new Web3(provider as provider);
 			const networkId = await web3.eth.net.getId();
 			//const deployedNetwork = (CloneFactory as ContractJson).networks[networkId]; // temp comment for testing 6/21 - MAY
-			const deployedNetwork = {address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4'};
+			//const deployedNetwork = {address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4'}; //prod-beta 7/14/2022 - ABS 
+			const deployedNetwork = {address: '0x5e2081Cb0A852D207335eeA7B0E421Ee655F2f4e'}; //Dev-stg testing 7/14/2022 -ABS 
 			const accounts = await web3.eth.getAccounts();
 			if (accounts.length === 0 || accounts[0] === '') {
 				setAlertOpen(true);
