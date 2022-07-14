@@ -32,6 +32,10 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { po
 				<p>{String(parseInt(length as string) / 3600)}</p>
 			</div>
 			<div className='confirm-div'>
+				<p>Duration (HOURS)</p>
+				<p>{length}</p>
+			</div>
+			<div className='confirm-div'>
 				<p>Price (LMR)</p>
 				<p>{price ? divideByDigits(parseInt(price)) : price}</p>
 			</div>
