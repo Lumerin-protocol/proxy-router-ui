@@ -1,94 +1,45 @@
 stages:
-    - build
+    - develop
     - review
     - deploy
 
-bedrock-00-build:
-    stage: build
+before_script: 
+    - echo "*****************************"
+    - echo "Logging in to Titanio-NET ECR ..."
+    - echo "*****************************"
+    - docker system prune -af
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $CI_AWS_TitanIO_NET_ECR
+after_script: 
+    - echo "*****************************"
+    - echo "Preparing deployment of $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG to $TGT_ACCOUNT, titanio-$TGT_ENV Environment..."
+    - echo "*****************************"        
+    - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
+    - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO'"') > input.json
+    - echo $(cat input.json | jq '.taskDefinition') > input.json
+    - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
+    - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
+    - echo "Review input.json file...."
+    - cat input.json
+
+    - echo "*****************************"        
+    - echo "Deploying new container definition..."
+    - echo "*****************************"        
+    - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
+    - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
+    - echo $REVISION
+    - echo "Review Cluster Definition...."
+    - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
+    - echo "Review Service Definition...."
+    - echo $CI_AWS_ECS_SERVICE
+    - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
+
+bedrock-02-dev:
+    stage: develop
     only:
-        - sbx
         - dev
-        - development
-    # when: manual
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
         - devops 
-        - bedrock
-        - titanio-sbx
-        - shell
-    variables: 
-        TGT_ACCOUNT: $CI_AWS_ACCOUNT_SBX
-        TGT_ENV: sbx
-    script:
-        - echo "Logging in..."
-        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
-        - docker system prune -af
-        - echo "Combined Repo and Tag....."
-        - echo $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG
-        - echo "Building image..."
-        - docker build -t $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:latest --no-cache .
-        - echo "Tagging image..."
-        - docker tag $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:latest $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG
-        - echo "Pushing image..."
-        - docker push $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:latest
-        - docker push $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG
-
-titanio-01-sbx:
-    stage: review
-    only:
-        - development
-        - dev
-        - sbx
-    # when: manual
-    image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
-    tags:
-        - devops
-        - bedrock
-        - titanio-sbx
-        - shell
-    variables: 
-        TGT_ACCOUNT: $CI_AWS_ACCOUNT_SBX
-        TGT_ENV: sbx
-    script:
-        - echo Deploying to $TGT_ACCOUNT, titanio-$TGT_ENV Environment
-        - echo "Logging in..."
-        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
-        - docker system prune -af
-        - echo "Combined Repo and Tag....."
-        - echo $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG
-
-        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
-        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG'"') > input.json
-        - echo $(cat input.json | jq '.taskDefinition') > input.json
-        - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
-  
-        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
-        - echo "Review input.json file...."
-        - cat input.json
-        - echo "Registering new container definition..."
-        - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-        - echo $REVISION
-        - echo "Review Cluster Definition...."
-        - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
-        - echo "Review Service Definition...."
-        - echo $CI_AWS_ECS_SERVIC
-        - echo "Updating the SBX Industrialized service..."
-        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
-
-
-titanio-02-dev:
-    stage: deploy
-    only: 
-        - development
-        - dev
-        - sbx
-    when: manual
-    image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
-    tags:
-        - devops
         - bedrock
         - titanio-dev
         - shell
@@ -96,42 +47,25 @@ titanio-02-dev:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_DEV
         TGT_ENV: dev
     script:
-        - echo Deploying to $TGT_ACCOUNT, titanio-$TGT_ENV Environment
-        - echo "Logging in..."
-        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
         - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
-        - docker system prune -af
         - echo "Combined Repo and Tag....."
-        - echo $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG
-
-        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
-        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:latest'"') > input.json
-        - echo $(cat input.json | jq '.taskDefinition') > input.json
-        - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
-               
-        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
-        
-        - echo "Review input.json file...."
-        - cat input.json
-        - echo "Registering new container definition..."
-        - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-        - echo $REVISION
-        - echo "Review Cluster Definition...."
-        - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
-        - echo "Review Service Definition...."
-        - echo $CI_AWS_ECS_SERVIC
-        - echo "Updating the SBX Industrialized service..."
-        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
+        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG 
+        - echo "*****************************"       
+        - echo "Building image..."
+        - echo "*****************************"
+        - docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+        - echo "Tagging image..."
+        - docker tag  $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - echo "*****************************"        
+        - echo "Pushing image..."
+        - echo "*****************************"        
+        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest
 
 titanio-03-stg:
-    stage: deploy
+    stage: review
     only:
-        - development
         - stg
-        - dev
-        - sbx
-    when: manual
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
         - devops
@@ -142,40 +76,26 @@ titanio-03-stg:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_STG
         TGT_ENV: stg
     script:
-        - echo Deploying to $TGT_ACCOUNT, titanio-$TGT_ENV Environment
-        - echo "Logging in..."
-        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
         - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
-        - docker system prune -af
         - echo "Combined Repo and Tag....."
-        - echo $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG
-
-        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
-        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG'"') > input.json
-        - echo $(cat input.json | jq '.taskDefinition') > input.json
-        - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
-              
-        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
-        - echo "Review input.json file...."
-        - cat input.json
-        - echo "Registering new container definition..."
-        - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-        - echo "Review Cluster Definition...."
-        - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
-        - echo "Review Service Definition...."
-        - echo $CI_AWS_ECS_SERVIC
-        - echo "Updating the SBX Industrialized service..."
-        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
+        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG 
+        - echo "*****************************"       
+        - echo "Building image..."
+        - echo "*****************************"
+        - docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+        - echo "Tagging image..."
+        - docker tag  $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - echo "*****************************"        
+        - echo "Pushing image..."
+        - echo "*****************************"        
+        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest
 
 titanio-04-lmn-PROD:
     stage: deploy
     only:
-        - development
         - lmn
-        - stg
-        - dev
-        - sbx
+        - main
     when: manual
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
@@ -187,28 +107,6 @@ titanio-04-lmn-PROD:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_LMN
         TGT_ENV: lmn
     script:
-        - echo "Logging in..."
-        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
-        - docker system prune -af
-        - echo "Combined Repo and Tag....."
-        - echo $TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG
-
-        - echo Deploying to $TGT_ACCOUNT, titanio-$TGT_ENV Environment
-        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
-        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$TGT_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CI_AWS_ECR_REPO:$IMAGE_TAG'"') > input.json
-        - echo $(cat input.json | jq '.taskDefinition') > input.json
-        - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
-               
-        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
-        - echo "Review input.json file...."
-        - cat input.json
-        - echo "Registering new container definition..."
-        - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-        - echo "Review Cluster Definition...."
-        - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
-        - echo "Review Service Definition...."
-        - echo $CI_AWS_ECS_SERVIC
-        - echo "Updating the SBX Industrialized service..."
-        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
+        - echo "*****************************"
+        - echo "Production Deployment"
+        - echo "*****************************"
