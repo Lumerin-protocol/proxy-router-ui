@@ -14,7 +14,6 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
-	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
@@ -26,7 +25,6 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
-import { encrypt } from 'ecies-geth';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {

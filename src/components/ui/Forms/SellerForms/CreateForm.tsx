@@ -68,7 +68,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 					// TODO: update to actual validator address
 					const validatorAddress = '0x0000000000000000000000000000000000000000';
 					const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
-					const publicKeyHex = `04${publicKey.toString('hex')}`;
+					// const publicKeyHex = `04${publicKey.toString('hex')}`;
 					const price = multiplyByDigits(formData.listPrice as number);
 					let speed;
 					if (formData && formData.speed) {

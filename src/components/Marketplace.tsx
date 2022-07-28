@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Column, useTable, useSortBy, SortByFn, Row, usePagination } from 'react-table';
+import { Column, useTable, useSortBy, SortByFn, Row } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { Table } from './ui/Table';
@@ -40,7 +40,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 
 	const getTableData: () => HashRentalContract[] = () => {
 		const availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
-		// Add emtpy row for styling
+		// Add empty row for styling
 		availableContracts.unshift({});
 		const updatedContracts = availableContracts.map((contract) => {
 			const updatedContract = { ...contract };
