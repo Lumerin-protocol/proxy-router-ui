@@ -7,7 +7,7 @@ const { colors } = require('styles/styles.config.js');
 
 enum buyText {
 	thankYou= 'Thank you for purchasing Hashpower from Lumerin!',
-	view = 'The hashpower you purchased will be routed shortly. Please note that hashrate may take some time to show up in mining pool and expect normal miner variance from minute to minute due to mining hardware fluctuations.',
+	view = 'The hashpower you purchased will be routed shortly. Please note connection times to mining pools may vary depending on your hardware and the amount of hashpower being transmitted.',
 };
 
 enum editText {
