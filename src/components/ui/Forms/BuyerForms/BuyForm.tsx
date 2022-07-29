@@ -14,7 +14,6 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
-	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
@@ -26,7 +25,6 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
-import { encrypt } from 'ecies-geth';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -208,11 +206,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				open={alertOpen}
 				setOpen={setAlertOpen}
 			/>
-			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
+			<div className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium`}>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
-						<p className='text-3xl'>Purchase Hashpower</p>
-						<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
+						<h1 className='text-3xl pb-2'>Purchase Hashpower</h1>
+						<p className='font-normal mb-3'>Enter the Pool Address, Port Number, and Username you are pointing the purchased hashpower to.</p>
+						<span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded">Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</span>
 					</div>
 				</div>
 				{content}
