@@ -3,7 +3,7 @@ import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
 import { isValidPoolAddress } from '../../../../utils';
 import { Alert } from '../../Alert';
-import { Checkbox } from '../../Checkbox';
+// import { Checkbox } from '../../Checkbox';
 
 interface ReviewContentProps {
 	register: UseFormRegister<InputValuesBuyForm>;
