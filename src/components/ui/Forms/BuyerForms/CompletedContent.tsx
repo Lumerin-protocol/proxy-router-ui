@@ -5,14 +5,14 @@ import { Spinner } from '../../Spinner';
 import { ContentState } from '../../../../types';
 const { colors } = require('styles/styles.config.js');
 
-const buyText = {
-	thankYou: 'Thank you for purchasing Hashpower from Lumerin!',
-	view: 'The hashpower you purchased will be routed shortly. Please note that hashrate may take some time to show up in mining pool and expect normal miner variance from minute to minute due to mining hardware fluctuations.',
+enum buyText {
+	thankYou= 'Thank you for purchasing Hashpower from Lumerin!',
+	view = 'The hashpower you purchased will be routed shortly. Please note that hashrate may take some time to show up in mining pool and expect normal miner variance from minute to minute due to mining hardware fluctuations.',
 };
 
-const editText = {
-	thankYou: 'Thank you for updating your Hashpower Order.',
-	view: 'Your changes will be effective shortly.',
+enum editText {
+	thankYou =  'Thank you for updating your Hashpower Order.',
+	view = 'Your changes will be effective shortly.',
 };
 
 interface CompletedContentProps {
