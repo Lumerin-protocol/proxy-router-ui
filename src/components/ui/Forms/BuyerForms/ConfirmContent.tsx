@@ -10,7 +10,7 @@ interface ConfirmContentProps {
 
 export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { poolAddress, portNumber, username, speed, price, withValidator, length } }) => {
 	return (
-		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm'>
+		<div className='flex flex-col bg-white px-8 pt-6 text-sm'>
 			<div className='confirm-div'>
 				<p>Pool Address</p>
 				<p>{poolAddress}</p>
