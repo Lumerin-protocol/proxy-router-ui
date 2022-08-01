@@ -29,6 +29,8 @@
 		"ecies-geth": "^1.6.2",
 		"ethereumjs-tx": "^2.1.2",
 		"ethereumjs-util": "^7.1.4",
+		"ethers": "^5.5.4",
+		"hardhat": "^2.8.4",
 		"lodash": "^4.17.21",
 		"luxon": "^2.0.2",
 		"react": "^17.0.2",
