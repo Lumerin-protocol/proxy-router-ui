@@ -94,7 +94,6 @@ titanio-03-stg:
 titanio-04-lmn-PROD:
     stage: deploy
     only:
-        - lmn
         - main
     when: manual
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
@@ -107,6 +106,20 @@ titanio-04-lmn-PROD:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_LMN
         TGT_ENV: lmn
     script:
+        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
+        - echo "Combined Repo and Tag....."
+        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG 
+        - echo "*****************************"       
+        - echo "Building image..."
+        - echo "*****************************"
+        - docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+        - echo "Tagging image..."
+        - docker tag  $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - echo "*****************************"        
+        - echo "Pushing image..."
+        - echo "*****************************"        
+        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest
         - echo "*****************************"
         - echo "Production Deployment"
         - echo "*****************************"
