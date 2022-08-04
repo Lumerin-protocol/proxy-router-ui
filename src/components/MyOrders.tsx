@@ -114,6 +114,8 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				return sortByNumber(rowA.values.price, rowB.values.price, SortByType.Int);
 			case 'length':
 				return sortByNumber(rowA.values.length, rowB.values.length, SortByType.Float);
+			case 'speed':
+				return sortByNumber(rowA.values.speed, rowB.values.speed, SortByType.Int);
 			case 'started':
 				return sortByNumber(rowA.values.timestamp, rowB.values.timestamp, SortByType.Int);
 			case 'progress':
@@ -141,6 +143,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
 					{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
 					{ Header: 'DURATION (HOURS)', accessor: 'length', sortType: 'customSort' },
+					{ Header: 'SPEED (TH/S)', accessor: 'speed', sortType: 'customSort' },
 					{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
 					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
 					{ Header: 'EDIT', accessor: 'editCancel', disableSortBy: true },
