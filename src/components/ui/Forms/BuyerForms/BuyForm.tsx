@@ -129,10 +129,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 					// Approve clone factory contract to transfer LMR on buyer's behalf
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
-					const receipt: Receipt = await lumerinTokenContract.methods
-						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
-						.send(sendOptions);
-					if (receipt?.status) {
+					console.log('the cat jumps over the moon')
+					//const receipt: Receipt = await lumerinTokenContract.methods
+					//	.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
+					//	.send(sendOptions);
+					//if (receipt?.status) {
+					if (true) {
+						console.log('in purchase section')
 						// Purchase contract
 						// TODO: encrypt with seller public key ABC123
 						// const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
@@ -144,15 +147,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						const pubKey = await getPublicKey(contractCreationTx)
 						//const encryptedBuyerInput = await encryptMessage("0x0407faace00e7288f8a42c57e22b0b980dd4a477da7ab29f0bf9530cfd6b620f1cf8e94ea0ed0942b23abcce86e80c06e5690579e9869e9aba42a872ce661d0464",buyerInput);
 						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
-						console.log(encryptedBuyerInput)
-						//const receipt: Receipt = await cloneFactoryContract?.methods
-						//	.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
+						//printError("encryptedInput key: ", encryptedBuyerInput.toString())
 						//	.send(sendOptions);
 						//if (!receipt.status) {
 						//	// TODO: purchasing contract has failed, surface to user
 						//}
 					} else {
 						// TODO: call to increaseAllowance() has failed, surface to user
+						console.log('increase allowance failed')
 					}
 				}
 				setContentState(ContentState.Complete);
