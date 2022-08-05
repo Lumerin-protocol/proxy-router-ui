@@ -62,7 +62,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 
 	const getTableData: () => ContractData[] = () => {
 		const buyerOrders = contracts.filter((contract) => contract.buyer === userAccount && contract.state === ContractState.Running);
-		// Add emtpy row for styling
+		// Add empty row for styling
 		buyerOrders.unshift({});
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
