@@ -17,13 +17,12 @@ import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
-import { Transaction} from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { Transaction as Web3Transaction } from 'web3-eth';
-import { Transaction as EthJsTx } from 'ethereumjs-tx';
+import { Transaction as EthJsTx} from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
 import { abi, bytecode  } from './contracts/CloneFactory.json'
-import {ecrecover} from 'ethereumjs-util';
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
@@ -74,14 +73,19 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
 export const getPublicKey = async (txId: string) => {
 	let provider = ethers.getDefaultProvider('https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a')
   let tx = await provider.getTransaction(txId)!
-	let transaction = Transaction.fromTxData(
+	console.log(txId)
+	console.log(tx)
+	let transaction = FeeMarketEIP1559Transaction.fromTxData(
 		{
+			chainId: tx.chainId,
 			nonce: tx.nonce,
-			gasPrice: Number(tx.gasPrice),
+			maxPriorityFeePerGas: Number(tx.maxPriorityFeePerGas),
+			maxFeePerGas: Number(tx.maxFeePerGas),
 			gasLimit: Number(tx.gasLimit),
 			to: tx.to,
 			value: Number(tx.value),
 			data: tx.data,
+			accessList: tx.accessList,
 			v: tx.v,
 			r: tx.r,
 			s: tx.s
@@ -116,9 +120,7 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	if (event) {
 		tx = event.transactionHash
 	}
-  //tx = await ethers.provider.getTransaction(tx)
-	//return tx
-	return '0xd05463ba9ee74fbb6cbb76e3844100a27ab3beb28f759094376b6157d9bef5db'
+	return tx
 }
 
 export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>) => boolean = (
