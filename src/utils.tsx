@@ -102,8 +102,7 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	let provider = ethers.getDefaultProvider('https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a')
 
   //the clonefactory contract address should become a variable that is configurable
-  //let cloneFactory = await CloneFactory.attach('0x702B0b76235b1DAc489094184B7790cAA9A39Aa4') //this is the main ropsten clone factory address
-  let cloneFactory = await cf.attach('0x6372689Fd4A94AE550da5Db7B13B9289F4855dDc') //this is used for testing encryption through the webUI. do not version into dev
+  let cloneFactory = await cf.attach('0x702B0b76235b1DAc489094184B7790cAA9A39Aa4') //this is the main ropsten clone factory address
 	cloneFactory = await cloneFactory.connect(provider)
 
 

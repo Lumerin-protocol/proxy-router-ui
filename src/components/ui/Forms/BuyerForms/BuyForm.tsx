@@ -6,7 +6,6 @@ import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import { getButton, printError, toRfc2396, encryptMessage, truncateAddress, getCreationTxIDOfContract, getPublicKey } from '../../../../utils';
-//import { getButton, printError, toRfc2396, encryptMessage, truncateAddress} from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -130,24 +129,17 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					// Approve clone factory contract to transfer LMR on buyer's behalf
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
 					console.log('the cat jumps over the moon')
-					//const receipt: Receipt = await lumerinTokenContract.methods
-					//	.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
-					//	.send(sendOptions);
-					//if (receipt?.status) {
-					if (true) {
+					const receipt: Receipt = await lumerinTokenContract.methods
+						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
+						.send(sendOptions);
+					if (receipt?.status) {
 						console.log('in purchase section')
 						// Purchase contract
-						// TODO: encrypt with seller public key ABC123
-						// const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
-						// const publicKeyHex = `04${publicKey.toString('hex')}`;
-						// const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
 						const buyerInput: string = toRfc2396(formData)!;
 						let contractAddress = contract.id!
 						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString())
 						const pubKey = await getPublicKey(contractCreationTx)
-						//const encryptedBuyerInput = await encryptMessage("0x0407faace00e7288f8a42c57e22b0b980dd4a477da7ab29f0bf9530cfd6b620f1cf8e94ea0ed0942b23abcce86e80c06e5690579e9869e9aba42a872ce661d0464",buyerInput);
 						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
-						//printError("encryptedInput key: ", encryptedBuyerInput.toString())
 						//	.send(sendOptions);
 						//if (!receipt.status) {
 						//	// TODO: purchasing contract has failed, surface to user
