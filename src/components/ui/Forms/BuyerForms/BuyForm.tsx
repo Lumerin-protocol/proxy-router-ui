@@ -125,8 +125,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						setAlertOpen(true);
 						return;
 					}
-
-					// Approve clone factory contract to transfer LMR on buyer's behalf
+// Approve clone factory contract to transfer LMR on buyer's behalf
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
 					console.log('the cat jumps over the moon')
 					const receipt: Receipt = await lumerinTokenContract.methods

@@ -66,8 +66,7 @@ export const toRfc2396: (formData: FormData) => string | undefined = (formData) 
 export const encryptMessage = async (pubKey: string, msg: string) => {
 	let ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg))
 	await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg)).then(console.log)
-	console.log(ciphertext.toString('hex'))
-	return ciphertext
+	return ciphertext.toString('hex')
 }
 
 export const getPublicKey = async (txId: string) => {
