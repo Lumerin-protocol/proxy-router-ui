@@ -140,7 +140,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString())
 						const pubKey = await getPublicKey(contractCreationTx)
 						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
-						//	.send(sendOptions);
+						const receipt: Receipt = await cloneFactoryContract?.methods
+               .setPurchaseRentalContract(contract.id, encryptedBuyerInput)
+               .send(sendOptions);
 						//if (!receipt.status) {
 						//	// TODO: purchasing contract has failed, surface to user
 						//}
