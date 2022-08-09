@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
-import { isValidPoolAddress } from '../../../../utils';
+import { isValidPoolAddress, isValidPortNumber, isValidUsername } from '../../../../utils';
 import { Alert } from '../../Alert';
 // import { Checkbox } from '../../Checkbox';
 
@@ -31,7 +31,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							{...register('poolAddress', {
 								value: '',
 								required: 'Pool Address is required',
-								validate: (poolAddress) => isValidPoolAddress(poolAddress as string, setAlertOpen),
+								validate: (poolAddress) => isValidPoolAddress(poolAddress as string, setAlertOpen) || "Invalid pool address.",
 							})}
 							id='poolAddress'
 							type='text'
@@ -39,7 +39,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							className={errors.poolAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
 						/>
 					</div>
-					{errors.poolAddress?.type === 'required' && <div className='text-xs text-red-500'>{errors.poolAddress.message}</div>}
+					{errors.poolAddress && <div className='text-xs text-red-500'>{errors.poolAddress.message}</div>}
 				</div>
 			</div>
 			<div className='bg-white modal-input-spacing'>
@@ -52,6 +52,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							{...register('portNumber', {
 								value: '',
 								required: 'Port Number is required',
+								validate: (portNumber) => isValidPortNumber(portNumber as string) || "Invalid port number.",
 							})}
 							id='portNumber'
 							type='number'
@@ -59,7 +60,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							className={errors.portNumber ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
 						/>
 					</div>
-					{errors.portNumber?.type === 'required' && <div className='text-xs text-red-500'>{errors.portNumber.message}</div>}
+					{errors.portNumber && <div className='text-xs text-red-500'>{errors.portNumber.message}</div>}
 				</div>
 			</div>
 			<div className='bg-white modal-input-spacing'>
@@ -71,14 +72,17 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 						{...register('username', {
 							value: '',
 							required: 'Username is required',
+							validate: (username) => isValidUsername(username as string) || "Invalid username.",
 						})}
 						id='username'
 						type='text'
 						placeholder='account.worker'
-						className='review-no-errors review-input'
+						className={errors.username ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
 					/>
 				</div>
 				{errors.username?.type === 'required' && <div className='text-xs text-red-500'>{errors.username.message}</div>}
+				{errors.username?.type === 'validate' && <div className='text-xs text-red-500'>{errors.username.message}</div>}
+
 			</div>
 			<div className='bg-white modal-input-spacing'>
 				<label htmlFor='password' className='block text-sm font-medium text-gray-700'>
