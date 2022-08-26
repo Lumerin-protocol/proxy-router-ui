@@ -6,8 +6,14 @@ interface CancelButtonProps {
 	cancelClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const CancelButton: React.FC<CancelButtonProps> = ({ contractId, setContractId, cancelClickHandler }) => {
-	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (event) => {
+export const CancelButton: React.FC<CancelButtonProps> = ({
+	contractId,
+	setContractId,
+	cancelClickHandler,
+}) => {
+	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (
+		event
+	) => {
 		setContractId(contractId);
 		cancelClickHandler(event);
 	};

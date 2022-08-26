@@ -49,13 +49,13 @@
 		"start": "craco start",
 		"build": "craco build",
 		"test": "craco test",
-		"eject": "react-scripts eject"
-	},
-	"eslintConfig": {
-		"extends": [
-			"react-app",
-			"react-app/jest"
-		]
+		"eject": "react-scripts eject",
+		"lint": "eslint \"**/*.{ts,tsx,js,jsx}\"",
+		"lint:fix": "npm run lint -- --fix",
+		"prettier": "npx prettier src --check",
+		"prettier:fix": "npm run prettier -- --write",
+		"format": "npm run prettier:fix && npm run lint:fix",
+		"prepare": "husky install",
 	},
 	"browserslist": {
 		"production": [
@@ -76,8 +76,13 @@
 		"@welldone-software/why-did-you-render": "^6.2.0",
 		"autoprefixer": "^9.8.6",
 		"debug": "^4.3.2",
+		"eslint": "^7.32.0",
+		"husky": "^8.0.0",
+		"lint-staged": "^13.0.3",
 		"postcss": "^7.0.36",
-		"tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7"
+		"prettier": "2.7.1",
+		"tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7",
+		"tslint-config-prettier": "^1.18.0"
 	},
 	"jest": {
 		"moduleNameMapper": {

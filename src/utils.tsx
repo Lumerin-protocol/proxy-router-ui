@@ -30,7 +30,10 @@ declare module 'web3-core' {
 
 // STRING HELPERS
 // Get address based on desired length
-export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (address, desiredLength) => {
+export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (
+	address,
+	desiredLength
+) => {
 	let index;
 	switch (desiredLength) {
 		case AddressLength.SHORT:
@@ -44,7 +47,10 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 		default:
 			index = 10;
 	}
-	return `${address.substring(0, index)}...${address.substring(address.length - index, address.length)}`;
+	return `${address.substring(0, index)}...${address.substring(
+		address.length - index,
+		address.length
+	)}`;
 };
 
 // Convert buyer input into RFC2396 URL format
@@ -58,10 +64,10 @@ export const toRfc2396: (formData: FormData) => string | undefined = (formData) 
 	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
 };
 
-export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>) => boolean = (
-	poolAddress,
-	setAlertOpen
-) => {
+export const isValidPoolAddress: (
+	poolAddress: string,
+	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>
+) => boolean = (poolAddress, setAlertOpen) => {
 	const regexPortNumber = /:\d+/;
 	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
 	if (hasPortNumber) setAlertOpen(true);
@@ -70,12 +76,12 @@ export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispa
 };
 
 // Make sure username contains no spaces
-export const isValidUsername: (username: string) => boolean = (username) => !!username.match(/^\S*$/)
+export const isValidUsername: (username: string) => boolean = (username) =>
+	!!username.match(/^\S*$/);
 
 // Make sure port number is a number between 1 and 65535
-export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) => (
-	Number(portNumber) > 0 && Number(portNumber) < 65536
-)
+export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>
+	Number(portNumber) > 0 && Number(portNumber) < 65536;
 
 // HTML HELPERS
 // Dynamically set classes for html elements
@@ -108,23 +114,39 @@ export const setMediaQueryListOnChangeHandler: (
 	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
 };
 
-export const isNoClaim: (userAccount: string, sellerAccount: string) => boolean = (userAccount, sellerAccount) => {
+export const isNoClaim: (userAccount: string, sellerAccount: string) => boolean = (
+	userAccount,
+	sellerAccount
+) => {
 	return userAccount !== sellerAccount;
 };
 
-export const isNoEditBuyer: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+export const isNoEditBuyer: (contract: HashRentalContract, userAccount: string) => boolean = (
+	contract,
+	userAccount
+) => {
 	return contract.buyer === userAccount && contract.state !== ContractState.Running;
 };
 
-export const isNoEditSeller: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+export const isNoEditSeller: (contract: HashRentalContract, userAccount: string) => boolean = (
+	contract,
+	userAccount
+) => {
 	return contract.seller === userAccount && contract.state === ContractState.Running;
 };
 
-export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (
+	contract,
+	userAccount
+) => {
 	return userAccount !== contract.buyer || contract.state !== ContractState.Running;
 };
 
-export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) => number = (rowA, rowB, sortByType) => {
+export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) => number = (
+	rowA,
+	rowB,
+	sortByType
+) => {
 	let rowASortType;
 	let rowBSortType;
 	switch (sortByType) {
@@ -151,7 +173,15 @@ export const getButton: (
 	setOpen: Dispatch<SetStateAction<boolean>>,
 	handleSubmit: UseFormHandleSubmit<InputValues>,
 	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
+) => JSX.Element = (
+	contentState,
+	bgColor,
+	buttonOpacity,
+	buttonContent,
+	setOpen,
+	handleSubmit,
+	createTransactionAsync
+) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -215,17 +245,22 @@ export const getStatusText: (state: string) => string = (state) => {
 };
 
 // Display address based on breakpoint
-export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: string) => string = (isLargeBreakpointOrGreater, address) => {
-	return isLargeBreakpointOrGreater ? truncateAddress(address) : truncateAddress(address, AddressLength.SHORT);
+export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: string) => string = (
+	isLargeBreakpointOrGreater,
+	address
+) => {
+	return isLargeBreakpointOrGreater
+		? truncateAddress(address)
+		: truncateAddress(address, AddressLength.SHORT);
 };
 
 // Get progress div
-export const getProgressDiv: (state: string, startTime: string, length: number, currentBlockTimestamp: number) => JSX.Element = (
-	state,
-	startTime,
-	length,
-	currentBlockTimestamp
-) => {
+export const getProgressDiv: (
+	state: string,
+	startTime: string,
+	length: number,
+	currentBlockTimestamp: number
+) => JSX.Element = (state, startTime, length, currentBlockTimestamp) => {
 	let timeElapsed: number = 0;
 	let percentage: number = 0;
 	if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {
@@ -238,7 +273,10 @@ export const getProgressDiv: (state: string, startTime: string, length: number, 
 	}
 
 	return (
-		<div key={percentage.toFixed()} className='flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row'>
+		<div
+			key={percentage.toFixed()}
+			className='flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row'
+		>
 			<div>{percentage.toFixed()}%</div>
 			<div className='w-1/2 sm:ml-4'>
 				<ProgressBar width={percentage.toString()} />
@@ -256,10 +294,20 @@ const getStatusClass: (state: string) => string = (state) => {
 export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 	return (
 		<div key={state}>
-			<span className={classNames(getStatusClass(state), 'hidden sm:flex w-16 sm:w-24 justify-center items-center h-8 rounded-5')}>
+			<span
+				className={classNames(
+					getStatusClass(state),
+					'hidden sm:flex w-16 sm:w-24 justify-center items-center h-8 rounded-5'
+				)}
+			>
 				<p>{_.capitalize(getStatusText(state))}</p>
 			</span>
-			<p className={classNames(state === ContractState.Running ? 'text-lumerin-green' : 'text-lumerin-aqua', 'sm:hidden')}>
+			<p
+				className={classNames(
+					state === ContractState.Running ? 'text-lumerin-green' : 'text-lumerin-aqua',
+					'sm:hidden'
+				)}
+			>
 				{_.capitalize(getStatusText(state))}
 			</p>
 		</div>
@@ -301,7 +349,9 @@ const getV: (v: string, chainId: number) => string = (v, chainId) => {
 	}
 };
 
-export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (transaction) => {
+export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
+	transaction
+) => {
 	const chainId = 3; // Ropsten
 	const ethTx = new EthJsTx(
 		{
