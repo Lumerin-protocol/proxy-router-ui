@@ -47,7 +47,15 @@ interface BuyFormProps {
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, cloneFactoryContract, web3, lumerinbalance, setOpen }) => {
+export const BuyForm: React.FC<BuyFormProps> = ({
+	contracts,
+	contractId,
+	userAccount,
+	cloneFactoryContract,
+	web3,
+	lumerinbalance,
+	setOpen,
+}) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isAvailable, setIsAvailable] = useState<boolean>(true);
@@ -113,7 +121,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 				if (web3 && formData) {
 					// Check contract is available before increasing allowance
-					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const implementationContract = new web3.eth.Contract(
+						ImplementationContract.abi as AbiItem[],
+						contract.id as string
+					);
 					const contractState = await implementationContract.methods.contractState().call();
 					if (contractState !== ContractState.Available) {
 						setIsAvailable(false);
@@ -122,7 +133,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 					}
 
 					// Approve clone factory contract to transfer LMR on buyer's behalf
-					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
+					const lumerinTokenContract = new web3.eth.Contract(
+						LumerinContract.abi as AbiItem[],
+						lumerinTokenAddress
+					);
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
@@ -196,8 +210,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	createContent();
 
 	// Set styles and button based on ContentState
-	const display = contentState === ContentState.Pending || contentState === ContentState.Complete ? 'hidden' : 'block';
-	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
+	const display =
+		contentState === ContentState.Pending || contentState === ContentState.Complete
+			? 'hidden'
+			: 'block';
+	const bgColor =
+		contentState === ContentState.Complete || contentState === ContentState.Confirm
+			? 'bg-black'
+			: 'bg-lumerin-aqua';
 
 	return (
 		<Fragment>
@@ -206,12 +226,25 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				open={alertOpen}
 				setOpen={setAlertOpen}
 			/>
-			<div className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium`}>
+			<div
+				className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium`}
+			>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
-					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
+					<div
+						className={
+							contentState === ContentState.Complete || contentState === ContentState.Pending
+								? 'hidden'
+								: 'block'
+						}
+					>
 						<h1 className='text-3xl pb-2'>Purchase Hashpower</h1>
-						<p className='font-normal mb-3'>Enter the Pool Address, Port Number, and Username you are pointing the purchased hashpower to.</p>
-						<span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded">Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</span>
+						<p className='font-normal mb-3'>
+							Enter the Pool Address, Port Number, and Username you are pointing the purchased
+							hashpower to.
+						</p>
+						<span className='text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded'>
+							Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+						</span>
 					</div>
 				</div>
 				{content}
@@ -227,7 +260,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, buyContractAsync)
+						? getButton(
+								contentState,
+								bgColor,
+								buttonOpacity,
+								buttonContent,
+								setOpen,
+								handleSubmit,
+								buyContractAsync
+						  )
 						: null}
 				</div>
 			</div>

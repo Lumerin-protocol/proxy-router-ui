@@ -34,7 +34,12 @@ interface CreateFormProps {
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactoryContract, web3, setOpen }) => {
+export const CreateForm: React.FC<CreateFormProps> = ({
+	userAccount,
+	cloneFactoryContract,
+	web3,
+	setOpen,
+}) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
@@ -64,13 +69,15 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 			try {
 				if (web3) {
 					const contractDuration =
-						(formData.contractTime as number) < 12 ? (formData.contractTime as number) * 600 : (formData.contractTime as number) * 3600;
+						(formData.contractTime as number) < 12
+							? (formData.contractTime as number) * 600
+							: (formData.contractTime as number) * 3600;
 					// TODO: update to actual validator address
 					const validatorAddress = '0x0000000000000000000000000000000000000000';
 					const price = multiplyByDigits(formData.listPrice as number);
 					let speed;
 					if (formData && formData.speed) {
-						speed = (formData.speed) * 10 ** 12;
+						speed = formData.speed * 10 ** 12;
 					} else {
 						speed = 0;
 					}
@@ -127,12 +134,23 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 	createContent();
 
 	// Set styles and button based on ContentState
-	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
+	const bgColor =
+		contentState === ContentState.Complete || contentState === ContentState.Confirm
+			? 'bg-black'
+			: 'bg-lumerin-aqua';
 
 	return (
-		<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 md:min-w-28 font-Inter font-medium`}>
+		<div
+			className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 md:min-w-28 font-Inter font-medium`}
+		>
 			<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
-				<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
+				<div
+					className={
+						contentState === ContentState.Complete || contentState === ContentState.Pending
+							? 'hidden'
+							: 'block'
+					}
+				>
 					<p className='text-3xl'>Create New Contract</p>
 					<p>Sell your hashpower on the Lumerin Marketplace</p>
 				</div>
@@ -147,7 +165,15 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 					Close
 				</button>
 				{contentState !== ContentState.Pending
-					? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, createContractAsync)
+					? getButton(
+							contentState,
+							bgColor,
+							buttonOpacity,
+							buttonContent,
+							setOpen,
+							handleSubmit,
+							createContractAsync
+					  )
 					: null}
 			</div>
 		</div>
