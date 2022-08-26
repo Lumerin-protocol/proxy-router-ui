@@ -1,9 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
+import React, {
+	Dispatch,
+	MouseEventHandler,
+	SetStateAction,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
-import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
+import {
+	getProgressDiv,
+	getStatusDiv,
+	setMediaQueryListOnChangeHandler,
+	sortByNumber,
+} from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import { Spinner } from './ui/Spinner';
@@ -43,8 +55,16 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
 	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
-	setMediaQueryListOnChangeHandler(mediaQueryListLarge, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
-	setMediaQueryListOnChangeHandler(mediaQueryListMedium, isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow);
+	setMediaQueryListOnChangeHandler(
+		mediaQueryListLarge,
+		isLargeBreakpointOrGreater,
+		setIsLargeBreakpointOrGreater
+	);
+	setMediaQueryListOnChangeHandler(
+		mediaQueryListMedium,
+		isMediumBreakpointOrBelow,
+		setIsMediumBreakpointOrBelow
+	);
 
 	useEffect(() => {
 		if (!mediaQueryListLarge?.matches) {
@@ -61,7 +81,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	}, [mediaQueryListLarge?.matches, mediaQueryListMedium?.matches]);
 
 	const getTableData: () => ContractData[] = () => {
-		const buyerOrders = contracts.filter((contract) => contract.buyer === userAccount && contract.state === ContractState.Running);
+		const buyerOrders = contracts.filter(
+			(contract) => contract.buyer === userAccount && contract.state === ContractState.Running
+		);
 		// Add empty row for styling
 		buyerOrders.unshift({});
 		const updatedOrders = buyerOrders.map((contract) => {
@@ -86,12 +108,24 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				);
 				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
 				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
-				updatedOrder.timestamp = DateTime.fromSeconds(parseInt(updatedOrder.timestamp as string)).toFormat('MM/dd/yyyy');
+				updatedOrder.timestamp = DateTime.fromSeconds(
+					parseInt(updatedOrder.timestamp as string)
+				).toFormat('MM/dd/yyyy');
 				updatedOrder.editCancel = (
 					<ButtonGroup
-						button1={<EditButton contractId={contract.id as string} setContractId={setContractId} editClickHandler={editClickHandler} />}
+						button1={
+							<EditButton
+								contractId={contract.id as string}
+								setContractId={setContractId}
+								editClickHandler={editClickHandler}
+							/>
+						}
 						button2={
-							<CancelButton contractId={contract.id as string} setContractId={setContractId} cancelClickHandler={cancelClickHandler} />
+							<CancelButton
+								contractId={contract.id as string}
+								setContractId={setContractId}
+								cancelClickHandler={cancelClickHandler}
+							/>
 						}
 					/>
 				);
@@ -103,7 +137,12 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	};
 
 	// TODO: if same as <MyContracts /> pull out into util function
-	const customSort: SortByFn<CustomTableOptions> = (rowA: Row, rowB: Row, columnId: string, desc?: boolean) => {
+	const customSort: SortByFn<CustomTableOptions> = (
+		rowA: Row,
+		rowB: Row,
+		columnId: string,
+		desc?: boolean
+	) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 
@@ -160,13 +199,17 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? <Table id='myorders' tableInstance={tableInstance} columnCount={6} /> : null}
+			{data.length > 1 ? (
+				<Table id='myorders' tableInstance={tableInstance} columnCount={6} />
+			) : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>
 					<Spinner />
 				</div>
 			) : null}
-			{data.length === 1 && !showSpinner ? <div className='text-2xl'>You have no orders.</div> : null}
+			{data.length === 1 && !showSpinner ? (
+				<div className='text-2xl'>You have no orders.</div>
+			) : null}
 		</div>
 	);
 };
