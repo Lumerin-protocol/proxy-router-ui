@@ -22,13 +22,22 @@ interface MarketplaceProps {
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setContractId, buyClickHandler }) => {
+export const Marketplace: React.FC<MarketplaceProps> = ({
+	web3,
+	contracts,
+	setContractId,
+	buyClickHandler,
+}) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
-	setMediaQueryListOnChangeHandler(mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
+	setMediaQueryListOnChangeHandler(
+		mediaQueryList,
+		isLargeBreakpointOrGreater,
+		setIsLargeBreakpointOrGreater
+	);
 
 	useEffect(() => {
 		if (!mediaQueryList?.matches) {
@@ -39,7 +48,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 	}, [mediaQueryList?.matches]);
 
 	const getTableData: () => HashRentalContract[] = () => {
-		const availableContracts = contracts.filter((contract) => (contract.state as string) === ContractState.Available);
+		const availableContracts = contracts.filter(
+			(contract) => (contract.state as string) === ContractState.Available
+		);
 		// Add empty row for styling
 		availableContracts.unshift({});
 		const updatedContracts = availableContracts.map((contract) => {
@@ -58,7 +69,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 				updatedContract.speed = String(Number(updatedContract.speed) / 10 ** 12);
 				updatedContract.length = String(parseInt(updatedContract.length as string) / 3600);
 				updatedContract.trade = (
-					<BuyButton contractId={contract.id as string} setContractId={setContractId} buyClickHandler={buyClickHandler} />
+					<BuyButton
+						contractId={contract.id as string}
+						setContractId={setContractId}
+						buyClickHandler={buyClickHandler}
+					/>
 				);
 			}
 			return updatedContract;
@@ -67,7 +82,12 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 		return updatedContracts;
 	};
 
-	const customSort: SortByFn<CustomTableOptions> = (rowA: Row, rowB: Row, columnId: string, desc?: boolean) => {
+	const customSort: SortByFn<CustomTableOptions> = (
+		rowA: Row,
+		rowB: Row,
+		columnId: string,
+		desc?: boolean
+	) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 
@@ -109,13 +129,17 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ web3, contracts, setCo
 	// There is always 1 empty contract for styling purposes
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? <Table id='marketplace' tableInstance={tableInstance} columnCount={6} /> : null}
+			{data.length > 1 ? (
+				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} />
+			) : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>
 					<Spinner />
 				</div>
 			) : null}
-			{data.length === 1 && !showSpinner ? <div className='text-2xl'>There are no available contracts for purchase.</div> : null}
+			{data.length === 1 && !showSpinner ? (
+				<div className='text-2xl'>There are no available contracts for purchase.</div>
+			) : null}
 		</div>
 	);
 };

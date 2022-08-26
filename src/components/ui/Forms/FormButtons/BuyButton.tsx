@@ -6,8 +6,14 @@ interface BuyButtonProps {
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const BuyButton: React.FC<BuyButtonProps> = ({ contractId, setContractId, buyClickHandler }) => {
-	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (event) => {
+export const BuyButton: React.FC<BuyButtonProps> = ({
+	contractId,
+	setContractId,
+	buyClickHandler,
+}) => {
+	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (
+		event
+	) => {
 		setContractId(contractId);
 		buyClickHandler(event);
 	};
