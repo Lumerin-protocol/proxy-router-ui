@@ -17,8 +17,12 @@ import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { Transaction as Web3Transaction } from 'web3-eth';
-import { Transaction as EthJsTx } from 'ethereumjs-tx';
+import { Transaction as EthJsTx} from 'ethereumjs-tx';
+import { encrypt } from 'ecies-geth';
+import { ethers } from 'ethers';
+import { abi, bytecode  } from './contracts/CloneFactory.json'
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
@@ -64,10 +68,69 @@ export const toRfc2396: (formData: FormData) => string | undefined = (formData) 
 	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
 };
 
-export const isValidPoolAddress: (
-	poolAddress: string,
-	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>
-) => boolean = (poolAddress, setAlertOpen) => {
+//encrypts a string passed into it
+export const encryptMessage = async (pubKey: string, msg: string) => {
+	let ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg))
+	await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg)).then(console.log)
+	return ciphertext.toString('hex')
+}
+
+export const getPublicKey = async (txId: string) => {
+	let provider = ethers.getDefaultProvider('https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a')
+  let tx = await provider.getTransaction(txId)!
+	console.log(txId)
+	console.log(tx)
+	let transaction = FeeMarketEIP1559Transaction.fromTxData(
+		{
+			chainId: tx.chainId,
+			nonce: tx.nonce,
+			maxPriorityFeePerGas: Number(tx.maxPriorityFeePerGas),
+			maxFeePerGas: Number(tx.maxFeePerGas),
+			gasLimit: Number(tx.gasLimit),
+			to: tx.to,
+			value: Number(tx.value),
+			data: tx.data,
+			accessList: tx.accessList,
+			v: tx.v,
+			r: tx.r,
+			s: tx.s
+		}
+	)
+	let pubKey = transaction.getSenderPublicKey()
+	return `04${pubKey.toString('hex')}` //04 is necessary to tell the EVM which public key encoding to use
+}
+
+
+export const getCreationTxIDOfContract = async (contractAddress: string) => {
+	//import the JSON of CloneFactory.json
+  let cf = new ethers.ContractFactory(abi, bytecode);
+	let provider = ethers.getDefaultProvider('https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a')
+
+  //the clonefactory contract address should become a variable that is configurable
+  let cloneFactory = await cf.attach('0x702B0b76235b1DAc489094184B7790cAA9A39Aa4') //this is the main ropsten clone factory address
+	cloneFactory = await cloneFactory.connect(provider)
+
+
+	let contractCreated = cloneFactory.filters.contractCreated() //used to get the event
+  let events = await cloneFactory.queryFilter(contractCreated)
+  let event
+  for (let i of events) {
+		if (i.args!._address === contractAddress) {
+			event = i
+		}
+	}
+
+	let tx = ''
+	if (event) {
+		tx = event.transactionHash
+	}
+	return tx
+}
+
+export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>) => boolean = (
+	poolAddress,
+	setAlertOpen
+) => {
 	const regexPortNumber = /:\d+/;
 	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
 	if (hasPortNumber) setAlertOpen(true);

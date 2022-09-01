@@ -5,7 +5,7 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { getButton, printError, toRfc2396, truncateAddress } from '../../../../utils';
+import { getButton, printError, toRfc2396, encryptMessage, truncateAddress, getCreationTxIDOfContract, getPublicKey } from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -14,6 +14,7 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
+	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
@@ -62,7 +63,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
-	const lumerinTokenAddress = '0x04fa90c64DAeEe83B22501c790D39B8B9f53878a';
+	/*
+	 * This will need to be changed to the mainnet token 
+	 * once we move over to mainnet
+	 * including this comment in the hopes that this line of code will be easy to find
+	 */
+	const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B';
 
 	// Input validation setup
 	const {
@@ -77,7 +83,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
-			length: contract.length as string,
 		};
 	};
 
@@ -142,14 +147,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						.send(sendOptions);
 					if (receipt?.status) {
 						// Purchase contract
-						// TODO: encrypt with seller public key
-						// const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
-						// const publicKeyHex = `04${publicKey.toString('hex')}`;
-						// const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
-						const encryptedBuyerInput = toRfc2396(formData);
+						const buyerInput: string = toRfc2396(formData)!;
+						let contractAddress = contract.id!
+						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString())
+						const pubKey = await getPublicKey(contractCreationTx)
+						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
 						const receipt: Receipt = await cloneFactoryContract?.methods
-							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
-							.send(sendOptions);
+               .setPurchaseRentalContract(contract.id, encryptedBuyerInput)
+               .send(sendOptions);
 						if (!receipt.status) {
 							// TODO: purchasing contract has failed, surface to user
 						}
