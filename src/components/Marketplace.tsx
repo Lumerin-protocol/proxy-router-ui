@@ -4,6 +4,7 @@ import { Column, useTable, useSortBy, SortByFn, Row } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { Table } from './ui/Table';
+import { AvailableContracts } from './ui/AvailableContracts';
 import { setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
 import { Spinner } from './ui/Spinner';
 import { ContractState, HashRentalContract, Header, SortByType } from '../types';
@@ -51,8 +52,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		const availableContracts = contracts.filter(
 			(contract) => (contract.state as string) === ContractState.Available
 		);
-		// Add empty row for styling
-		availableContracts.unshift({});
 		const updatedContracts = availableContracts.map((contract) => {
 			const updatedContract = { ...contract };
 			if (!_.isEmpty(contract)) {
@@ -121,6 +120,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
 
+	console.log(data);
+
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
@@ -130,7 +131,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	return (
 		<div className='flex flex-col items-center'>
 			{data.length > 1 ? (
-				<Table id='marketplace' tableInstance={tableInstance} columnCount={6} />
+				// <Table id='marketplace' tableInstance={tableInstance} columnCount={6} />
+				<AvailableContracts contracts={data} />
 			) : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>

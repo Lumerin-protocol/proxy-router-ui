@@ -50,6 +50,7 @@ import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
+import styled from '@emotion/styled';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -142,6 +143,8 @@ export const Main: React.FC = () => {
 			setCloneFactoryContract(contractInstance);
 			setWeb3(web3);
 			setIsConnected(true);
+			localStorage.setItem('walletName', walletName);
+			localStorage.setItem('isConnected', 'true');
 			setChainId(chainId);
 			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
 		}
@@ -149,7 +152,7 @@ export const Main: React.FC = () => {
 
 	const getTruncatedWalletAddress: () => string | null = () => {
 		if (userAccount) {
-			return truncateAddress(userAccount, AddressLength.LONG);
+			return truncateAddress(userAccount, AddressLength.MEDIUM);
 		}
 
 		return null;
@@ -257,7 +260,7 @@ export const Main: React.FC = () => {
 		<div className='flex flex-col items-center mt-4 font-medium'>
 			<button
 				type='button'
-				className='btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
+				className='btn-wallet w-60 h-12 mt-4 rounded-15 text-lumerin-dark-blue text-sm font-Inter'
 				onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}
 			>
 				<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
@@ -265,7 +268,7 @@ export const Main: React.FC = () => {
 			</button>
 			<button
 				type='button'
-				className='btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
+				className='btn-wallet w-60 h-12 mt-4 rounded-15 text-lumerin-dark-blue text-sm font-Inter'
 				onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}
 			>
 				<span className='mr-4'>{WalletText.ConnectViaWalletConnect}</span>
@@ -379,8 +382,15 @@ export const Main: React.FC = () => {
 	const isAvailableContract: boolean =
 		contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
 
+	const Main = styled.div`
+		display: flex;
+		overflow: hidden;
+		height: 100vh;
+		background: #eaf7fc;
+	`;
+
 	return (
-		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
+		<Main>
 			<Alert
 				message={getAlertMessage()}
 				open={alertOpen}
@@ -467,7 +477,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			{/* collapsable sidebar: below lg breakpoint */}
+			{/* collapsible sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog
 					as='div'
@@ -496,7 +506,7 @@ export const Main: React.FC = () => {
 						leaveFrom='translate-x-0'
 						leaveTo='-translate-x-full'
 					>
-						<div className='relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white'>
+						<div className='relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4'>
 							<Transition.Child
 								as={Fragment}
 								enter='ease-in-out duration-300'
@@ -524,7 +534,7 @@ export const Main: React.FC = () => {
 											key={item.name}
 											to={item.to}
 											className={classNames(
-												item.current ? 'text-lumerin-aqua' : 'text-black',
+												item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-black-text',
 												'flex items-center px-2 py-2 text-sm font-medium rounded-md'
 											)}
 											onClick={() => {
@@ -570,7 +580,7 @@ export const Main: React.FC = () => {
 										key={item.name}
 										to={item.to}
 										className={classNames(
-											item.current ? 'text-lumerin-aqua' : 'text-black',
+											item.current ? 'text-lumerin-blue-text' : 'text-lumerin-inactive-text',
 											'flex items-center px-2 py-2 text-sm font-medium rounded-md'
 										)}
 										onClick={() => setToggle(!toggle)}
@@ -584,8 +594,8 @@ export const Main: React.FC = () => {
 					</div>
 				</div>
 			</div>
-			<div className='flex flex-col w-0 flex-1 overflow-hidden bg-white'>
-				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20 bg-white'}>
+			<div className='flex flex-col w-0 flex-1 overflow-hidden pl-10 pr-10'>
+				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20'}>
 					<button
 						type='button'
 						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden'
@@ -595,14 +605,14 @@ export const Main: React.FC = () => {
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
 					<div className={!isConnected ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
-						<p
+						<h1
 							className={classNames(
 								pathName === PathName.MyContracts ? 'hidden xl:block' : '',
-								'text-lg font-semibold'
+								'text-xl font-bold font-Raleway text-lumerin-blue-text'
 							)}
 						>
 							{getPageTitle()}
-						</p>
+						</h1>
 						<div
 							className='text-black flex items-center px-2 text-xs md:text-sm font-medium rounded-md cursor-pointer'
 							onClick={() => {
@@ -622,19 +632,12 @@ export const Main: React.FC = () => {
 						</div>
 					</div>
 					<div className={buttonDisplay}>
-						<div className={!isMetaMask ? 'hidden xl:flex' : 'flex'}>
-							<div className='flex items-center'>
-								<LumerinIcon />
-							</div>
-							<div className='btn-lmr w-auto pl-0 pointer-events-none'>
-								<span className='ml-2 text-xs md:text-sm'>
-									{Math.ceil(lumerinBalance).toLocaleString()}{' '}
-									<span className='hidden lg:inline'>LMR</span>
-								</span>
-							</div>
-						</div>
 						{isConnected ? (
 							<div className='flex'>
+								<button className='btn-connected cursor-default'>
+									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
+									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
+								</button>
 								{isMetaMask ? (
 									<button
 										className='btn-add-lmr sm:w-64 sm:text-sm mr-4'
@@ -643,10 +646,6 @@ export const Main: React.FC = () => {
 										<span>Import LMR into MetaMask</span>
 									</button>
 								) : null}
-								<button className='btn-connected w-64 cursor-default'>
-									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
-									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
-								</button>
 								{!isMetaMask ? (
 									<button
 										className='btn-disconnect w-auto p-0 ml-4 mr-4'
@@ -661,26 +660,38 @@ export const Main: React.FC = () => {
 						) : null}
 					</div>
 				</div>
-				<div
-					className={
-						pathName === PathName.Marketplace && isConnected && isAvailableContract
-							? 'mt-8 flex flex-col items-center text-sm sm:text-18'
-							: 'hidden'
-					}
-				>
-					<p>Welcome to the Lumerin Marketplace Beta,</p>
-					<p>please provide feedback or submit any bugs you notice at:</p>
-					<p>
-						<a className='link' href='https://github.com/Lumerin-protocol/proxy-router/issues'>
-							https://github.com/Lumerin-protocol/proxy-router/issues
-						</a>
-					</p>
+				<div className='flex flex-row justify-between'>
+					<div
+						className={
+							pathName === PathName.Marketplace && isConnected && isAvailableContract
+								? 'card bg-white rounded-15 p-8 flex flex-col items-center text-sm sm:text-lg'
+								: 'hidden'
+						}
+					>
+						<p>Welcome to the Lumerin Marketplace Beta,</p>
+						<p>please provide feedback or submit any bugs you notice at:</p>
+						<p>
+							<a className='link' href='https://github.com/Lumerin-protocol/proxy-router/issues'>
+								https://github.com/Lumerin-protocol/proxy-router/issues
+							</a>
+						</p>
+					</div>
+					<div className={!isMetaMask ? 'hidden xl:flex' : 'flex bg-white rounded-15 p-6'}>
+						<div className='flex items-center'>
+							<LumerinIcon />
+						</div>
+						<div className='btn-lmr w-auto pl-0 pointer-events-none'>
+							<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
+								{Math.ceil(lumerinBalance).toLocaleString()} <span className='text-sm'>LMR</span>
+							</span>
+						</div>
+					</div>
 				</div>
 				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>
 					{getContent()}
 				</main>
 			</div>
-		</div>
+		</Main>
 	);
 };
 

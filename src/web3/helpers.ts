@@ -116,6 +116,7 @@ export const disconnectWalletConnectAsync: (
 	if (!isMetaMask) {
 		await (web3?.currentProvider as unknown as WalletConnectProvider)?.disconnect();
 		setIsConnected(false);
+		localStorage.clear();
 	}
 };
 

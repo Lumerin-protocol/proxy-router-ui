@@ -7,10 +7,14 @@ module.exports = {
 		extend: {
 			fontFamily: {
 				Inter: ['Inter', 'sans-serif'],
+				Montserrat: ['Montserrat', 'sans-serif'],
+				Raleway: ['Raleway', 'sans-serif'],
 			},
 			fontSize: {
 				xxs: '.625rem',
 				xs: '.8125rem',
+				lg: '1.25rem',
+				xl: '2rem',
 				18: '1.125rem',
 				50: '3.125rem',
 			},
@@ -28,6 +32,8 @@ module.exports = {
 			},
 			borderRadius: {
 				5: '5px',
+				15: '15px',
+				20: '20px',
 				30: '30px',
 				50: '50px',
 				120: '120px',
