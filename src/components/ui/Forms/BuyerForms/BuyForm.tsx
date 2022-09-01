@@ -5,7 +5,7 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { getButton, printError, toRfc2396, truncateAddress } from '../../../../utils';
+import { getButton, printError, toRfc2396, encryptMessage, truncateAddress, getCreationTxIDOfContract, getPublicKey } from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -14,6 +14,7 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
+	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
@@ -54,6 +55,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
+	/*
+	 * This will need to be changed to the mainnet token 
+	 * once we move over to mainnet
+	 * including this comment in the hopes that this line of code will be easy to find
+	 */
 	const lumerinTokenAddress = '0x04fa90c64DAeEe83B22501c790D39B8B9f53878a';
 
 	// Input validation setup
@@ -69,7 +75,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
-			length: contract.length as string,
 		};
 	};
 
@@ -120,27 +125,29 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						setAlertOpen(true);
 						return;
 					}
-
-					// Approve clone factory contract to transfer LMR on buyer's behalf
+// Approve clone factory contract to transfer LMR on buyer's behalf
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
+					console.log('the cat jumps over the moon')
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
 					if (receipt?.status) {
+						console.log('in purchase section')
 						// Purchase contract
-						// TODO: encrypt with seller public key
-						// const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
-						// const publicKeyHex = `04${publicKey.toString('hex')}`;
-						// const encryptedBuyerInput = await encrypt(Buffer.from(hexToBytes(publicKeyHex)), Buffer.from(toRfc2396(formData) as string));
-						const encryptedBuyerInput = toRfc2396(formData);
+						const buyerInput: string = toRfc2396(formData)!;
+						let contractAddress = contract.id!
+						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString())
+						const pubKey = await getPublicKey(contractCreationTx)
+						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
 						const receipt: Receipt = await cloneFactoryContract?.methods
-							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
-							.send(sendOptions);
-						if (!receipt.status) {
-							// TODO: purchasing contract has failed, surface to user
-						}
+               .setPurchaseRentalContract(contract.id, encryptedBuyerInput)
+               .send(sendOptions);
+						//if (!receipt.status) {
+						//	// TODO: purchasing contract has failed, surface to user
+						//}
 					} else {
 						// TODO: call to increaseAllowance() has failed, surface to user
+						console.log('increase allowance failed')
 					}
 				}
 				setContentState(ContentState.Complete);
@@ -206,12 +213,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				open={alertOpen}
 				setOpen={setAlertOpen}
 			/>
-			<div className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium`}>
+			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
 					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
-						<h1 className='text-3xl pb-2'>Purchase Hashpower</h1>
-						<p className='font-normal mb-3'>Enter the Pool Address, Port Number, and Username you are pointing the purchased hashpower to.</p>
-						<span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded">Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</span>
+						<p className='text-3xl'>Purchase Hashpower</p>
+						<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
 					</div>
 				</div>
 				{content}
