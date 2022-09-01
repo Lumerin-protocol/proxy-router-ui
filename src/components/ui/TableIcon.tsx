@@ -9,7 +9,13 @@ interface TableIconProps {
 	hasLink?: boolean;
 }
 
-export const TableIcon: React.FC<TableIconProps> = ({ icon, text, isLargeBreakpointOrGreater, justify, hasLink }) => {
+export const TableIcon: React.FC<TableIconProps> = ({
+	icon,
+	text,
+	isLargeBreakpointOrGreater,
+	justify,
+	hasLink,
+}) => {
 	let updatedJustify = justify ?? 'center';
 	updatedJustify = `justify-${updatedJustify}`;
 
@@ -19,7 +25,12 @@ export const TableIcon: React.FC<TableIconProps> = ({ icon, text, isLargeBreakpo
 				<span className={icon ? 'mr-2' : ''}>{icon}</span>
 				<span className='font-semibold text-left'>
 					{hasLink ? (
-						<a href={`https://ropsten.etherscan.io/address/${text}`} target='_blank' rel='noreferrer' className='cursor-pointer'>
+						<a
+							href={`https://ropsten.etherscan.io/address/${text}`}
+							target='_blank'
+							rel='noreferrer'
+							className='cursor-pointer'
+						>
 							{getAddressDisplay(isLargeBreakpointOrGreater as boolean, text)}
 						</a>
 					) : (

@@ -8,4 +8,14 @@ import { ReactComponent as LumerinIcon } from './lumerin.svg';
 import { ReactComponent as LumerinLandingPage } from './lumerin_landingpage.svg';
 import { ReactComponent as WalletConnectIcon } from './walletconnect.svg';
 
-export { ContractIcon, MarketplaceIcon, MyOrdersIcon, MetaMaskIcon, LogoIcon, LogoIcon2, LumerinIcon, LumerinLandingPage, WalletConnectIcon };
+export {
+	ContractIcon,
+	MarketplaceIcon,
+	MyOrdersIcon,
+	MetaMaskIcon,
+	LogoIcon,
+	LogoIcon2,
+	LumerinIcon,
+	LumerinLandingPage,
+	WalletConnectIcon,
+};

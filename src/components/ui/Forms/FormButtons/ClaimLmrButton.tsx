@@ -6,8 +6,14 @@ interface ClaimLmrButtonProps {
 	claimLmrClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({ contractId, setContractId, claimLmrClickHandler }) => {
-	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (event) => {
+export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({
+	contractId,
+	setContractId,
+	claimLmrClickHandler,
+}) => {
+	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (
+		event
+	) => {
 		setContractId(contractId);
 		claimLmrClickHandler(event);
 	};

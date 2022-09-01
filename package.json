@@ -4,6 +4,7 @@
 	"private": true,
 	"dependencies": {
 		"@craco/craco": "^6.2.0",
+		"@ethereumjs/tx": "^3.5.2",
 		"@fortawesome/fontawesome-svg-core": "^6.1.0",
 		"@fortawesome/free-solid-svg-icons": "^6.1.0",
 		"@fortawesome/react-fontawesome": "^0.1.18",
@@ -28,7 +29,9 @@
 		"buffer": "^6.0.3",
 		"ecies-geth": "^1.6.2",
 		"ethereumjs-tx": "^2.1.2",
-		"ethereumjs-util": "^7.1.4",
+		"ethereumjs-util": "^7.1.5",
+		"ethers": "^5.5.4",
+		"hardhat": "^2.8.4",
 		"lodash": "^4.17.21",
 		"luxon": "^2.0.2",
 		"react": "^17.0.2",
@@ -49,13 +52,13 @@
 		"start": "craco start",
 		"build": "craco build",
 		"test": "craco test",
-		"eject": "react-scripts eject"
-	},
-	"eslintConfig": {
-		"extends": [
-			"react-app",
-			"react-app/jest"
-		]
+		"eject": "react-scripts eject",
+		"lint": "eslint \"**/*.{ts,tsx,js,jsx}\"",
+		"lint:fix": "npm run lint -- --fix",
+		"prettier": "npx prettier src --check",
+		"prettier:fix": "npm run prettier -- --write",
+		"format": "npm run prettier:fix && npm run lint:fix",
+		"prepare": "husky install"
 	},
 	"browserslist": {
 		"production": [
@@ -76,8 +79,13 @@
 		"@welldone-software/why-did-you-render": "^6.2.0",
 		"autoprefixer": "^9.8.6",
 		"debug": "^4.3.2",
+		"eslint": "^7.32.0",
+		"husky": "^8.0.0",
+		"lint-staged": "^13.0.3",
 		"postcss": "^7.0.36",
-		"tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7"
+		"prettier": "2.7.1",
+		"tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7",
+		"tslint-config-prettier": "^1.18.0"
 	},
 	"jest": {
 		"moduleNameMapper": {

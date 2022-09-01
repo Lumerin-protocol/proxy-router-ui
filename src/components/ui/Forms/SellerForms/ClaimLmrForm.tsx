@@ -1,12 +1,26 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
-import { CloseOutType, ContentState, ContractState, HashRentalContract, Receipt, UpdateFormProps } from '../../../../types';
+import {
+	CloseOutType,
+	ContentState,
+	ContractState,
+	HashRentalContract,
+	Receipt,
+	UpdateFormProps,
+} from '../../../../types';
 import { isNoClaim, printError } from '../../../../utils';
 import { Spinner } from '../../Spinner';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 
-export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen, currentBlockTimestamp }) => {
+export const ClaimLmrForm: React.FC<UpdateFormProps> = ({
+	contracts,
+	contractId,
+	userAccount,
+	web3,
+	setOpen,
+	currentBlockTimestamp,
+}) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
 
@@ -23,8 +37,10 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 			const contractDuration = currentBlockTimestamp - parseInt(contract.timestamp as string);
 			const isComplete = contractDuration >= parseInt(contract.length as string);
 			if (contract.state === ContractState.Available) return CloseOutType.SellerClaimNoClose;
-			if (contract.state === ContractState.Running && !isComplete) return CloseOutType.SellerClaimNoClose;
-			if (contract.state === ContractState.Running && isComplete) return CloseOutType.CloseAndClaimAtCompletion;
+			if (contract.state === ContractState.Running && !isComplete)
+				return CloseOutType.SellerClaimNoClose;
+			if (contract.state === ContractState.Running && isComplete)
+				return CloseOutType.CloseAndClaimAtCompletion;
 			return CloseOutType.SellerClaimNoClose;
 		}
 		return CloseOutType.SellerClaimNoClose;
@@ -44,7 +60,10 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 			if (web3) {
 				try {
 					const gasLimit = 1000000;
-					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const implementationContract = new web3.eth.Contract(
+						ImplementationContract.abi as AbiItem[],
+						contract.id as string
+					);
 					const closeOutType = getCloseOutType(contract);
 					const receipt: Receipt = await implementationContract.methods
 						.setContractCloseOut(closeOutType)
@@ -70,7 +89,9 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 
 	return (
 		<Fragment>
-			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
+			<div
+				className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}
+			>
 				{!isConfirmModal && contentState === ContentState.Review ? (
 					<Fragment>
 						<div className='flex justify-center bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
@@ -78,7 +99,9 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({ contracts, contractId,
 								<p className='text-3xl text-black'>Claim LMR Tokens</p>
 							</div>
 						</div>
-						<div className='bg-white modal-input-spacing text-center'>You are about to claim your LMR tokens.</div>
+						<div className='bg-white modal-input-spacing text-center'>
+							You are about to claim your LMR tokens.
+						</div>
 						<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
 							<button
 								type='submit'

@@ -6,8 +6,14 @@ interface EditButtonProps {
 	editClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export const EditButton: React.FC<EditButtonProps> = ({ contractId, setContractId, editClickHandler }) => {
-	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (event) => {
+export const EditButton: React.FC<EditButtonProps> = ({
+	contractId,
+	setContractId,
+	editClickHandler,
+}) => {
+	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (
+		event
+	) => {
 		setContractId(contractId);
 		editClickHandler(event);
 	};

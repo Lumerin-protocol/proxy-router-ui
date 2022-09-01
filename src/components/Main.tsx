@@ -25,13 +25,26 @@ import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
-import { addLumerinTokenToMetaMaskAsync, disconnectWalletConnectAsync, getLumerinTokenBalanceAsync, getWeb3ResultAsync } from '../web3/helpers';
+import {
+	addLumerinTokenToMetaMaskAsync,
+	disconnectWalletConnectAsync,
+	getLumerinTokenBalanceAsync,
+	getWeb3ResultAsync,
+} from '../web3/helpers';
 import { buttonClickHandler, classNames, truncateAddress } from '../utils';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import Web3 from 'web3';
 import { printError } from '../utils';
 import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
-import { AddressLength, AlertMessage, ContractState, Ethereum, HashRentalContract, PathName, WalletText } from '../types';
+import {
+	AddressLength,
+	AlertMessage,
+	ContractState,
+	Ethereum,
+	HashRentalContract,
+	PathName,
+	WalletText,
+} from '../types';
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
@@ -75,9 +88,24 @@ export const Main: React.FC = () => {
 	}
 	const pathName = window.location.pathname;
 	const navigation: Navigation[] = [
-		{ name: 'Marketplace', to: PathName.Marketplace, icon: <MarketplaceIcon />, current: pathName === PathName.Marketplace },
-		{ name: 'Buyer Hub', to: PathName.MyOrders, icon: <MyOrdersIcon />, current: pathName === PathName.MyOrders },
-		{ name: 'Seller Hub', to: PathName.MyContracts, icon: <ContractIcon />, current: pathName === PathName.MyContracts },
+		{
+			name: 'Marketplace',
+			to: PathName.Marketplace,
+			icon: <MarketplaceIcon />,
+			current: pathName === PathName.Marketplace,
+		},
+		{
+			name: 'Buyer Hub',
+			to: PathName.MyOrders,
+			icon: <MyOrdersIcon />,
+			current: pathName === PathName.MyOrders,
+		},
+		{
+			name: 'Seller Hub',
+			to: PathName.MyContracts,
+			icon: <ContractIcon />,
+			current: pathName === PathName.MyContracts,
+		},
 	];
 
 	// Onboard metamask and set wallet text
@@ -93,12 +121,21 @@ export const Main: React.FC = () => {
 	const connectWallet: (walletName: string) => void = async (walletName) => {
 		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
 
-		const web3Result = await getWeb3ResultAsync(setAlertOpen, setIsConnected, setAccounts, walletName);
+		const web3Result = await getWeb3ResultAsync(
+			setAlertOpen,
+			setIsConnected,
+			setAccounts,
+			walletName
+		);
 		if (web3Result) {
 			const { accounts, contractInstance, web3 } = web3Result;
 			const chainId = await web3.eth.net.getId();
 			if (chainId !== 3) {
-				disconnectWalletConnectAsync(walletName === WalletText.ConnectViaMetaMask, web3, setIsConnected);
+				disconnectWalletConnectAsync(
+					walletName === WalletText.ConnectViaMetaMask,
+					web3,
+					setIsConnected
+				);
 				setAlertOpen(true);
 			}
 			setAccounts(accounts);
@@ -132,9 +169,14 @@ export const Main: React.FC = () => {
 	useEffect(() => getCurrentBlockTimestampAsync(), [web3]);
 
 	// Contracts setup
-	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (address) => {
+	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (
+		address
+	) => {
 		if (web3) {
-			const implementationContractInstance = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], address);
+			const implementationContractInstance = new web3.eth.Contract(
+				ImplementationContract.abi as AbiItem[],
+				address
+			);
 			const {
 				0: state,
 				1: price,
@@ -165,10 +207,13 @@ export const Main: React.FC = () => {
 	};
 
 	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
-		const hashRentalContracts = await Promise.all(addresses.map(async (address) => await createContractAsync(address)));
+		const hashRentalContracts = await Promise.all(
+			addresses.map(async (address) => await createContractAsync(address))
+		);
 
 		// Update contracts if deep equality is false
-		if (!_.isEqual(contracts, hashRentalContracts)) setContracts(hashRentalContracts as HashRentalContract[]);
+		if (!_.isEqual(contracts, hashRentalContracts))
+			setContracts(hashRentalContracts as HashRentalContract[]);
 	};
 
 	const createContractsAsync: () => void = async () => {
@@ -243,8 +288,12 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
-							editClickHandler={(event) => buttonClickHandler(event, buyerEditModalOpen, setBuyerEditModalOpen)}
-							cancelClickHandler={(event) => buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)}
+							editClickHandler={(event) =>
+								buttonClickHandler(event, buyerEditModalOpen, setBuyerEditModalOpen)
+							}
+							cancelClickHandler={(event) =>
+								buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)
+							}
 						/>
 					)}
 				/>
@@ -258,8 +307,12 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
-							editClickHandler={(event) => buttonClickHandler(event, sellerEditModalOpen, setSellerEditModalOpen)}
-							claimLmrClickHandler={(event) => buttonClickHandler(event, claimLmrModalOpen, setClaimLmrModalOpen)}
+							editClickHandler={(event) =>
+								buttonClickHandler(event, sellerEditModalOpen, setSellerEditModalOpen)
+							}
+							claimLmrClickHandler={(event) =>
+								buttonClickHandler(event, claimLmrModalOpen, setClaimLmrModalOpen)
+							}
 						/>
 					)}
 				/>
@@ -284,8 +337,12 @@ export const Main: React.FC = () => {
 			return (
 				<div className='flex flex-col items-center mt-20 md:mt-40 xl:mr-50 gap-4 text-center'>
 					<LumerinLandingPage />
-					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace Demo</p>
-					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
+					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>
+						Global Hashpower Marketplace Demo
+					</p>
+					<p className='text-lg text-lumerin-landing-page'>
+						Buy hashpower from an open, easy to use, marketplace.
+					</p>
 					<div>{ActionButtons}</div>
 				</div>
 			);
@@ -319,11 +376,17 @@ export const Main: React.FC = () => {
 		connectWallet(WalletText.ConnectViaMetaMask);
 	};
 
-	const isAvailableContract: boolean = contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
+	const isAvailableContract: boolean =
+		contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
 
 	return (
 		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
-			<Alert message={getAlertMessage()} open={alertOpen} setOpen={setAlertOpen} onClick={isMetaMask ? changeNetworkAsync : () => {}} />
+			<Alert
+				message={getAlertMessage()}
+				open={alertOpen}
+				setOpen={setAlertOpen}
+				onClick={isMetaMask ? changeNetworkAsync : () => {}}
+			/>
 			<Modal
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
@@ -343,7 +406,12 @@ export const Main: React.FC = () => {
 				open={createModalOpen}
 				setOpen={setCreateModalOpen}
 				content={
-					<CreateForm userAccount={userAccount} cloneFactoryContract={cloneFactoryContract} web3={web3} setOpen={setCreateModalOpen} />
+					<CreateForm
+						userAccount={userAccount}
+						cloneFactoryContract={cloneFactoryContract}
+						web3={web3}
+						setOpen={setCreateModalOpen}
+					/>
 				}
 			/>
 			<Modal
@@ -376,7 +444,13 @@ export const Main: React.FC = () => {
 				open={cancelModalOpen}
 				setOpen={setCancelModalOpen}
 				content={
-					<CancelForm contracts={contracts} contractId={contractId} userAccount={userAccount} web3={web3} setOpen={setCancelModalOpen} />
+					<CancelForm
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						web3={web3}
+						setOpen={setCancelModalOpen}
+					/>
 				}
 			/>
 			<Modal
@@ -395,7 +469,13 @@ export const Main: React.FC = () => {
 			/>
 			{/* collapsable sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>
-				<Dialog as='div' static className='fixed inset-0 flex z-40 lg:hidden' open={sidebarOpen} onClose={setSidebarOpen}>
+				<Dialog
+					as='div'
+					static
+					className='fixed inset-0 flex z-40 lg:hidden'
+					open={sidebarOpen}
+					onClose={setSidebarOpen}
+				>
 					<Transition.Child
 						as={Fragment}
 						enter='transition-opacity ease-linear duration-300'
@@ -469,7 +549,13 @@ export const Main: React.FC = () => {
 			</div>
 
 			{/* Static sidebar for desktop */}
-			<div className={!isConnected && contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0'}>
+			<div
+				className={
+					!isConnected && contracts.length === 0
+						? 'hidden'
+						: 'hidden bg-white lg:flex lg:flex-shrink-0'
+				}
+			>
 				<div className='flex flex-col w-64'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
@@ -509,7 +595,12 @@ export const Main: React.FC = () => {
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
 					<div className={!isConnected ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
-						<p className={classNames(pathName === PathName.MyContracts ? 'hidden xl:block' : '', 'text-lg font-semibold')}>
+						<p
+							className={classNames(
+								pathName === PathName.MyContracts ? 'hidden xl:block' : '',
+								'text-lg font-semibold'
+							)}
+						>
 							{getPageTitle()}
 						</p>
 						<div
@@ -537,14 +628,18 @@ export const Main: React.FC = () => {
 							</div>
 							<div className='btn-lmr w-auto pl-0 pointer-events-none'>
 								<span className='ml-2 text-xs md:text-sm'>
-									{Math.ceil(lumerinBalance).toLocaleString()} <span className='hidden lg:inline'>LMR</span>
+									{Math.ceil(lumerinBalance).toLocaleString()}{' '}
+									<span className='hidden lg:inline'>LMR</span>
 								</span>
 							</div>
 						</div>
 						{isConnected ? (
 							<div className='flex'>
 								{isMetaMask ? (
-									<button className='btn-add-lmr sm:w-64 sm:text-sm mr-4' onClick={() => addLumerinTokenToMetaMaskAsync()}>
+									<button
+										className='btn-add-lmr sm:w-64 sm:text-sm mr-4'
+										onClick={() => addLumerinTokenToMetaMaskAsync()}
+									>
 										<span>Import LMR into MetaMask</span>
 									</button>
 								) : null}
@@ -555,7 +650,9 @@ export const Main: React.FC = () => {
 								{!isMetaMask ? (
 									<button
 										className='btn-disconnect w-auto p-0 ml-4 mr-4'
-										onClick={() => disconnectWalletConnectAsync(isMetaMask, web3 as Web3, setIsConnected)}
+										onClick={() =>
+											disconnectWalletConnectAsync(isMetaMask, web3 as Web3, setIsConnected)
+										}
 									>
 										<span>Disconnect</span>
 									</button>
@@ -573,9 +670,15 @@ export const Main: React.FC = () => {
 				>
 					<p>Welcome to the Lumerin Marketplace Beta,</p>
 					<p>please provide feedback or submit any bugs you notice at:</p>
-					<p><a className="link" href="https://github.com/Lumerin-protocol/proxy-router/issues">https://github.com/Lumerin-protocol/proxy-router/issues</a></p>
+					<p>
+						<a className='link' href='https://github.com/Lumerin-protocol/proxy-router/issues'>
+							https://github.com/Lumerin-protocol/proxy-router/issues
+						</a>
+					</p>
 				</div>
-				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>{getContent()}</main>
+				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>
+					{getContent()}
+				</main>
 			</div>
 		</div>
 	);
