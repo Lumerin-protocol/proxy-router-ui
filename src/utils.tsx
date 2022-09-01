@@ -132,6 +132,14 @@ export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispa
 	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
 };
 
+// Make sure username contains no spaces
+export const isValidUsername: (username: string) => boolean = (username) => !!username.match(/^\S*$/)
+
+// Make sure port number is a number between 1 and 65535
+export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) => (
+	Number(portNumber) > 0 && Number(portNumber) < 65536
+)
+
 // HTML HELPERS
 // Dynamically set classes for html elements
 export const classNames: (...classes: string[]) => string = (...classes) => {

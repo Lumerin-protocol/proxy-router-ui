@@ -134,7 +134,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 			<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
 				<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
 					<p className='text-3xl'>Create New Contract</p>
-					<p>Sell your hashpower to the Lumerin Marketplace</p>
+					<p>Sell your hashpower on the Lumerin Marketplace</p>
 				</div>
 			</div>
 			{content}

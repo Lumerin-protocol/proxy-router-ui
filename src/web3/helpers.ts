@@ -76,12 +76,12 @@ export const getWeb3ResultAsync: (
         await ethereum.request({ method: "eth_requestAccounts" });
       else await (provider as WalletConnectProvider).enable();
       const web3 = new Web3(provider as provider);
-      // const networkId = await web3.eth.net.getId();
+      //const networkId = await web3.eth.net.getId();
       //const deployedNetwork = (CloneFactory as ContractJson).networks[networkId]; // temp comment for testing 6/21 - MAY
-      //const deployedNetwork = {address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4'}; //prod-beta 7/14/2022 - ABS
-      const deployedNetwork = {
-        address: "0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8", //used for actual testing
-      }; //Dev-stg-2nd time testing 7/14/2022 -ABS
+      //const deployedNetwork = {address: '0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8'}; //DEV 8/9/2022 -ABS
+      const deployedNetwork = {address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4'}; //STG 8/9/2022 -ABS
+      //const deployedNetwork = {address: '0x8C9C79Da3bbE8E1499a27cF56746Bb12cA83a2b9'}; //OLDMAIN 8/9/2022 -ABS
+      //const deployedNetwork = {address: '0x6ab2C44cFdaC8860eAdabC65fca2616a3d1f02B6'}; //MAIN 8/9/2022 -ABS   
       const accounts = await web3.eth.getAccounts();
       if (accounts.length === 0 || accounts[0] === "") {
         setAlertOpen(true);
