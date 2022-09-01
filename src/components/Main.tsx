@@ -151,6 +151,7 @@ export const Main: React.FC = () => {
 			localStorage.setItem('walletName', walletName);
 			localStorage.setItem('isConnected', 'true');
 			setChainId(chainId);
+			localStorage.setItem('walletName', walletName);
 			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
 		}
 	};
@@ -167,6 +168,20 @@ export const Main: React.FC = () => {
 	useEffect(() => {
 		if (alertOpen) setIsConnected(false);
 	}, [alertOpen]);
+
+	// Attempt to reconnect wallet on page refresh
+	useEffect(() => {
+		const connectWalletOnPageLoad = async () => {
+			if (localStorage?.getItem('walletName')) {
+				try {
+					connectWallet(localStorage.walletName);
+				} catch (error) {
+					console.log(error);
+				}
+			}
+		};
+		connectWalletOnPageLoad();
+	}, []);
 
 	// Get timestamp of current block
 	const getCurrentBlockTimestampAsync: () => void = async () => {
