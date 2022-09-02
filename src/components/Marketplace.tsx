@@ -67,6 +67,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 				updatedContract.price = divideByDigits(updatedContract.price as number);
 				updatedContract.speed = String(Number(updatedContract.speed) / 10 ** 12);
 				updatedContract.length = String(parseInt(updatedContract.length as string) / 3600);
+				updatedContract.contractId = String(contract.id);
 				updatedContract.trade = (
 					<BuyButton
 						contractId={contract.id as string}
@@ -118,9 +119,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	);
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
-	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
-
-	console.log(data);
 
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
@@ -129,20 +127,22 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	// There is always 1 empty contract for styling purposes
 	return (
-		<div className='flex flex-col items-center'>
-			{data.length > 1 ? (
-				// <Table id='marketplace' tableInstance={tableInstance} columnCount={6} />
-				<AvailableContracts contracts={data} />
-			) : null}
-			{data.length === 1 && showSpinner ? (
-				<div className='spinner'>
-					<Spinner />
-				</div>
-			) : null}
-			{data.length === 1 && !showSpinner ? (
-				<div className='text-2xl'>There are no available contracts for purchase.</div>
-			) : null}
-		</div>
+		<>
+			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-bold text-left mb-5'>
+				Hashrate For Sale
+			</h2>
+			<div className='flex flex-col items-center'>
+				{data.length > 1 ? <AvailableContracts contracts={data} /> : null}
+				{data.length === 1 && showSpinner ? (
+					<div className='spinner'>
+						<Spinner />
+					</div>
+				) : null}
+				{data.length === 1 && !showSpinner ? (
+					<div className='text-2xl'>There are no available contracts for purchase.</div>
+				) : null}
+			</div>
+		</>
 	);
 };
 
