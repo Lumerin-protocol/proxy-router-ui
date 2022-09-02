@@ -5,7 +5,7 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { getButton, printError, toRfc2396, truncateAddress } from '../../../../utils';
+import { getButton, printError, toRfc2396, encryptMessage, truncateAddress, getCreationTxIDOfContract, getPublicKey } from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -26,7 +26,6 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
-import { encrypt } from 'ecies-geth';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -56,7 +55,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
-	const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B';
+	/*
+	 * This will need to be changed to the mainnet token 
+	 * once we move over to mainnet
+	 * including this comment in the hopes that this line of code will be easy to find
+	 */
+	const lumerinTokenAddress = '0x04fa90c64DAeEe83B22501c790D39B8B9f53878a';
 
 	// Input validation setup
 	const {
@@ -71,7 +75,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
-			length: contract.length as string,
 		};
 	};
 
@@ -108,8 +111,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 			}
 
 			try {
+				// const validatorFee = '100';
 				const gasLimit = 1000000;
 				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
+				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
 					// Check contract is available before increasing allowance
@@ -120,20 +125,30 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						setAlertOpen(true);
 						return;
 					}
-
-					// Approve clone factory contract to transfer LMR on buyer's behalf
+// Approve clone factory contract to transfer LMR on buyer's behalf
 					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
 					if (receipt?.status) {
-						// Purchase contract					
-						const encryptedBuyerInput = toRfc2396(formData);
+						// Purchase contract
+						const buyerInput: string = toRfc2396(formData)!;
+						let contractAddress = contract.id!
+						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString())
+						const pubKey = await getPublicKey(contractCreationTx)
+						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
 						const receipt: Receipt = await cloneFactoryContract?.methods
-							.setPurchaseRentalContract(contract.id, encryptedBuyerInput)
-							.send(sendOptions);
-						if (!receipt.status) {}
-					} else {}
+               //.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
+               .setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
+               .send(sendOptions);
+						console.log(`encrypted buyer input/ciphertext is: ${encryptedBuyerInput}`)
+						//if (!receipt.status) {
+						//	// TODO: purchasing contract has failed, surface to user
+						//}
+					} else {
+						// TODO: call to increaseAllowance() has failed, surface to user
+						console.log('increase allowance failed')
+					}
 				}
 				setContentState(ContentState.Complete);
 			} catch (error) {

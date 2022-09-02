@@ -41,6 +41,7 @@ import _ from 'lodash';
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
 	// State and constants
+	// TODO: as webapp grows think of using context
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [isConnected, setIsConnected] = useState<boolean>(false);
 	const [web3, setWeb3] = useState<Web3>();
@@ -137,6 +138,7 @@ export const Main: React.FC = () => {
 			const {
 				0: state,
 				1: price,
+				// eslint-disable-next-line
 				2: limit,
 				3: speed,
 				4: length,
@@ -282,7 +284,7 @@ export const Main: React.FC = () => {
 			return (
 				<div className='flex flex-col items-center mt-20 md:mt-40 xl:mr-50 gap-4 text-center'>
 					<LumerinLandingPage />
-					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace</p>
+					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>Global Hashpower Marketplace Demo</p>
 					<p className='text-lg text-lumerin-landing-page'>Buy hashpower from an open, easy to use, marketplace.</p>
 					<div>{ActionButtons}</div>
 				</div>
@@ -462,12 +464,12 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
-			<div className={contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
+			<div className={!isConnected && contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
 				<LogoIcon />
 			</div>
 
 			{/* Static sidebar for desktop */}
-			<div className={contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0'}>
+			<div className={!isConnected && contracts.length === 0 ? 'hidden' : 'hidden bg-white lg:flex lg:flex-shrink-0'}>
 				<div className='flex flex-col w-64'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>

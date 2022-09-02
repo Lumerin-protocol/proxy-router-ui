@@ -10,7 +10,7 @@ interface ConfirmContentProps {
 
 export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { poolAddress, portNumber, username, speed, price, withValidator, length } }) => {
 	return (
-		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm'>
+		<div className='flex flex-col bg-white px-8 pt-6 text-sm'>
 			<div className='confirm-div'>
 				<p>Pool Address</p>
 				<p>{poolAddress}</p>
@@ -25,16 +25,20 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({ web3, data: { po
 			</div>
 			<div className='confirm-div'>
 				<p>Speed (TH/S)</p>
-				<p>{speed}</p>
+				<p>{ String(Number(speed) / 10 ** 12)}</p>
 			</div>
 			<div className='confirm-div'>
 				<p>Duration (HOURS)</p>
-				<p>{length}</p>
+				<p>{String(parseInt(length as string) / 3600)}</p>
 			</div>
 			<div className='confirm-div'>
 				<p>Price (LMR)</p>
 				<p>{price ? divideByDigits(parseInt(price)) : price}</p>
 			</div>
+			{/* <div className='confirm-div'>
+				<p>Use Titan Validator Service</p>
+				<p>{withValidator ? 'Yes' : 'No'}</p>
+			</div> */}
 		</div>
 	);
 };

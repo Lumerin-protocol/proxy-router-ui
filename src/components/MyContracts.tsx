@@ -92,7 +92,9 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 								parseInt(updatedOrder.length as string),
 								currentBlockTimestamp
 						  );
-				updatedOrder.length = updatedOrder.length as string;
+				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
+				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
+				//updatedOrder.length = updatedOrder.length as string;
 				updatedOrder.timestamp = getTimestamp(contract.timestamp as string, updatedOrder.state as string);
 				updatedOrder.editClaim = (
 					<ButtonGroup
@@ -113,6 +115,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		return updatedOrders;
 	};
 
+	// TODO: if same as <MyOrders /> pull out into util function
 	const customSort: SortByFn<CustomTableOptions> = (rowA: Row, rowB: Row, columnId: string, desc?: boolean) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;

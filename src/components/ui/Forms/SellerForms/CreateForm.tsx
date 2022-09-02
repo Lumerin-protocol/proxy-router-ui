@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
-import { getButton, getPublicKeyAsync, printError } from '../../../../utils';
+import { getButton, printError } from '../../../../utils';
 import { multiplyByDigits } from '../../../../web3/helpers';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
@@ -64,13 +64,18 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, cloneFactor
 			try {
 				if (web3) {
 					const contractDuration =
-						(formData.contractTime as number) < 24 ? (formData.contractTime as number) * 600 : (formData.contractTime as number) * 3600;
+						(formData.contractTime as number) < 12 ? (formData.contractTime as number) * 600 : (formData.contractTime as number) * 3600;
+					// TODO: update to actual validator address
 					const validatorAddress = '0x0000000000000000000000000000000000000000';
-					const publicKey = (await getPublicKeyAsync(userAccount)) as Buffer;
-					const publicKeyHex = `04${publicKey.toString('hex')}`;
 					const price = multiplyByDigits(formData.listPrice as number);
+					let speed;
+					if (formData && formData.speed) {
+						speed = (formData.speed) * 10 ** 12;
+					} else {
+						speed = 0;
+					}
 					const receipt = await cloneFactoryContract?.methods
-						.setCreateNewRentalContract(price, 0, formData.speed, contractDuration, validatorAddress, '')
+						.setCreateNewRentalContract(price, 0, speed, contractDuration, validatorAddress, '')
 						.send({ from: userAccount });
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
