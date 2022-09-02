@@ -51,6 +51,7 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 import styled from '@emotion/styled';
+import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -661,31 +662,36 @@ export const Main: React.FC = () => {
 					</div>
 				</div>
 				<div className='flex flex-row justify-between'>
-					<div
-						className={
-							pathName === PathName.Marketplace && isConnected && isAvailableContract
-								? 'card bg-white rounded-15 p-8 flex flex-col items-center text-sm sm:text-lg'
-								: 'hidden'
-						}
-					>
-						<p>Welcome to the Lumerin Marketplace Beta,</p>
-						<p>please provide feedback or submit any bugs you notice at:</p>
-						<p>
-							<a className='link' href='https://github.com/Lumerin-protocol/proxy-router/issues'>
-								https://github.com/Lumerin-protocol/proxy-router/issues
-							</a>
-						</p>
-					</div>
-					<div className={!isMetaMask ? 'hidden xl:flex' : 'flex bg-white rounded-15 p-6'}>
-						<div className='flex items-center'>
-							<LumerinIcon />
-						</div>
-						<div className='btn-lmr w-auto pl-0 pointer-events-none'>
-							<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
-								{Math.ceil(lumerinBalance).toLocaleString()} <span className='text-sm'>LMR</span>
-							</span>
-						</div>
-					</div>
+					{pathName === PathName.Marketplace && isConnected && isAvailableContract && (
+						<>
+							<div className='card bg-white rounded-15 p-8 flex flex-col items-center text-sm'>
+								<p>Welcome to the Lumerin Marketplace Beta,</p>
+								<p>please provide feedback or submit any bugs you notice at:</p>
+								<p>
+									<a
+										className='link'
+										href='https://github.com/Lumerin-protocol/proxy-router/issues'
+									>
+										https://github.com/Lumerin-protocol/proxy-router/issues
+									</a>
+								</p>
+							</div>
+							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
+							{isMetaMask && (
+								<div className='flex bg-white rounded-15 p-6'>
+									<div className='flex items-center'>
+										<LumerinIcon />
+									</div>
+									<div className='btn-lmr w-auto pl-0 pointer-events-none'>
+										<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
+											{Math.ceil(lumerinBalance).toLocaleString()}{' '}
+											<span className='text-sm'>LMR</span>
+										</span>
+									</div>
+								</div>
+							)}
+						</>
+					)}
 				</div>
 				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>
 					{getContent()}
