@@ -1,4 +1,5 @@
 import { HashRentalContract } from '../../types';
+import { getReadableDate } from '../../utils';
 
 export const AvailableContracts = (prop: { contracts: Array<HashRentalContract> }) => {
 	return (
@@ -9,7 +10,7 @@ export const AvailableContracts = (prop: { contracts: Array<HashRentalContract> 
 						View Contract
 					</a>
 					<p>{item.speed} th/s</p>
-					<p>{item.length}</p>
+					{item.length && <p>{getReadableDate(item.length)}</p>}
 					{item.trade}
 				</div>
 			))}
