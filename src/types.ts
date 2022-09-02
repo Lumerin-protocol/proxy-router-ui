@@ -82,6 +82,7 @@ export interface ConnectInfo {
 
 export interface HashRentalContract {
 	id?: JSX.Element | string;
+	contractId?: string;
 	price?: JSX.Element | string | number;
 	speed?: string;
 	length?: string;
