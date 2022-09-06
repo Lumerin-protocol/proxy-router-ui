@@ -6,7 +6,12 @@ export const AvailableContracts = (prop: { contracts: Array<HashRentalContract> 
 		<div className='overflow-visible w-full'>
 			{prop.contracts.map((item, index) => (
 				<div className='bg-white rounded-15 mb-3 p-7 w-full flex flex-row justify-between items-center'>
-					<a className='underline pb-0 font-Raleway' href={item.contractId}>
+					<a
+						className='underline pb-0 font-Raleway cursor-pointer'
+						href={`https://ropsten.etherscan.io/address/${item.contractId}`}
+						target='_blank'
+						rel='noreferrer'
+					>
 						View Contract
 					</a>
 					<p className='pb-0'>{item.speed} th/s</p>

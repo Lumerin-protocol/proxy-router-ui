@@ -1,20 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Column, useTable, useSortBy, SortByFn, Row } from 'react-table';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
-import { Table } from './ui/Table';
 import { AvailableContracts } from './ui/AvailableContracts';
-import { setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
+import { setMediaQueryListOnChangeHandler } from '../utils';
 import { Spinner } from './ui/Spinner';
-import { ContractState, HashRentalContract, Header, SortByType } from '../types';
+import { ContractState, HashRentalContract } from '../types';
 import { useInterval } from './hooks/useInterval';
 import Web3 from 'web3';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
-
-// This interface needs to have all the properties for both data and columns based on index.d.ts
-interface CustomTableOptions extends HashRentalContract, Header {}
 
 interface MarketplaceProps {
 	web3: Web3 | undefined;
@@ -81,42 +76,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 		return updatedContracts;
 	};
-
-	const customSort: SortByFn<CustomTableOptions> = (
-		rowA: Row,
-		rowB: Row,
-		columnId: string,
-		desc?: boolean
-	) => {
-		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
-		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
-
-		switch (columnId) {
-			case 'price':
-				return sortByNumber(rowA.values.price, rowB.values.price, SortByType.Int);
-			case 'speed':
-				return sortByNumber(rowA.values.speed, rowB.values.speed, SortByType.Int);
-			case 'length':
-				return sortByNumber(rowA.values.length, rowB.values.length, SortByType.Float);
-			default:
-				return 0;
-		}
-	};
-
-	const sortTypes: Record<string, SortByFn<CustomTableOptions>> = {
-		customSort: customSort,
-	};
-
-	const columns: Column<CustomTableOptions>[] = useMemo(
-		() => [
-			{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
-			{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
-			{ Header: 'SPEED (TH/S)', accessor: 'speed', sortType: 'customSort' },
-			{ Header: 'DURATION (HOURS)', accessor: 'length', sortType: 'customSort' },
-			{ Header: 'TRADE', accessor: 'trade', disableSortBy: true },
-		],
-		[]
-	);
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 
