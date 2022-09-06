@@ -5,7 +5,15 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { getButton, printError, toRfc2396, encryptMessage, truncateAddress, getCreationTxIDOfContract, getPublicKey } from '../../../../utils';
+import {
+	getButton,
+	printError,
+	toRfc2396,
+	encryptMessage,
+	truncateAddress,
+	getCreationTxIDOfContract,
+	getPublicKey,
+} from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -64,7 +72,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	/*
-	 * This will need to be changed to the mainnet token 
+	 * This will need to be changed to the mainnet token
 	 * once we move over to mainnet
 	 * including this comment in the hopes that this line of code will be easy to find
 	 */
@@ -83,6 +91,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
+			length: contract.length as string,
 		};
 	};
 
@@ -148,15 +157,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					if (receipt?.status) {
 						// Purchase contract
 						const buyerInput: string = toRfc2396(formData)!;
-						let contractAddress = contract.id!
-						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString())
-						const pubKey = await getPublicKey(contractCreationTx)
-						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
+						let contractAddress = contract.id!;
+						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString());
+						const pubKey = await getPublicKey(contractCreationTx);
+						const encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
 						const receipt: Receipt = await cloneFactoryContract?.methods
-               //.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //this sends the encrypted input to the contract. canceled out until decryptions is in place
-               .setPurchaseRentalContract(contract.id, buyerInput) //this sends the encrypted input to the contract. canceled out until decryptions is in place
-               .send(sendOptions);
-						console.log(`the encrypted buyer input (ciphertext) is: ${encryptedBuyerInput}`)
+							//.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //this sends the encrypted input to the contract. canceled out until decryptions is in place
+							.setPurchaseRentalContract(contract.id, buyerInput) //this sends the encrypted input to the contract. canceled out until decryptions is in place
+							.send(sendOptions);
+						console.log(`the encrypted buyer input (ciphertext) is: ${encryptedBuyerInput}`);
 						if (!receipt.status) {
 							// TODO: purchasing contract has failed, surface to user
 						}
