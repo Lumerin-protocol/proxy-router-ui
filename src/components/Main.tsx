@@ -14,6 +14,10 @@ import {
 	LumerinLandingPage,
 	WalletConnectIcon,
 } from '../images/index';
+import BubbleGraphic1 from '../images/Bubble_1.png';
+import BubbleGraphic2 from '../images/Bubble_2.png';
+import BubbleGraphic3 from '../images/Bubble_3.png';
+import BubbleGraphic4 from '../images/Bubble_4.png';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { Alert } from './ui/Alert';
@@ -50,6 +54,8 @@ import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
+import styled from '@emotion/styled';
+import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -142,14 +148,17 @@ export const Main: React.FC = () => {
 			setCloneFactoryContract(contractInstance);
 			setWeb3(web3);
 			setIsConnected(true);
+			localStorage.setItem('walletName', walletName);
+			localStorage.setItem('isConnected', 'true');
 			setChainId(chainId);
+			localStorage.setItem('walletName', walletName);
 			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
 		}
 	};
 
 	const getTruncatedWalletAddress: () => string | null = () => {
 		if (userAccount) {
-			return truncateAddress(userAccount, AddressLength.LONG);
+			return truncateAddress(userAccount, AddressLength.MEDIUM);
 		}
 
 		return null;
@@ -159,6 +168,20 @@ export const Main: React.FC = () => {
 	useEffect(() => {
 		if (alertOpen) setIsConnected(false);
 	}, [alertOpen]);
+
+	// Attempt to reconnect wallet on page refresh
+	useEffect(() => {
+		const connectWalletOnPageLoad = async () => {
+			if (localStorage?.getItem('walletName')) {
+				try {
+					connectWallet(localStorage.walletName);
+				} catch (error) {
+					console.log(error);
+				}
+			}
+		};
+		connectWalletOnPageLoad();
+	}, []);
 
 	// Get timestamp of current block
 	const getCurrentBlockTimestampAsync: () => void = async () => {
@@ -257,7 +280,7 @@ export const Main: React.FC = () => {
 		<div className='flex flex-col items-center mt-4 font-medium'>
 			<button
 				type='button'
-				className='btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
+				className='btn-wallet w-60 h-12 mt-4 rounded-15 text-lumerin-dark-blue text-sm font-Inter'
 				onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}
 			>
 				<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
@@ -265,7 +288,7 @@ export const Main: React.FC = () => {
 			</button>
 			<button
 				type='button'
-				className='btn-wallet w-60 h-12 mt-4 rounded-5 bg-lumerin-aqua text-sm font-Inter'
+				className='btn-wallet w-60 h-12 mt-4 rounded-15 text-lumerin-dark-blue text-sm font-Inter'
 				onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}
 			>
 				<span className='mr-4'>{WalletText.ConnectViaWalletConnect}</span>
@@ -351,7 +374,7 @@ export const Main: React.FC = () => {
 	};
 
 	// Hide top right button if no contracts
-	const buttonDisplay = contracts.length === 0 ? 'hidden' : 'flex-1 px-4 flex justify-end';
+	const buttonDisplay = contracts.length === 0 ? 'hidden' : 'ml-auto mt-4';
 
 	const getPageTitle: () => string = () => {
 		if (contracts.length === 0) return '';
@@ -379,8 +402,30 @@ export const Main: React.FC = () => {
 	const isAvailableContract: boolean =
 		contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
 
+	const Main = styled.div`
+		display: flex;
+		min-height: 100vh;
+		background: #eaf7fc;
+		background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
+			url(${BubbleGraphic4});
+		background-position: bottom right, right top, left top, left bottom;
+		background-repeat: no-repeat;
+		background-size: 55%;
+
+		.graphics {
+			/* background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
+				url(${BubbleGraphic4});
+			background-position: left top, right top, right bottom, left bottom;
+			background-repeat: no-repeat;
+			height: 100vh;
+			width: 100%;
+			z-index: 1;
+			position: absolute; */
+		}
+	`;
+
 	return (
-		<div id='main' className='h-screen flex overflow-hidden font-Inter'>
+		<Main>
 			<Alert
 				message={getAlertMessage()}
 				open={alertOpen}
@@ -467,7 +512,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			{/* collapsable sidebar: below lg breakpoint */}
+			{/* collapsible sidebar: below lg breakpoint */}
 			<Transition.Root show={sidebarOpen} as={Fragment}>
 				<Dialog
 					as='div'
@@ -496,7 +541,7 @@ export const Main: React.FC = () => {
 						leaveFrom='translate-x-0'
 						leaveTo='-translate-x-full'
 					>
-						<div className='relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white'>
+						<div className='relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4'>
 							<Transition.Child
 								as={Fragment}
 								enter='ease-in-out duration-300'
@@ -524,7 +569,7 @@ export const Main: React.FC = () => {
 											key={item.name}
 											to={item.to}
 											className={classNames(
-												item.current ? 'text-lumerin-aqua' : 'text-black',
+												item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-black-text',
 												'flex items-center px-2 py-2 text-sm font-medium rounded-md'
 											)}
 											onClick={() => {
@@ -570,7 +615,7 @@ export const Main: React.FC = () => {
 										key={item.name}
 										to={item.to}
 										className={classNames(
-											item.current ? 'text-lumerin-aqua' : 'text-black',
+											item.current ? 'text-lumerin-blue-text' : 'text-lumerin-inactive-text',
 											'flex items-center px-2 py-2 text-sm font-medium rounded-md'
 										)}
 										onClick={() => setToggle(!toggle)}
@@ -584,8 +629,9 @@ export const Main: React.FC = () => {
 					</div>
 				</div>
 			</div>
-			<div className='flex flex-col w-0 flex-1 overflow-hidden bg-white'>
-				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20 bg-white'}>
+			<div className='graphics' />
+			<div className='flex flex-col w-0 flex-1 overflow-hidden pl-10 pr-10'>
+				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20'}>
 					<button
 						type='button'
 						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden'
@@ -595,14 +641,14 @@ export const Main: React.FC = () => {
 						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 					</button>
 					<div className={!isConnected ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
-						<p
+						<h1
 							className={classNames(
 								pathName === PathName.MyContracts ? 'hidden xl:block' : '',
-								'text-lg font-semibold'
+								'text-xl font-bold font-Raleway text-lumerin-blue-text'
 							)}
 						>
 							{getPageTitle()}
-						</p>
+						</h1>
 						<div
 							className='text-black flex items-center px-2 text-xs md:text-sm font-medium rounded-md cursor-pointer'
 							onClick={() => {
@@ -622,31 +668,20 @@ export const Main: React.FC = () => {
 						</div>
 					</div>
 					<div className={buttonDisplay}>
-						<div className={!isMetaMask ? 'hidden xl:flex' : 'flex'}>
-							<div className='flex items-center'>
-								<LumerinIcon />
-							</div>
-							<div className='btn-lmr w-auto pl-0 pointer-events-none'>
-								<span className='ml-2 text-xs md:text-sm'>
-									{Math.ceil(lumerinBalance).toLocaleString()}{' '}
-									<span className='hidden lg:inline'>LMR</span>
-								</span>
-							</div>
-						</div>
 						{isConnected ? (
-							<div className='flex'>
+							<div className='block'>
+								<div className='btn-connected cursor-default flex justify-between items-center px-8'>
+									<span className='pr-3'>{getTruncatedWalletAddress()}</span>
+									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
+								</div>
 								{isMetaMask ? (
 									<button
-										className='btn-add-lmr sm:w-64 sm:text-sm mr-4'
+										className='link text-xs text-lumerin-blue-text'
 										onClick={() => addLumerinTokenToMetaMaskAsync()}
 									>
 										<span>Import LMR into MetaMask</span>
 									</button>
 								) : null}
-								<button className='btn-connected w-64 cursor-default'>
-									<span className='mr-4'>{getTruncatedWalletAddress()}</span>
-									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
-								</button>
 								{!isMetaMask ? (
 									<button
 										className='btn-disconnect w-auto p-0 ml-4 mr-4'
@@ -661,26 +696,47 @@ export const Main: React.FC = () => {
 						) : null}
 					</div>
 				</div>
-				<div
-					className={
-						pathName === PathName.Marketplace && isConnected && isAvailableContract
-							? 'mt-8 flex flex-col items-center text-sm sm:text-18'
-							: 'hidden'
-					}
-				>
-					<p>Welcome to the Lumerin Marketplace Beta,</p>
-					<p>please provide feedback or submit any bugs you notice at:</p>
-					<p>
-						<a className='link' href='https://github.com/Lumerin-protocol/proxy-router/issues'>
-							https://github.com/Lumerin-protocol/proxy-router/issues
-						</a>
-					</p>
+				<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6'>
+					{pathName === PathName.Marketplace && isConnected && isAvailableContract && (
+						<>
+							<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
+								<p>
+									Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
+									bugs you notice to the{' '}
+									<a
+										className='link underline'
+										href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
+									>
+										Github Repo.
+									</a>
+								</p>
+							</div>
+							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
+							{isMetaMask && (
+								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col'>
+									<p className='text-xs text-center'>Wallet Balance</p>
+									<div className='flex items-center justify-center flex-1'>
+										<LumerinIcon />
+										<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
+											{Math.ceil(lumerinBalance).toLocaleString()}{' '}
+											<span className='text-sm'>LMR</span>
+										</span>
+									</div>
+									<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
+										<a className='' href='/buyerhub'>
+											Buy LMR tokens on Uniswap
+										</a>
+									</p>
+								</div>
+							)}
+						</>
+					)}
 				</div>
-				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative overflow-y-auto focus:outline-none'>
+				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative focus:outline-none'>
 					{getContent()}
 				</main>
 			</div>
-		</div>
+		</Main>
 	);
 };
 

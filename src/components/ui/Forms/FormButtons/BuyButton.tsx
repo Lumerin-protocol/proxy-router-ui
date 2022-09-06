@@ -21,10 +21,10 @@ export const BuyButton: React.FC<BuyButtonProps> = ({
 	return (
 		<button
 			type='button'
-			className='w-16 h-8 sm:w-20 sm:h-10 p-auto rounded-5 bg-lumerin-aqua text-white font-medium'
+			className='px-4 py-2 rounded-10 bg-lumerin-dark-blue text-white text-xs'
 			onClick={(event) => clickHandler(event)}
 		>
-			<span>Buy</span>
+			<span>Purchase</span>
 		</button>
 	);
 };

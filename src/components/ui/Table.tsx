@@ -163,12 +163,7 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, pa
 					{(pagination ? page : rows).map((row, index) => {
 						prepareRow(row);
 						return (
-							<tr
-								{...row.getRowProps()}
-								className={
-									index === 0 ? 'h-100 sm:h-320 text-center' : 'h-600 sm:h-750 text-center'
-								}
-							>
+							<tr {...row.getRowProps()} className='h-600 sm:h-750 text-center'>
 								{row.cells.map((cell) => {
 									return (
 										<td

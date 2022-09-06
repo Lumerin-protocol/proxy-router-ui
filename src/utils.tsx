@@ -295,6 +295,27 @@ export const getLengthDisplay: (length: number) => string = (length) => {
 	return days;
 };
 
+// Get contract duration in days, hours, and minutes
+export const getReadableDate: (length: string) => string = (length) => {
+	const numLength = parseFloat(length);
+	const days = Math.floor(numLength / 24);
+	const remainder = numLength % 24;
+	const hours = days >= 1 ? Math.floor(remainder) : Math.floor(numLength);
+	const minutes =
+		days >= 1
+			? Math.floor(60 * (remainder - hours))
+			: Math.floor((numLength - Math.floor(numLength)) * 60);
+	const readableDays = days ? (days === 1 ? `${days} day` : `${days} days`) : '';
+	const readableHours = hours ? (hours === 1 ? `${hours} hour` : `${hours} hours`) : '';
+	const readableMinutes = minutes
+		? minutes === 1
+			? `${minutes} minute`
+			: `${minutes} minutes`
+		: '';
+	const readableDate = `${readableDays} ${readableHours} ${readableMinutes}`;
+	return readableDate;
+};
+
 // Display status of contracts
 export const getStatusText: (state: string) => string = (state) => {
 	switch (state) {
