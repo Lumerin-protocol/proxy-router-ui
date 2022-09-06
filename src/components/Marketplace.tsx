@@ -2,7 +2,7 @@
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
-import { AvailableContracts } from './ui/AvailableContracts';
+import { AvailableContracts } from './ui/Cards/AvailableContracts';
 import { setMediaQueryListOnChangeHandler } from '../utils';
 import { Spinner } from './ui/Spinner';
 import { ContractState, HashRentalContract } from '../types';

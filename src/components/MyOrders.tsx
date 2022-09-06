@@ -26,6 +26,7 @@ import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
 import { divideByDigits } from '../web3/helpers';
 import Web3 from 'web3';
 import _ from 'lodash';
+import { PurchasedContracts } from './ui/Cards/PurchasedContracts';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
@@ -84,8 +85,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		const buyerOrders = contracts.filter(
 			(contract) => contract.buyer === userAccount && contract.state === ContractState.Running
 		);
-		// Add empty row for styling
-		buyerOrders.unshift({});
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
 			if (!_.isEmpty(contract)) {
@@ -197,19 +196,21 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		if (showSpinner) setShowSpinner(false);
 	}, 7000);
 
+	useEffect(() => {
+		if (data.length > 1) {
+			setShowSpinner(false);
+		}
+	});
+
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? (
-				<Table id='myorders' tableInstance={tableInstance} columnCount={6} />
-			) : null}
-			{data.length === 1 && showSpinner ? (
+			{data.length > 0 ? <PurchasedContracts contracts={data} /> : null}
+			{showSpinner && (
 				<div className='spinner'>
 					<Spinner />
 				</div>
-			) : null}
-			{data.length === 1 && !showSpinner ? (
-				<div className='text-2xl'>You have no orders.</div>
-			) : null}
+			)}
+			{data.length === 1 && !showSpinner && <div className='text-2xl'>You have no orders.</div>}
 		</div>
 	);
 };
