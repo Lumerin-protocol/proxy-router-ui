@@ -6,6 +6,7 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
+				sans: ['Montserrat, sans-serif'],
 				Inter: ['Inter', 'sans-serif'],
 				Montserrat: ['Montserrat', 'sans-serif'],
 				Raleway: ['Raleway', 'sans-serif'],
@@ -13,14 +14,18 @@ module.exports = {
 			fontSize: {
 				xxs: '.625rem',
 				xs: '.8125rem',
-				lg: '1.25rem',
+				sm: '1rem',
+				md: '1.25rem',
+				lg: '1.75rem',
 				xl: '2rem',
+				xxl: '2.5rem',
 				18: '1.125rem',
 				50: '3.125rem',
 			},
 			colors,
 			spacing: {
 				50: '12.5rem',
+				10: '3.25rem',
 			},
 			minWidth: {
 				21: '21rem',
@@ -32,6 +37,7 @@ module.exports = {
 			},
 			borderRadius: {
 				5: '5px',
+				10: '10px',
 				15: '15px',
 				20: '20px',
 				30: '30px',

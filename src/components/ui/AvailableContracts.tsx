@@ -3,17 +3,17 @@ import { getReadableDate } from '../../utils';
 
 export const AvailableContracts = (prop: { contracts: Array<HashRentalContract> }) => {
 	return (
-		<>
+		<div className='overflow-visible w-full'>
 			{prop.contracts.map((item, index) => (
-				<div className='bg-white rounded-15 mb-3 p-5 w-full flex flex-row justify-between'>
-					<a className='underline' href={item.contractId}>
+				<div className='bg-white rounded-15 mb-3 p-7 w-full flex flex-row justify-between items-center'>
+					<a className='underline pb-0 font-Raleway' href={item.contractId}>
 						View Contract
 					</a>
-					<p>{item.speed} th/s</p>
-					{item.length && <p>{getReadableDate(item.length)}</p>}
+					<p className='pb-0'>{item.speed} th/s</p>
+					{item.length && <p className='pb-0'>{getReadableDate(item.length)}</p>}
 					{item.trade}
 				</div>
 			))}
-		</>
+		</div>
 	);
 };

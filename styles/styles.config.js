@@ -2,6 +2,7 @@
 module.exports = {
 	colors: {
 		'lumerin-gray': '#F2F5F9',
+		'lumerin-light-gray': '#EAF7FC',
 		'lumerin-blue-text': '#0E4353',
 		'lumerin-black-text': '#252B34',
 		'lumerin-inactive-text': '#384764',
