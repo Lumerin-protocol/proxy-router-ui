@@ -84,19 +84,27 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		if (showSpinner) setShowSpinner(false);
 	}, 7000);
 
+	useEffect(() => {
+		if (data.length > 1) {
+			setShowSpinner(false);
+		}
+	});
+
 	// There is always 1 empty contract for styling purposes
 	return (
 		<>
-			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-bold text-left mb-5'>
-				Hashrate For Sale
-			</h2>
+			{!showSpinner && (
+				<h2 className='text-lg text-lumerin-blue-text font-Raleway font-bold text-left mb-5'>
+					Hashrate For Sale
+				</h2>
+			)}
+			{showSpinner && (
+				<div className='spinner'>
+					<Spinner />
+				</div>
+			)}
 			<div className='flex flex-col items-center'>
 				{data.length > 1 ? <AvailableContracts contracts={data} /> : null}
-				{data.length === 1 && showSpinner ? (
-					<div className='spinner'>
-						<Spinner />
-					</div>
-				) : null}
 				{data.length === 1 && !showSpinner ? (
 					<div className='text-2xl'>There are no available contracts for purchase.</div>
 				) : null}

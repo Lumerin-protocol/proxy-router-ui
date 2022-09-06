@@ -22,7 +22,6 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
-	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
