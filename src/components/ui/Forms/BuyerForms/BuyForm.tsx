@@ -5,7 +5,15 @@ import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
 import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
-import { getButton, printError, toRfc2396, encryptMessage, truncateAddress, getCreationTxIDOfContract, getPublicKey } from '../../../../utils';
+import {
+	getButton,
+	printError,
+	toRfc2396,
+	encryptMessage,
+	truncateAddress,
+	getCreationTxIDOfContract,
+	getPublicKey,
+} from '../../../../utils';
 import LumerinContract from '../../../../contracts/Lumerin.json';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
@@ -48,7 +56,15 @@ interface BuyFormProps {
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAccount, cloneFactoryContract, web3, lumerinbalance, setOpen }) => {
+export const BuyForm: React.FC<BuyFormProps> = ({
+	contracts,
+	contractId,
+	userAccount,
+	cloneFactoryContract,
+	web3,
+	lumerinbalance,
+	setOpen,
+}) => {
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isAvailable, setIsAvailable] = useState<boolean>(true);
@@ -56,7 +72,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	/*
-	 * This will need to be changed to the mainnet token 
+	 * This will need to be changed to the mainnet token
 	 * once we move over to mainnet
 	 * including this comment in the hopes that this line of code will be easy to find
 	 */
@@ -75,6 +91,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
+			length: contract.length as string,
 		};
 	};
 
@@ -118,27 +135,32 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 
 				if (web3 && formData) {
 					// Check contract is available before increasing allowance
-					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const implementationContract = new web3.eth.Contract(
+						ImplementationContract.abi as AbiItem[],
+						contract.id as string
+					);
 					const contractState = await implementationContract.methods.contractState().call();
 					if (contractState !== ContractState.Available) {
 						setIsAvailable(false);
 						setAlertOpen(true);
 						return;
 					}
-// Approve clone factory contract to transfer LMR on buyer's behalf
-					const lumerinTokenContract = new web3.eth.Contract(LumerinContract.abi as AbiItem[], lumerinTokenAddress);
-					console.log('the cat jumps over the moon')
+
+					// Approve clone factory contract to transfer LMR on buyer's behalf
+					const lumerinTokenContract = new web3.eth.Contract(
+						LumerinContract.abi as AbiItem[],
+						lumerinTokenAddress
+					);
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
 					if (receipt?.status) {
-						console.log('in purchase section')
 						// Purchase contract
 						const buyerInput: string = toRfc2396(formData)!;
-						let contractAddress = contract.id!
-						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString())
-						const pubKey = await getPublicKey(contractCreationTx)
-						const encryptedBuyerInput = await encryptMessage(pubKey,buyerInput);
+						let contractAddress = contract.id!;
+						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString());
+						const pubKey = await getPublicKey(contractCreationTx);
+						const encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
 						const receipt: Receipt = await cloneFactoryContract?.methods
                //.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
                .setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
@@ -149,7 +171,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						//}
 					} else {
 						// TODO: call to increaseAllowance() has failed, surface to user
-						console.log('increase allowance failed')
 					}
 				}
 				setContentState(ContentState.Complete);
@@ -205,8 +226,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 	createContent();
 
 	// Set styles and button based on ContentState
-	const display = contentState === ContentState.Pending || contentState === ContentState.Complete ? 'hidden' : 'block';
-	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
+	const display =
+		contentState === ContentState.Pending || contentState === ContentState.Complete
+			? 'hidden'
+			: 'block';
+	const bgColor =
+		contentState === ContentState.Complete || contentState === ContentState.Confirm
+			? 'bg-black'
+			: 'bg-lumerin-aqua';
 
 	return (
 		<Fragment>
@@ -215,11 +242,25 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 				open={alertOpen}
 				setOpen={setAlertOpen}
 			/>
-			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
+			<div
+				className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium`}
+			>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
-					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
-						<p className='text-3xl'>Purchase Hashpower</p>
-						<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
+					<div
+						className={
+							contentState === ContentState.Complete || contentState === ContentState.Pending
+								? 'hidden'
+								: 'block'
+						}
+					>
+						<h1 className='text-3xl pb-2'>Purchase Hashpower</h1>
+						<p className='font-normal mb-3'>
+							Enter the Pool Address, Port Number, and Username you are pointing the purchased
+							hashpower to.
+						</p>
+						<span className='text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded'>
+							Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+						</span>
 					</div>
 				</div>
 				{content}
@@ -235,7 +276,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contracts, contractId, userAcc
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, buyContractAsync)
+						? getButton(
+								contentState,
+								bgColor,
+								buttonOpacity,
+								buttonContent,
+								setOpen,
+								handleSubmit,
+								buyContractAsync
+						  )
 						: null}
 				</div>
 			</div>

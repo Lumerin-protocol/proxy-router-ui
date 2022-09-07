@@ -3,7 +3,12 @@ import React from 'react';
 import { createUseStyles } from 'react-jss';
 import { TableInstance } from 'react-table';
 import { classNames } from '../../utils';
-import { faAngleLeft, faAngleRight, faAngleDoubleLeft, faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
+import {
+	faAngleLeft,
+	faAngleRight,
+	faAngleDoubleLeft,
+	faAngleDoubleRight,
+} from '@fortawesome/free-solid-svg-icons';
 const { colors } = require('styles/styles.config.js');
 
 // The use of `!important` is bc not dynamically checking the number of cells per row
@@ -128,7 +133,11 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, pa
 
 	return (
 		<div className='w-95 md:w-99'>
-			<table id={id} {...getTableProps()} className={classNames(classes.table, 'relative border-separate w-full')}>
+			<table
+				id={id}
+				{...getTableProps()}
+				className={classNames(classes.table, 'relative border-separate w-full')}
+			>
 				<thead className='bg-lumerin-dark-gray h-500 sm:h-16 text-xxs sm:text-xs'>
 					{headerGroups.map((headerGroup) => (
 						<tr {...headerGroup.getHeaderGroupProps()}>
@@ -138,7 +147,10 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, pa
 									className={`sticky pl-2 md:pl-4 text-justify top-0 bg-lumerin-dark-gray`}
 									style={{
 										width: `${Math.floor(100 / columnCount)}%`,
-										cursor: column.id !== 'id' && column.id !== 'editCancel' && column.id !== 'trade' ? 'pointer' : 'text',
+										cursor:
+											column.id !== 'id' && column.id !== 'editCancel' && column.id !== 'trade'
+												? 'pointer'
+												: 'text',
 									}}
 								>
 									{column.render('Header')}
@@ -151,10 +163,13 @@ export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, pa
 					{(pagination ? page : rows).map((row, index) => {
 						prepareRow(row);
 						return (
-							<tr {...row.getRowProps()} className={index === 0 ? 'h-100 sm:h-320 text-center' : 'h-600 sm:h-750 text-center'}>
+							<tr {...row.getRowProps()} className='h-600 sm:h-750 text-center'>
 								{row.cells.map((cell) => {
 									return (
-										<td {...cell.getCellProps()} className={`pl-2 md:pl-4 text-justify font-semibold text-xxs sm:text-sm`}>
+										<td
+											{...cell.getCellProps()}
+											className={`pl-2 md:pl-4 text-justify font-semibold text-xxs sm:text-sm`}
+										>
 											{cell.render('Cell')}
 										</td>
 									);

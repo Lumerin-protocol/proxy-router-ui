@@ -1,50 +1,50 @@
-import React, { Dispatch, SetStateAction } from "react";
-import Web3 from "web3";
-import detectEthereumProvider from "@metamask/detect-provider";
-import lumerin from "../images/lumerin_metamask.png";
-import { AbiItem } from "web3-utils";
-import { Contract } from "web3-eth-contract";
-import { provider } from "web3-core/types/index";
-import { registerEventListeners } from "./eventListeners";
-import CloneFactory from "../contracts/CloneFactory.json";
-import LumerinContract from "../contracts/Lumerin.json";
-import { ContractJson, Ethereum, Receipt, WalletText } from "../types";
-import { printError } from "../utils";
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import React, { Dispatch, SetStateAction } from 'react';
+import Web3 from 'web3';
+import detectEthereumProvider from '@metamask/detect-provider';
+import lumerin from '../images/lumerin_metamask.png';
+import { AbiItem } from 'web3-utils';
+import { Contract } from 'web3-eth-contract';
+import { provider } from 'web3-core/types/index';
+import { registerEventListeners } from './eventListeners';
+import CloneFactory from '../contracts/CloneFactory.json';
+import LumerinContract from '../contracts/Lumerin.json';
+import { ContractJson, Ethereum, Receipt, WalletText } from '../types';
+import { printError } from '../utils';
+import WalletConnectProvider from '@walletconnect/web3-provider';
 
 interface Web3Result {
-  accounts: string[];
-  contractInstance: Contract;
-  web3: Web3;
+	accounts: string[];
+	contractInstance: Contract;
+	web3: Web3;
 }
 
 const ethereum = window.ethereum as Ethereum;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
-const lumerinTokenAddress = "0x04fa90c64DAeEe83B22501c790D39B8B9f53878a";
+const lumerinTokenAddress = '0x04fa90c64DAeEe83B22501c790D39B8B9f53878a';
 
 // Web3 setup helpers
-const getProviderAsync: (
-  walletName: string
-) => Promise<provider | WalletConnectProvider> = async (walletName) => {
-  switch (walletName) {
-    case WalletText.ConnectViaMetaMask:
-      return (await detectEthereumProvider()) as provider;
-    default:
-      return new WalletConnectProvider({
-        rpc: {
-          1: "https://eth.connect.bloq.cloud/v1/stable-relax-science",
-          3: "https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ",
-        },
-        chainId: 3,
-        clientMeta: {
-          description:
-            "Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.",
-          url: "https://token.sbx.lumerin.io",
-          icons: [""],
-          name: "Lumerin Token Distribution",
-        },
-      });
-  }
+const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (
+	walletName
+) => {
+	switch (walletName) {
+		case WalletText.ConnectViaMetaMask:
+			return (await detectEthereumProvider()) as provider;
+		default:
+			return new WalletConnectProvider({
+				rpc: {
+					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
+					3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
+				},
+				chainId: 3,
+				clientMeta: {
+					description:
+						'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',
+					url: 'https://token.sbx.lumerin.io',
+					icons: [''],
+					name: 'Lumerin Token Distribution',
+				},
+			});
+	}
 };
 
 // Get accounts, web3 and contract instances
@@ -103,93 +103,92 @@ export const getWeb3ResultAsync: (
 // Wallet helpers
 // Allows user choose which account they want to use in MetaMask
 export const reconnectWalletAsync: () => void = async () => {
-  await ethereum?.request({
-    method: "wallet_requestPermissions",
-    params: [
-      {
-        eth_accounts: {},
-      },
-    ],
-  });
+	await ethereum?.request({
+		method: 'wallet_requestPermissions',
+		params: [
+			{
+				eth_accounts: {},
+			},
+		],
+	});
 };
 
 export const disconnectWalletConnectAsync: (
-  isMetaMask: boolean,
-  web3: Web3,
-  setIsConnected: Dispatch<SetStateAction<boolean>>
+	isMetaMask: boolean,
+	web3: Web3,
+	setIsConnected: Dispatch<SetStateAction<boolean>>
 ) => void = async (isMetaMask, web3, setIsConnected) => {
-  if (!isMetaMask) {
-    await (
-      web3?.currentProvider as unknown as WalletConnectProvider
-    )?.disconnect();
-    setIsConnected(false);
-  }
+	if (!isMetaMask) {
+		await (web3?.currentProvider as unknown as WalletConnectProvider)?.disconnect();
+		setIsConnected(false);
+		localStorage.clear();
+	}
 };
 
 // https://docs.metamask.io/guide/registering-your-token.html#example
 export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
-  try {
-    await ethereum?.request({
-      method: "wallet_watchAsset",
-      params: {
-        type: "ERC20",
-        options: {
-          address: lumerinTokenAddress,
-          symbol: "LMR",
-          decimals: 8,
-          image: lumerin,
-        },
-      },
-    });
-  } catch (error) {
-    const typedError = error as Error;
-    printError(typedError.message, typedError.stack as string);
-  }
+	try {
+		await ethereum?.request({
+			method: 'wallet_watchAsset',
+			params: {
+				type: 'ERC20',
+				options: {
+					address: lumerinTokenAddress,
+					symbol: 'LMR',
+					decimals: 8,
+					image: lumerin,
+				},
+			},
+		});
+	} catch (error) {
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
+	}
 };
 
 export const getLumerinTokenBalanceAsync: (
-  web3: Web3,
-  userAccount: string
+	web3: Web3,
+	userAccount: string
 ) => Promise<number | null> = async (web3, userAccount) => {
-  const lumerinContractInstance = new web3.eth.Contract(
-    LumerinContract.abi as AbiItem[],
-    lumerinTokenAddress
-  );
+	const lumerinContractInstance = new web3.eth.Contract(
+		LumerinContract.abi as AbiItem[],
+		lumerinTokenAddress
+	);
 
-  try {
-    const lumerinBalance: string = await lumerinContractInstance.methods
-      .balanceOf(userAccount)
-      .call();
-    return divideByDigits(parseInt(lumerinBalance));
-  } catch (error) {
-    const typedError = error as Error;
-    printError(typedError.message, typedError.stack as string);
-    return null;
-  }
+	try {
+		const lumerinBalance: string = await lumerinContractInstance.methods
+			.balanceOf(userAccount)
+			.call();
+		return divideByDigits(parseInt(lumerinBalance));
+	} catch (error) {
+		const typedError = error as Error;
+		printError(typedError.message, typedError.stack as string);
+		return null;
+	}
 };
 
 export const transferLumerinAsync: (
-  web3: Web3,
-  userAccount: string,
-  sellerAccount: string,
-  amount: number
+	web3: Web3,
+	userAccount: string,
+	sellerAccount: string,
+	amount: number
 ) => Promise<Receipt> = async (web3, userAccount, sellerAccount, amount) => {
-  const networkId = await web3.eth.net.getId();
-  const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
-  const lumerinContractInstance = new web3.eth.Contract(
-    LumerinContract.abi as AbiItem[],
-    deployedNetwork && deployedNetwork.address
-  );
-  return await lumerinContractInstance.methods
-    .transfer(sellerAccount, multiplyByDigits(amount))
-    .send({ from: userAccount, gas: 1000000 });
+	const networkId = await web3.eth.net.getId();
+	const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
+	const lumerinContractInstance = new web3.eth.Contract(
+		LumerinContract.abi as AbiItem[],
+		deployedNetwork && deployedNetwork.address
+	);
+	return await lumerinContractInstance.methods
+		.transfer(sellerAccount, multiplyByDigits(amount))
+		.send({ from: userAccount, gas: 1000000 });
 };
 
 export const multiplyByDigits: (amount: number) => number = (amount) => {
-  return amount * 10 ** 8;
+	return amount * 10 ** 8;
 };
 
 export const divideByDigits: (amount: number) => number = (amount) => {
-  if (amount < 1000) return amount;
-  return parseInt(String(amount / 10 ** 8));
+	if (amount < 1000) return amount;
+	return parseInt(String(amount / 10 ** 8));
 };
