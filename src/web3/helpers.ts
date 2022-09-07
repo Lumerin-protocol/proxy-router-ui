@@ -1,16 +1,16 @@
-import React, { Dispatch, SetStateAction } from 'react';
-import Web3 from 'web3';
-import detectEthereumProvider from '@metamask/detect-provider';
-import lumerin from '../images/lumerin_metamask.png';
-import { AbiItem } from 'web3-utils';
-import { Contract } from 'web3-eth-contract';
-import { provider } from 'web3-core/types/index';
-import { registerEventListeners } from './eventListeners';
-import CloneFactory from '../contracts/CloneFactory.json';
-import LumerinContract from '../contracts/Lumerin.json';
-import { ContractJson, Ethereum, Receipt, WalletText } from '../types';
-import { printError } from '../utils';
-import WalletConnectProvider from '@walletconnect/web3-provider';
+import React, { Dispatch, SetStateAction } from "react";
+import Web3 from "web3";
+import detectEthereumProvider from "@metamask/detect-provider";
+import lumerin from "../images/lumerin_metamask.png";
+import { AbiItem } from "web3-utils";
+import { Contract } from "web3-eth-contract";
+import { provider } from "web3-core/types/index";
+import { registerEventListeners } from "./eventListeners";
+import CloneFactory from "../contracts/CloneFactory.json";
+import LumerinContract from "../contracts/Lumerin.json";
+import { ContractJson, Ethereum, Receipt, WalletText } from "../types";
+import { printError } from "../utils";
+import WalletConnectProvider from "@walletconnect/web3-provider";
 
 interface Web3Result {
   accounts: string[];
@@ -20,7 +20,7 @@ interface Web3Result {
 
 const ethereum = window.ethereum as Ethereum;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
-export const lumerinTokenAddress = '0x04fa90c64DAeEe83B22501c790D39B8B9f53878a';
+const lumerinTokenAddress = "0x04fa90c64DAeEe83B22501c790D39B8B9f53878a";
 
 // Web3 setup helpers
 const getProviderAsync: (
@@ -32,16 +32,16 @@ const getProviderAsync: (
     default:
       return new WalletConnectProvider({
         rpc: {
-          1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
-          3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
+          1: "https://eth.connect.bloq.cloud/v1/stable-relax-science",
+          3: "https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ",
         },
         chainId: 3,
         clientMeta: {
           description:
-            'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',
-          url: 'https://token.sbx.lumerin.io',
-          icons: [''],
-          name: 'Lumerin Token Distribution',
+            "Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.",
+          url: "https://token.sbx.lumerin.io",
+          icons: [""],
+          name: "Lumerin Token Distribution",
         },
       });
   }
@@ -73,7 +73,7 @@ export const getWeb3ResultAsync: (
       );
       // Expose accounts
       if (walletName === WalletText.ConnectViaMetaMask)
-        await ethereum.request({ method: 'eth_requestAccounts' });
+        await ethereum.request({ method: "eth_requestAccounts" });
       else await (provider as WalletConnectProvider).enable();
       const web3 = new Web3(provider as provider);
       //const networkId = await web3.eth.net.getId();
@@ -81,11 +81,9 @@ export const getWeb3ResultAsync: (
       //const deployedNetwork = {address: '0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8'}; //DEV 8/9/2022 -ABS
       //const deployedNetwork = {address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4'}; //STG 8/9/2022 -ABS
       //const deployedNetwork = {address: '0x8C9C79Da3bbE8E1499a27cF56746Bb12cA83a2b9'}; //OLDMAIN 8/9/2022 -ABS
-      const deployedNetwork = {
-        address: '0x4B2AE1553583CCB7A88075174faaB9A4991dbfca',
-      }; //MAIN 8/9/2022 -ABS
+      const deployedNetwork = {address: '0x6ab2C44cFdaC8860eAdabC65fca2616a3d1f02B6'}; //MAIN 8/9/2022 -ABS
       const accounts = await web3.eth.getAccounts();
-      if (accounts.length === 0 || accounts[0] === '') {
+      if (accounts.length === 0 || accounts[0] === "") {
         setAlertOpen(true);
       }
       const contractInstance = new web3.eth.Contract(
@@ -106,7 +104,7 @@ export const getWeb3ResultAsync: (
 // Allows user choose which account they want to use in MetaMask
 export const reconnectWalletAsync: () => void = async () => {
   await ethereum?.request({
-    method: 'wallet_requestPermissions',
+    method: "wallet_requestPermissions",
     params: [
       {
         eth_accounts: {},
@@ -132,12 +130,12 @@ export const disconnectWalletConnectAsync: (
 export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
   try {
     await ethereum?.request({
-      method: 'wallet_watchAsset',
+      method: "wallet_watchAsset",
       params: {
-        type: 'ERC20',
+        type: "ERC20",
         options: {
           address: lumerinTokenAddress,
-          symbol: 'LMR',
+          symbol: "LMR",
           decimals: 8,
           image: lumerin,
         },
