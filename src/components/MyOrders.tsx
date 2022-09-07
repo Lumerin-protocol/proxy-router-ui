@@ -7,17 +7,10 @@ import React, {
 	useMemo,
 	useState,
 } from 'react';
-import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
-import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
-import {
-	getProgressDiv,
-	getStatusDiv,
-	setMediaQueryListOnChangeHandler,
-	sortByNumber,
-} from '../utils';
+import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
 import { DateTime } from 'luxon';
-import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
+import { ContractData, ContractState, HashRentalContract } from '../types';
 import { Spinner } from './ui/Spinner';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
@@ -27,9 +20,6 @@ import { divideByDigits } from '../web3/helpers';
 import Web3 from 'web3';
 import _ from 'lodash';
 import { PurchasedContracts } from './ui/Cards/PurchasedContracts';
-
-// This interface needs to have all the properties for both data and columns based on index.d.ts
-interface CustomTableOptions extends ContractData, Header {}
 
 interface MyOrdersProps {
 	web3: Web3 | undefined;
@@ -135,61 +125,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		return updatedOrders;
 	};
 
-	// TODO: if same as <MyContracts /> pull out into util function
-	const customSort: SortByFn<CustomTableOptions> = (
-		rowA: Row,
-		rowB: Row,
-		columnId: string,
-		desc?: boolean
-	) => {
-		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
-		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
-
-		switch (columnId) {
-			case 'status':
-				return sortByNumber(rowA.values.status.key, rowB.values.status.key, SortByType.Int);
-			case 'price':
-				return sortByNumber(rowA.values.price, rowB.values.price, SortByType.Int);
-			case 'length':
-				return sortByNumber(rowA.values.length, rowB.values.length, SortByType.Float);
-			case 'speed':
-				return sortByNumber(rowA.values.speed, rowB.values.speed, SortByType.Int);
-			case 'started':
-				return sortByNumber(rowA.values.timestamp, rowB.values.timestamp, SortByType.Int);
-			case 'progress':
-				return sortByNumber(rowA.values.progress.key, rowB.values.progress.key, SortByType.Int);
-			default:
-				return 0;
-		}
-	};
-
-	const sortTypes: Record<string, SortByFn<CustomTableOptions>> = {
-		customSort: customSort,
-	};
-
-	const columns: Column<CustomTableOptions>[] = useMemo(() => {
-		return isMediumBreakpointOrBelow
-			? [
-					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
-					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
-					{ Header: 'DURATION', accessor: 'length', sortType: 'customSort' },
-					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
-					{ Header: 'EDIT', accessor: 'editCancel', disableSortBy: true },
-			  ]
-			: [
-					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
-					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
-					{ Header: 'PRICE (LMR)', accessor: 'price', sortType: 'customSort' },
-					{ Header: 'DURATION (HOURS)', accessor: 'length', sortType: 'customSort' },
-					{ Header: 'SPEED (TH/S)', accessor: 'speed', sortType: 'customSort' },
-					{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
-					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
-					{ Header: 'EDIT', accessor: 'editCancel', disableSortBy: true },
-			  ];
-	}, [isMediumBreakpointOrBelow]);
-
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
-	const tableInstance = useTable<CustomTableOptions>({ columns, data, sortTypes }, useSortBy);
 
 	// Remove spinner if no orders after 1 minute
 	useInterval(() => {
