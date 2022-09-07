@@ -1,5 +1,5 @@
-import { HashRentalContract } from '../../types';
-import { getReadableDate } from '../../utils';
+import { HashRentalContract } from '../../../types';
+import { getReadableDate } from '../../../utils';
 
 export const AvailableContracts = (prop: { contracts: Array<HashRentalContract> }) => {
 	return (

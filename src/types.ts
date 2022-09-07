@@ -87,6 +87,8 @@ export interface HashRentalContract {
 	speed?: string;
 	length?: string;
 	trade?: JSX.Element | string;
+	progress?: JSX.Element | string;
+	editCancel?: JSX.Element | string;
 	buyer?: string;
 	seller?: string;
 	timestamp?: string;
