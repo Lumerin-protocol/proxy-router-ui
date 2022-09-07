@@ -22,7 +22,6 @@ import {
 	AlertMessage,
 	ContentState,
 	ContractInfo,
-	ContractJson,
 	ContractState,
 	FormData,
 	HashRentalContract,
@@ -157,15 +156,21 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					if (receipt?.status) {
 						// Purchase contract
 						const buyerInput: string = toRfc2396(formData)!;
-						let contractAddress = contract.id!;
-						const contractCreationTx = await getCreationTxIDOfContract(contractAddress.toString());
-						const pubKey = await getPublicKey(contractCreationTx);
-						const encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
+						try {
+							let contractAddress = contract.id!;
+							const contractCreationTx = await getCreationTxIDOfContract(
+								contractAddress.toString()
+							);
+							const pubKey = await getPublicKey(contractCreationTx);
+							const encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
+							console.log(`encryptedBuyerInput: ${encryptedBuyerInput}`);
+						} catch (e) {
+							console.log(e);
+						}
 						const receipt: Receipt = await cloneFactoryContract?.methods
 							//.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //this sends the encrypted input to the contract. canceled out until decryptions is in place
 							.setPurchaseRentalContract(contract.id, buyerInput) //this sends the encrypted input to the contract. canceled out until decryptions is in place
 							.send(sendOptions);
-						console.log(`the encrypted buyer input (ciphertext) is: ${encryptedBuyerInput}`);
 						if (!receipt.status) {
 							// TODO: purchasing contract has failed, surface to user
 						}

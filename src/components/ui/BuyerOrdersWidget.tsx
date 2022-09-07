@@ -5,7 +5,6 @@ export const BuyerOrdersWidget = (prop: {
 	userAccount: string;
 }) => {
 	const buyerOrders = prop.contracts.filter((contract) => contract.buyer === prop.userAccount);
-	console.log(buyerOrders);
 
 	return (
 		<>

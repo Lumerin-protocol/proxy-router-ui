@@ -23,6 +23,7 @@ import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
 import { abi, bytecode } from './contracts/CloneFactory.json';
+import * as URI from 'uri-js';
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
@@ -145,6 +146,9 @@ export const isValidUsername: (username: string) => boolean = (username) =>
 // Make sure port number is a number between 1 and 65535
 export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>
 	Number(portNumber) > 0 && Number(portNumber) < 65536;
+
+// Convert string to URI
+export const stringToURI = (connectionString: string) => URI.parse(connectionString);
 
 // HTML HELPERS
 // Dynamically set classes for html elements
