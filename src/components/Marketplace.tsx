@@ -4,7 +4,7 @@ import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { AvailableContracts } from './ui/Cards/AvailableContracts';
 import { setMediaQueryListOnChangeHandler } from '../utils';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { ContractState, HashRentalContract } from '../types';
 import { useInterval } from './hooks/useInterval';
 import Web3 from 'web3';

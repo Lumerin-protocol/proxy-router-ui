@@ -27,7 +27,7 @@ import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
 import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import {
 	addLumerinTokenToMetaMaskAsync,

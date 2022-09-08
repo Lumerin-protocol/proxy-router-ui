@@ -16,7 +16,7 @@ import {
 } from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract } from '../types';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
