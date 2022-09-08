@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
 interface ModalProps {
@@ -8,6 +8,8 @@ interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({ open, setOpen, content }) => {
+	let closeButtonRef = useRef(null);
+
 	return (
 		<Transition.Root show={open} as={Fragment}>
 			<Dialog
@@ -15,16 +17,17 @@ export const Modal: React.FC<ModalProps> = ({ open, setOpen, content }) => {
 				auto-reopen='true'
 				className='fixed z-10 inset-0 overflow-y-auto'
 				onClose={setOpen}
+				initialFocus={closeButtonRef}
 			>
 				<div className='flex justify-center items-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
 					<Transition.Child
 						as={Fragment}
-						enter='enter-300'
-						enterFrom='entertfrom-leaveto-opacity'
-						enterTo='enterto-enterleave-opacity'
-						leave='ease-in duration-200'
-						leaveFrom='enterto-enterleave-opacity'
-						leaveTo='entertfrom-leaveto-opacity'
+						enter='transition-opacity ease-linear duration-300'
+						enterFrom='opacity-0'
+						enterTo='opacity-100'
+						leave='transition-opacity ease-linear duration-300'
+						leaveFrom='opacity-100'
+						leaveTo='opacity-0'
 					>
 						<Dialog.Overlay className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
 					</Transition.Child>
@@ -35,14 +38,17 @@ export const Modal: React.FC<ModalProps> = ({ open, setOpen, content }) => {
 					</span>
 					<Transition.Child
 						as={Fragment}
-						enter='enter-300'
-						enterFrom='entertfrom-leaveto-opacity translate-y-4 sm:translate-y-0 sm:scale-95'
-						enterTo='enterto-enterleave-opacity translate-y-0 sm:scale-100'
-						leave='ease-in duration-200'
-						leaveFrom='enterto-enterleave-opacity translate-y-0 sm:scale-100'
-						leaveTo='entertfrom-leaveto-opacity translate-y-4 sm:translate-y-0 sm:scale-95'
+						enter='transition-opacity ease-linear duration-300'
+						enterFrom='opacity-0'
+						enterTo='opacity-100'
+						leave='transition-opacity ease-linear duration-300'
+						leaveFrom='opacity-100'
+						leaveTo='opacity-0'
 					>
 						<div className='inline-block align-bottom text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle'>
+							<button className='opacity-0' ref={closeButtonRef}>
+								Close
+							</button>
 							{content}
 						</div>
 					</Transition.Child>
