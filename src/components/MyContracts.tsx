@@ -4,6 +4,7 @@ import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import {
 	getProgressDiv,
+	getProgressPercentage,
 	getStatusDiv,
 	setMediaQueryListOnChangeHandler,
 	sortByNumber,
@@ -11,7 +12,7 @@ import {
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
@@ -80,8 +81,6 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	const getTableData: () => ContractData[] = () => {
 		const sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
-		// Add emtpy row for styling
-		sellerContracts.unshift({});
 		const updatedOrders = sellerContracts.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
 			if (!_.isEmpty(contract)) {
@@ -105,6 +104,12 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 								parseInt(updatedOrder.length as string),
 								currentBlockTimestamp
 						  );
+				updatedOrder.progressPercentage = getProgressPercentage(
+					updatedOrder.state as string,
+					updatedOrder.timestamp as string,
+					parseInt(updatedOrder.length as string),
+					currentBlockTimestamp
+				);
 				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
 				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
 				//updatedOrder.length = updatedOrder.length as string;

@@ -27,7 +27,7 @@ import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
 import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import {
 	addLumerinTokenToMetaMaskAsync,
@@ -721,9 +721,7 @@ export const Main: React.FC = () => {
 						</>
 					)}
 				</div>
-				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative focus:outline-none'>
-					{getContent()}
-				</main>
+				<main className='mt-10 flex-1 relative focus:outline-none'>{getContent()}</main>
 			</div>
 		</BodyWrapper>
 	);

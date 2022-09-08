@@ -1,4 +1,6 @@
 import React, { Dispatch, SetStateAction } from 'react';
+import { ButtonWrapper } from './Buttons.styled';
+import ClaimIcon from '../../../../images/icons/money-bag.png';
 
 interface ClaimLmrButtonProps {
 	contractId: string;
@@ -19,13 +21,12 @@ export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({
 	};
 
 	return (
-		<button
-			type='button'
-			className='btn-edit-cancel rounded-5 border border-gray-300 bg-white font-medium text-black hover:bg-gray-50'
-			onClick={(event) => clickHandler(event)}
-		>
-			<span>Claim</span>
-		</button>
+		<ButtonWrapper>
+			<button type='button' onClick={(event) => clickHandler(event)}>
+				<img src={ClaimIcon} alt='' />
+			</button>
+			<p>Claim</p>
+		</ButtonWrapper>
 	);
 };
 
