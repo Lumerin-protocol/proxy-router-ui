@@ -15,7 +15,8 @@ module.exports = {
 		'lumerin-landing-page': '#027380',
 		'lumerin-table-text-color': '#0E4353',
 		'lumerin-light-aqua': '#DBECED',
-		'lumerin-green': '#66BE26',
+		'lumerin-green': '#399E5A',
+		'lumerin-light-green': '#5EF38C',
 		'lumerin-polygon': '#8247E5',
 	},
 };

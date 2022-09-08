@@ -8,7 +8,12 @@ import React, {
 	useState,
 } from 'react';
 import { TableIcon } from './ui/TableIcon';
-import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler } from '../utils';
+import {
+	getProgressDiv,
+	getProgressPercentage,
+	getStatusDiv,
+	setMediaQueryListOnChangeHandler,
+} from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract } from '../types';
 import { Spinner } from './ui/Spinner';
@@ -95,11 +100,18 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					parseInt(updatedOrder.length as string),
 					currentBlockTimestamp
 				);
+				updatedOrder.progressPercentage = getProgressPercentage(
+					updatedOrder.state as string,
+					updatedOrder.timestamp as string,
+					parseInt(updatedOrder.length as string),
+					currentBlockTimestamp
+				);
 				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
 				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
 				updatedOrder.timestamp = DateTime.fromSeconds(
 					parseInt(updatedOrder.timestamp as string)
 				).toFormat('MM/dd/yyyy');
+				updatedOrder.contractId = contract.id as string;
 				updatedOrder.editCancel = (
 					<ButtonGroup
 						button1={

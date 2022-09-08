@@ -85,12 +85,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	}, 7000);
 
 	useEffect(() => {
-		if (data.length > 1) {
+		if (data.length > 0) {
 			setShowSpinner(false);
 		}
 	});
 
-	// There is always 1 empty contract for styling purposes
 	return (
 		<>
 			{!showSpinner && (
@@ -103,11 +102,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 					<Spinner />
 				</div>
 			)}
-			<div className='flex flex-col items-center'>
-				{data.length > 1 ? <AvailableContracts contracts={data} /> : null}
-				{data.length === 1 && !showSpinner ? (
-					<div className='text-2xl'>There are no available contracts for purchase.</div>
-				) : null}
+			<div className='flex flex-col'>
+				{data.length > 0 && <AvailableContracts contracts={data} />}
+				{data.length === 0 && !showSpinner && (
+					<div className='text-2xl text-lumerin-black-text'>
+						There are no available contracts for purchase.
+					</div>
+				)}
 			</div>
 		</>
 	);

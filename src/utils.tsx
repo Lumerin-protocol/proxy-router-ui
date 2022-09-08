@@ -139,6 +139,15 @@ export const isValidPoolAddress: (
 	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
 };
 
+// Parse connectionString as URI to get worker and host name
+// Convert string to URI
+
+export const getWorkerName = (connectionString: string): string | undefined =>
+	URI.parse(connectionString).userinfo?.replace(/:$/, '');
+
+export const getHostName = (connectionString: string): string | undefined =>
+	URI.parse(connectionString).host;
+
 // Make sure username contains no spaces
 export const isValidUsername: (username: string) => boolean = (username) =>
 	!!username.match(/^\S*$/);
@@ -146,9 +155,6 @@ export const isValidUsername: (username: string) => boolean = (username) =>
 // Make sure port number is a number between 1 and 65535
 export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>
 	Number(portNumber) > 0 && Number(portNumber) < 65536;
-
-// Convert string to URI
-export const stringToURI = (connectionString: string) => URI.parse(connectionString);
 
 // HTML HELPERS
 // Dynamically set classes for html elements
@@ -373,31 +379,42 @@ export const getProgressDiv: (
 	);
 };
 
+export const getProgressPercentage: (
+	state: string,
+	startTime: string,
+	length: number,
+	currentBlockTimestamp: number
+) => number = (state, startTime, length, currentBlockTimestamp) => {
+	let timeElapsed: number = 0;
+	let percentage: number = 0;
+	if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {
+		return 0;
+	} else {
+		timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
+		percentage = (timeElapsed / length) * 100;
+		percentage = percentage > 100 ? 100 : percentage;
+		percentage = percentage < 0 ? 0 : percentage;
+	}
+	return percentage;
+};
+
 // Get status div
 const getStatusClass: (state: string) => string = (state) => {
 	if (state === ContractState.Available) return 'bg-lumerin-aqua text-white';
-	if (state === ContractState.Running) return 'bg-lumerin-green text-white';
+	if (state === ContractState.Running) return 'bg-green-100 text-lumerin-green';
 	return 'bg-lumerin-dark-gray text-black';
 };
+
 export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 	return (
-		<div key={state}>
-			<span
-				className={classNames(
-					getStatusClass(state),
-					'hidden sm:flex w-16 sm:w-24 justify-center items-center h-8 rounded-5'
-				)}
-			>
-				<p>{_.capitalize(getStatusText(state))}</p>
-			</span>
-			<p
-				className={classNames(
-					state === ContractState.Running ? 'text-lumerin-green' : 'text-lumerin-aqua',
-					'sm:hidden'
-				)}
-			>
-				{_.capitalize(getStatusText(state))}
-			</p>
+		<div
+			key={state}
+			className={classNames(
+				getStatusClass(state),
+				'flex justify-center items-center px-4 py-0.5 rounded-15 text-xs'
+			)}
+		>
+			<p>{_.capitalize(getStatusText(state))}</p>
 		</div>
 	);
 };
