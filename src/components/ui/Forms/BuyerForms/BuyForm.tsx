@@ -168,10 +168,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							console.log(e);
 						}
 						const receipt: Receipt = await cloneFactoryContract?.methods
-               //.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
-               .setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
-               .send(sendOptions);
-						console.log(`encrypted buyer input/ciphertext is: ${encryptedBuyerInput}`)
+							//.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
+							.setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
+							.send(sendOptions);
 						//if (!receipt.status) {
 						//	// TODO: purchasing contract has failed, surface to user
 						//}
