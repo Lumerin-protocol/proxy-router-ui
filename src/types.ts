@@ -17,6 +17,11 @@ export enum ContractState {
 	Running = '1',
 }
 
+export enum CurrentTab {
+	Running = 'RUNNING',
+	Completed = 'COMPLETED',
+}
+
 export enum ContentState {
 	Create = 'CREATE',
 	Review = 'REVIEW',
