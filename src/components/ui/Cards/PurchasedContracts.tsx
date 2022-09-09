@@ -11,9 +11,10 @@ import Speed from '../../../images/icons/download-speed.png';
 import Time from '../../../images/icons/time-left.png';
 import { ContractCards } from './PurchasedContracts.styled';
 
-export const PurchasedContracts = (prop: { contracts: Array<HashRentalContract> }) => {
-	console.log(prop.contracts);
-
+export const PurchasedContracts = (prop: {
+	contracts: Array<HashRentalContract>;
+	isCompleted: boolean;
+}) => {
 	const progressAscending = [...prop.contracts].sort(
 		(a, b) => a.progressPercentage! - b.progressPercentage!
 	);
@@ -33,10 +34,12 @@ export const PurchasedContracts = (prop: { contracts: Array<HashRentalContract> 
 								{truncateAddress(item.contractId!, AddressLength.LONG)}
 							</a>
 						</p>
-						<div className='status'>
-							<p className='status-badge'>{getStatusDiv(item.state as string)}</p>
-							<p>{item.editCancel}</p>
-						</div>
+						{!prop.isCompleted && (
+							<div className='status'>
+								<p className='status-badge'>{getStatusDiv(item.state as string)}</p>
+								<p>{item.editCancel}</p>
+							</div>
+						)}
 					</div>
 					<div className='grid'>
 						<div className='progress'>
