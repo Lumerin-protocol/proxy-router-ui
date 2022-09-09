@@ -27,7 +27,7 @@ import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
 import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import {
 	addLumerinTokenToMetaMaskAsync,
@@ -402,30 +402,20 @@ export const Main: React.FC = () => {
 	const isAvailableContract: boolean =
 		contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
 
-	const Main = styled.div`
+	const BodyWrapper = styled.div`
 		display: flex;
 		min-height: 100vh;
+		width: 100%;
 		background: #eaf7fc;
 		background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
 			url(${BubbleGraphic4});
 		background-position: bottom right, right top, left top, left bottom;
 		background-repeat: no-repeat;
-		background-size: 55%;
-
-		.graphics {
-			/* background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
-				url(${BubbleGraphic4});
-			background-position: left top, right top, right bottom, left bottom;
-			background-repeat: no-repeat;
-			height: 100vh;
-			width: 100%;
-			z-index: 1;
-			position: absolute; */
-		}
+		background-size: 25% 15% 15% 10%;
 	`;
 
 	return (
-		<Main>
+		<BodyWrapper>
 			<Alert
 				message={getAlertMessage()}
 				open={alertOpen}
@@ -629,7 +619,6 @@ export const Main: React.FC = () => {
 					</div>
 				</div>
 			</div>
-			<div className='graphics' />
 			<div className='flex flex-col w-0 flex-1 overflow-hidden pl-10 pr-10'>
 				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20'}>
 					<button
@@ -732,11 +721,9 @@ export const Main: React.FC = () => {
 						</>
 					)}
 				</div>
-				<main className='mt-10 ml-4 xl:ml-0 mr-4 flex-1 relative focus:outline-none'>
-					{getContent()}
-				</main>
+				<main className='mt-10 flex-1 relative focus:outline-none'>{getContent()}</main>
 			</div>
-		</Main>
+		</BodyWrapper>
 	);
 };
 

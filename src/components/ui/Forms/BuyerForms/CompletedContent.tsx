@@ -1,7 +1,7 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
-import { Spinner } from '../../Spinner';
+import { Spinner } from '../../Spinner.styled';
 import { ContentState } from '../../../../types';
 const { colors } = require('styles/styles.config.js');
 

@@ -1,7 +1,7 @@
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ContentState } from '../../../../types';
-import { Spinner } from '../../Spinner';
+import { Spinner } from '../../Spinner.styled';
 const { colors } = require('styles/styles.config.js');
 
 const createText = {

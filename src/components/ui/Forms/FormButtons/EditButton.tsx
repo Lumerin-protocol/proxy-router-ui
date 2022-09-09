@@ -1,4 +1,6 @@
 import React, { Dispatch, SetStateAction } from 'react';
+import { ButtonWrapper } from './Buttons.styled';
+import EditIcon from '../../../../images/icons/edit.png';
 
 interface EditButtonProps {
 	contractId: string;
@@ -19,13 +21,12 @@ export const EditButton: React.FC<EditButtonProps> = ({
 	};
 
 	return (
-		<button
-			type='button'
-			className='btn-edit-cancel border-gray-300 rounded-5 p-auto bg-lumerin-dark-gray text-black font-medium'
-			onClick={(event) => clickHandler(event)}
-		>
-			<span>Edit</span>
-		</button>
+		<ButtonWrapper>
+			<button type='button' onClick={(event) => clickHandler(event)}>
+				<img src={EditIcon} alt='' />
+			</button>
+			<p>Edit</p>
+		</ButtonWrapper>
 	);
 };
 

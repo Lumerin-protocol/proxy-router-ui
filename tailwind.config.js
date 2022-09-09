@@ -34,6 +34,7 @@ module.exports = {
 			},
 			maxWidth: {
 				32: '32rem',
+				'3/4': '75%',
 			},
 			borderRadius: {
 				5: '5px',

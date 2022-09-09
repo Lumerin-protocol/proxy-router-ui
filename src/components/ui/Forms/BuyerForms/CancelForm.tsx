@@ -10,7 +10,7 @@ import {
 } from '../../../../types';
 import { isNoCancel, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
-import { Spinner } from '../../Spinner';
+import { Spinner } from '../../Spinner.styled';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 

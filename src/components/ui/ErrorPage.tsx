@@ -12,7 +12,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({ error }) => {
 					<div className='sm:ml-6'>
 						<div className='sm:border-l sm:border-gray-200 sm:pl-6'>
 							<h1 className='text-5xl font-extrabold text-gray-900 tracking-tight sm:text-50'>
-								An error has occured
+								An error has occurred
 							</h1>
 							<h3 className='mt-1 text-base text-gray-500'>{error.message}</h3>
 						</div>

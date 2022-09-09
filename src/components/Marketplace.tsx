@@ -2,9 +2,9 @@
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
-import { AvailableContracts } from './ui/AvailableContracts';
+import { AvailableContracts } from './ui/Cards/AvailableContracts';
 import { setMediaQueryListOnChangeHandler } from '../utils';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { ContractState, HashRentalContract } from '../types';
 import { useInterval } from './hooks/useInterval';
 import Web3 from 'web3';
@@ -84,22 +84,31 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		if (showSpinner) setShowSpinner(false);
 	}, 7000);
 
-	// There is always 1 empty contract for styling purposes
+	useEffect(() => {
+		if (data.length > 0) {
+			setShowSpinner(false);
+		}
+	});
+
 	return (
 		<>
-			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-bold text-left mb-5'>
-				Hashrate For Sale
-			</h2>
-			<div className='flex flex-col items-center'>
-				{data.length > 1 ? <AvailableContracts contracts={data} /> : null}
-				{data.length === 1 && showSpinner ? (
-					<div className='spinner'>
-						<Spinner />
+			{!showSpinner && (
+				<h2 className='text-lg text-lumerin-blue-text font-Raleway font-bold text-left mb-5'>
+					Hashrate For Sale
+				</h2>
+			)}
+			{showSpinner && (
+				<div className='spinner'>
+					<Spinner />
+				</div>
+			)}
+			<div className='flex flex-col'>
+				{data.length > 0 && <AvailableContracts contracts={data} />}
+				{data.length === 0 && !showSpinner && (
+					<div className='text-2xl text-lumerin-black-text'>
+						There are no available contracts for purchase.
 					</div>
-				) : null}
-				{data.length === 1 && !showSpinner ? (
-					<div className='text-2xl'>There are no available contracts for purchase.</div>
-				) : null}
+				)}
 			</div>
 		</>
 	);
