@@ -15,7 +15,7 @@ import {
 	setMediaQueryListOnChangeHandler,
 } from '../utils';
 import { DateTime } from 'luxon';
-import { ContractData, ContractState, HashRentalContract } from '../types';
+import { ContractData, ContractState, HashRentalContract, CurrentTab } from '../types';
 import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
@@ -25,6 +25,7 @@ import { divideByDigits } from '../web3/helpers';
 import Web3 from 'web3';
 import _ from 'lodash';
 import { PurchasedContracts } from './ui/Cards/PurchasedContracts';
+import { TabSwitch } from './ui/TabSwitch.Styled';
 
 interface MyOrdersProps {
 	web3: Web3 | undefined;
@@ -48,6 +49,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
+	const [currentTab, setCurrentTab] = useState<CurrentTab>(CurrentTab.Running);
 
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
 	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
@@ -80,6 +82,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		const buyerOrders = contracts.filter(
 			(contract) => contract.buyer === userAccount && contract.state === ContractState.Running
 		);
+
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
 			if (!_.isEmpty(contract)) {
@@ -138,6 +141,17 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	};
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
+	const runningContracts = data.filter((contract) => contract.progressPercentage! < 100);
+	const completedContracts = data.filter((contract) => contract.progressPercentage === 100);
+	console.log(completedContracts);
+
+	const handleRunningTab = () => {
+		setCurrentTab(CurrentTab.Running);
+	};
+
+	const handleCompletedTab = () => {
+		setCurrentTab(CurrentTab.Completed);
+	};
 
 	// Remove spinner if no orders after 1 minute
 	useInterval(() => {
@@ -151,15 +165,51 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	});
 
 	return (
-		<div className='flex flex-col items-center'>
-			{data.length > 0 ? <PurchasedContracts contracts={data} /> : null}
-			{showSpinner && (
-				<div className='spinner'>
-					<Spinner />
-				</div>
-			)}
-			{data.length === 1 && !showSpinner && <div className='text-2xl'>You have no orders.</div>}
-		</div>
+		<>
+			<TabSwitch>
+				<button
+					id='running'
+					className={currentTab === CurrentTab.Running ? 'active' : ''}
+					onClick={handleRunningTab}
+				>
+					Running <span>{runningContracts.length}</span>
+				</button>
+				<button
+					id='completed'
+					className={currentTab === CurrentTab.Completed ? 'active' : ''}
+					onClick={handleCompletedTab}
+				>
+					Completed <span>{completedContracts.length}</span>
+				</button>
+				<span className='glider'></span>
+			</TabSwitch>
+			<div className='flex flex-col items-center'>
+				{currentTab === CurrentTab.Running && (
+					<>
+						{runningContracts.length > 0 ? (
+							<PurchasedContracts contracts={runningContracts} isCompleted={false} />
+						) : (
+							<p>You have no running contracts.</p>
+						)}
+					</>
+				)}
+				{currentTab === CurrentTab.Completed && (
+					<>
+						{completedContracts.length > 0 ? (
+							<PurchasedContracts contracts={completedContracts} isCompleted={true} />
+						) : (
+							<p>You have no completed contracts.</p>
+						)}
+					</>
+				)}
+				{showSpinner && (
+					<div className='spinner'>
+						<Spinner />
+					</div>
+				)}
+				{data.length === 1 && !showSpinner && <div className='text-2xl'>You have no orders.</div>}
+			</div>
+		</>
 	);
 };
 

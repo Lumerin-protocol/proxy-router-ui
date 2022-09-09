@@ -185,9 +185,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				setOpen(false);
 			}
 		}
-
-		// Completed
-		if (contentState === ContentState.Complete) setOpen(false);
 	};
 
 	// Create transaction when in pending state
