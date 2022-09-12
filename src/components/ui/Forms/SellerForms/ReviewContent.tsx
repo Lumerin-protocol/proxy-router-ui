@@ -12,7 +12,13 @@ interface ReviewContentProps {
 	isCreate?: boolean;
 }
 
-export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, errors, data, isCreate }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({
+	web3,
+	register,
+	errors,
+	data,
+	isCreate,
+}) => {
 	const listPrice = data && data.listPrice ? divideByDigits(data.listPrice) : 0;
 
 	return (
@@ -32,7 +38,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							id='walletAddress'
 							type='text'
 							className={
-								errors.walletAddress ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
+								errors.walletAddress
+									? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+									: 'review-no-errors review-input'
 							}
 						/>
 					</div>
@@ -41,7 +49,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							Funds will be paid into this account once the contract is fulfilled.
 						</div>
 					)}
-					{errors.walletAddress?.type === 'required' && <div className='text-xs text-red-500'>{errors.walletAddress.message}</div>}
+					{errors.walletAddress?.type === 'required' && (
+						<div className='text-xs text-red-500'>{errors.walletAddress.message}</div>
+					)}
 				</div>
 			</div>
 			<div className='flex'>
@@ -64,13 +74,21 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							type='number'
 							placeholder={data?.contractTime?.toString() ?? '# of hours'}
 							className={
-								errors.contractTime ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'
+								errors.contractTime
+									? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+									: 'review-no-errors review-input'
 							}
 						/>
 					</div>
-					{!errors.contractTime && <div className='text-xs text-lumerin-helpertext-gray'>Contract Length (hours)</div>}
-					{errors.contractTime?.type === 'required' && <div className='text-xs text-red-500'>{errors.contractTime.message}</div>}
-					{errors.contractTime?.type === 'validate' && <div className='text-xs text-red-500'>Minimim time is 24 hours</div>}
+					{!errors.contractTime && (
+						<div className='text-xs text-lumerin-helpertext-gray'>Contract Length (hours)</div>
+					)}
+					{errors.contractTime?.type === 'required' && (
+						<div className='text-xs text-red-500'>{errors.contractTime.message}</div>
+					)}
+					{errors.contractTime?.type === 'validate' && (
+						<div className='text-xs text-red-500'>Minimim time is 24 hours</div>
+					)}
 				</div>
 
 				<div className='bg-white p-4 p-4'>
@@ -90,12 +108,20 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							id='speed'
 							type='number'
 							placeholder={data?.speed?.toString() ?? '100'}
-							className={errors.speed ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
+							className={
+								errors.speed
+									? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+									: 'review-no-errors review-input'
+							}
 						/>
 					</div>
 					{!errors.speed && <div className='text-xs text-lumerin-helpertext-gray'>TH/S</div>}
-					{errors.speed?.type === 'required' && <div className='text-xs text-red-500'>{errors.speed.message}</div>}
-					{errors.speed?.type === 'validate' && <div className='text-xs text-red-500'>Speed is required</div>}
+					{errors.speed?.type === 'required' && (
+						<div className='text-xs text-red-500'>{errors.speed.message}</div>
+					)}
+					{errors.speed?.type === 'validate' && (
+						<div className='text-xs text-red-500'>Speed is required</div>
+					)}
 				</div>
 			</div>
 			<div className='bg-white p-4 p-4'>
@@ -119,7 +145,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							id='listPrice'
 							type='number'
 							placeholder='100'
-							className={errors.listPrice ? 'bg-red-100 btn-modal placeholder-red-400 review-input' : 'review-no-errors review-input'}
+							className={
+								errors.listPrice
+									? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+									: 'review-no-errors review-input'
+							}
 						/>
 					</div>
 					{!errors.listPrice && (
@@ -127,8 +157,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ web3, register, er
 							<p>This is the price you will deploy your contract to the marketplace.</p>
 						</div>
 					)}
-					{errors.listPrice?.type === 'required' && <div className='text-xs text-red-500'>{errors.listPrice.message}</div>}
-					{errors.listPrice?.type === 'validate' && <div className='text-xs text-red-500'>Price must be a whole number</div>}
+					{errors.listPrice?.type === 'required' && (
+						<div className='text-xs text-red-500'>{errors.listPrice.message}</div>
+					)}
+					{errors.listPrice?.type === 'validate' && (
+						<div className='text-xs text-red-500'>Price must be a whole number</div>
+					)}
 				</div>
 			</div>
 		</React.Fragment>

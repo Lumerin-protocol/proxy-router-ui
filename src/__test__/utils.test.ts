@@ -1,5 +1,13 @@
-import { AddressLength, FormData, InputValuesBuyForm } from '../types';
-import { truncateAddress, classNames, getLengthDisplay, isValidPoolAddress, toRfc2396, hexToBytes, getPublicKeyFromTransaction } from '../utils';
+import { AddressLength, FormData } from '../types';
+import {
+	truncateAddress,
+	classNames,
+	getLengthDisplay,
+	isValidPoolAddress,
+	toRfc2396,
+	hexToBytes,
+	getPublicKeyFromTransaction,
+} from '../utils';
 import { bufferToHex } from 'ethereumjs-util';
 const elliptic_1 = require('elliptic');
 const ec = new elliptic_1.ec('secp256k1');
@@ -147,7 +155,8 @@ describe('utils', () => {
 				gas: 2000000,
 				gasPrice: '9132167044',
 				hash: '0xaa1a88c927c6ef6b773fe32f9c8d3986cd7b78250a4a55a4ff5956526678d74e',
-				input: '0x95d38b36000000000000000000000000eed15bb091bf3f615400f6f8160ac423eaf6a413000000000000000000000000000000000000000000000000000000012e7e5ac0',
+				input:
+					'0x95d38b36000000000000000000000000eed15bb091bf3f615400f6f8160ac423eaf6a413000000000000000000000000000000000000000000000000000000012e7e5ac0',
 				nonce: 203,
 				r: '0x243627fc327ed3e60b608674208af14297c3a9199da386bc6f5adc8c47d563a4',
 				s: '0x44519101be879c84c04cf3ae933e604b1f1f7abc29b8207bc49ca5489694f036',
