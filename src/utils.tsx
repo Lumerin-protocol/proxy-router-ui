@@ -17,8 +17,13 @@ import { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { Transaction as Web3Transaction } from 'web3-eth';
 import { Transaction as EthJsTx } from 'ethereumjs-tx';
+import { encrypt } from 'ecies-geth';
+import { ethers } from 'ethers';
+import { abi, bytecode } from './contracts/CloneFactory.json';
+import * as URI from 'uri-js';
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
@@ -30,7 +35,10 @@ declare module 'web3-core' {
 
 // STRING HELPERS
 // Get address based on desired length
-export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (address, desiredLength) => {
+export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (
+	address,
+	desiredLength
+) => {
 	let index;
 	switch (desiredLength) {
 		case AddressLength.SHORT:
@@ -44,7 +52,10 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 		default:
 			index = 10;
 	}
-	return `${address.substring(0, index)}...${address.substring(address.length - index, address.length)}`;
+	return `${address.substring(0, index)}...${address.substring(
+		address.length - index,
+		address.length
+	)}`;
 };
 
 // Convert buyer input into RFC2396 URL format
@@ -58,10 +69,69 @@ export const toRfc2396: (formData: FormData) => string | undefined = (formData) 
 	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
 };
 
-export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>) => boolean = (
-	poolAddress,
-	setAlertOpen
-) => {
+//encrypts a string passed into it
+export const encryptMessage = async (pubKey: string, msg: string) => {
+	let ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
+	await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg)).then(console.log);
+	return ciphertext.toString('hex');
+};
+
+export const getPublicKey = async (txId: string) => {
+	let provider = ethers.getDefaultProvider(
+		'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a'
+	);
+	let tx = await provider.getTransaction(txId)!;
+	console.log(txId);
+	console.log(tx);
+	let transaction = FeeMarketEIP1559Transaction.fromTxData({
+		chainId: tx.chainId,
+		nonce: tx.nonce,
+		maxPriorityFeePerGas: Number(tx.maxPriorityFeePerGas),
+		maxFeePerGas: Number(tx.maxFeePerGas),
+		gasLimit: Number(tx.gasLimit),
+		to: tx.to,
+		value: Number(tx.value),
+		data: tx.data,
+		accessList: tx.accessList,
+		v: tx.v,
+		r: tx.r,
+		s: tx.s,
+	});
+	let pubKey = transaction.getSenderPublicKey();
+	return `04${pubKey.toString('hex')}`; //04 is necessary to tell the EVM which public key encoding to use
+};
+
+export const getCreationTxIDOfContract = async (contractAddress: string) => {
+	//import the JSON of CloneFactory.json
+	let cf = new ethers.ContractFactory(abi, bytecode);
+	let provider = ethers.getDefaultProvider(
+		'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a'
+	);
+
+	//the clonefactory contract address should become a variable that is configurable
+	let cloneFactory = await cf.attach('0x702B0b76235b1DAc489094184B7790cAA9A39Aa4'); //this is the main ropsten clone factory address
+	cloneFactory = await cloneFactory.connect(provider);
+
+	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
+	let events = await cloneFactory.queryFilter(contractCreated);
+	let event;
+	for (let i of events) {
+		if (i.args!._address === contractAddress) {
+			event = i;
+		}
+	}
+
+	let tx = '';
+	if (event) {
+		tx = event.transactionHash;
+	}
+	return tx;
+};
+
+export const isValidPoolAddress: (
+	poolAddress: string,
+	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>
+) => boolean = (poolAddress, setAlertOpen) => {
 	const regexPortNumber = /:\d+/;
 	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
 	if (hasPortNumber) setAlertOpen(true);
@@ -69,13 +139,25 @@ export const isValidPoolAddress: (poolAddress: string, setAlertOpen: React.Dispa
 	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
 };
 
+// Parse connectionString as URI to get worker and host name
+// Convert string to URI
+
+export const getWorkerName = (connectionString: string): string | undefined =>
+	URI.parse(connectionString).userinfo?.replace(/:$/, '');
+
+export const getHostName = (connectionString: string): string | undefined =>
+	URI.parse(connectionString).host;
+
 // Make sure username contains no spaces
-export const isValidUsername: (username: string) => boolean = (username) => !!username.match(/^\S*$/)
+export const isValidUsername: (username: string) => boolean = (username) =>
+	!!username.match(/^\S*$/);
 
 // Make sure port number is a number between 1 and 65535
-export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) => (
-	Number(portNumber) > 0 && Number(portNumber) < 65536
-)
+export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>
+	Number(portNumber) > 0 && Number(portNumber) < 65536;
+
+// Convert string to URI
+export const stringToURI = (connectionString: string) => URI.parse(connectionString);
 
 // HTML HELPERS
 // Dynamically set classes for html elements
@@ -108,23 +190,39 @@ export const setMediaQueryListOnChangeHandler: (
 	if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
 };
 
-export const isNoClaim: (userAccount: string, sellerAccount: string) => boolean = (userAccount, sellerAccount) => {
+export const isNoClaim: (userAccount: string, sellerAccount: string) => boolean = (
+	userAccount,
+	sellerAccount
+) => {
 	return userAccount !== sellerAccount;
 };
 
-export const isNoEditBuyer: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+export const isNoEditBuyer: (contract: HashRentalContract, userAccount: string) => boolean = (
+	contract,
+	userAccount
+) => {
 	return contract.buyer === userAccount && contract.state !== ContractState.Running;
 };
 
-export const isNoEditSeller: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+export const isNoEditSeller: (contract: HashRentalContract, userAccount: string) => boolean = (
+	contract,
+	userAccount
+) => {
 	return contract.seller === userAccount && contract.state === ContractState.Running;
 };
 
-export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
+export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (
+	contract,
+	userAccount
+) => {
 	return userAccount !== contract.buyer || contract.state !== ContractState.Running;
 };
 
-export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) => number = (rowA, rowB, sortByType) => {
+export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) => number = (
+	rowA,
+	rowB,
+	sortByType
+) => {
 	let rowASortType;
 	let rowBSortType;
 	switch (sortByType) {
@@ -151,7 +249,15 @@ export const getButton: (
 	setOpen: Dispatch<SetStateAction<boolean>>,
 	handleSubmit: UseFormHandleSubmit<InputValues>,
 	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
+) => JSX.Element = (
+	contentState,
+	bgColor,
+	buttonOpacity,
+	buttonContent,
+	setOpen,
+	handleSubmit,
+	createTransactionAsync
+) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -202,6 +308,27 @@ export const getLengthDisplay: (length: number) => string = (length) => {
 	return days;
 };
 
+// Get contract duration in days, hours, and minutes
+export const getReadableDate: (length: string) => string = (length) => {
+	const numLength = parseFloat(length);
+	const days = Math.floor(numLength / 24);
+	const remainder = numLength % 24;
+	const hours = days >= 1 ? Math.floor(remainder) : Math.floor(numLength);
+	const minutes =
+		days >= 1
+			? Math.floor(60 * (remainder - hours))
+			: Math.floor((numLength - Math.floor(numLength)) * 60);
+	const readableDays = days ? (days === 1 ? `${days} day` : `${days} days`) : '';
+	const readableHours = hours ? (hours === 1 ? `${hours} hour` : `${hours} hours`) : '';
+	const readableMinutes = minutes
+		? minutes === 1
+			? `${minutes} minute`
+			: `${minutes} minutes`
+		: '';
+	const readableDate = `${readableDays} ${readableHours} ${readableMinutes}`;
+	return readableDate;
+};
+
 // Display status of contracts
 export const getStatusText: (state: string) => string = (state) => {
 	switch (state) {
@@ -215,17 +342,22 @@ export const getStatusText: (state: string) => string = (state) => {
 };
 
 // Display address based on breakpoint
-export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: string) => string = (isLargeBreakpointOrGreater, address) => {
-	return isLargeBreakpointOrGreater ? truncateAddress(address) : truncateAddress(address, AddressLength.SHORT);
+export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: string) => string = (
+	isLargeBreakpointOrGreater,
+	address
+) => {
+	return isLargeBreakpointOrGreater
+		? truncateAddress(address)
+		: truncateAddress(address, AddressLength.SHORT);
 };
 
 // Get progress div
-export const getProgressDiv: (state: string, startTime: string, length: number, currentBlockTimestamp: number) => JSX.Element = (
-	state,
-	startTime,
-	length,
-	currentBlockTimestamp
-) => {
+export const getProgressDiv: (
+	state: string,
+	startTime: string,
+	length: number,
+	currentBlockTimestamp: number
+) => JSX.Element = (state, startTime, length, currentBlockTimestamp) => {
 	let timeElapsed: number = 0;
 	let percentage: number = 0;
 	if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {
@@ -238,7 +370,10 @@ export const getProgressDiv: (state: string, startTime: string, length: number, 
 	}
 
 	return (
-		<div key={percentage.toFixed()} className='flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row'>
+		<div
+			key={percentage.toFixed()}
+			className='flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row'
+		>
 			<div>{percentage.toFixed()}%</div>
 			<div className='w-1/2 sm:ml-4'>
 				<ProgressBar width={percentage.toString()} />
@@ -247,21 +382,42 @@ export const getProgressDiv: (state: string, startTime: string, length: number, 
 	);
 };
 
+export const getProgressPercentage: (
+	state: string,
+	startTime: string,
+	length: number,
+	currentBlockTimestamp: number
+) => number = (state, startTime, length, currentBlockTimestamp) => {
+	let timeElapsed: number = 0;
+	let percentage: number = 0;
+	if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {
+		return 0;
+	} else {
+		timeElapsed = (currentBlockTimestamp as number) - parseInt(startTime);
+		percentage = (timeElapsed / length) * 100;
+		percentage = percentage > 100 ? 100 : percentage;
+		percentage = percentage < 0 ? 0 : percentage;
+	}
+	return percentage;
+};
+
 // Get status div
 const getStatusClass: (state: string) => string = (state) => {
 	if (state === ContractState.Available) return 'bg-lumerin-aqua text-white';
-	if (state === ContractState.Running) return 'bg-lumerin-green text-white';
+	if (state === ContractState.Running) return 'bg-green-100 text-lumerin-green';
 	return 'bg-lumerin-dark-gray text-black';
 };
+
 export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 	return (
-		<div key={state}>
-			<span className={classNames(getStatusClass(state), 'hidden sm:flex w-16 sm:w-24 justify-center items-center h-8 rounded-5')}>
-				<p>{_.capitalize(getStatusText(state))}</p>
-			</span>
-			<p className={classNames(state === ContractState.Running ? 'text-lumerin-green' : 'text-lumerin-aqua', 'sm:hidden')}>
-				{_.capitalize(getStatusText(state))}
-			</p>
+		<div
+			key={state}
+			className={classNames(
+				getStatusClass(state),
+				'flex justify-center items-center px-4 py-0.5 rounded-15 text-xs'
+			)}
+		>
+			<p>{_.capitalize(getStatusText(state))}</p>
 		</div>
 	);
 };
@@ -301,7 +457,9 @@ const getV: (v: string, chainId: number) => string = (v, chainId) => {
 	}
 };
 
-export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (transaction) => {
+export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
+	transaction
+) => {
 	const chainId = 3; // Ropsten
 	const ethTx = new EthJsTx(
 		{

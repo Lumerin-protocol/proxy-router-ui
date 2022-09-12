@@ -8,11 +8,20 @@ interface ConnectWalletModalProps {
 }
 
 // currently not in use
-export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, setOpen, connectWallet }) => {
+export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
+	open,
+	setOpen,
+	connectWallet,
+}) => {
 	return (
 		<Transition.Root show={open} as={Fragment}>
-			<Dialog as='div' auto-reopen='true' className='fixed z-10 inset-0 overflow-y-auto' onClose={setOpen}>
-				<div className='flex items-end justify-center items-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
+			<Dialog
+				as='div'
+				auto-reopen='true'
+				className='fixed z-10 inset-0 overflow-y-auto'
+				onClose={setOpen}
+			>
+				<div className='flex justify-center items-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
 					<Transition.Child
 						as={Fragment}
 						enter='enter-300'
@@ -43,7 +52,8 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({ open, se
 								<div className='mt-3 text-center sm:mt-5'>
 									<div className='mt-2'>
 										<p className='text-sm text-black'>
-											By connecting a wallet, you agree to <span className='text-titan-aqua'>Titan’ Terms of Service</span> and
+											By connecting a wallet, you agree to{' '}
+											<span className='text-titan-aqua'>Titan’ Terms of Service</span> and
 											acknowledge that you have read and understand the Lumerin protocol disclaimer.
 										</p>
 									</div>

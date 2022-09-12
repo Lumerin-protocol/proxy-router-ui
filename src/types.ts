@@ -17,6 +17,11 @@ export enum ContractState {
 	Running = '1',
 }
 
+export enum CurrentTab {
+	Running = 'RUNNING',
+	Completed = 'COMPLETED',
+}
+
 export enum ContentState {
 	Create = 'CREATE',
 	Review = 'REVIEW',
@@ -82,10 +87,14 @@ export interface ConnectInfo {
 
 export interface HashRentalContract {
 	id?: JSX.Element | string;
+	contractId?: string;
 	price?: JSX.Element | string | number;
 	speed?: string;
 	length?: string;
 	trade?: JSX.Element | string;
+	progress?: JSX.Element | string;
+	progressPercentage?: number;
+	editCancel?: JSX.Element | string;
 	buyer?: string;
 	seller?: string;
 	timestamp?: string;
@@ -128,6 +137,8 @@ export interface Header {
 export interface ContractData extends HashRentalContract {
 	status?: JSX.Element | string;
 	progress?: JSX.Element | string;
+	progressPercentage?: number;
+	contractId?: string;
 	editCancel?: JSX.Element;
 	editClaim?: JSX.Element;
 }

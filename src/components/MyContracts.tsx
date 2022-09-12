@@ -2,11 +2,17 @@
 import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
-import { getProgressDiv, getStatusDiv, setMediaQueryListOnChangeHandler, sortByNumber } from '../utils';
+import {
+	getProgressDiv,
+	getProgressPercentage,
+	getStatusDiv,
+	setMediaQueryListOnChangeHandler,
+	sortByNumber,
+} from '../utils';
 import { Table } from './ui/Table';
 import { TableIcon } from './ui/TableIcon';
 import { DateTime } from 'luxon';
-import { Spinner } from './ui/Spinner';
+import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
@@ -43,8 +49,16 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
 	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
-	setMediaQueryListOnChangeHandler(mediaQueryListLarge, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater);
-	setMediaQueryListOnChangeHandler(mediaQueryListMedium, isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow);
+	setMediaQueryListOnChangeHandler(
+		mediaQueryListLarge,
+		isLargeBreakpointOrGreater,
+		setIsLargeBreakpointOrGreater
+	);
+	setMediaQueryListOnChangeHandler(
+		mediaQueryListMedium,
+		isMediumBreakpointOrBelow,
+		setIsMediumBreakpointOrBelow
+	);
 
 	useEffect(() => {
 		if (!mediaQueryListLarge?.matches) {
@@ -67,8 +81,6 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	const getTableData: () => ContractData[] = () => {
 		const sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
-		// Add emtpy row for styling
-		sellerContracts.unshift({});
 		const updatedOrders = sellerContracts.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
 			if (!_.isEmpty(contract)) {
@@ -92,13 +104,28 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 								parseInt(updatedOrder.length as string),
 								currentBlockTimestamp
 						  );
+				updatedOrder.progressPercentage = getProgressPercentage(
+					updatedOrder.state as string,
+					updatedOrder.timestamp as string,
+					parseInt(updatedOrder.length as string),
+					currentBlockTimestamp
+				);
 				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
 				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
 				//updatedOrder.length = updatedOrder.length as string;
-				updatedOrder.timestamp = getTimestamp(contract.timestamp as string, updatedOrder.state as string);
+				updatedOrder.timestamp = getTimestamp(
+					contract.timestamp as string,
+					updatedOrder.state as string
+				);
 				updatedOrder.editClaim = (
 					<ButtonGroup
-						button1={<EditButton contractId={contract.id as string} setContractId={setContractId} editClickHandler={editClickHandler} />}
+						button1={
+							<EditButton
+								contractId={contract.id as string}
+								setContractId={setContractId}
+								editClickHandler={editClickHandler}
+							/>
+						}
 						button2={
 							<ClaimLmrButton
 								contractId={contract.id as string}
@@ -116,7 +143,12 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	};
 
 	// TODO: if same as <MyOrders /> pull out into util function
-	const customSort: SortByFn<CustomTableOptions> = (rowA: Row, rowB: Row, columnId: string, desc?: boolean) => {
+	const customSort: SortByFn<CustomTableOptions> = (
+		rowA: Row,
+		rowB: Row,
+		columnId: string,
+		desc?: boolean
+	) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 
@@ -170,13 +202,17 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? <Table id='mycontracts' tableInstance={tableInstance} columnCount={6} /> : null}
+			{data.length > 1 ? (
+				<Table id='mycontracts' tableInstance={tableInstance} columnCount={6} />
+			) : null}
 			{data.length === 1 && showSpinner ? (
 				<div className='spinner'>
 					<Spinner />
 				</div>
 			) : null}
-			{data.length === 1 && !showSpinner ? <div className='text-2xl'>You have no contracts.</div> : null}
+			{data.length === 1 && !showSpinner ? (
+				<div className='text-2xl'>You have no contracts.</div>
+			) : null}
 		</div>
 	);
 };
