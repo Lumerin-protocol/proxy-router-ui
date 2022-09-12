@@ -6,7 +6,9 @@ interface ConfirmContentProps {
 	data: InputValuesCreateForm;
 }
 
-export const ConfirmContent: React.FC<ConfirmContentProps> = ({ data: { walletAddress, contractTime, speed, listPrice } }) => {
+export const ConfirmContent: React.FC<ConfirmContentProps> = ({
+	data: { walletAddress, contractTime, speed, listPrice },
+}) => {
 	return (
 		<div className='flex flex-col bg-white p-4 p-4 font-Inter text-sm'>
 			<div className='confirm-div gap-6'>

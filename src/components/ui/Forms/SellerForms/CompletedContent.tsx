@@ -1,7 +1,7 @@
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ContentState } from '../../../../types';
-import { Spinner } from '../../Spinner';
+import { Spinner } from '../../Spinner.styled';
 const { colors } = require('styles/styles.config.js');
 
 const createText = {
@@ -23,8 +23,15 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState
 		<div className='flex flex-col items-center bg-white font-Inter'>
 			{contentState === ContentState.Pending ? null : (
 				<div className='flex flex-col items-center'>
-					<FontAwesomeIcon className='my-8' icon={faCheckCircle} size='5x' color={colors['lumerin-aqua']} />
-					<p className='w-4/6 text-center text-xl mb-8'>{isEdit ? editText.thankYou : createText.thankYou}</p>
+					<FontAwesomeIcon
+						className='my-8'
+						icon={faCheckCircle}
+						size='5x'
+						color={colors['lumerin-aqua']}
+					/>
+					<p className='w-4/6 text-center text-xl mb-8'>
+						{isEdit ? editText.thankYou : createText.thankYou}
+					</p>
 					<p className='w-5/6 text-center text-sm'>{isEdit ? editText.view : createText.view}</p>
 				</div>
 			)}

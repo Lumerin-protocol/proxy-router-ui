@@ -53,7 +53,14 @@ describe('<Marketplace />', () => {
 		];
 
 		// Act
-		render(<Marketplace web3={web3} contracts={contracts} setContractId={setContractId} buyClickHandler={buyClickHandler} />);
+		render(
+			<Marketplace
+				web3={web3}
+				contracts={contracts}
+				setContractId={setContractId}
+				buyClickHandler={buyClickHandler}
+			/>
+		);
 
 		// Assert
 		const table = document.getElementById('marketplace');

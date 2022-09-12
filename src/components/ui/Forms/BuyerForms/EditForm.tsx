@@ -1,10 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AddressLength, AlertMessage, ContentState, ContractInfo, FormData, InputValuesBuyForm, Receipt, UpdateFormProps } from '../../../../types';
+import {
+	AddressLength,
+	AlertMessage,
+	ContentState,
+	ContractInfo,
+	FormData,
+	InputValuesBuyForm,
+	Receipt,
+	UpdateFormProps,
+} from '../../../../types';
 import { AbiItem } from 'web3-utils';
 import ImplementationContract from '../../../../contracts/Implementation.json';
-import { toRfc2396, getButton, isNoEditBuyer, printError, truncateAddress } from '../../../../utils';
+import {
+	toRfc2396,
+	getButton,
+	isNoEditBuyer,
+	printError,
+	truncateAddress,
+} from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
 import { ReviewContent } from './ReviewContent';
@@ -21,7 +36,13 @@ const initialFormData: FormData = {
 	speed: '',
 	price: '',
 };
-export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, userAccount, web3, setOpen }) => {
+export const EditForm: React.FC<UpdateFormProps> = ({
+	contracts,
+	contractId,
+	userAccount,
+	web3,
+	setOpen,
+}) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -74,7 +95,10 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 					const gasLimit = 1000000;
 					// TODO: encrypt poolAddress, username, password
 					const encryptedBuyerInput = toRfc2396(formData);
-					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const implementationContract = new web3.eth.Contract(
+						ImplementationContract.abi as AbiItem[],
+						contract.id as string
+					);
 					const receipt: Receipt = await implementationContract.methods
 						.setUpdateMiningInformation(encryptedBuyerInput)
 						.send({ from: userAccount, gas: gasLimit });
@@ -147,17 +171,33 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 	createContent();
 
 	// Set styles and button based on ContentState
-	const display = contentState === ContentState.Pending || contentState === ContentState.Complete ? 'hidden' : 'block';
-	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
+	const display =
+		contentState === ContentState.Pending || contentState === ContentState.Complete
+			? 'hidden'
+			: 'block';
+	const bgColor =
+		contentState === ContentState.Complete || contentState === ContentState.Confirm
+			? 'bg-black'
+			: 'bg-lumerin-aqua';
 
 	return (
 		<Fragment>
 			<Alert message={AlertMessage.NoEditBuyer} open={alertOpen} setOpen={setAlertOpen} />
-			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
+			<div
+				className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}
+			>
 				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
-					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
+					<div
+						className={
+							contentState === ContentState.Complete || contentState === ContentState.Pending
+								? 'hidden'
+								: 'block'
+						}
+					>
 						<p className='text-3xl'>Edit Order</p>
-						<p className='font-normal pt-2'>Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}</p>
+						<p className='font-normal pt-2'>
+							Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+						</p>
 					</div>
 				</div>
 				{content}
@@ -173,7 +213,15 @@ export const EditForm: React.FC<UpdateFormProps> = ({ contracts, contractId, use
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, editContractAsync)
+						? getButton(
+								contentState,
+								bgColor,
+								buttonOpacity,
+								buttonContent,
+								setOpen,
+								handleSubmit,
+								editContractAsync
+						  )
 						: null}
 				</div>
 			</div>

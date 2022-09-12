@@ -1,7 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AlertMessage, CloseOutType, ContentState, HashRentalContract, InputValuesCreateForm, Text, UpdateFormProps } from '../../../../types';
+import {
+	AlertMessage,
+	CloseOutType,
+	ContentState,
+	HashRentalContract,
+	InputValuesCreateForm,
+	Text,
+	UpdateFormProps,
+} from '../../../../types';
 import { getButton, isNoEditSeller, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
@@ -28,7 +36,13 @@ const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (co
 	};
 };
 
-export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractId, userAccount, setOpen }) => {
+export const EditForm: React.FC<UpdateFormProps> = ({
+	web3,
+	contracts,
+	contractId,
+	userAccount,
+	setOpen,
+}) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
 	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
@@ -63,11 +77,14 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 				// TODO: convert usd to lmr (aggregate of exchanges?)
 				if (web3) {
 					const gasLimit = 1000000;
-					const implementationContract = new web3.eth.Contract(ImplementationContract.abi as AbiItem[], contract.id as string);
+					const implementationContract = new web3.eth.Contract(
+						ImplementationContract.abi as AbiItem[],
+						contract.id as string
+					);
 					const price = multiplyByDigits(formData.listPrice as number);
 					let speed;
 					if (formData && formData.speed) {
-						speed = (formData.speed) * 10 ** 12;
+						speed = formData.speed * 10 ** 12;
 					} else {
 						speed = 0;
 					}
@@ -144,14 +161,25 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 	createContent();
 
 	// Set styles and button based on ContentState
-	const bgColor = contentState === ContentState.Complete || contentState === ContentState.Confirm ? 'bg-black' : 'bg-lumerin-aqua';
+	const bgColor =
+		contentState === ContentState.Complete || contentState === ContentState.Confirm
+			? 'bg-black'
+			: 'bg-lumerin-aqua';
 
 	return (
 		<Fragment>
 			<Alert message={AlertMessage.NoEditSeller} open={alertOpen} setOpen={setAlertOpen} />
-			<div className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}>
+			<div
+				className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}
+			>
 				<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
-					<div className={contentState === ContentState.Complete || contentState === ContentState.Pending ? 'hidden' : 'block'}>
+					<div
+						className={
+							contentState === ContentState.Complete || contentState === ContentState.Pending
+								? 'hidden'
+								: 'block'
+						}
+					>
 						<p className='text-3xl'>Edit Contract</p>
 						<p>Sell your hashpower on the Lumerin Marketplace</p>
 					</div>
@@ -166,7 +194,15 @@ export const EditForm: React.FC<UpdateFormProps> = ({ web3, contracts, contractI
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, bgColor, buttonOpacity, buttonContent, setOpen, handleSubmit, editContractAsync)
+						? getButton(
+								contentState,
+								bgColor,
+								buttonOpacity,
+								buttonContent,
+								setOpen,
+								handleSubmit,
+								editContractAsync
+						  )
 						: null}
 				</div>
 			</div>
