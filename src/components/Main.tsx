@@ -51,6 +51,7 @@ import {
 } from '../types';
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
+import { Hero } from './Hero';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
@@ -356,20 +357,6 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: () => JSX.Element = () => {
-		if (!isConnected) {
-			return (
-				<div className='flex flex-col items-center mt-20 md:mt-40 xl:mr-50 gap-4 text-center'>
-					<LumerinLandingPage />
-					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>
-						Global Hashpower Marketplace Demo
-					</p>
-					<p className='text-lg text-lumerin-landing-page'>
-						Buy hashpower from an open, easy to use, marketplace.
-					</p>
-					<div>{ActionButtons}</div>
-				</div>
-			);
-		}
 		return routes;
 	};
 
@@ -414,7 +401,7 @@ export const Main: React.FC = () => {
 		background-size: 25% 15% 15% 10%;
 	`;
 
-	return (
+	return isConnected ? (
 		<BodyWrapper>
 			<Alert
 				message={getAlertMessage()}
@@ -579,9 +566,11 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
-			<div className={!isConnected && contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
-				<LogoIcon />
-			</div>
+			{contracts.length > 0 && isConnected && (
+				<div className={!isConnected && contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
+					<LogoIcon />
+				</div>
+			)}
 
 			{/* Static sidebar for desktop */}
 			<div
@@ -591,7 +580,7 @@ export const Main: React.FC = () => {
 						: 'hidden bg-white lg:flex lg:flex-shrink-0'
 				}
 			>
-				<div className='flex flex-col w-64'>
+				<div className='flex flex-col w-64 sticky h-screen top-0'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
 							{/* <LogoIcon2 /> is identical but has different pattern id so it's not
@@ -724,6 +713,8 @@ export const Main: React.FC = () => {
 				<main className='mt-10 flex-1 relative focus:outline-none'>{getContent()}</main>
 			</div>
 		</BodyWrapper>
+	) : (
+		<Hero actionButtons={ActionButtons} />
 	);
 };
 
