@@ -33,6 +33,8 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
+import { FormWrapper } from '../Forms.styled';
+import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -229,9 +231,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 	// Set styles and button based on ContentState
 	const display =
-		contentState === ContentState.Pending || contentState === ContentState.Complete
-			? 'hidden'
-			: 'block';
+		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 	const bgColor =
 		contentState === ContentState.Complete || contentState === ContentState.Confirm
 			? 'bg-black'
@@ -244,52 +244,37 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				open={alertOpen}
 				setOpen={setAlertOpen}
 			/>
-			<div
-				className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium`}
-			>
-				<div className='flex justify-between bg-white text-black modal-input-spacing pb-4 border-transparent rounded-t-5'>
-					<div
-						className={
-							contentState === ContentState.Complete || contentState === ContentState.Pending
-								? 'hidden'
-								: 'block'
-						}
-					>
-						<h1 className='text-3xl pb-2'>Purchase Hashpower</h1>
+			<FormWrapper>
+				{display && (
+					<>
+						<h2>Purchase Hashpower</h2>
 						<p className='font-normal mb-3'>
 							Enter the Pool Address, Port Number, and Username you are pointing the purchased
 							hashpower to.
 						</p>
-						<span className='text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded'>
+						<span className='order-ID'>
 							Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
 						</span>
-					</div>
-				</div>
+					</>
+				)}
 				{content}
-				<div className={`${display} bg-white px-10 pt-16 pb-4 sm:mx-auto text-sm`}>
-					<p>{paragraphContent}</p>
-				</div>
-				<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
-					<button
-						type='submit'
-						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-						onClick={() => setOpen(false)}
-					>
+				{display && <p className='subtext'>{paragraphContent}</p>}
+				<FormButtonsWrapper>
+					<SecondaryButton type='submit' onClick={() => setOpen(false)}>
 						Close
-					</button>
-					{contentState !== ContentState.Pending
-						? getButton(
-								contentState,
-								bgColor,
-								buttonOpacity,
-								buttonContent,
-								setOpen,
-								handleSubmit,
-								buyContractAsync
-						  )
-						: null}
-				</div>
-			</div>
+					</SecondaryButton>
+					{contentState !== ContentState.Pending &&
+						getButton(
+							contentState,
+							bgColor,
+							buttonOpacity,
+							buttonContent,
+							setOpen,
+							handleSubmit,
+							buyContractAsync
+						)}
+				</FormButtonsWrapper>
+			</FormWrapper>
 		</Fragment>
 	);
 };

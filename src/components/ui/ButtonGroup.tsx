@@ -1,4 +1,4 @@
-import { ButtonsWrapper } from './Forms/FormButtons/Buttons.styled';
+import { FormButtonsWrapper } from './Forms/FormButtons/Buttons.styled';
 
 interface ButtonGroupProps {
 	button1: JSX.Element;
@@ -6,10 +6,10 @@ interface ButtonGroupProps {
 }
 export const ButtonGroup: React.FC<ButtonGroupProps> = ({ button1, button2 }) => {
 	return (
-		<ButtonsWrapper>
+		<FormButtonsWrapper>
 			{button1}
 			{button2}
-		</ButtonsWrapper>
+		</FormButtonsWrapper>
 	);
 };
 

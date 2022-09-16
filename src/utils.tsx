@@ -24,6 +24,7 @@ import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
 import { abi, bytecode } from './contracts/CloneFactory.json';
 import * as URI from 'uri-js';
+import { PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
@@ -286,14 +287,13 @@ export const getButton: (
 			<span>{`View ${viewText}`}</span>
 		</Link>
 	) : (
-		<button
+		<PrimaryButton
 			type='submit'
-			className={`h-16 w-full py-2 px-4 btn-modal text-sm font-medium text-white ${bgColor} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
 			style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
 			onClick={handleSubmit((data) => createTransactionAsync(data))}
 		>
 			{buttonContent}
-		</button>
+		</PrimaryButton>
 	);
 };
 
