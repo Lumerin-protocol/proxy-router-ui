@@ -622,7 +622,7 @@ export const Main: React.FC = () => {
 						<h1
 							className={classNames(
 								pathName === PathName.MyContracts ? 'hidden xl:block' : '',
-								'text-xl font-bold font-Raleway text-lumerin-blue-text'
+								'text-xl font-semibold font-Raleway text-lumerin-blue-text'
 							)}
 						>
 							{getPageTitle()}
