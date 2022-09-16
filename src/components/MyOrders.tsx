@@ -186,19 +186,15 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 			<div className='flex flex-col items-center'>
 				{currentTab === CurrentTab.Running && (
 					<>
-						{runningContracts.length > 0 ? (
+						{runningContracts.length > 0 && (
 							<PurchasedContracts contracts={runningContracts} isCompleted={false} />
-						) : (
-							<p>You have no running contracts.</p>
 						)}
 					</>
 				)}
 				{currentTab === CurrentTab.Completed && (
 					<>
-						{completedContracts.length > 0 ? (
+						{completedContracts.length > 0 && (
 							<PurchasedContracts contracts={completedContracts} isCompleted={true} />
-						) : (
-							<p>You have no completed contracts.</p>
 						)}
 					</>
 				)}
@@ -207,7 +203,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						<Spinner />
 					</div>
 				)}
-				{data.length === 1 && !showSpinner && <div className='text-2xl'>You have no orders.</div>}
+				{data.length === 0 && !showSpinner && <div className='text-2xl'>You have no orders.</div>}
 			</div>
 		</>
 	);
