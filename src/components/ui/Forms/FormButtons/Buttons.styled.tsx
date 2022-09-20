@@ -38,8 +38,17 @@ export const FormButtonsWrapper = styled.div`
 
 export const Button = styled.button`
 	border-radius: 85px;
-	padding: 1.5rem 2rem;
+	padding: 0.75rem 1.5rem;
 	outline: none;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: no-wrap;
+	justify-content: center;
+	align-items: center;
+	font-weight: 500;
+	&:not(:last-child) {
+		margin-right: 1rem;
+	}
 `;
 
 export const PrimaryButton = styled(Button)`

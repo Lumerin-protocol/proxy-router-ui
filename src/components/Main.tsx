@@ -53,6 +53,7 @@ import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 import styled from '@emotion/styled';
 import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
+import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -278,19 +279,18 @@ export const Main: React.FC = () => {
 
 	// Content setup
 	const ActionButtons: JSX.Element = (
-		<div className='flex flex-col items-center mt-4 font-medium'>
-			<button
-				type='button'
-				className='btn-wallet w-60 h-12 mt-4 rounded-15 text-lumerin-dark-blue text-sm font-Inter'
-				onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}
-			>
+		<div className='flex flex-row'>
+			<SecondaryButton type='button' onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}>
 				<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
-			</button>
-			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
-				<span className='mr-4'>{WalletText.ConnectViaWalletConnect}</span>
+			</SecondaryButton>
+			<SecondaryButton
+				type='button'
+				onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}
+			>
+				<span className='mr-2'>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</button>
+			</SecondaryButton>
 		</div>
 	);
 
@@ -373,7 +373,6 @@ export const Main: React.FC = () => {
 	};
 
 	const changeNetworkAsync: () => void = async () => {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
 			params: [{ chainId: web3?.utils.toHex(3) }],
