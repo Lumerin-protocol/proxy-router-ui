@@ -149,6 +149,12 @@ export const getWorkerName = (connectionString: string): string | undefined =>
 export const getHostName = (connectionString: string): string | undefined =>
 	URI.parse(connectionString).host;
 
+export const getPortString = (connectionString: string): string | undefined =>
+	URI.parse(connectionString).port?.toString();
+
+export const getSchemeName = (connectionString: string): string | undefined =>
+	URI.parse(connectionString).scheme;
+
 // Make sure username contains no spaces
 export const isValidUsername: (username: string) => boolean = (username) =>
 	!!username.match(/^\S*$/);
@@ -275,23 +281,13 @@ export const getButton: (
 	}
 
 	return contentState === ContentState.Complete ? (
-		<Link
-			to={pathName}
-			className={
-				contentState === ContentState.Complete
-					? 'h-16 w-full flex justify-center items-center py-2 px-4 mb-4 btn-modal text-sm font-medium text-white bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua'
-					: 'hidden'
-			}
-			onClick={() => setOpen(false)}
-		>
-			<span>{`View ${viewText}`}</span>
-		</Link>
+		<PrimaryButton>
+			<Link to={pathName} onClick={() => setOpen(false)}>
+				<span>{`View ${viewText}`}</span>
+			</Link>
+		</PrimaryButton>
 	) : (
-		<PrimaryButton
-			type='submit'
-			style={{ opacity: buttonOpacity === '25' ? '.25' : '1' }}
-			onClick={handleSubmit((data) => createTransactionAsync(data))}
-		>
+		<PrimaryButton type='submit' onClick={handleSubmit((data) => createTransactionAsync(data))}>
 			{buttonContent}
 		</PrimaryButton>
 	);

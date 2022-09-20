@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
-import { isValidPoolAddress, isValidPortNumber, isValidUsername } from '../../../../utils';
+import {
+	getHostName,
+	getWorkerName,
+	getPortString,
+	getSchemeName,
+	isValidPoolAddress,
+	isValidPortNumber,
+	isValidUsername,
+} from '../../../../utils';
 import { Alert } from '../../Alert';
 import { InputWrapper } from '../Forms.styled';
 // import { Checkbox } from '../../Checkbox';
@@ -9,9 +17,15 @@ import { InputWrapper } from '../Forms.styled';
 interface ReviewContentProps {
 	register: UseFormRegister<InputValuesBuyForm>;
 	errors: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
+	buyerString?: string;
 	isEdit?: boolean;
 }
-export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, isEdit }) => {
+export const ReviewContent: React.FC<ReviewContentProps> = ({
+	register,
+	errors,
+	buyerString,
+	isEdit,
+}) => {
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
 	// hiding references to validator service at the moment: my 5/9/22
@@ -39,6 +53,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
 							: 'review-no-errors review-input'
 					}
+					defaultValue={
+						isEdit && buyerString
+							? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
+							: ''
+					}
 				/>
 				{errors.poolAddress && (
 					<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
@@ -61,6 +80,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
 							: 'review-no-errors review-input'
 					}
+					defaultValue={isEdit && buyerString ? getPortString(buyerString) : ''}
 				/>
 				{errors.portNumber && (
 					<div className='text-xs text-red-500'>{errors.portNumber.message}</div>
@@ -82,6 +102,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({ register, errors, 
 							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
 							: 'review-no-errors review-input'
 					}
+					defaultValue={isEdit && buyerString ? getWorkerName(buyerString) : ''}
 				/>
 				{errors.username?.type === 'required' && (
 					<div className='text-xs text-red-500'>{errors.username.message}</div>
