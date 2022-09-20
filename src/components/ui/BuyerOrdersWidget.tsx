@@ -1,28 +1,62 @@
 import { HashRentalContract } from '../../types';
 import EastIcon from '@mui/icons-material/East';
+import styled from '@emotion/styled';
 
 export const BuyerOrdersWidget = (prop: {
 	contracts: Array<HashRentalContract>;
 	userAccount: string;
 }) => {
 	const buyerOrders = prop.contracts.filter((contract) => contract.buyer === prop.userAccount);
+	console.log(buyerOrders);
+
+	const OrdersWidget = styled.div`
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+		padding-left: 1.25rem;
+		padding-right: 1.25rem;
+		margin-bottom: 0.75rem;
+		background-color: #ffffff;
+		flex: 1 1 auto;
+		justify-content: center;
+		width: 8rem;
+		height: 8rem;
+
+		h3,
+		.status {
+			font-size: 0.8125rem;
+			text-align: center;
+		}
+
+		.content {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-around;
+		}
+	`;
+
+	const runningContracts = prop.contracts.filter((contract) => contract.progressPercentage! < 100);
+	const completedContracts = prop.contracts.filter(
+		(contract) => contract.progressPercentage === 100
+	);
 
 	return (
-		<>
-			<div className='bg-white rounded-15 mb-3 px-5 py-2 w-32 h-32 flex-auto justify-center'>
-				<p className='text-xs text-center'>Purchased Contracts</p>
+		<OrdersWidget>
+			<h3>Purchased Contracts</h3>
+			<div className='content'>
 				<div>
-					<h3 className='flex-1 text-center text-lumerin-blue-text text-xl'>
-						{buyerOrders.length}
-					</h3>
-					<p className='text-xs text-center'>ACTIVE</p>
+					<h4 className='text-center text-lumerin-blue-text text-xl'>{runningContracts.length}</h4>
+					<p className='status'>ACTIVE</p>
 				</div>
-				<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
-					<a href='/buyerhub'>
-						View all purchased contracts <EastIcon style={{ fontSize: '0.75rem' }} />
-					</a>
-				</p>
+				<div className='text-lumerin-inactive-grey '>
+					<h4 className='text-center text-xl'>{completedContracts.length}</h4>
+					<p className='status'>Completed</p>
+				</div>
 			</div>
-		</>
+			<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
+				<a href='/buyerhub'>
+					View all purchased contracts <EastIcon style={{ fontSize: '0.75rem' }} />
+				</a>
+			</p>
+		</OrdersWidget>
 	);
 };

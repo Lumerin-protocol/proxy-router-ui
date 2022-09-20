@@ -11,6 +11,7 @@ module.exports = {
 		'lumerin-input-gray': '#EDEEF2',
 		'lumerin-placeholder-gray': '#C4C4C4',
 		'lumerin-helpertext-gray': '#707070',
+		'lumerin-inactive-grey': '#A7A9B6',
 		'lumerin-aqua': '#11B4BF',
 		'lumerin-landing-page': '#027380',
 		'lumerin-table-text-color': '#0E4353',
