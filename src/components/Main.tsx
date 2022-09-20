@@ -54,6 +54,7 @@ import _ from 'lodash';
 import styled from '@emotion/styled';
 import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
 import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
+import EastIcon from '@mui/icons-material/East';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -669,7 +670,10 @@ export const Main: React.FC = () => {
 										className='link text-xs text-lumerin-blue-text'
 										onClick={() => addLumerinTokenToMetaMaskAsync()}
 									>
-										<span>Import LMR into MetaMask</span>
+										<span style={{ display: 'flex', alignItems: 'center' }}>
+											Import LMR into MetaMask{' '}
+											<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
+										</span>
 									</button>
 								) : null}
 								{!isMetaMask ? (
@@ -714,7 +718,7 @@ export const Main: React.FC = () => {
 									</div>
 									<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
 										<a className='' href='/buyerhub'>
-											Buy LMR tokens on Uniswap
+											Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
 										</a>
 									</p>
 								</div>
