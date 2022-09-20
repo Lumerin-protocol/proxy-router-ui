@@ -1,36 +1,5 @@
 import styled from '@emotion/styled';
 
-export const FormWrapper = styled.div`
-	background: white;
-	border-radius: 20px;
-	display: flex;
-	flex-direction: column;
-	margin: auto;
-	margin-top: 3rem;
-	max-width: 600px;
-	padding: 4rem;
-
-	h2 {
-		font-size: 2rem;
-		font-weight: 500;
-		padding-bottom: 1rem;
-	}
-
-	.order-ID {
-		font-size: 0.8rem;
-		margin-bottom: 0.5rem;
-		color: #014353;
-	}
-
-	.subtext {
-		font-size: 0.8rem;
-	}
-
-	@media (max-width: 500px) {
-		max-width: 90%;
-	}
-`;
-
 export const InputWrapper = styled.div`
 	margin-top: 0.75rem;
 	margin-bottom: 0.75rem;

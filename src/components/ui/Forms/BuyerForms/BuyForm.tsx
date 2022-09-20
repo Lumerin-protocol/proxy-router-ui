@@ -33,7 +33,6 @@ import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
-import { FormWrapper } from '../Forms.styled';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 
 // Used to set initial state for contentData to prevent undefined error
@@ -244,37 +243,35 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				open={alertOpen}
 				setOpen={setAlertOpen}
 			/>
-			<FormWrapper>
-				{display && (
-					<>
-						<h2>Purchase Hashpower</h2>
-						<p className='font-normal mb-3'>
-							Enter the Pool Address, Port Number, and Username you are pointing the purchased
-							hashpower to.
-						</p>
-						<span className='order-ID'>
-							Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
-						</span>
-					</>
-				)}
-				{content}
-				{display && <p className='subtext'>{paragraphContent}</p>}
-				<FormButtonsWrapper>
-					<SecondaryButton type='submit' onClick={() => setOpen(false)}>
-						Close
-					</SecondaryButton>
-					{contentState !== ContentState.Pending &&
-						getButton(
-							contentState,
-							bgColor,
-							buttonOpacity,
-							buttonContent,
-							setOpen,
-							handleSubmit,
-							buyContractAsync
-						)}
-				</FormButtonsWrapper>
-			</FormWrapper>
+			{display && (
+				<>
+					<h2>Purchase Hashpower</h2>
+					<p className='font-normal mb-3'>
+						Enter the Pool Address, Port Number, and Username you are pointing the purchased
+						hashpower to.
+					</p>
+					<span className='order-ID'>
+						Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+					</span>
+				</>
+			)}
+			{content}
+			{display && <p className='subtext'>{paragraphContent}</p>}
+			<FormButtonsWrapper>
+				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+					Close
+				</SecondaryButton>
+				{contentState !== ContentState.Pending &&
+					getButton(
+						contentState,
+						bgColor,
+						buttonOpacity,
+						buttonContent,
+						setOpen,
+						handleSubmit,
+						buyContractAsync
+					)}
+			</FormButtonsWrapper>
 		</Fragment>
 	);
 };

@@ -1,5 +1,6 @@
-import { Modal } from '@mui/material';
-
+import { IconButton, Modal } from '@mui/material';
+import { ModalCard } from './Modal.styled';
+import CloseIcon from '@mui/icons-material/Close';
 interface ModalProps {
 	open: boolean;
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -9,7 +10,12 @@ interface ModalProps {
 export const ModalItem: React.FC<ModalProps> = ({ open, setOpen, content }) => {
 	return (
 		<Modal open={open} onClose={() => setOpen}>
-			<div className='modal-card'>{content}</div>
+			<ModalCard>
+				<IconButton className='close' onClick={() => setOpen(false)}>
+					<CloseIcon />
+				</IconButton>
+				{content}
+			</ModalCard>
 		</Modal>
 	);
 };

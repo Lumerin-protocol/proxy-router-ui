@@ -5,28 +5,40 @@ export const ModalBox = styled.div`
 	justify-content: center;
 	align-items: center;
 	min-height: 100vh;
+`;
 
-	.modal-card {
-		display: inline-block;
-		overflow: hidden;
-		padding-left: 0.5rem;
-		padding-right: 0.5rem;
+export const ModalCard = styled.div`
+	background: white;
+	border-radius: 20px;
+	display: flex;
+	flex-direction: column;
+	margin: auto;
+	margin-top: 3rem;
+	max-width: 600px;
+	padding: 4rem;
+	padding-top: 2rem;
+
+	.close {
+		margin-left: auto;
+	}
+
+	h2 {
+		font-size: 2rem;
+		font-weight: 500;
 		padding-bottom: 1rem;
-		padding-top: 1.25rem;
-		background-color: #ffffff;
-		transition-property: all;
-		text-align: left;
-		vertical-align: bottom;
-		border-radius: 0.5rem;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+	}
 
-		@media (min-width: 640px) {
-			padding: 1.5rem;
-			margin-top: 2rem;
-			margin-bottom: 2rem;
-			vertical-align: middle;
-			width: 100%;
-			max-width: 28rem;
-		}
+	.order-ID {
+		font-size: 0.8rem;
+		margin-bottom: 0.5rem;
+		color: #014353;
+	}
+
+	.subtext {
+		font-size: 0.8rem;
+	}
+
+	@media (max-width: 500px) {
+		max-width: 90%;
 	}
 `;
