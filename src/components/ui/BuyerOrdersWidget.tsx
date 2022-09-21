@@ -1,4 +1,5 @@
 import { HashRentalContract } from '../../types';
+import EastIcon from '@mui/icons-material/East';
 
 export const BuyerOrdersWidget = (prop: {
 	contracts: Array<HashRentalContract>;
@@ -17,7 +18,9 @@ export const BuyerOrdersWidget = (prop: {
 					<p className='text-xs text-center'>ACTIVE</p>
 				</div>
 				<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
-					<a href='/buyerhub'>View all purchased contracts</a>
+					<a href='/buyerhub'>
+						View all purchased contracts <EastIcon style={{ fontSize: '0.75rem' }} />
+					</a>
 				</p>
 			</div>
 		</>

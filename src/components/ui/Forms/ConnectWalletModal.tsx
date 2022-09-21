@@ -1,25 +1,27 @@
-import { Fragment } from 'react';
+import { Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
 interface ConnectWalletModalProps {
 	open: boolean;
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	connectWallet: () => void;
+	actionButtons: JSX.Element;
 }
 
-// currently not in use
 export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
 	open,
 	setOpen,
-	connectWallet,
+	actionButtons,
 }) => {
+	let closeButtonRef = useRef(null);
+
 	return (
 		<Transition.Root show={open} as={Fragment}>
 			<Dialog
 				as='div'
 				auto-reopen='true'
 				className='fixed z-10 inset-0 overflow-y-auto'
-				onClose={setOpen}
+				onClose={() => setOpen(false)}
+				initialFocus={closeButtonRef}
 			>
 				<div className='flex justify-center items-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
 					<Transition.Child
@@ -47,29 +49,14 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
 						leaveFrom='enter-to-100'
 						leaveTo='enter-from-95'
 					>
-						<div className='inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6'>
-							<div>
-								<div className='mt-3 text-center sm:mt-5'>
-									<div className='mt-2'>
-										<p className='text-sm text-black'>
-											By connecting a wallet, you agree to{' '}
-											<span className='text-titan-aqua'>Titan’ Terms of Service</span> and
-											acknowledge that you have read and understand the Lumerin protocol disclaimer.
-										</p>
-									</div>
-								</div>
-							</div>
-							<div className='mt-5 sm:mt-6'>
-								<button
-									type='button'
-									className='inline-flex justify-center w-full bg-lumerin-gray rounded-3xl border border-transparent shadow-sm px-4 py-2 mb-3 bg-indigo-600 text-base font-medium text-black hover:bg-titan-aqua hover:text-white focus:outline-none sm:text-sm'
-									onClick={() => connectWallet()}
-								>
-									MetaMask
-								</button>
-							</div>
+						<div className='inline-block py-10 px-4 align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full'>
+							<h2 className='text-center text-md font-semibold'>Connect Wallet</h2>
+							{actionButtons}
 						</div>
 					</Transition.Child>
+					<button className='opacity-0' ref={closeButtonRef}>
+						Close
+					</button>
 				</div>
 			</Dialog>
 		</Transition.Root>

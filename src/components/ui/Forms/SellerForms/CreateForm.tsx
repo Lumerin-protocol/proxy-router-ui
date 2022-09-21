@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
 import { getButton, printError } from '../../../../utils';
 import { multiplyByDigits } from '../../../../web3/helpers';
+import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
@@ -134,49 +135,39 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	createContent();
 
 	// Set styles and button based on ContentState
+	const display =
+		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
+
 	const bgColor =
 		contentState === ContentState.Complete || contentState === ContentState.Confirm
 			? 'bg-black'
 			: 'bg-lumerin-aqua';
 
 	return (
-		<div
-			className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 md:min-w-28 font-Inter font-medium`}
-		>
-			<div className='flex justify-between p-4 bg-white text-black border-transparent rounded-t-5'>
-				<div
-					className={
-						contentState === ContentState.Complete || contentState === ContentState.Pending
-							? 'hidden'
-							: 'block'
-					}
-				>
-					<p className='text-3xl'>Create New Contract</p>
+		<Fragment>
+			{display && (
+				<>
+					<h2>Create New Contract</h2>
 					<p>Sell your hashpower on the Lumerin Marketplace</p>
-				</div>
-			</div>
+				</>
+			)}
 			{content}
-			<div className='flex gap-6 bg-white p-4 pt-14 rounded-b-5'>
-				<button
-					type='submit'
-					className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-					onClick={() => setOpen(false)}
-				>
+			<FormButtonsWrapper>
+				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
 					Close
-				</button>
-				{contentState !== ContentState.Pending
-					? getButton(
-							contentState,
-							bgColor,
-							buttonOpacity,
-							buttonContent,
-							setOpen,
-							handleSubmit,
-							createContractAsync
-					  )
-					: null}
-			</div>
-		</div>
+				</SecondaryButton>
+				{contentState !== ContentState.Pending &&
+					getButton(
+						contentState,
+						bgColor,
+						buttonOpacity,
+						buttonContent,
+						setOpen,
+						handleSubmit,
+						createContractAsync
+					)}
+			</FormButtonsWrapper>
+		</Fragment>
 	);
 };
 
