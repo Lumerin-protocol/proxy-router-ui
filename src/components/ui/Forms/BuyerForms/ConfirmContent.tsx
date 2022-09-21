@@ -2,6 +2,7 @@ import React from 'react';
 import Web3 from 'web3';
 import { FormData } from '../../../../types';
 import { divideByDigits } from '../../../../web3/helpers';
+import { ReviewItems } from '../Forms.styled';
 
 interface ConfirmContentProps {
 	web3: Web3 | undefined;
@@ -13,36 +14,36 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({
 	data: { poolAddress, portNumber, username, speed, price, withValidator, length },
 }) => {
 	return (
-		<div className='flex flex-col bg-white px-8 pt-6 text-sm'>
-			<div className='confirm-div'>
-				<p>Pool Address</p>
+		<ReviewItems>
+			<div>
+				<h3>Pool Address</h3>
 				<p>{poolAddress}</p>
 			</div>
-			<div className='confirm-div'>
-				<p>Port Number</p>
+			<div>
+				<h3>Port Number</h3>
 				<p>{portNumber}</p>
 			</div>
-			<div className='confirm-div'>
-				<p>Username</p>
+			<div>
+				<h3>Username</h3>
 				<p>{username}</p>
 			</div>
-			<div className='confirm-div'>
-				<p>Speed (TH/S)</p>
+			<div>
+				<h3>Speed (TH/S)</h3>
 				<p>{String(Number(speed) / 10 ** 12)}</p>
 			</div>
-			<div className='confirm-div'>
-				<p>Duration (HOURS)</p>
+			<div>
+				<h3>Duration (HOURS)</h3>
 				<p>{String(parseInt(length as string) / 3600)}</p>
 			</div>
-			<div className='confirm-div'>
-				<p>Price (LMR)</p>
-				<p>{price ? divideByDigits(parseInt(price)) : price}</p>
+			<div className='total-cost'>
+				<h3>Total Cost</h3>
+				<p className='price'>{price ? divideByDigits(parseInt(price)) : price} LMR</p>
 			</div>
 			{/* <div className='confirm-div'>
 				<p>Use Titan Validator Service</p>
 				<p>{withValidator ? 'Yes' : 'No'}</p>
 			</div> */}
-		</div>
+		</ReviewItems>
 	);
 };
 
