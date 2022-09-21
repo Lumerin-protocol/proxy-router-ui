@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { ButtonWrapper } from './Buttons.styled';
+import { ActionButtonWrapper } from './Buttons.styled';
 import ClaimIcon from '../../../../images/icons/money-bag.png';
 
 interface ClaimLmrButtonProps {
@@ -21,12 +21,12 @@ export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({
 	};
 
 	return (
-		<ButtonWrapper>
+		<ActionButtonWrapper>
 			<button type='button' onClick={(event) => clickHandler(event)}>
 				<img src={ClaimIcon} alt='' />
 			</button>
 			<p>Claim</p>
-		</ButtonWrapper>
+		</ActionButtonWrapper>
 	);
 };
 

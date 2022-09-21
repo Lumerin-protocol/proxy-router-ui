@@ -93,7 +93,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	return (
 		<>
 			{!showSpinner && (
-				<h2 className='text-lg text-lumerin-blue-text font-Raleway font-bold text-left mb-5'>
+				<h2 className='text-lg text-lumerin-blue-text font-Raleway font-regular text-left mb-5'>
 					Hashrate For Sale
 				</h2>
 			)}

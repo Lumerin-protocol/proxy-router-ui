@@ -3,25 +3,21 @@ import { Fragment, Suspense, useEffect, useState } from 'react';
 import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
 import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
-import {
-	ContractIcon,
-	MarketplaceIcon,
-	MyOrdersIcon,
-	MetaMaskIcon,
-	LogoIcon,
-	LogoIcon2,
-	LumerinIcon,
-	LumerinLandingPage,
-	WalletConnectIcon,
-} from '../images/index';
+import { MetaMaskIcon, LogoIcon, LogoIcon2, LumerinIcon, WalletConnectIcon } from '../images/index';
 import BubbleGraphic1 from '../images/Bubble_1.png';
 import BubbleGraphic2 from '../images/Bubble_2.png';
 import BubbleGraphic3 from '../images/Bubble_3.png';
 import BubbleGraphic4 from '../images/Bubble_4.png';
+import MarketplaceIconActive from '../images/icons/store-blue.png';
+import MarketplaceIconInactive from '../images/icons/store-grey.png';
+import BuyerIconActive from '../images/icons/buyer-blue.png';
+import BuyerIconInactive from '../images/icons/buyer-grey.png';
+import SellerIconActive from '../images/icons/seller-blue.png';
+import SellerIconInactive from '../images/icons/seller-grey.png';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { Alert } from './ui/Alert';
-import { Modal } from './ui/Modal';
+import { ModalItem } from './ui/Modal';
 import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
 import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
@@ -51,11 +47,14 @@ import {
 } from '../types';
 import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
 import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
+import { Hero } from './Hero';
 import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 import styled from '@emotion/styled';
 import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
+import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
+import EastIcon from '@mui/icons-material/East';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -89,7 +88,8 @@ export const Main: React.FC = () => {
 	interface Navigation {
 		name: string;
 		to: string;
-		icon: JSX.Element;
+		activeIcon: string;
+		inactiveIcon: string;
 		current: boolean;
 	}
 	const pathName = window.location.pathname;
@@ -97,19 +97,22 @@ export const Main: React.FC = () => {
 		{
 			name: 'Marketplace',
 			to: PathName.Marketplace,
-			icon: <MarketplaceIcon />,
+			activeIcon: MarketplaceIconActive,
+			inactiveIcon: MarketplaceIconInactive,
 			current: pathName === PathName.Marketplace,
 		},
 		{
 			name: 'Buyer Hub',
 			to: PathName.MyOrders,
-			icon: <MyOrdersIcon />,
+			activeIcon: BuyerIconActive,
+			inactiveIcon: BuyerIconInactive,
 			current: pathName === PathName.MyOrders,
 		},
 		{
 			name: 'Seller Hub',
 			to: PathName.MyContracts,
-			icon: <ContractIcon />,
+			activeIcon: SellerIconActive,
+			inactiveIcon: SellerIconInactive,
 			current: pathName === PathName.MyContracts,
 		},
 	];
@@ -277,23 +280,18 @@ export const Main: React.FC = () => {
 
 	// Content setup
 	const ActionButtons: JSX.Element = (
-		<div className='flex flex-col items-center mt-4 font-medium'>
-			<button
-				type='button'
-				className='btn-wallet w-60 h-12 mt-4 rounded-15 text-lumerin-dark-blue text-sm font-Inter'
-				onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}
-			>
+		<div className='flex flex-row'>
+			<SecondaryButton type='button' onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}>
 				<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
-			</button>
-			<button
+			</SecondaryButton>
+			<SecondaryButton
 				type='button'
-				className='btn-wallet w-60 h-12 mt-4 rounded-15 text-lumerin-dark-blue text-sm font-Inter'
 				onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}
 			>
-				<span className='mr-4'>{WalletText.ConnectViaWalletConnect}</span>
+				<span className='mr-2'>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</button>
+			</SecondaryButton>
 		</div>
 	);
 
@@ -356,20 +354,6 @@ export const Main: React.FC = () => {
 	);
 
 	const getContent: () => JSX.Element = () => {
-		if (!isConnected) {
-			return (
-				<div className='flex flex-col items-center mt-20 md:mt-40 xl:mr-50 gap-4 text-center'>
-					<LumerinLandingPage />
-					<p className='mt-4 text-3xl md:text-50 text-lumerin-landing-page font-medium'>
-						Global Hashpower Marketplace Demo
-					</p>
-					<p className='text-lg text-lumerin-landing-page'>
-						Buy hashpower from an open, easy to use, marketplace.
-					</p>
-					<div>{ActionButtons}</div>
-				</div>
-			);
-		}
 		return routes;
 	};
 
@@ -390,7 +374,6 @@ export const Main: React.FC = () => {
 	};
 
 	const changeNetworkAsync: () => void = async () => {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
 			params: [{ chainId: web3?.utils.toHex(3) }],
@@ -414,7 +397,17 @@ export const Main: React.FC = () => {
 		background-size: 25% 15% 15% 10%;
 	`;
 
-	return (
+	const ActiveNavTab = styled.div`
+		background: #0e4353;
+		position: absolute;
+		width: 6px;
+		height: 36px;
+		left: 0px;
+		margin-top: 0.2rem;
+		border-radius: 0px 15px 15px 0px;
+	`;
+
+	return isConnected ? (
 		<BodyWrapper>
 			<Alert
 				message={getAlertMessage()}
@@ -422,7 +415,7 @@ export const Main: React.FC = () => {
 				setOpen={setAlertOpen}
 				onClick={isMetaMask ? changeNetworkAsync : () => {}}
 			/>
-			<Modal
+			<ModalItem
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
 				content={
@@ -437,7 +430,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Modal
+			<ModalItem
 				open={createModalOpen}
 				setOpen={setCreateModalOpen}
 				content={
@@ -449,7 +442,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Modal
+			<ModalItem
 				open={sellerEditModalOpen}
 				setOpen={setSellerEditModalOpen}
 				content={
@@ -462,7 +455,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Modal
+			<ModalItem
 				open={buyerEditModalOpen}
 				setOpen={setBuyerEditModalOpen}
 				content={
@@ -475,7 +468,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Modal
+			<ModalItem
 				open={cancelModalOpen}
 				setOpen={setCancelModalOpen}
 				content={
@@ -488,7 +481,7 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Modal
+			<ModalItem
 				open={claimLmrModalOpen}
 				setOpen={setClaimLmrModalOpen}
 				content={
@@ -560,13 +553,13 @@ export const Main: React.FC = () => {
 											to={item.to}
 											className={classNames(
 												item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-black-text',
-												'flex items-center px-2 py-2 text-sm font-medium rounded-md'
+												'flex items-center px-2 py-2 mb-2 text-sm font-medium rounded-md'
 											)}
 											onClick={() => {
 												setToggle(!toggle);
 											}}
 										>
-											{item.icon}
+											<img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' />
 											<span className='ml-4'>{item.name}</span>
 										</Link>
 									))}
@@ -579,9 +572,11 @@ export const Main: React.FC = () => {
 					</div>
 				</Dialog>
 			</Transition.Root>
-			<div className={!isConnected && contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
-				<LogoIcon />
-			</div>
+			{contracts.length > 0 && isConnected && (
+				<div className={!isConnected && contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
+					<LogoIcon />
+				</div>
+			)}
 
 			{/* Static sidebar for desktop */}
 			<div
@@ -591,7 +586,7 @@ export const Main: React.FC = () => {
 						: 'hidden bg-white lg:flex lg:flex-shrink-0'
 				}
 			>
-				<div className='flex flex-col w-64'>
+				<div className='flex flex-col w-64 sticky h-screen top-0'>
 					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
 						<div className='flex-1 flex flex-col ml-4 mb-16'>
 							{/* <LogoIcon2 /> is identical but has different pattern id so it's not
@@ -601,18 +596,25 @@ export const Main: React.FC = () => {
 						<div className='flex-1 flex flex-col'>
 							<nav className='flex-1 px-2 space-y-1'>
 								{navigation.map((item) => (
-									<Link
-										key={item.name}
-										to={item.to}
-										className={classNames(
-											item.current ? 'text-lumerin-blue-text' : 'text-lumerin-inactive-text',
-											'flex items-center px-2 py-2 text-sm font-medium rounded-md'
-										)}
-										onClick={() => setToggle(!toggle)}
-									>
-										{item.icon}
-										<span className='ml-4'>{item.name}</span>
-									</Link>
+									<>
+										{item.current && <ActiveNavTab />}
+										<Link
+											key={item.name}
+											to={item.to}
+											className={classNames(
+												'flex items-center pl-6 py-2 pb-6 text-sm font-medium rounded-md',
+												item.current ? 'text-lumerin-blue-text' : 'text-lumerin-inactive-text'
+											)}
+											onClick={() => setToggle(!toggle)}
+										>
+											<img
+												className='w-5'
+												src={item.current ? item.activeIcon : item.inactiveIcon}
+												alt=''
+											/>
+											<span className='text-sm ml-4'>{item.name}</span>
+										</Link>
+									</>
 								))}
 							</nav>
 						</div>
@@ -633,7 +635,7 @@ export const Main: React.FC = () => {
 						<h1
 							className={classNames(
 								pathName === PathName.MyContracts ? 'hidden xl:block' : '',
-								'text-xl font-bold font-Raleway text-lumerin-blue-text'
+								'text-xl font-semibold font-Raleway text-lumerin-blue-text'
 							)}
 						>
 							{getPageTitle()}
@@ -668,7 +670,10 @@ export const Main: React.FC = () => {
 										className='link text-xs text-lumerin-blue-text'
 										onClick={() => addLumerinTokenToMetaMaskAsync()}
 									>
-										<span>Import LMR into MetaMask</span>
+										<span style={{ display: 'flex', alignItems: 'center' }}>
+											Import LMR into MetaMask{' '}
+											<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
+										</span>
 									</button>
 								) : null}
 								{!isMetaMask ? (
@@ -713,7 +718,7 @@ export const Main: React.FC = () => {
 									</div>
 									<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
 										<a className='' href='/buyerhub'>
-											Buy LMR tokens on Uniswap
+											Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
 										</a>
 									</p>
 								</div>
@@ -724,6 +729,8 @@ export const Main: React.FC = () => {
 				<main className='mt-10 flex-1 relative focus:outline-none'>{getContent()}</main>
 			</div>
 		</BodyWrapper>
+	) : (
+		<Hero actionButtons={ActionButtons} />
 	);
 };
 

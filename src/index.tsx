@@ -7,6 +7,7 @@ import { App } from './App';
 import { ErrorPage } from './components/ui/ErrorPage';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
+import './fonts.css';
 
 // error handling logic
 // display <ErrorPage /> with error message

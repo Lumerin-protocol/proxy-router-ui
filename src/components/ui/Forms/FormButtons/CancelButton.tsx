@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { ButtonWrapper } from './Buttons.styled';
+import { ActionButtonWrapper } from './Buttons.styled';
 import CancelIcon from '../../../../images/icons/cancel.png';
 
 interface CancelButtonProps {
@@ -21,12 +21,12 @@ export const CancelButton: React.FC<CancelButtonProps> = ({
 	};
 
 	return (
-		<ButtonWrapper>
+		<ActionButtonWrapper>
 			<button type='button' onClick={(event) => clickHandler(event)}>
 				<img src={CancelIcon} alt='' />
 			</button>
 			<p>Cancel</p>
-		</ButtonWrapper>
+		</ActionButtonWrapper>
 	);
 };
 

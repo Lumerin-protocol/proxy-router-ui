@@ -71,7 +71,7 @@
 	}
 
 	.review-no-errors {
-		@apply bg-lumerin-input-gray btn-modal placeholder-lumerin-placeholder-gray;
+		@apply bg-lumerin-input-gray btn-modal;
 	}
 
 	/* divs */
