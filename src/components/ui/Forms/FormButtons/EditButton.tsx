@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { ButtonWrapper } from './Buttons.styled';
+import { ActionButtonWrapper } from './Buttons.styled';
 import EditIcon from '../../../../images/icons/edit.png';
 
 interface EditButtonProps {
@@ -21,12 +21,12 @@ export const EditButton: React.FC<EditButtonProps> = ({
 	};
 
 	return (
-		<ButtonWrapper>
+		<ActionButtonWrapper>
 			<button type='button' onClick={(event) => clickHandler(event)}>
 				<img src={EditIcon} alt='' />
 			</button>
 			<p>Edit</p>
-		</ButtonWrapper>
+		</ActionButtonWrapper>
 	);
 };
 
