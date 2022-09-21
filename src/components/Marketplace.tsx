@@ -25,7 +25,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	buyClickHandler,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
-	const [showSpinner, setShowSpinner] = useState<boolean>(true);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
@@ -81,34 +81,27 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
-		if (showSpinner) setShowSpinner(false);
+		if (isLoading) setIsLoading(false);
 	}, 7000);
 
 	useEffect(() => {
 		if (data.length > 0) {
-			setShowSpinner(false);
+			setIsLoading(false);
 		}
 	});
 
 	return (
 		<>
-			{!showSpinner && (
-				<h2 className='text-lg text-lumerin-blue-text font-Raleway font-regular text-left mb-5'>
-					Hashrate For Sale
-				</h2>
-			)}
-			{showSpinner && (
+			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-regular text-left mb-5'>
+				Hashrate For Sale
+			</h2>
+			{/* {isLoading && (
 				<div className='spinner'>
 					<Spinner />
 				</div>
-			)}
+			)} */}
 			<div className='flex flex-col'>
-				{data.length > 0 && <AvailableContracts contracts={data} />}
-				{data.length === 0 && !showSpinner && (
-					<div className='text-2xl text-lumerin-black-text'>
-						There are no available contracts for purchase.
-					</div>
-				)}
+				<AvailableContracts contracts={data} loading={isLoading} />
 			</div>
 		</>
 	);
