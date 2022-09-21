@@ -357,11 +357,7 @@ export const Main: React.FC = () => {
 		return routes;
 	};
 
-	// Hide top right button if no contracts
-	const buttonDisplay = contracts.length === 0 ? 'hidden' : 'ml-auto mt-4';
-
 	const getPageTitle: () => string = () => {
-		if (contracts.length === 0) return '';
 		if (pathName === PathName.Marketplace) return 'Marketplace';
 		if (pathName === PathName.MyOrders) return 'Buyer Hub';
 		if (pathName === PathName.MyContracts) return 'Seller Hub';
@@ -658,8 +654,8 @@ export const Main: React.FC = () => {
 							</button>
 						</div>
 					</div>
-					<div className={buttonDisplay}>
-						{isConnected ? (
+					<div className='ml-auto mt-4'>
+						{isConnected && (
 							<div className='block'>
 								<div className='btn-connected cursor-default flex justify-between items-center px-8'>
 									<span className='pr-3'>{getTruncatedWalletAddress()}</span>
@@ -675,8 +671,7 @@ export const Main: React.FC = () => {
 											<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
 										</span>
 									</button>
-								) : null}
-								{!isMetaMask ? (
+								) : (
 									<button
 										className='btn-disconnect w-auto p-0 ml-4 mr-4'
 										onClick={() =>
@@ -685,13 +680,13 @@ export const Main: React.FC = () => {
 									>
 										<span>Disconnect</span>
 									</button>
-								) : null}
+								)}
 							</div>
-						) : null}
+						)}
 					</div>
 				</div>
 				<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6'>
-					{pathName === PathName.Marketplace && isConnected && isAvailableContract && (
+					{pathName === PathName.Marketplace && isConnected && (
 						<>
 							<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
 								<p>
