@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-export const ButtonWrapper = styled.div`
+export const ActionButtonWrapper = styled.div`
 	width: 35px;
 	button {
 		border-radius: 50px;
@@ -23,10 +23,41 @@ export const ButtonWrapper = styled.div`
 	}
 `;
 
-export const ButtonsWrapper = styled.div`
+export const FormButtonsWrapper = styled.div`
 	display: flex;
 	flex-direction: row;
-	& div:not(:last-child) {
+	margin-top: 2rem;
+
+	button {
+		flex: auto;
+	}
+	& button:not(:last-child) {
 		margin-right: 1rem;
 	}
+`;
+
+export const Button = styled.button`
+	border-radius: 85px;
+	padding: 0.75rem 1.5rem;
+	outline: none;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: no-wrap;
+	justify-content: center;
+	align-items: center;
+	font-weight: 500;
+	&:not(:last-child) {
+		margin-right: 1rem;
+	}
+`;
+
+export const PrimaryButton = styled(Button)`
+	color: white;
+	background: #014353;
+`;
+
+export const SecondaryButton = styled(Button)`
+	color: #014353;
+	background: none;
+	border: 2px solid #014353;
 `;

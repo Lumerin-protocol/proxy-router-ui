@@ -189,7 +189,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						{runningContracts.length > 0 ? (
 							<PurchasedContracts contracts={runningContracts} isCompleted={false} />
 						) : (
-							<p>You have no running contracts.</p>
+							!showSpinner && <p className='text-2xl'>You have no running contracts.</p>
 						)}
 					</>
 				)}
@@ -198,7 +198,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						{completedContracts.length > 0 ? (
 							<PurchasedContracts contracts={completedContracts} isCompleted={true} />
 						) : (
-							<p>You have no completed contracts.</p>
+							!showSpinner && <p className='text-2xl'>You have no completed contracts.</p>
 						)}
 					</>
 				)}
@@ -207,7 +207,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						<Spinner />
 					</div>
 				)}
-				{data.length === 1 && !showSpinner && <div className='text-2xl'>You have no orders.</div>}
 			</div>
 		</>
 	);

@@ -1,11 +1,12 @@
 import styled from '@emotion/styled';
 
-export const AvailableContract = styled.div`
+export const AvailableContract = styled.li`
 	background: white;
 	border-radius: 15px;
 	margin-bottom: 1rem;
 	padding: 2rem;
 	width: 100%;
+	height: 100px;
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
 	grid-template-rows: 1fr;
@@ -22,5 +23,12 @@ export const AvailableContract = styled.div`
 			margin-right: 1rem;
 			width: 20px;
 		}
+	}
+`;
+
+export const SkeletonWrap = styled.div`
+	& span {
+		border-radius: 15px;
+		margin-bottom: 1rem;
 	}
 `;

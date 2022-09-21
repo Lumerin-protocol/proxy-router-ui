@@ -1,0 +1,50 @@
+import styled from '@emotion/styled';
+
+export const InputWrapper = styled.div`
+	margin-top: 0.75rem;
+	margin-bottom: 0.75rem;
+	label {
+		font-size: 0.75rem;
+	}
+	input {
+		background: #eaf7fc;
+		border-radius: 15px;
+		padding: 1rem 1.5rem;
+		margin-top: 0.25rem;
+
+		::placeholder {
+			color: rgba(1, 67, 83, 0.56);
+		}
+	}
+`;
+
+export const ReviewItems = styled.div`
+	div {
+		display: flex;
+		justify-content: space-between;
+		margin: 1.25rem 0;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid #eaf7fc;
+		&:last-child {
+			border-bottom: none;
+		}
+
+		h3 {
+			font-size: 0.75rem;
+		}
+
+		p {
+			color: #014353;
+			font-weight: 500;
+		}
+	}
+
+	.total-cost {
+		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		.price {
+			font-size: 2rem;
+		}
+	}
+`;
