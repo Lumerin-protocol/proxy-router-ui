@@ -520,7 +520,7 @@ export const Main: React.FC = () => {
 						leaveFrom='translate-x-0'
 						leaveTo='-translate-x-full'
 					>
-						<div className='relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4'>
+						<div className='relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-grey'>
 							<Transition.Child
 								as={Fragment}
 								enter='ease-in-out duration-300'
