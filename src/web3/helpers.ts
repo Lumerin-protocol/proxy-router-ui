@@ -20,7 +20,7 @@ interface Web3Result {
 
 const ethereum = window.ethereum as Ethereum;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
-const lumerinTokenAddress = '0x04fa90c64DAeEe83B22501c790D39B8B9f53878a';
+const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b';
 
 // Web3 setup helpers
 const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (
@@ -73,7 +73,7 @@ export const getWeb3ResultAsync: (
 			const web3 = new Web3(provider as provider);
 			//const networkId = await web3.eth.net.getId();
 			//const deployedNetwork = (CloneFactory as ContractJson).networks[networkId]; // temp comment for testing 6/21 - MAY
-			const deployedNetwork = { address: '0x8734196f8cA3387b80Df0787835991CA9AAa1531' }; //DEV 09/18/2022 -JK
+			const deployedNetwork = { address: '0x4DC8450BAa571Bd89e63d671Cc1FA715Daf300eA' }; //DEV 09/18/2022 -JK
 			//const deployedNetwork = { address: '0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8' }; //DEV 8/9/2022 -ABS
 			// const deployedNetwork = { address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4' }; //STG 8/9/2022 -ABS
 			//const deployedNetwork = {address: '0x8C9C79Da3bbE8E1499a27cF56746Bb12cA83a2b9'}; //OLDMAIN 8/9/2022 -ABS
