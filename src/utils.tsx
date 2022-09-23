@@ -110,7 +110,7 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	);
 
 	//the clonefactory contract address should become a variable that is configurable
-	let cloneFactory = await cf.attach('0x8734196f8cA3387b80Df0787835991CA9AAa1531'); //this is the main ropsten clone factory address
+	let cloneFactory = await cf.attach('0xD875fd1409D4282E5fcF0fBec5019f9e82F046f7'); //this is the main ropsten clone factory address
 	cloneFactory = await cloneFactory.connect(provider);
 
 	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
