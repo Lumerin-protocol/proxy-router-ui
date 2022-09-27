@@ -20,7 +20,8 @@ interface Web3Result {
 
 const ethereum = window.ethereum as Ethereum;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
-const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b';
+//const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b'; Legacy to ropsten
+const lumerinTokenAddress = '0xF3aCe2847F01D3ef1025c7070579611091A6422D';
 
 // Web3 setup helpers
 const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (
@@ -34,8 +35,9 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 				rpc: {
 					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
 					3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
+					5: 'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A' //gorli
 				},
-				chainId: 3,
+				chainId: 5,
 				clientMeta: {
 					description:
 						'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',

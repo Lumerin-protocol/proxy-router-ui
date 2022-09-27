@@ -79,7 +79,7 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
 
 export const getPublicKey = async (txId: string) => {
 	let provider = ethers.getDefaultProvider(
-		'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a'
+		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
 	);
 	let tx = await provider.getTransaction(txId)!;
 	console.log(txId);
