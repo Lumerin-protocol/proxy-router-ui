@@ -35,7 +35,7 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 				rpc: {
 					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
 					3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
-					5: 'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A' //gorli
+					5: 'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A', //gorli
 				},
 				chainId: 5,
 				clientMeta: {
