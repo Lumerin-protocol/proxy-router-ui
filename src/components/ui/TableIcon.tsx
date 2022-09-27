@@ -26,7 +26,7 @@ export const TableIcon: React.FC<TableIconProps> = ({
 				<span className='font-semibold text-left'>
 					{hasLink ? (
 						<a
-							href={`https://ropsten.etherscan.io/address/${text}`}
+							href={`https://goerli.etherscan.io/address/${text}`}
 							target='_blank'
 							rel='noreferrer'
 							className='cursor-pointer'

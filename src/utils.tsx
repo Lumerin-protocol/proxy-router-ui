@@ -79,7 +79,7 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
 
 export const getPublicKey = async (txId: string) => {
 	let provider = ethers.getDefaultProvider(
-		'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a'
+		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
 	);
 	let tx = await provider.getTransaction(txId)!;
 	console.log(txId);
@@ -106,11 +106,11 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	//import the JSON of CloneFactory.json
 	let cf = new ethers.ContractFactory(abi, bytecode);
 	let provider = ethers.getDefaultProvider(
-		'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a'
+		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
 	);
 
 	//the clonefactory contract address should become a variable that is configurable
-	let cloneFactory = await cf.attach('0x4DC8450BAa571Bd89e63d671Cc1FA715Daf300eA'); //this is the main ropsten clone factory address
+	let cloneFactory = await cf.attach('0xa4C97F22DF3D361AE925b55c3090BAb1cC646409'); //this is the main ropsten clone factory address
 	cloneFactory = await cloneFactory.connect(provider);
 
 	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
