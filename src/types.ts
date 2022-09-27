@@ -50,8 +50,8 @@ export enum PathName {
 
 export enum AlertMessage {
 	NotConnected = 'Your wallet is not connected',
-	WrongNetworkMetaMask = 'Click to connect MetaMask to the Gorli testnet.',
-	WrongNetworkWalletConnect = 'Please connect your wallet to the Gorli testnet.',
+	WrongNetworkMetaMask = 'Click to connect MetaMask to the Goerli testnet.',
+	WrongNetworkWalletConnect = 'Please connect your wallet to the Goerli testnet.',
 	InsufficientBalance = 'Insufficient LMR balance.',
 	NoEditSeller = 'A running contract cannot be edited by the seller.',
 	NoEditBuyer = 'An order must be running to be edited.',
