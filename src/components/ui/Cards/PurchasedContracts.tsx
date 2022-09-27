@@ -27,7 +27,7 @@ export const PurchasedContracts = (prop: {
 					<div className='utils'>
 						<p>
 							<a
-								href={`https://ropsten.etherscan.io/address/${item.contractId}`}
+								href={`https://goerli.etherscan.io/address/${item.contractId}`}
 								target='_blank'
 								rel='noreferrer'
 							>
