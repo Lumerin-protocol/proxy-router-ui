@@ -6,6 +6,7 @@ import {
 	getWorkerName,
 	getPortString,
 	getSchemeName,
+	getPassword,
 	isValidPoolAddress,
 	isValidPortNumber,
 	isValidUsername,
@@ -116,6 +117,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					type='password'
 					placeholder='password'
 					className='review-no-errors review-input'
+					defaultValue={isEdit && buyerString ? getPassword(buyerString) : ''}
 				/>
 			</InputWrapper>
 			{/* {!isEdit && <Checkbox legend={checkboxLegend} label={checkboxLabel} description={checkboxDescription} register={register} />} */}
