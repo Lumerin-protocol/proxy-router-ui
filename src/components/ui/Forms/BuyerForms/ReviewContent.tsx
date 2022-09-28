@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
 import {
