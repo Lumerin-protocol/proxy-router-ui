@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 
 export const ActionButtonWrapper = styled.div`
 	width: 35px;
+	margin-left: 0.75rem;
 	button {
 		border-radius: 50px;
 		width: 35px;
@@ -26,7 +27,6 @@ export const ActionButtonWrapper = styled.div`
 export const FormButtonsWrapper = styled.div`
 	display: flex;
 	flex-direction: row;
-	margin-top: 2rem;
 
 	button {
 		flex: auto;
