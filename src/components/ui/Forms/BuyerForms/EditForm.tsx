@@ -145,6 +145,11 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		}
 	}, [isValid]);
 
+	useEffect(() => {
+		console.log({ contract: contract });
+		console.log(contentState);
+	});
+
 	// Content setup
 	// Defaults to review state
 	// Initialize variables since html elements need values on first render

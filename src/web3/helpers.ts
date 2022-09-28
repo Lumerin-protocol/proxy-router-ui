@@ -20,7 +20,8 @@ interface Web3Result {
 
 const ethereum = window.ethereum as Ethereum;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
-const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b'; //as of 9-17-22
+//const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b'; Legacy to ropsten
+const lumerinTokenAddress = '0xF3aCe2847F01D3ef1025c7070579611091A6422D'; //gorli token
 
 // Web3 setup helpers
 const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (
@@ -34,8 +35,10 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 				rpc: {
 					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
 					3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
+					// TODO replace with a bloq connect link
+					5: 'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A', //gorli
 				},
-				chainId: 3,
+				chainId: 5,
 				clientMeta: {
 					description:
 						'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',
@@ -73,10 +76,13 @@ export const getWeb3ResultAsync: (
 			const web3 = new Web3(provider as provider);
 			//const networkId = await web3.eth.net.getId();
 			//const deployedNetwork = (CloneFactory as ContractJson).networks[networkId]; // temp comment for testing 6/21 - MAY
-			//const deployedNetwork = {address: '0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8'}; //DEV 8/9/2022 -ABS
+			const deployedNetwork = { address: '0xa963e1DC7F5AdC825f93C2aA0aF497522Fe7A9E8' }; //DEV GORLI 9/26/22 v2 - JK
+			//const deployedNetwork = { address: '0xa4C97F22DF3D361AE925b55c3090BAb1cC646409' }; //DEV GORLI 9/26/22 - JK
+			//const deployedNetwork = { address: '0x4DC8450BAa571Bd89e63d671Cc1FA715Daf300eA' }; //DEV 09/18/2022 -JK
+			//const deployedNetwork = { address: '0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8' }; //DEV 8/9/2022 -ABS
 			// const deployedNetwork = { address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4' }; //STG 8/9/2022 -ABS
 			//const deployedNetwork = {address: '0x8C9C79Da3bbE8E1499a27cF56746Bb12cA83a2b9'}; //OLDMAIN 8/9/2022 -ABS
-			const deployedNetwork = {address: '0x8734196f8cA3387b80Df0787835991CA9AAa1531'}; //MAIN 8/9/2022 -ABS
+			//const deployedNetwork = {address: '0x8734196f8cA3387b80Df0787835991CA9AAa1531'}; //MAIN 8/9/2022 -ABS
 			const accounts = await web3.eth.getAccounts();
 			if (accounts.length === 0 || accounts[0] === '') {
 				setAlertOpen(true);
