@@ -76,7 +76,7 @@ export const getWeb3ResultAsync: (
 			const web3 = new Web3(provider as provider);
 			//const networkId = await web3.eth.net.getId();
 			//const deployedNetwork = (CloneFactory as ContractJson).networks[networkId]; // temp comment for testing 6/21 - MAY
-			const deployedNetwork = { address: '0x21Eff856d6eB1062503EC25eD24958Ed818db09b' }; //DEV GORLI 9/26/22 v2 - JK
+			const deployedNetwork = { address: '0xbF2A6EA18e2CF0846cE7FC9Fa9EB9bA22BF035fF' }; //DEV GORLI 9/26/22 v2 - JK
 			//const deployedNetwork = { address: '0xa4C97F22DF3D361AE925b55c3090BAb1cC646409' }; //DEV GORLI 9/26/22 - JK
 			//const deployedNetwork = { address: '0x4DC8450BAa571Bd89e63d671Cc1FA715Daf300eA' }; //DEV 09/18/2022 -JK
 			//const deployedNetwork = { address: '0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8' }; //DEV 8/9/2022 -ABS
