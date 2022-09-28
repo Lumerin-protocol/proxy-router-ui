@@ -27,7 +27,7 @@ export const PurchasedContracts = (prop: {
 					<div className='utils'>
 						<p>
 							<a
-								href={`https://ropsten.etherscan.io/address/${item.contractId}`}
+								href={`https://goerli.etherscan.io/address/${item.contractId}`}
 								target='_blank'
 								rel='noreferrer'
 							>
@@ -80,14 +80,7 @@ export const PurchasedContracts = (prop: {
 							<img src={IDCard} alt='' />
 							<div>
 								<h3>Username</h3>
-								<p>{item.encryptedPoolData && getWorkerName(item.encryptedPoolData)}</p>
-							</div>
-						</div>
-						<div className='item-value address'>
-							<img src={Pickaxe} alt='' />
-							<div>
-								<h3>Pool Address</h3>
-								<p>{item.encryptedPoolData && getHostName(item.encryptedPoolData)}</p>
+								<p>{item.encryptedPoolData && getWorkerName(item.encryptedPoolData)} </p>
 							</div>
 						</div>
 						<div className='item-value duration'>
@@ -95,6 +88,13 @@ export const PurchasedContracts = (prop: {
 							<div>
 								<h3>Duration</h3>
 								<p>{item.length && getReadableDate(item.length)}</p>
+							</div>
+						</div>
+						<div className='item-value address'>
+							<img src={Pickaxe} alt='' />
+							<div>
+								<h3>Pool Address</h3>
+								<p>{item.encryptedPoolData && getHostName(item.encryptedPoolData)}</p>
 							</div>
 						</div>
 					</div>
