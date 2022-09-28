@@ -110,7 +110,7 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	);
 
 	//the clonefactory contract address should become a variable that is configurable
-	let cloneFactory = await cf.attach('0xa963e1DC7F5AdC825f93C2aA0aF497522Fe7A9E8'); //this is the main goerli clone factory address
+	let cloneFactory = await cf.attach('0x059cD152b4e9e6Ff222E8fB979197A739FC9Dd42'); //this is the main goerli clone factory address
 	cloneFactory = await cloneFactory.connect(provider);
 
 	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
