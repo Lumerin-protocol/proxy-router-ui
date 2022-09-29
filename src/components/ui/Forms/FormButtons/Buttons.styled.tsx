@@ -27,6 +27,7 @@ export const ActionButtonWrapper = styled.div`
 export const FormButtonsWrapper = styled.div`
 	display: flex;
 	flex-direction: row;
+	margin-top: 2.5rem;
 
 	button {
 		flex: auto;
