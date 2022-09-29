@@ -24,7 +24,7 @@ export const HeroWrapper = styled.div`
 	background-repeat: no-repeat;
 
 	.content-wrapper {
-		max-width: 850px;
+		max-width: 1150px;
 		margin: 0 auto;
 		padding: 2rem;
 	}
@@ -43,6 +43,13 @@ export const HeroWrapper = styled.div`
 	.instructions-link {
 		color: #004c5f;
 		font-weight: 600;
+		display: flex;
+		align-items: center;
+	}
+
+	.arrow-icon {
+		font-size: 0.95rem;
+		margin-left: 0.25rem;
 	}
 `;
 
