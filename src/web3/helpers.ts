@@ -20,7 +20,7 @@ interface Web3Result {
 
 const ethereum = window.ethereum as Ethereum;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
-const lumerinTokenAddress = '0x04fa90c64DAeEe83B22501c790D39B8B9f53878a';
+const lumerinTokenAddress = process.env.LUMERIN_TOKEN_ADDRESS; //as of 9-17-22
 
 // Web3 setup helpers
 const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (
@@ -76,7 +76,7 @@ export const getWeb3ResultAsync: (
 			//const deployedNetwork = {address: '0x1F96Ac8f1a030aa0619ab9e203b37a7c942EEFe8'}; //DEV 8/9/2022 -ABS
 			// const deployedNetwork = { address: '0x702B0b76235b1DAc489094184B7790cAA9A39Aa4' }; //STG 8/9/2022 -ABS
 			//const deployedNetwork = {address: '0x8C9C79Da3bbE8E1499a27cF56746Bb12cA83a2b9'}; //OLDMAIN 8/9/2022 -ABS
-			const deployedNetwork = {address: '0x8734196f8cA3387b80Df0787835991CA9AAa1531'}; //MAIN 8/9/2022 -ABS
+			const deployedNetwork = { address: process.env.REACT_APP_DEPLOYED_NETWORK }; //MAIN 8/9/2022 -ABS
 			const accounts = await web3.eth.getAccounts();
 			if (accounts.length === 0 || accounts[0] === '') {
 				setAlertOpen(true);
