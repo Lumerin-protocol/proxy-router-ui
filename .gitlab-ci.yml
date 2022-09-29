@@ -11,6 +11,7 @@ stages:
 before_script:
     - echo "*****************************"
     - echo "Updaring lumerin.json"
+    - echo $REACT_APP_LUMERIN_TOKEN_ADDRESS
     - echo "*****************************"
     - sed -i -e 's/LUMERIN_TOKEN_ADDRESS_VAR/$REACT_APP_LUMERIN_TOKEN_ADDRESS/g' src/contracts/Lumerin.json
     - echo "$(cat src/contracts/Lumerin.json)"
@@ -138,6 +139,5 @@ bedrock-02-dev1:
     stage: develop
     only:
         - update-with-env-vars
-    image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     script:
         - echo "Combined Repo and Tag....."
