@@ -24,7 +24,7 @@ export const ContractCards = styled.div`
 			align-items: center;
 			justify-content: space-between;
 			width: 100%;
-			padding-bottom: 0.9rem;
+			height: 25%;
 			a {
 				font-weight: 400;
 				text-decoration: underline;
@@ -32,10 +32,8 @@ export const ContractCards = styled.div`
 			.status {
 				display: flex;
 				flex-direction: row;
-				.status-badge {
-					margin-top: 0.5rem;
-					margin-right: 0.75rem;
-				}
+				align-items: center;
+				margin-left: 0.25rem;
 			}
 		}
 		.grid {
@@ -44,6 +42,7 @@ export const ContractCards = styled.div`
 			grid-template-rows: repeat(3, 1fr);
 			grid-column-gap: 1rem;
 			grid-row-gap: 0px;
+			height: 70%;
 			.item-value {
 				display: flex;
 				flex-direction: row;
@@ -69,6 +68,8 @@ export const ContractCards = styled.div`
 				grid-area: 1 / 1 / 4 / 2;
 				min-width: 70px;
 				max-width: 140px;
+				display: flex;
+				justify-content: center;
 			}
 			.started {
 				grid-area: 1 / 3 / 2 / 4;
@@ -87,6 +88,7 @@ export const ContractCards = styled.div`
 			}
 			.username {
 				grid-area: 3 / 4 / 4 / 5;
+				word-break: break-all;
 			}
 		}
 	}
