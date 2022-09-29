@@ -51,6 +51,7 @@ import EastIcon from '@mui/icons-material/East';
 import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Box } from '@mui/material';
 import { Header } from './ui/Header';
+import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -363,7 +364,7 @@ export const Main: React.FC = () => {
 
 	return isConnected ? (
 		<BodyWrapper>
-			<Alert
+			<SwitchNetworkAlert
 				message={getAlertMessage()}
 				open={alertOpen}
 				setOpen={setAlertOpen}
