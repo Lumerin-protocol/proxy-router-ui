@@ -50,6 +50,7 @@ import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
 import EastIcon from '@mui/icons-material/East';
 import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Box } from '@mui/material';
+import { Header } from './ui/Header';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -345,12 +346,9 @@ export const Main: React.FC = () => {
 		connectWallet(WalletText.ConnectViaMetaMask);
 	};
 
-	const drawerWidth = 240;
-
 	const BodyWrapper = styled.div`
-		/* display: flex; */
-		/* min-height: 100vh;
-		width: 100%; */
+		display: flex;
+		min-height: 100vh;
 		background: #eaf7fc;
 		background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
 			url(${BubbleGraphic4});
@@ -358,6 +356,8 @@ export const Main: React.FC = () => {
 		background-repeat: no-repeat;
 		background-size: 25% 15% 15% 10%;
 	`;
+
+	const drawerWidth = 240;
 
 	return isConnected ? (
 		<BodyWrapper>
@@ -447,126 +447,71 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			<Box component='nav' sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}>
+			<Box component='nav' sx={{ width: { md: drawerWidth }, flexShrink: { sm: 0 } }}>
 				<ResponsiveNavigation
 					sidebarOpen={sidebarOpen}
 					setSidebarOpen={setSidebarOpen}
 					setPathname={setPathname}
 					pathName={pathName}
+					drawerWidth={drawerWidth}
 				/>
 			</Box>
 			<Box
-				component='main'
 				sx={{
 					marginLeft: 'auto',
 					flexGrow: 1,
 					p: 3,
-					width: { sm: `calc(100% - ${drawerWidth}px)` },
+					width: { xs: `100%`, sm: `100%`, md: `calc(100% - ${drawerWidth}px)` },
 					minHeight: '100vh',
 				}}
 			>
-				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20'}>
-					<button
-						type='button'
-						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden'
-						onClick={() => setSidebarOpen(true)}
-					>
-						<span className='sr-only'>Open sidebar</span>
-						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
-					</button>
-					<div className={!isConnected ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
-						<h1
-							className={classNames(
-								pathName === PathName.MyContracts ? 'hidden xl:block' : '',
-								'text-xl font-semibold font-Raleway text-lumerin-blue-text'
-							)}
-						>
-							{getPageTitle()}
-						</h1>
-						<div
-							className='text-black flex items-center px-2 text-xs md:text-sm font-medium rounded-md cursor-pointer'
-							onClick={() => {
-								setCreateModalOpen(true);
-								setSidebarOpen(false);
-							}}
-						>
-							<button
-								className={
-									pathName === PathName.MyContracts
-										? 'w-28 h-8 md:w-48 md:h-12 ml-0 xl:ml-8 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
-										: 'hidden'
-								}
-							>
-								Create Contract
-							</button>
-						</div>
-					</div>
-					{isConnected && (
-						<div className='block'>
-							<div className='btn-connected cursor-default flex justify-between items-center px-8'>
-								<span className='pr-3'>{getTruncatedWalletAddress()}</span>
-								{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
-							</div>
-							{isMetaMask ? (
-								<button
-									className='link text-xs text-lumerin-blue-text'
-									onClick={() => addLumerinTokenToMetaMaskAsync()}
-								>
-									<span style={{ display: 'flex', alignItems: 'center' }}>
-										Import LMR into MetaMask{' '}
-										<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
-									</span>
-								</button>
-							) : (
-								<button
-									className='btn-disconnect w-auto p-0 ml-4 mr-4'
-									onClick={() =>
-										disconnectWalletConnectAsync(isMetaMask, web3 as Web3, setIsConnected)
-									}
-								>
-									<span>Disconnect</span>
-								</button>
-							)}
-						</div>
-					)}
-				</div>
-				<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6'>
-					{pathName === PathName.Marketplace && isConnected && (
-						<>
-							<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
-								<p>
-									Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
-									bugs you notice to the{' '}
-									<a
-										className='link underline'
-										href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
-									>
-										Github Repo.
-									</a>
-								</p>
-							</div>
-							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
-							{isMetaMask && (
-								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col'>
-									<p className='text-xs text-center'>Wallet Balance</p>
-									<div className='flex items-center justify-center flex-1'>
-										<LumerinIcon />
-										<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
-											{Math.ceil(lumerinBalance).toLocaleString()}{' '}
-											<span className='text-sm'>LMR</span>
-										</span>
-									</div>
-									<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
-										<a className='' href='/buyerhub'>
-											Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
+				<Header
+					setSidebarOpen={setSidebarOpen}
+					pageTitle={getPageTitle()}
+					truncatedWalletAddress={getTruncatedWalletAddress()}
+					addTokenToMetamask={addLumerinTokenToMetaMaskAsync}
+					isMetamask={isMetaMask}
+					drawerWidth={drawerWidth}
+				/>
+				<Box component='main'>
+					<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6'>
+						{pathName === PathName.Marketplace && (
+							<>
+								<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
+									<p>
+										Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
+										bugs you notice to the{' '}
+										<a
+											className='link underline'
+											href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
+										>
+											Github Repo.
 										</a>
 									</p>
 								</div>
-							)}
-						</>
-					)}
-				</div>
-				<main>{getContent()}</main>
+								<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
+								{isMetaMask && (
+									<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col'>
+										<p className='text-xs text-center'>Wallet Balance</p>
+										<div className='flex items-center justify-center flex-1'>
+											<LumerinIcon />
+											<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
+												{Math.ceil(lumerinBalance).toLocaleString()}{' '}
+												<span className='text-sm'>LMR</span>
+											</span>
+										</div>
+										<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
+											<a className='' href='/buyerhub'>
+												Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
+											</a>
+										</p>
+									</div>
+								)}
+							</>
+						)}
+					</div>
+					<main>{getContent()}</main>
+				</Box>
 			</Box>
 		</BodyWrapper>
 	) : (
