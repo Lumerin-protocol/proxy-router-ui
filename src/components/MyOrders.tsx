@@ -143,7 +143,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 	const runningContracts = data.filter((contract) => contract.progressPercentage! < 100);
 	const completedContracts = data.filter((contract) => contract.progressPercentage === 100);
-	console.log(completedContracts);
 
 	const handleRunningTab = () => {
 		setCurrentTab(CurrentTab.Running);

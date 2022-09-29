@@ -77,7 +77,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	 * including this comment in the hopes that this line of code will be easy to find
 	 * TODO import this from web3/utils
 	 */
-	const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b';
+	const lumerinTokenAddress = '0xF3aCe2847F01D3ef1025c7070579611091A6422D';
 
 	// Input validation setup
 	const {
