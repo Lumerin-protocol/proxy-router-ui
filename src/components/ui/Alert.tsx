@@ -1,4 +1,4 @@
-import { Modal } from '@mui/material';
+import { Dialog } from '@mui/material';
 import { ModalBox } from './Modal.styled';
 
 interface AlertProps {
@@ -10,7 +10,7 @@ interface AlertProps {
 
 export const Alert: React.FC<AlertProps> = ({ message, open, setOpen, onClick }) => {
 	return (
-		<Modal open={open} onClose={setOpen}>
+		<Dialog open={open} onClose={setOpen} PaperProps={{ style: { borderRadius: 20 } }}>
 			<ModalBox>
 				<div className='modal-card'>
 					<button
@@ -24,7 +24,7 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen, onClick })
 					</button>
 				</div>
 			</ModalBox>
-		</Modal>
+		</Dialog>
 	);
 };
 
