@@ -1,7 +1,6 @@
 import styled from '@emotion/styled';
 
-export const Sidebar = styled.div`
-	background: white;
+export const DrawerContent = styled.div`
 	height: 100vh;
 	width: 100%;
 	padding: 2rem;
@@ -23,9 +22,8 @@ export const Sidebar = styled.div`
 		margin-left: 1rem;
 	}
 
-	.mobile-icon {
-		margin-bottom: 2rem;
-		margin-left: 0.5rem;
+	.menu-icon {
+		margin-bottom: 2.5rem;
 	}
 
 	img {

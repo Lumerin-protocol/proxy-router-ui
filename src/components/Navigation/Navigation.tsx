@@ -1,6 +1,6 @@
 import { IconButton, Drawer } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Sidebar } from './Navigation.styled';
+import { DrawerContent } from './Navigation.styled';
 import { LogoIcon } from '../../images/index';
 import { PathName } from '../../types';
 import MarketplaceIconActive from '../../images/icons/store-blue.png';
@@ -21,8 +21,6 @@ interface Navigation {
 	current: boolean;
 }
 
-const drawerWidth = 240;
-
 const ActiveNavTab = styled.div`
 	background: #0e4353;
 	position: absolute;
@@ -38,6 +36,7 @@ export const ResponsiveNavigation = (prop: {
 	setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	setPathname: React.Dispatch<React.SetStateAction<string>>;
 	pathName: string;
+	drawerWidth: number;
 }) => {
 	const navigation: Navigation[] = [
 		{
@@ -64,7 +63,7 @@ export const ResponsiveNavigation = (prop: {
 	];
 
 	const drawer = (
-		<Sidebar>
+		<DrawerContent>
 			<nav>
 				<LogoIcon className='menu-icon' />
 				{navigation.map((item) => (
@@ -84,7 +83,7 @@ export const ResponsiveNavigation = (prop: {
 					</>
 				))}
 			</nav>
-		</Sidebar>
+		</DrawerContent>
 	);
 	return (
 		<>
@@ -98,8 +97,8 @@ export const ResponsiveNavigation = (prop: {
 					keepMounted: true,
 				}}
 				sx={{
-					display: { xs: 'block', sm: 'none' },
-					'& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+					display: { xs: 'block', md: 'none' },
+					'& .MuiDrawer-paper': { boxSizing: 'border-box', width: prop.drawerWidth },
 				}}
 			>
 				{drawer}
@@ -107,8 +106,8 @@ export const ResponsiveNavigation = (prop: {
 			<Drawer
 				variant='permanent'
 				sx={{
-					display: { xs: 'none', sm: 'block' },
-					'& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+					display: { xs: 'none', md: 'block' },
+					'& .MuiDrawer-paper': { boxSizing: 'border-box', width: prop.drawerWidth },
 				}}
 				open
 			>
