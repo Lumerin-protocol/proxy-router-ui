@@ -6,6 +6,7 @@ import {
 	getWorkerName,
 	getPortString,
 	getSchemeName,
+	getPassword,
 	isValidPoolAddress,
 	isValidPortNumber,
 	isValidUsername,
@@ -40,7 +41,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				<label htmlFor='poolAddress'>Pool Address *</label>
 				<input
 					{...register('poolAddress', {
-						value: '',
 						required: 'Pool Address is required',
 						validate: (poolAddress) =>
 							isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
@@ -67,7 +67,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				<label htmlFor='portNumber'>Port Number *</label>
 				<input
 					{...register('portNumber', {
-						value: '',
 						required: 'Port Number is required',
 						validate: (portNumber) =>
 							isValidPortNumber(portNumber as string) || 'Invalid port number.',
@@ -90,7 +89,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				<label htmlFor='username'>Username *</label>
 				<input
 					{...register('username', {
-						value: '',
 						required: 'Username is required',
 						validate: (username) => isValidUsername(username as string) || 'Invalid username.',
 					})}
@@ -114,11 +112,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 			<InputWrapper>
 				<label htmlFor='password'>Password</label>
 				<input
-					{...register('password', { value: '' })}
+					{...register('password')}
 					id='password'
 					type='password'
 					placeholder='password'
 					className='review-no-errors review-input'
+					defaultValue={isEdit && buyerString ? getPassword(buyerString) : ''}
 				/>
 			</InputWrapper>
 			{/* {!isEdit && <Checkbox legend={checkboxLegend} label={checkboxLabel} description={checkboxDescription} register={register} />} */}
