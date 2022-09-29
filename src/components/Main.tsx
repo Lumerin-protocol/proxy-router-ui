@@ -302,6 +302,8 @@ export const Main: React.FC = () => {
 							claimLmrClickHandler={(event) =>
 								buttonClickHandler(event, claimLmrModalOpen, setClaimLmrModalOpen)
 							}
+							setCreateModalOpen={setCreateModalOpen}
+							setSidebarOpen={setSidebarOpen}
 						/>
 					)}
 				/>
@@ -474,7 +476,7 @@ export const Main: React.FC = () => {
 					drawerWidth={drawerWidth}
 				/>
 				<Box component='main'>
-					<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6'>
+					<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6 mb-8'>
 						{pathName === PathName.Marketplace && (
 							<>
 								<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>

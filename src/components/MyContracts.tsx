@@ -20,6 +20,10 @@ import { ClaimLmrButton } from './ui/Forms/FormButtons/ClaimLmrButton';
 import Web3 from 'web3';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
+import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
+import { Toolbar } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import styled from '@emotion/styled';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
@@ -32,6 +36,8 @@ interface MyContractsProps {
 	setContractId: Dispatch<SetStateAction<string>>;
 	editClickHandler: MouseEventHandler<HTMLButtonElement>;
 	claimLmrClickHandler: MouseEventHandler<HTMLButtonElement>;
+	setSidebarOpen: Dispatch<SetStateAction<boolean>>;
+	setCreateModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export const MyContracts: React.FC<MyContractsProps> = ({
@@ -42,6 +48,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	setContractId,
 	editClickHandler,
 	claimLmrClickHandler,
+	setSidebarOpen,
+	setCreateModalOpen,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
@@ -200,19 +208,52 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		if (showSpinner) setShowSpinner(false);
 	}, 7000);
 
+	const SellerToolbar = styled(Toolbar)`
+		display: flex;
+		justify-content: flex-end;
+		width: 100%;
+		margin-bottom: 2rem;
+
+		.create-button {
+			justify-self: flex-end;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			.add-icon {
+				margin-bottom: 2px;
+				font-size: 1.2rem;
+				margin-right: 10px;
+			}
+		}
+	`;
+
 	return (
 		<div className='flex flex-col items-center'>
-			{data.length > 1 ? (
+			<SellerToolbar>
+				<PrimaryButton
+					className='create-button'
+					onClick={() => {
+						setCreateModalOpen(true);
+						setSidebarOpen(false);
+					}}
+				>
+					<AddIcon className='add-icon' /> Create Contract
+				</PrimaryButton>
+			</SellerToolbar>
+			{data.length > 0 ? (
 				<Table id='mycontracts' tableInstance={tableInstance} columnCount={6} />
-			) : null}
-			{data.length === 1 && showSpinner ? (
-				<div className='spinner'>
-					<Spinner />
-				</div>
-			) : null}
-			{data.length === 1 && !showSpinner ? (
-				<div className='text-2xl'>You have no contracts.</div>
-			) : null}
+			) : (
+				<>
+					{showSpinner ? (
+						<div className='spinner'>
+							<Spinner />
+						</div>
+					) : (
+						<div className='text-2xl'>You have no contracts.</div>
+					)}
+				</>
+			)}
 		</div>
 	);
 };
