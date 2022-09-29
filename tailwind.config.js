@@ -61,6 +61,9 @@ module.exports = {
 				95: '95%',
 				99: '99%',
 			},
+			screens: {
+				md: '900px',
+			},
 		},
 	},
 	variants: {

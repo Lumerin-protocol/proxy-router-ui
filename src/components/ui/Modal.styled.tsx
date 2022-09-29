@@ -1,10 +1,27 @@
 import styled from '@emotion/styled';
 
 export const ModalBox = styled.div`
+	padding: 40px;
+	max-width: 450px;
+	text-align: left;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-height: 100vh;
+`;
+
+export const NetworkBox = styled(ModalBox)`
+	max-width: 400px;
+	display: block;
+	padding: 80px 40px;
+	h3 {
+		font-size: 1.75rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+	}
+
+	p {
+		margin-bottom: 2rem;
+	}
 `;
 
 export const ModalCard = styled.div`

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { HeroWrapper, HeroHeadline, HeroSubheadline, Steps } from './Hero.styled';
+import EastIcon from '@mui/icons-material/East';
 import { ConnectWalletModal } from './ui/Forms/ConnectWalletModal';
 import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
 
@@ -54,7 +55,7 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 					target='_blank'
 					rel='noreferrer'
 				>
-					View Detailed Instuctions
+					View Detailed Instuctions <EastIcon className='arrow-icon' />
 				</a>
 			</div>
 		</HeroWrapper>
