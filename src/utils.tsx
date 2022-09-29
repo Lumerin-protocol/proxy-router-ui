@@ -141,10 +141,28 @@ export const isValidPoolAddress: (
 };
 
 // Parse connectionString as URI to get worker and host name
-// Convert string to URI
 
-export const getWorkerName = (connectionString: string): string | undefined =>
-	URI.parse(connectionString).userinfo?.replace(/:$/, '');
+export const getUsernameWithPassword = (connectionString: string): string | undefined =>
+	URI.parse(connectionString!).userinfo?.replace(/:$/, '');
+
+export const getWorkerName = (connectionString: string): string | undefined => {
+	const usernameWithPassword = getUsernameWithPassword(connectionString);
+	// Strip password and return username and workername only
+	return usernameWithPassword && usernameWithPassword.indexOf(':') > -1
+		? usernameWithPassword?.substring(0, usernameWithPassword.indexOf(':'))
+		: usernameWithPassword;
+};
+
+// Returns a string of asterisks equal length to user's password
+export const getPassword = (connectionString: string): string | undefined => {
+	const usernameWithPassword = getUsernameWithPassword(connectionString);
+	return usernameWithPassword && usernameWithPassword.indexOf(':') > -1
+		? usernameWithPassword?.substring(
+				usernameWithPassword.indexOf(':') + 1,
+				usernameWithPassword.length
+		  )
+		: usernameWithPassword;
+};
 
 export const getHostName = (connectionString: string): string | undefined =>
 	URI.parse(connectionString).host;
