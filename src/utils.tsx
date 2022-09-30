@@ -153,15 +153,14 @@ export const getWorkerName = (connectionString: string): string | undefined => {
 		: usernameWithPassword;
 };
 
-// Returns a string of asterisks equal length to user's password
 export const getPassword = (connectionString: string): string | undefined => {
 	const usernameWithPassword = getUsernameWithPassword(connectionString);
-	return usernameWithPassword && usernameWithPassword.indexOf(':') > -1
+	return usernameWithPassword!.includes(':')
 		? usernameWithPassword?.substring(
 				usernameWithPassword.indexOf(':') + 1,
 				usernameWithPassword.length
 		  )
-		: usernameWithPassword;
+		: '';
 };
 
 export const getHostName = (connectionString: string): string | undefined =>
