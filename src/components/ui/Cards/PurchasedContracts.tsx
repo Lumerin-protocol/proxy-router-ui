@@ -23,7 +23,7 @@ export const PurchasedContracts = (prop: {
 		<ContractCards>
 			{progressAscending.map((item, index) => (
 				// <div className='bg-white rounded-15 mb-3 p-7 w-full flex flex-row justify-between items-center'>
-				<div className='card'>
+				<div className='card' key={item.contractId}>
 					<div className='utils'>
 						<p>
 							<a
