@@ -10,7 +10,7 @@ stages:
 
 before_script:
     - echo "*****************************"
-    - echo "Updaring lumerin.json"
+    - echo "Updating lumerin.json"
     - echo "*****************************"
     - sed -i -e "s/LUMERIN_TOKEN_ADDRESS_VAR/${REACT_APP_LUMERIN_TOKEN_ADDRESS}/g" src/contracts/Lumerin.json
     - echo "*****************************"
