@@ -27,7 +27,7 @@ export const PurchasedContracts = (prop: {
 					<div className='utils'>
 						<p>
 							<a
-								href={`https://goerli.etherscan.io/address/${item.contractId}`}
+								href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
 								target='_blank'
 								rel='noreferrer'
 							>
