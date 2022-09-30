@@ -28,7 +28,7 @@ export const AvailableContracts = (prop: {
 										<p>
 											<a
 												className='underline pb-0 font-Raleway cursor-pointer'
-												href={`https://goerli.etherscan.io/address/${item.contractId}`}
+												href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
 												target='_blank'
 												rel='noreferrer'
 											>
