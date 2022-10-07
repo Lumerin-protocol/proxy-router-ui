@@ -13,6 +13,7 @@ import {
 	getProgressPercentage,
 	getStatusDiv,
 	setMediaQueryListOnChangeHandler,
+	sortContracts,
 } from '../utils';
 import { DateTime } from 'luxon';
 import { ContractData, ContractState, HashRentalContract, CurrentTab } from '../types';
@@ -26,6 +27,7 @@ import Web3 from 'web3';
 import _ from 'lodash';
 import { PurchasedContracts } from './ui/Cards/PurchasedContracts';
 import { TabSwitch } from './ui/TabSwitch.Styled';
+import { SortToolbar } from './ui/SortToolbar';
 
 interface MyOrdersProps {
 	web3: Web3 | undefined;
@@ -141,8 +143,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	};
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
-	const runningContracts = data.filter((contract) => contract.progressPercentage! < 100);
-	const completedContracts = data.filter((contract) => contract.progressPercentage === 100);
 
 	const handleRunningTab = () => {
 		setCurrentTab(CurrentTab.Running);
@@ -162,6 +162,23 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 			setShowSpinner(false);
 		}
 	});
+
+	const [runningContracts, setRunningContracts] = useState<Array<HashRentalContract>>([
+		...data.filter((contract) => contract.progressPercentage! < 100),
+	]);
+	const [completedContracts, setCompletedContracts] = useState<Array<HashRentalContract>>([
+		...data.filter((contract) => contract.progressPercentage === 100),
+	]);
+	const [runningSortType, setRunningSortType] = useState('');
+	const [completedSortType, setCompletedSortType] = useState('');
+
+	useEffect(() => {
+		sortContracts(runningSortType, runningContracts, setRunningContracts);
+	}, [runningSortType]);
+
+	useEffect(() => {
+		sortContracts(completedSortType, completedContracts, setCompletedContracts);
+	}, [completedSortType]);
 
 	return (
 		<>
@@ -186,7 +203,18 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				{currentTab === CurrentTab.Running && (
 					<>
 						{runningContracts.length > 0 ? (
-							<PurchasedContracts contracts={runningContracts} isCompleted={false} />
+							<>
+								<SortToolbar
+									pageTitle='Running Contracts'
+									sortType={runningSortType}
+									setSortType={setRunningSortType}
+								/>
+								<PurchasedContracts
+									sortType={runningSortType}
+									contracts={runningContracts}
+									isCompleted={false}
+								/>
+							</>
 						) : (
 							!showSpinner && <p className='text-2xl'>You have no running contracts.</p>
 						)}
@@ -195,7 +223,18 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				{currentTab === CurrentTab.Completed && (
 					<>
 						{completedContracts.length > 0 ? (
-							<PurchasedContracts contracts={completedContracts} isCompleted={true} />
+							<>
+								<SortToolbar
+									pageTitle='Completed Contracts'
+									sortType={completedSortType}
+									setSortType={setCompletedSortType}
+								/>
+								<PurchasedContracts
+									contracts={completedContracts}
+									isCompleted={true}
+									sortType={completedSortType}
+								/>
+							</>
 						) : (
 							!showSpinner && <p className='text-2xl'>You have no completed contracts.</p>
 						)}

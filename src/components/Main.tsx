@@ -360,6 +360,21 @@ export const Main: React.FC = () => {
 		background-size: 25% 15% 15% 10%;
 	`;
 
+	const WidgetsWrapper = styled.div`
+		display: flex;
+		flex-wrap: wrap;
+		margin-top: 2rem;
+		width: 100%;
+		column-gap: 1rem;
+		row-gap: 1rem;
+
+		.widget {
+			display: flex;
+			flex-direction: column;
+			flex: 1 1 0px;
+		}
+	`;
+
 	const drawerWidth = 240;
 
 	return isConnected ? (
@@ -477,42 +492,40 @@ export const Main: React.FC = () => {
 					drawerWidth={drawerWidth}
 				/>
 				<Box component='main'>
-					<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6 mb-8'>
-						{pathName === PathName.Marketplace && (
-							<>
-								<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
-									<p>
-										Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
-										bugs you notice to the{' '}
-										<a
-											className='link underline'
-											href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
-										>
-											Github Repo.
+					{pathName === PathName.Marketplace && (
+						<WidgetsWrapper>
+							<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
+								<p>
+									Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
+									bugs you notice to the{' '}
+									<a
+										className='link underline'
+										href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
+									>
+										Github Repo.
+									</a>
+								</p>
+							</div>
+							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
+							{isMetaMask && (
+								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col widget'>
+									<p className='text-xs text-center'>Wallet Balance</p>
+									<div className='flex items-center justify-center flex-1'>
+										<LumerinIcon />
+										<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
+											{Math.ceil(lumerinBalance).toLocaleString()}{' '}
+											<span className='text-sm'>LMR</span>
+										</span>
+									</div>
+									<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
+										<a className='' href='/buyerhub'>
+											Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
 										</a>
 									</p>
 								</div>
-								<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
-								{isMetaMask && (
-									<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col'>
-										<p className='text-xs text-center'>Wallet Balance</p>
-										<div className='flex items-center justify-center flex-1'>
-											<LumerinIcon />
-											<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
-												{Math.ceil(lumerinBalance).toLocaleString()}{' '}
-												<span className='text-sm'>LMR</span>
-											</span>
-										</div>
-										<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
-											<a className='' href='/buyerhub'>
-												Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
-											</a>
-										</p>
-									</div>
-								)}
-							</>
-						)}
-					</div>
+							)}
+						</WidgetsWrapper>
+					)}
 					<main>{getContent()}</main>
 				</Box>
 			</Box>
