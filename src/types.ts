@@ -66,6 +66,16 @@ export enum SortByType {
 	Float,
 }
 
+export enum SortTypes {
+	Default = '',
+	PriceLowToHigh = 'Price: Low to High',
+	PriceHighToLow = 'Price: High to Low',
+	DurationShortToLong = 'Duration: Short to Long',
+	DurationLongToShort = 'Duration: Long to Short',
+	SpeedSlowToFast = 'Speed: Slow to Fast',
+	SpeedFastToSlow = 'Speed: Fast to Slow',
+}
+
 export enum CloseOutType {
 	BuyerOrValidatorCancel = 0,
 	SellerClaimNoClose = 1,
@@ -89,8 +99,8 @@ export interface HashRentalContract {
 	id?: JSX.Element | string;
 	contractId?: string;
 	price?: JSX.Element | string | number;
-	speed?: string;
-	length?: string;
+	speed?: string | number;
+	length?: string | number;
 	trade?: JSX.Element | string;
 	progress?: JSX.Element | string;
 	progressPercentage?: number;
