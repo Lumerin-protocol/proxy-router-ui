@@ -506,7 +506,11 @@ export const Main: React.FC = () => {
 									</a>
 								</p>
 							</div>
-							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
+							<BuyerOrdersWidget
+								contracts={contracts}
+								userAccount={userAccount}
+								currentBlockTimestamp={currentBlockTimestamp}
+							/>
 							{isMetaMask && (
 								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col widget'>
 									<p className='text-xs text-center'>Wallet Balance</p>
