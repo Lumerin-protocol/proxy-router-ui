@@ -36,8 +36,8 @@ export const PurchasedContracts = (prop: {
 						</p>
 						{!prop.isCompleted && (
 							<div className='status'>
-								<p className='status-badge'>{getStatusDiv(item.state as string)}</p>
-								<p>{item.editCancel}</p>
+								<div className='status-badge'>{getStatusDiv(item.state as string)}</div>
+								<div>{item.editCancel}</div>
 							</div>
 						)}
 					</div>
