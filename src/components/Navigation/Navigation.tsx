@@ -66,21 +66,19 @@ export const ResponsiveNavigation = (prop: {
 		<DrawerContent>
 			<nav>
 				<LogoIcon className='menu-icon' />
-				{navigation.map((item) => (
-					<>
-						<Link
-							key={item.name}
-							to={item.to}
-							className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
-							onClick={() => {
-								prop.setSidebarOpen(false);
-								prop.setPathname(item.to);
-							}}
-						>
-							<img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' />
-							<span className='item-name'>{item.name}</span>
-						</Link>
-					</>
+				{navigation.map((item, index) => (
+					<Link
+						key={index}
+						to={item.to}
+						className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
+						onClick={() => {
+							prop.setSidebarOpen(false);
+							prop.setPathname(item.to);
+						}}
+					>
+						<img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' />
+						<span className='item-name'>{item.name}</span>
+					</Link>
 				))}
 			</nav>
 		</DrawerContent>
