@@ -14,8 +14,8 @@ export const AvailableContracts = (prop: {
 		<>
 			{prop.loading ? (
 				[...Array(10)].map((elementInArray, index) => (
-					<SkeletonWrap>
-						<Skeleton variant='rectangular' width={'100%'} height={100} key={index} />
+					<SkeletonWrap key={index}>
+						<Skeleton variant='rectangular' width={'100%'} height={100} />
 					</SkeletonWrap>
 				))
 			) : (
@@ -27,7 +27,7 @@ export const AvailableContracts = (prop: {
 									<p>
 										<a
 											className='underline pb-0 font-Raleway cursor-pointer'
-											href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
+											href={`https://goerli.etherscan.io/address/${item.contractId}`}
 											target='_blank'
 											rel='noreferrer'
 										>
@@ -41,7 +41,7 @@ export const AvailableContracts = (prop: {
 									{item.length && (
 										<p>
 											<img src={TimeIcon} alt='' />
-											{getReadableDate(item.length.toString())}
+											{getReadableDate(item.length)}
 										</p>
 									)}
 									<p>
