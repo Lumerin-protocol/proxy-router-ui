@@ -3,9 +3,8 @@ import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'r
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { AvailableContracts } from './ui/Cards/AvailableContracts';
-import { Box, FormControl, InputLabel, MenuItem, Select, Toolbar } from '@mui/material';
-import { setMediaQueryListOnChangeHandler, sortContracts } from '../utils';
-import { ContractState, HashRentalContract, SortTypes } from '../types';
+import { setMediaQueryListOnChangeHandler } from '../utils';
+import { ContractState, HashRentalContract } from '../types';
 import { useInterval } from './hooks/useInterval';
 import Web3 from 'web3';
 import { divideByDigits } from '../web3/helpers';
