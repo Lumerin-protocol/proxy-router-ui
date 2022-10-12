@@ -13,7 +13,7 @@ import {
 	StatusText,
 } from './types';
 import { Link } from 'react-router-dom';
-import { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
@@ -147,10 +147,27 @@ export const isValidPoolAddress: (
 };
 
 // Parse connectionString as URI to get worker and host name
-// Convert string to URI
 
-export const getWorkerName = (connectionString: string): string | undefined =>
-	URI.parse(connectionString).userinfo?.replace(/:$/, '');
+export const getUsernameWithPassword = (connectionString: string): string | undefined =>
+	URI.parse(connectionString!).userinfo?.replace(/:$/, '');
+
+export const getWorkerName = (connectionString: string): string | undefined => {
+	const usernameWithPassword = getUsernameWithPassword(connectionString);
+	// Strip password and return username and workername only
+	return usernameWithPassword && usernameWithPassword.indexOf(':') > -1
+		? usernameWithPassword?.substring(0, usernameWithPassword.indexOf(':'))
+		: usernameWithPassword;
+};
+
+export const getPassword = (connectionString: string): string | undefined => {
+	const usernameWithPassword = getUsernameWithPassword(connectionString);
+	return usernameWithPassword!.includes(':')
+		? usernameWithPassword?.substring(
+				usernameWithPassword.indexOf(':') + 1,
+				usernameWithPassword.length
+		  )
+		: '';
+};
 
 export const getHostName = (connectionString: string): string | undefined =>
 	URI.parse(connectionString).host;
@@ -251,6 +268,36 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	if (rowASortType > rowBSortType) return -1;
 	if (rowBSortType > rowASortType) return 1;
 	return 0;
+};
+
+export const sortContracts = (
+	sortType: string,
+	contractData: Array<HashRentalContract>,
+	setContractData: React.Dispatch<React.SetStateAction<Array<HashRentalContract>>>
+) => {
+	switch (sortType) {
+		case 'Price: Low to High':
+			setContractData([...contractData.sort((a, b) => (a.price! > b.price! ? 1 : -1))]);
+			break;
+		case 'Price: High to Low':
+			setContractData([...contractData.sort((a, b) => (a.price! < b.price! ? 1 : -1))]);
+			break;
+		case 'Duration: Short to Long':
+			setContractData([...contractData.sort((a, b) => (a.length! > b.length! ? 1 : -1))]);
+			break;
+		case 'Duration: Long to Short':
+			setContractData([...contractData.sort((a, b) => (a.length! < b.length! ? 1 : -1))]);
+			break;
+		case 'Speed: Slow to Fast':
+			setContractData([...contractData.sort((a, b) => (a.speed! > b.speed! ? 1 : -1))]);
+			break;
+		case 'Speed: Fast to Slow':
+			setContractData([...contractData.sort((a, b) => (a.speed! < b.speed! ? 1 : -1))]);
+			break;
+		default:
+			setContractData([...contractData]);
+			break;
+	}
 };
 
 interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}

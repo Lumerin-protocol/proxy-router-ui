@@ -1,19 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, Suspense, useEffect, useState } from 'react';
 import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
-import { Dialog, Transition } from '@headlessui/react';
 import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
 import { MetaMaskIcon, LogoIcon, LogoIcon2, LumerinIcon, WalletConnectIcon } from '../images/index';
 import BubbleGraphic1 from '../images/Bubble_1.png';
 import BubbleGraphic2 from '../images/Bubble_2.png';
 import BubbleGraphic3 from '../images/Bubble_3.png';
 import BubbleGraphic4 from '../images/Bubble_4.png';
-import MarketplaceIconActive from '../images/icons/store-blue.png';
-import MarketplaceIconInactive from '../images/icons/store-grey.png';
-import BuyerIconActive from '../images/icons/buyer-blue.png';
-import BuyerIconInactive from '../images/icons/buyer-grey.png';
-import SellerIconActive from '../images/icons/seller-blue.png';
-import SellerIconInactive from '../images/icons/seller-grey.png';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
 import { Alert } from './ui/Alert';
@@ -55,6 +48,10 @@ import styled from '@emotion/styled';
 import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
 import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
 import EastIcon from '@mui/icons-material/East';
+import { ResponsiveNavigation } from './Navigation/Navigation';
+import { Box } from '@mui/material';
+import { Header } from './ui/Header';
+import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -76,46 +73,13 @@ export const Main: React.FC = () => {
 	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
-	const [toggle, setToggle] = useState<boolean>(false);
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
+	const [pathName, setPathname] = useState<string>('/');
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === 5;
-
-	// Navigation setup
-	interface Navigation {
-		name: string;
-		to: string;
-		activeIcon: string;
-		inactiveIcon: string;
-		current: boolean;
-	}
-	const pathName = window.location.pathname;
-	const navigation: Navigation[] = [
-		{
-			name: 'Marketplace',
-			to: PathName.Marketplace,
-			activeIcon: MarketplaceIconActive,
-			inactiveIcon: MarketplaceIconInactive,
-			current: pathName === PathName.Marketplace,
-		},
-		{
-			name: 'Buyer Hub',
-			to: PathName.MyOrders,
-			activeIcon: BuyerIconActive,
-			inactiveIcon: BuyerIconInactive,
-			current: pathName === PathName.MyOrders,
-		},
-		{
-			name: 'Seller Hub',
-			to: PathName.MyContracts,
-			activeIcon: SellerIconActive,
-			inactiveIcon: SellerIconInactive,
-			current: pathName === PathName.MyContracts,
-		},
-	];
 
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
@@ -278,6 +242,11 @@ export const Main: React.FC = () => {
 		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
 	}, [web3, accounts, chainId]);
 
+	useEffect(() => {
+		setPathname(window.location.pathname);
+		console.log(pathName);
+	}, [window.location.pathname]);
+
 	// Content setup
 	const ActionButtons: JSX.Element = (
 		<div className='flex flex-row'>
@@ -334,6 +303,8 @@ export const Main: React.FC = () => {
 							claimLmrClickHandler={(event) =>
 								buttonClickHandler(event, claimLmrModalOpen, setClaimLmrModalOpen)
 							}
+							setCreateModalOpen={setCreateModalOpen}
+							setSidebarOpen={setSidebarOpen}
 						/>
 					)}
 				/>
@@ -378,13 +349,9 @@ export const Main: React.FC = () => {
 		connectWallet(WalletText.ConnectViaMetaMask);
 	};
 
-	const isAvailableContract: boolean =
-		contracts.filter((contract) => contract.state === ContractState.Available).length > 0;
-
 	const BodyWrapper = styled.div`
 		display: flex;
 		min-height: 100vh;
-		width: 100%;
 		background: #eaf7fc;
 		background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
 			url(${BubbleGraphic4});
@@ -393,19 +360,26 @@ export const Main: React.FC = () => {
 		background-size: 25% 15% 15% 10%;
 	`;
 
-	const ActiveNavTab = styled.div`
-		background: #0e4353;
-		position: absolute;
-		width: 6px;
-		height: 36px;
-		left: 0px;
-		margin-top: 0.2rem;
-		border-radius: 0px 15px 15px 0px;
+	const WidgetsWrapper = styled.div`
+		display: flex;
+		flex-wrap: wrap;
+		margin-top: 2rem;
+		width: 100%;
+		column-gap: 1rem;
+		row-gap: 1rem;
+
+		.widget {
+			display: flex;
+			flex-direction: column;
+			flex: 1 1 0px;
+		}
 	`;
+
+	const drawerWidth = 240;
 
 	return isConnected ? (
 		<BodyWrapper>
-			<Alert
+			<SwitchNetworkAlert
 				message={getAlertMessage()}
 				open={alertOpen}
 				setOpen={setAlertOpen}
@@ -491,203 +465,35 @@ export const Main: React.FC = () => {
 					/>
 				}
 			/>
-			{/* collapsible sidebar: below lg breakpoint */}
-			<Transition.Root show={sidebarOpen} as={Fragment}>
-				<Dialog
-					as='div'
-					static
-					className='fixed inset-0 flex z-40 lg:hidden'
-					open={sidebarOpen}
-					onClose={setSidebarOpen}
-				>
-					<Transition.Child
-						as={Fragment}
-						enter='transition-opacity ease-linear duration-300'
-						enterFrom='entertfrom-leaveto-opacity'
-						enterTo='enterto-enterleave-opacity'
-						leave='transition-opacity ease-linear duration-300'
-						leaveFrom='enterto-enterleave-opacity'
-						leaveTo='entertfrom-leaveto-opacity'
-					>
-						<Dialog.Overlay className='fixed inset-0 bg-gray-600 bg-opacity-75' />
-					</Transition.Child>
-					<Transition.Child
-						as={Fragment}
-						enter='transition ease-in-out duration-300 transform'
-						enterFrom='-translate-x-full'
-						enterTo='translate-x-0'
-						leave='transition ease-in-out duration-300 transform'
-						leaveFrom='translate-x-0'
-						leaveTo='-translate-x-full'
-					>
-						<div className='relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white'>
-							<Transition.Child
-								as={Fragment}
-								enter='ease-in-out duration-300'
-								enterFrom='entertfrom-leaveto-opacity'
-								enterTo='enterto-enterleave-opacity'
-								leave='ease-in-out duration-300'
-								leaveFrom='enterto-enterleave-opacity'
-								leaveTo='entertfrom-leaveto-opacity'
-							>
-								<div className='absolute top-0 right-0 -mr-12 pt-2'>
-									<button
-										type='button'
-										className='ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white'
-										onClick={() => setSidebarOpen(false)}
-									>
-										<span className='sr-only'>Close sidebar</span>
-										<XIcon className='h-6 w-6 text-white' aria-hidden='true' />
-									</button>
-								</div>
-							</Transition.Child>
-							<div className='mt-5 flex-1 h-0 overflow-y-auto'>
-								<nav className='px-2 space-y-1'>
-									{navigation.map((item) => (
-										<Link
-											key={item.name}
-											to={item.to}
-											className={classNames(
-												item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-black-text',
-												'flex items-center px-2 py-2 mb-2 text-sm font-medium rounded-md'
-											)}
-											onClick={() => {
-												setToggle(!toggle);
-											}}
-										>
-											<img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' />
-											<span className='ml-4'>{item.name}</span>
-										</Link>
-									))}
-								</nav>
-							</div>
-						</div>
-					</Transition.Child>
-					<div className='flex-shrink-0 w-14' aria-hidden='true'>
-						{/* Dummy element to force sidebar to shrink to fit close icon */}
-					</div>
-				</Dialog>
-			</Transition.Root>
-			{contracts.length > 0 && isConnected && (
-				<div className={!isConnected && contracts.length === 0 ? 'm-8 hidden xl:block' : 'hidden'}>
-					<LogoIcon />
-				</div>
-			)}
-
-			{/* Static sidebar for desktop */}
-			<div
-				className={
-					!isConnected && contracts.length === 0
-						? 'hidden'
-						: 'hidden bg-white lg:flex lg:flex-shrink-0'
-				}
+			<Box component='nav' sx={{ width: { md: drawerWidth }, flexShrink: { sm: 0 } }}>
+				<ResponsiveNavigation
+					sidebarOpen={sidebarOpen}
+					setSidebarOpen={setSidebarOpen}
+					setPathname={setPathname}
+					pathName={pathName}
+					drawerWidth={drawerWidth}
+				/>
+			</Box>
+			<Box
+				sx={{
+					marginLeft: 'auto',
+					flexGrow: 1,
+					p: 3,
+					width: { xs: `100%`, sm: `100%`, md: `calc(100% - ${drawerWidth}px)` },
+					minHeight: '100vh',
+				}}
 			>
-				<div className='flex flex-col w-64 sticky h-screen top-0'>
-					<div className='flex flex-col pt-4 pb-4 overflow-y-auto'>
-						<div className='flex-1 flex flex-col ml-4 mb-16'>
-							{/* <LogoIcon2 /> is identical but has different pattern id so it's not
-                            hidden when <LogoIcon /> is hidden since they have the same pattern */}
-							<LogoIcon2 />
-						</div>
-						<div className='flex-1 flex flex-col'>
-							<nav className='flex-1 px-2 space-y-1'>
-								{navigation.map((item) => (
-									<>
-										{item.current && <ActiveNavTab />}
-										<Link
-											key={item.name}
-											to={item.to}
-											className={classNames(
-												'flex items-center pl-6 py-2 pb-6 text-sm font-medium rounded-md',
-												item.current ? 'text-lumerin-blue-text' : 'text-lumerin-inactive-text'
-											)}
-											onClick={() => setToggle(!toggle)}
-										>
-											<img
-												className='w-5'
-												src={item.current ? item.activeIcon : item.inactiveIcon}
-												alt=''
-											/>
-											<span className='text-sm ml-4'>{item.name}</span>
-										</Link>
-									</>
-								))}
-							</nav>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div className='flex flex-col w-0 flex-1 overflow-hidden pl-10 pr-10'>
-				<div className={!isConnected ? 'hidden' : 'relative z-10 flex-shrink-0 flex h-20'}>
-					<button
-						type='button'
-						className='px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden'
-						onClick={() => setSidebarOpen(true)}
-					>
-						<span className='sr-only'>Open sidebar</span>
-						<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
-					</button>
-					<div className={!isConnected ? 'hidden' : 'flex items-center ml-1 md:ml-4 xl:ml-0'}>
-						<h1
-							className={classNames(
-								pathName === PathName.MyContracts ? 'hidden xl:block' : '',
-								'text-xl font-semibold font-Raleway text-lumerin-blue-text'
-							)}
-						>
-							{getPageTitle()}
-						</h1>
-						<div
-							className='text-black flex items-center px-2 text-xs md:text-sm font-medium rounded-md cursor-pointer'
-							onClick={() => {
-								setCreateModalOpen(true);
-								setSidebarOpen(false);
-							}}
-						>
-							<button
-								className={
-									pathName === PathName.MyContracts
-										? 'w-28 h-8 md:w-48 md:h-12 ml-0 xl:ml-8 font-semibold text-lumerin-aqua border border-lumerin-aqua rounded-5'
-										: 'hidden'
-								}
-							>
-								Create Contract
-							</button>
-						</div>
-					</div>
-					<div className='ml-auto mt-4'>
-						{isConnected && (
-							<div className='block'>
-								<div className='btn-connected cursor-default flex justify-between items-center px-8'>
-									<span className='pr-3'>{getTruncatedWalletAddress()}</span>
-									{isMetaMask ? <MetaMaskIcon /> : <WalletConnectIcon />}
-								</div>
-								{isMetaMask ? (
-									<button
-										className='link text-xs text-lumerin-blue-text'
-										onClick={() => addLumerinTokenToMetaMaskAsync()}
-									>
-										<span style={{ display: 'flex', alignItems: 'center' }}>
-											Import LMR into MetaMask{' '}
-											<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
-										</span>
-									</button>
-								) : (
-									<button
-										className='btn-disconnect w-auto p-0 ml-4 mr-4'
-										onClick={() =>
-											disconnectWalletConnectAsync(isMetaMask, web3 as Web3, setIsConnected)
-										}
-									>
-										<span>Disconnect</span>
-									</button>
-								)}
-							</div>
-						)}
-					</div>
-				</div>
-				<div className='flex flex-wrap items-end space-x-4 space-y-2 w-full mt-6'>
-					{pathName === PathName.Marketplace && isConnected && (
-						<>
+				<Header
+					setSidebarOpen={setSidebarOpen}
+					pageTitle={getPageTitle()}
+					truncatedWalletAddress={getTruncatedWalletAddress()}
+					addTokenToMetamask={addLumerinTokenToMetaMaskAsync}
+					isMetamask={isMetaMask}
+					drawerWidth={drawerWidth}
+				/>
+				<Box component='main'>
+					{pathName === PathName.Marketplace && (
+						<WidgetsWrapper>
 							<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
 								<p>
 									Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
@@ -702,7 +508,7 @@ export const Main: React.FC = () => {
 							</div>
 							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
 							{isMetaMask && (
-								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col'>
+								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col widget'>
 									<p className='text-xs text-center'>Wallet Balance</p>
 									<div className='flex items-center justify-center flex-1'>
 										<LumerinIcon />
@@ -718,11 +524,11 @@ export const Main: React.FC = () => {
 									</p>
 								</div>
 							)}
-						</>
+						</WidgetsWrapper>
 					)}
-				</div>
-				<main className='mt-10 flex-1 relative focus:outline-none'>{getContent()}</main>
-			</div>
+					<main>{getContent()}</main>
+				</Box>
+			</Box>
 		</BodyWrapper>
 	) : (
 		<Hero actionButtons={ActionButtons} />
