@@ -34,6 +34,7 @@ import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
+import { purchasedHashrate } from '../../../../analytics';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -70,6 +71,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [isAvailable, setIsAvailable] = useState<boolean>(true);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [totalHashrate, setTotalHashrate] = useState<number>();
 
 	/*
 	 * This will need to be changed to the mainnet token
@@ -89,6 +91,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 	const getContractInfo: () => ContractInfo = () => {
+		setTotalHashrate(Number(contract.speed) * Number(contract.length));
 		return {
 			speed: contract.speed as string,
 			price: contract.price as string,
@@ -180,6 +183,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						// TODO: call to increaseAllowance() has failed, surface to user
 					}
 				}
+				purchasedHashrate(totalHashrate!);
 				setContentState(ContentState.Complete);
 			} catch (error) {
 				const typedError = error as Error;
