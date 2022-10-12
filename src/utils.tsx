@@ -110,7 +110,13 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	);
 
 	//the clonefactory contract address should become a variable that is configurable
-	let cloneFactory = await cf.attach('0xbF2A6EA18e2CF0846cE7FC9Fa9EB9bA22BF035fF'); //this is the main goerli clone factory address
+	let CloneFactory = ""
+	if (process.env.REACT_APP_CLONE_FACTORY != undefined) {
+		CloneFactory = process.env.REACT_APP_CLONE_FACTORY
+	}
+	let cloneFactory
+
+	cloneFactory = await cf.attach(CloneFactory); //this is the main ropsten clone
 	cloneFactory = await cloneFactory.connect(provider);
 
 	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
