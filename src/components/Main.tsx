@@ -73,6 +73,7 @@ export const Main: React.FC = () => {
 	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
+	const [anyModalOpen, setAnyModalOpen] = useState<boolean>(false);
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
@@ -233,9 +234,36 @@ export const Main: React.FC = () => {
 		if (isCorrectNetwork) createContractsAsync();
 	}, [cloneFactoryContract, accounts, web3]);
 
+	// Check if any modals or alerts are open
+	// TODO: Replace this with a better way to track all modal states
+	useEffect(() => {
+		if (
+			alertOpen ||
+			buyModalOpen ||
+			sellerEditModalOpen ||
+			buyerEditModalOpen ||
+			cancelModalOpen ||
+			createModalOpen ||
+			claimLmrModalOpen
+		) {
+			setAnyModalOpen(true);
+		} else {
+			setAnyModalOpen(false);
+		}
+	}, [
+		alertOpen,
+		buyModalOpen,
+		sellerEditModalOpen,
+		buyerEditModalOpen,
+		cancelModalOpen,
+		createModalOpen,
+		claimLmrModalOpen,
+	]);
+
 	// Get contracts at interval of 5 seconds
+	// TODO: Replace this with something like web sockets
 	useInterval(() => {
-		if (isCorrectNetwork) createContractsAsync();
+		if (isCorrectNetwork && !anyModalOpen) createContractsAsync();
 	}, 5000);
 
 	useEffect(() => {
