@@ -60,7 +60,11 @@ bedrock-02-dev:
         - echo "*****************************"
         - echo "Building image..."
         - echo "*****************************"
-        - docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+        - 
+            docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:IMAGE_TAG --no-cache .
+          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS  
+          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY  
+          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL  
         - echo "Tagging image..."
         - docker tag  $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
         - echo "*****************************"
