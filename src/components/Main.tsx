@@ -244,7 +244,6 @@ export const Main: React.FC = () => {
 
 	useEffect(() => {
 		setPathname(window.location.pathname);
-		console.log(pathName);
 	}, [window.location.pathname]);
 
 	// Content setup
