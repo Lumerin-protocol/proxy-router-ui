@@ -73,6 +73,7 @@ export const Main: React.FC = () => {
 	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
+	const [anyModalOpen, setAnyModalOpen] = useState<boolean>(false);
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
@@ -80,10 +81,6 @@ export const Main: React.FC = () => {
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === 5;
-
-	console.log(`REACT_APP_CLONE_FACTORY=${process.env.REACT_APP_CLONE_FACTORY}`);
-	console.log(`REACT_APP_ETHERSCAN_URL=${process.env.REACT_APP_ETHERSCAN_URL}`);
-	console.log(`REACT_APP_LUMERIN_TOKEN_ADDRESS=${process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS}`);
 
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
@@ -237,9 +234,36 @@ export const Main: React.FC = () => {
 		if (isCorrectNetwork) createContractsAsync();
 	}, [cloneFactoryContract, accounts, web3]);
 
+	// Check if any modals or alerts are open
+	// TODO: Replace this with a better way to track all modal states
+	useEffect(() => {
+		if (
+			alertOpen ||
+			buyModalOpen ||
+			sellerEditModalOpen ||
+			buyerEditModalOpen ||
+			cancelModalOpen ||
+			createModalOpen ||
+			claimLmrModalOpen
+		) {
+			setAnyModalOpen(true);
+		} else {
+			setAnyModalOpen(false);
+		}
+	}, [
+		alertOpen,
+		buyModalOpen,
+		sellerEditModalOpen,
+		buyerEditModalOpen,
+		cancelModalOpen,
+		createModalOpen,
+		claimLmrModalOpen,
+	]);
+
 	// Get contracts at interval of 5 seconds
+	// TODO: Replace this with something like web sockets
 	useInterval(() => {
-		if (isCorrectNetwork) createContractsAsync();
+		if (isCorrectNetwork && !anyModalOpen) createContractsAsync();
 	}, 5000);
 
 	useEffect(() => {
@@ -248,7 +272,6 @@ export const Main: React.FC = () => {
 
 	useEffect(() => {
 		setPathname(window.location.pathname);
-		console.log(pathName);
 	}, [window.location.pathname]);
 
 	// Content setup
