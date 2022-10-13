@@ -11,30 +11,33 @@ import Speed from '../../../images/icons/download-speed.png';
 import Time from '../../../images/icons/time-left.png';
 import { ContractCards } from './PurchasedContracts.styled';
 
-export const PurchasedContracts = (prop: {
+export const PurchasedContracts = (props: {
 	contracts: Array<HashRentalContract>;
 	isCompleted: boolean;
+	sortType: string;
 }) => {
-	const progressAscending = [...prop.contracts].sort(
+	const progressAscending = [...props.contracts].sort(
 		(a, b) => a.progressPercentage! - b.progressPercentage!
 	);
 
+	const purchasedContracts = props.sortType ? props.contracts : progressAscending;
+
 	return (
 		<ContractCards>
-			{progressAscending.map((item, index) => (
+			{purchasedContracts.map((item, index) => (
 				// <div className='bg-white rounded-15 mb-3 p-7 w-full flex flex-row justify-between items-center'>
 				<div className='card' key={item.contractId}>
 					<div className='utils'>
 						<p>
 							<a
-								href={`https://goerli.etherscan.io/address/${item.contractId}`}
+								href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
 								target='_blank'
 								rel='noreferrer'
 							>
 								{truncateAddress(item.contractId!, AddressLength.LONG)}
 							</a>
 						</p>
-						{!prop.isCompleted && (
+						{!props.isCompleted && (
 							<div className='status'>
 								<p className='status-badge'>{getStatusDiv(item.state as string)}</p>
 								<p>{item.editCancel}</p>
@@ -87,7 +90,7 @@ export const PurchasedContracts = (prop: {
 							<img src={Time} alt='' />
 							<div>
 								<h3>Duration</h3>
-								<p>{item.length && getReadableDate(item.length)}</p>
+								<p>{item.length && getReadableDate(item.length.toString())}</p>
 							</div>
 						</div>
 						<div className='item-value address'>
