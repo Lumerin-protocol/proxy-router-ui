@@ -81,10 +81,6 @@ export const Main: React.FC = () => {
 	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === 5;
 
-	console.log(`REACT_APP_CLONE_FACTORY=${process.env.REACT_APP_CLONE_FACTORY}`);
-	console.log(`REACT_APP_ETHERSCAN_URL=${process.env.REACT_APP_ETHERSCAN_URL}`);
-	console.log(`REACT_APP_LUMERIN_TOKEN_ADDRESS=${process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS}`);
-
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
 	const onboardMetaMask: () => void = () => {
