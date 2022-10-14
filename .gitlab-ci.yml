@@ -2,36 +2,40 @@ stages:
     - develop
     - review
     - deploy
+default:
+    before_script:
+        - echo "*****************************"
+        - echo "Updating lumerin.json"
+        - echo "*****************************"
+        - sed -i -e "s/LUMERIN_TOKEN_ADDRESS_VAR/${REACT_APP_LUMERIN_TOKEN_ADDRESS}/g" src/contracts/Lumerin.json
+        - echo "*****************************"
+        - echo "Logging in to Titanio-NET ECR ..."
+        - echo "*****************************"
+        - docker system prune -af
+        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $CI_AWS_TitanIO_NET_ECR
+    after_script:
+        - echo "*****************************"
+        - echo "Preparing deployment of $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG to $TGT_ACCOUNT, titanio-$TGT_ENV Environment..."
+        - echo "*****************************"
+        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
+        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO'"') > input.json
+        - echo $(cat input.json | jq '.taskDefinition') > input.json
+        - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
+        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
+        - echo "Review input.json file...."
+        - cat input.json
 
-before_script: 
-    - echo "*****************************"
-    - echo "Logging in to Titanio-NET ECR ..."
-    - echo "*****************************"
-    - docker system prune -af
-    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $CI_AWS_TitanIO_NET_ECR
-after_script: 
-    - echo "*****************************"
-    - echo "Preparing deployment of $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG to $TGT_ACCOUNT, titanio-$TGT_ENV Environment..."
-    - echo "*****************************"        
-    - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
-    - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image="'$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO'"') > input.json
-    - echo $(cat input.json | jq '.taskDefinition') > input.json
-    - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
-    - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
-    - echo "Review input.json file...."
-    - cat input.json
-
-    - echo "*****************************"        
-    - echo "Deploying new container definition..."
-    - echo "*****************************"        
-    - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-    - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-    - echo $REVISION
-    - echo "Review Cluster Definition...."
-    - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
-    - echo "Review Service Definition...."
-    - echo $CI_AWS_ECS_SERVICE
-    - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
+        - echo "*****************************"
+        - echo "Deploying new container definition..."
+        - echo "*****************************"
+        - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
+        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
+        - echo $REVISION
+        - echo "Review Cluster Definition...."
+        - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
+        - echo "Review Service Definition...."
+        - echo $CI_AWS_ECS_SERVICE
+        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
 
 bedrock-02-dev:
     stage: develop
@@ -39,26 +43,33 @@ bedrock-02-dev:
         - dev
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
-        - devops 
+        - devops
         - bedrock
         - titanio-dev
         - shell
-    variables: 
+    variables:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_DEV
         TGT_ENV: dev
+        REACT_APP_LUMERIN_TOKEN_ADDRESS: "0xF3aCe2847F01D3ef1025c7070579611091A6422D"
+        REACT_APP_CLONE_FACTORY: "0xbF2A6EA18e2CF0846cE7FC9Fa9EB9bA22BF035fF"
+        REACT_APP_ETHERSCAN_URL: "https://goerli.etherscan.io/address/"
     script:
-        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
+        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
         - echo "Combined Repo and Tag....."
-        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG 
-        - echo "*****************************"       
+        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - echo "*****************************"
         - echo "Building image..."
         - echo "*****************************"
-        - docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+        - 
+            docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS  
+          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY  
+          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL  
         - echo "Tagging image..."
         - docker tag  $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
-        - echo "*****************************"        
+        - echo "*****************************"
         - echo "Pushing image..."
-        - echo "*****************************"        
+        - echo "*****************************"
         - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
         - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest
 
@@ -72,22 +83,29 @@ titanio-03-stg:
         - bedrock
         - titanio-stg
         - shell
-    variables: 
+    variables:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_STG
         TGT_ENV: stg
+        REACT_APP_LUMERIN_TOKEN_ADDRESS: "0xF3aCe2847F01D3ef1025c7070579611091A6422D"
+        REACT_APP_CLONE_FACTORY: "0xa963e1DC7F5AdC825f93C2aA0aF497522Fe7A9E8"
+        REACT_APP_ETHERSCAN_URL: "https://goerli.etherscan.io/address/"
     script:
-        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
+        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
         - echo "Combined Repo and Tag....."
-        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG 
-        - echo "*****************************"       
+        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - echo "*****************************"
         - echo "Building image..."
         - echo "*****************************"
-        - docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+        - 
+            docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS  
+          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY  
+          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL  
         - echo "Tagging image..."
         - docker tag  $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
-        - echo "*****************************"        
+        - echo "*****************************"
         - echo "Pushing image..."
-        - echo "*****************************"        
+        - echo "*****************************"
         - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
         - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest
 
@@ -102,22 +120,29 @@ titanio-04-lmn-PROD:
         - bedrock
         - titanio-lmn
         - shell
-    variables: 
+    variables:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_LMN
         TGT_ENV: lmn
+        REACT_APP_LUMERIN_TOKEN_ADDRESS: "0xF3aCe2847F01D3ef1025c7070579611091A6422D"
+        REACT_APP_CLONE_FACTORY: "0x059cD152b4e9e6Ff222E8fB979197A739FC9Dd42"
+        REACT_APP_ETHERSCAN_URL: "https://goerli.etherscan.io/address/"
     script:
-        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)" 
+        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
         - echo "Combined Repo and Tag....."
-        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG 
-        - echo "*****************************"       
+        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - echo "*****************************"
         - echo "Building image..."
         - echo "*****************************"
-        - docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+        - 
+            docker build -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest --no-cache .
+          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS  
+          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY  
+          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL  
         - echo "Tagging image..."
         - docker tag  $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
-        - echo "*****************************"        
+        - echo "*****************************"
         - echo "Pushing image..."
-        - echo "*****************************"        
+        - echo "*****************************"
         - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
         - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:latest
         - echo "*****************************"
