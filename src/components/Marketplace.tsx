@@ -3,13 +3,15 @@ import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'r
 import { TableIcon } from './ui/TableIcon';
 import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { AvailableContracts } from './ui/Cards/AvailableContracts';
-import { setMediaQueryListOnChangeHandler } from '../utils';
-import { Spinner } from './ui/Spinner.styled';
-import { ContractState, HashRentalContract } from '../types';
+import { Box, FormControl, InputLabel, MenuItem, Select, Toolbar } from '@mui/material';
+import { setMediaQueryListOnChangeHandler, sortContracts } from '../utils';
+import { ContractState, HashRentalContract, SortTypes } from '../types';
 import { useInterval } from './hooks/useInterval';
 import Web3 from 'web3';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
+import styled from '@emotion/styled';
+import { SortToolbar } from './ui/SortToolbar';
 
 interface MarketplaceProps {
 	web3: Web3 | undefined;
@@ -44,10 +46,10 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	}, [mediaQueryList?.matches]);
 
 	const getTableData: () => HashRentalContract[] = () => {
-		const availableContracts = contracts.filter(
+		const filteredContracts = contracts.filter(
 			(contract) => (contract.state as string) === ContractState.Available
 		);
-		const updatedContracts = availableContracts.map((contract) => {
+		const updatedContracts = filteredContracts.map((contract: any) => {
 			const updatedContract = { ...contract };
 			if (!_.isEmpty(contract)) {
 				updatedContract.id = (
@@ -60,8 +62,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 					/>
 				);
 				updatedContract.price = divideByDigits(updatedContract.price as number);
-				updatedContract.speed = String(Number(updatedContract.speed) / 10 ** 12);
-				updatedContract.length = String(parseInt(updatedContract.length as string) / 3600);
+				updatedContract.speed = Number(updatedContract.speed) / 10 ** 12;
+				updatedContract.length = parseInt(updatedContract.length as string) / 3600;
 				updatedContract.contractId = String(contract.id);
 				updatedContract.trade = (
 					<BuyButton
@@ -79,6 +81,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 
+	const [availableContracts, setAvailableContracts] = useState<Array<object>>([...data]);
+	const [sortType, setSortType] = useState('');
+
+	useEffect(() => {
+		sortContracts(sortType, availableContracts, setAvailableContracts);
+	}, [sortType]);
+
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
 		if (isLoading) setIsLoading(false);
@@ -92,17 +101,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	return (
 		<>
-			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-regular text-left mb-5'>
-				Hashrate For Sale
-			</h2>
-			{/* {isLoading && (
-				<div className='spinner'>
-					<Spinner />
-				</div>
-			)} */}
-			<div className='flex flex-col'>
-				<AvailableContracts contracts={data} loading={isLoading} />
-			</div>
+			<SortToolbar pageTitle='Marketplace' sortType={sortType} setSortType={setSortType} />
+			<AvailableContracts contracts={availableContracts} loading={isLoading} />
 		</>
 	);
 };
