@@ -1,8 +1,9 @@
-import { ContractData, HashRentalContract } from '../../types';
+import { ContractData, HashRentalContract } from '../../../types';
 import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
 import { isEmpty } from 'lodash';
-import { getProgressPercentage } from '../../utils';
+import { getProgressPercentage } from '../../../utils';
+import { SmallWidget } from '../Cards/Cards.styled';
 
 export const BuyerOrdersWidget = (props: {
 	contracts: Array<HashRentalContract>;
@@ -36,23 +37,16 @@ export const BuyerOrdersWidget = (props: {
 		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage === 100),
 	];
 
-	const BuyerOrdersWrapper = styled.div`
-		padding: 0.5rem 1.25rem;
-		margin-bottom: 0.75rem;
-		border-radius: 15px;
-		background-color: #fff;
-		flex: 1 1 auto;
-		justify-content: center;
-		min-width: 250px;
-
+	const BuyerOrdersWrapper = styled(SmallWidget)`
 		.stats {
 			display: flex;
 			justify-content: space-around;
+			width: 80%;
 			padding: 0.75rem;
 		}
 
 		.stat {
-			h3 {
+			h4 {
 				font-size: 1.75rem;
 				line-height: 1.75rem;
 				text-align: center;
@@ -60,34 +54,32 @@ export const BuyerOrdersWidget = (props: {
 				margin-bottom: 0.15rem;
 			}
 			p {
-				font-size: 0.75rem;
+				font-size: 0.625rem;
 				text-align: center;
 			}
 		}
 	`;
 
 	return (
-		<BuyerOrdersWrapper className='widget'>
-			<p className='text-xs text-center'>Purchased Contracts</p>
+		<BuyerOrdersWrapper>
+			<h3>Purchased Contracts</h3>
 			<div className='stats'>
 				<div className='stat'>
-					<h3 className='flex-1 text-center text-lumerin-blue-text text-xl'>
+					<h4 className='flex-1 text-center text-lumerin-blue-text text-xl'>
 						{runningContracts.length}
-					</h3>
+					</h4>
 					<p>ACTIVE</p>
 				</div>
 				<div className='stat'>
-					<h3 className='flex-1 text-center text-lumerin-blue-text text-xl'>
-						{completedContracts.length}
-					</h3>
+					<h4>{completedContracts.length}</h4>
 					<p>COMPLETED</p>
 				</div>
 			</div>
-			<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
+			<div className='link'>
 				<a href='/buyerhub'>
 					View all purchased contracts <EastIcon style={{ fontSize: '0.75rem' }} />
 				</a>
-			</p>
+			</div>
 		</BuyerOrdersWrapper>
 	);
 };
