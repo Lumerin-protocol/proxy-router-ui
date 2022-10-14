@@ -45,13 +45,13 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 import styled from '@emotion/styled';
-import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
+import { BuyerOrdersWidget } from './ui/Widgets/BuyerOrdersWidget';
 import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
-import EastIcon from '@mui/icons-material/East';
 import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Box } from '@mui/material';
 import { Header } from './ui/Header';
 import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
+import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -533,24 +533,12 @@ export const Main: React.FC = () => {
 									</a>
 								</p>
 							</div>
-							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
-							{isMetaMask && (
-								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col widget'>
-									<p className='text-xs text-center'>Wallet Balance</p>
-									<div className='flex items-center justify-center flex-1'>
-										<LumerinIcon />
-										<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
-											{Math.ceil(lumerinBalance).toLocaleString()}{' '}
-											<span className='text-sm'>LMR</span>
-										</span>
-									</div>
-									<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
-										<a className='' href='/buyerhub'>
-											Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
-										</a>
-									</p>
-								</div>
-							)}
+							<BuyerOrdersWidget
+								contracts={contracts}
+								userAccount={userAccount}
+								currentBlockTimestamp={currentBlockTimestamp}
+							/>
+							{isMetaMask && <WalletBalanceWidget lumerinBalance={lumerinBalance} />}
 						</WidgetsWrapper>
 					)}
 					<main>{getContent()}</main>

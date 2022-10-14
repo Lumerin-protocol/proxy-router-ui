@@ -8,7 +8,8 @@ const StyledToolbar = styled(Toolbar)`
 	align-items: flex-start;
 	margin-top: 2rem;
 	margin-bottom: 1rem;
-
+	width: 100%;
+	padding: 0 !important;
 	select {
 		background-color: none;
 		border: none;
