@@ -13,7 +13,7 @@ import {
 	StatusText,
 } from './types';
 import { Link } from 'react-router-dom';
-import { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
@@ -110,7 +110,9 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	);
 
 	//the clonefactory contract address should become a variable that is configurable
-	let cloneFactory = await cf.attach('0xa963e1DC7F5AdC825f93C2aA0aF497522Fe7A9E8'); //this is the main goerli clone factory address
+	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
+
+	let cloneFactory = await cf.attach(cloneFactoryAddress); //this is the main ropsten clone
 	cloneFactory = await cloneFactory.connect(provider);
 
 	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
@@ -262,6 +264,36 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	if (rowASortType > rowBSortType) return -1;
 	if (rowBSortType > rowASortType) return 1;
 	return 0;
+};
+
+export const sortContracts = (
+	sortType: string,
+	contractData: Array<HashRentalContract>,
+	setContractData: React.Dispatch<React.SetStateAction<Array<HashRentalContract>>>
+) => {
+	switch (sortType) {
+		case 'Price: Low to High':
+			setContractData([...contractData.sort((a, b) => (a.price! > b.price! ? 1 : -1))]);
+			break;
+		case 'Price: High to Low':
+			setContractData([...contractData.sort((a, b) => (a.price! < b.price! ? 1 : -1))]);
+			break;
+		case 'Duration: Short to Long':
+			setContractData([...contractData.sort((a, b) => (a.length! > b.length! ? 1 : -1))]);
+			break;
+		case 'Duration: Long to Short':
+			setContractData([...contractData.sort((a, b) => (a.length! < b.length! ? 1 : -1))]);
+			break;
+		case 'Speed: Slow to Fast':
+			setContractData([...contractData.sort((a, b) => (a.speed! > b.speed! ? 1 : -1))]);
+			break;
+		case 'Speed: Fast to Slow':
+			setContractData([...contractData.sort((a, b) => (a.speed! < b.speed! ? 1 : -1))]);
+			break;
+		default:
+			setContractData([...contractData]);
+			break;
+	}
 };
 
 interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}
