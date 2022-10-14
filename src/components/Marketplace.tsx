@@ -101,7 +101,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	return (
 		<>
-			<SortToolbar pageTitle='Marketplace' sortType={sortType} setSortType={setSortType} />
+			<SortToolbar pageTitle='Hashrate For Sale' sortType={sortType} setSortType={setSortType} />
 			<AvailableContracts contracts={availableContracts} loading={isLoading} />
 		</>
 	);
