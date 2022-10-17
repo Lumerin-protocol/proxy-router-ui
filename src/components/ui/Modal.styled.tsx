@@ -45,14 +45,6 @@ export const ModalCard = styled.div`
 		padding-bottom: 1rem;
 	}
 
-	.order-ID {
-		font-size: 0.8rem;
-		margin-bottom: 0.5rem;
-		color: #014353;
-		font-weight: 500;
-		text-decoration: underline;
-	}
-
 	.subtext {
 		font-size: 0.8rem;
 	}
@@ -60,4 +52,11 @@ export const ModalCard = styled.div`
 	@media (max-width: 500px) {
 		max-width: 90%;
 	}
+`;
+
+export const ContractLink = styled.a`
+	font-size: 0.8rem;
+	margin-bottom: 1rem;
+	color: #014353;
+	font-weight: 500;
 `;

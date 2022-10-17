@@ -34,6 +34,7 @@ import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
+import { ContractLink } from '../../Modal.styled';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -251,15 +252,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						Enter the Pool Address, Port Number, and Username you are pointing the purchased
 						hashpower to.
 					</p>
-					<a
+					<ContractLink
 						href={`${process.env.REACT_APP_ETHERSCAN_URL}${contract.id as string}`}
 						target='_blank'
 						rel='noreferrer'
 					>
-						<span className='order-ID'>
-							Contract Address: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
-						</span>
-					</a>
+						Contract Address: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+					</ContractLink>
 				</>
 			)}
 			{content}
