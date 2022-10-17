@@ -113,6 +113,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		display: flex;
 		flex-wrap: wrap;
 		margin-top: 2rem;
+		margin-bottom: 2.5rem;
 		width: 100%;
 		column-gap: 1rem;
 		row-gap: 1rem;
