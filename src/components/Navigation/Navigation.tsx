@@ -1,5 +1,4 @@
-import { IconButton, Drawer } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Drawer } from '@mui/material';
 import { DrawerContent } from './Navigation.styled';
 import { LogoIcon } from '../../images/index';
 import { PathName } from '../../types';
@@ -10,7 +9,9 @@ import BuyerIconInactive from '../../images/icons/buyer-grey.png';
 import SellerIconActive from '../../images/icons/seller-blue.png';
 import SellerIconInactive from '../../images/icons/seller-grey.png';
 import { Link } from 'react-router-dom';
-import styled from '@emotion/styled';
+import HelpIcon from '@mui/icons-material/Help';
+import FlagCircleIcon from '@mui/icons-material/FlagCircle';
+import PolicyIcon from '@mui/icons-material/Policy';
 
 // Navigation setup
 interface Navigation {
@@ -20,16 +21,6 @@ interface Navigation {
 	inactiveIcon: string;
 	current: boolean;
 }
-
-const ActiveNavTab = styled.div`
-	background: #0e4353;
-	position: absolute;
-	width: 6px;
-	height: 36px;
-	left: 0px;
-	margin-top: 0.2rem;
-	border-radius: 0px 15px 15px 0px;
-`;
 
 export const ResponsiveNavigation = (prop: {
 	sidebarOpen: boolean;
@@ -83,6 +74,29 @@ export const ResponsiveNavigation = (prop: {
 					</>
 				))}
 			</nav>
+			<div className='resources'>
+				<h3>Resources</h3>
+				<a
+					href='https://app.gitbook.com/o/LyHwPIWryy8bgL99GNF6/s/LOJKfuh83H9XvKG0vaoH/'
+					target='_blank'
+					rel='noreferrer'
+				>
+					<HelpIcon style={{ fill: '#0E4353' }} />
+					<span className='item-name'>Help</span>
+				</a>
+				<a
+					href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
+					target='_blank'
+					rel='noreferrer'
+				>
+					<FlagCircleIcon style={{ fill: '#0E4353' }} />
+					<span className='item-name'>Report issue</span>
+				</a>
+				<a href='#' target='_blank' rel='noreferrer'>
+					<PolicyIcon style={{ fill: '#0E4353' }} />
+					<span className='item-name'>Coinspect audit</span>
+				</a>
+			</div>
 		</DrawerContent>
 	);
 	return (
