@@ -121,7 +121,11 @@ export const ResponsiveNavigation = (prop: {
 				variant='permanent'
 				sx={{
 					display: { xs: 'none', md: 'block' },
-					'& .MuiDrawer-paper': { boxSizing: 'border-box', width: prop.drawerWidth },
+					'& .MuiDrawer-paper': {
+						boxSizing: 'border-box',
+						width: prop.drawerWidth,
+						border: 'none',
+					},
 				}}
 				open
 			>
