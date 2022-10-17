@@ -49,6 +49,8 @@ export const ModalCard = styled.div`
 		font-size: 0.8rem;
 		margin-bottom: 0.5rem;
 		color: #014353;
+		font-weight: 500;
+		text-decoration: underline;
 	}
 
 	.subtext {

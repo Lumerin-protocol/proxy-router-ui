@@ -198,9 +198,15 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 			{display && (
 				<>
 					<h2>Edit Order</h2>
-					<span className='order-ID'>
-						Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
-					</span>
+					<a
+						href={`${process.env.REACT_APP_ETHERSCAN_URL}${contract.id as string}`}
+						target='_blank'
+						rel='noreferrer'
+					>
+						<span className='order-ID'>
+							Contract Address: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+						</span>
+					</a>
 				</>
 			)}
 			{content}
