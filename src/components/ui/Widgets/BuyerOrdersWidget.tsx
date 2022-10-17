@@ -4,11 +4,13 @@ import styled from '@emotion/styled';
 import { isEmpty } from 'lodash';
 import { getProgressPercentage } from '../../../utils';
 import { SmallWidget } from '../Cards/Cards.styled';
+import { Skeleton } from '@mui/material';
 
 export const BuyerOrdersWidget = (props: {
 	contracts: Array<HashRentalContract>;
 	userAccount: string;
 	currentBlockTimestamp: number;
+	isLoading: boolean;
 }) => {
 	const buyerOrders = props.contracts.filter(
 		(contract: HashRentalContract) => contract.buyer === props.userAccount
@@ -52,6 +54,8 @@ export const BuyerOrdersWidget = (props: {
 				text-align: center;
 				flex: 1 1 0%;
 				margin-bottom: 0.15rem;
+				display: flex;
+				justify-content: center;
 			}
 			p {
 				font-size: 0.625rem;
@@ -65,13 +69,23 @@ export const BuyerOrdersWidget = (props: {
 			<h3>Purchased Contracts</h3>
 			<div className='stats'>
 				<div className='stat'>
-					<h4 className='flex-1 text-center text-lumerin-blue-text text-xl'>
-						{runningContracts.length}
+					<h4>
+						{props.isLoading ? (
+							<Skeleton variant='rectangular' width={40} height={28} />
+						) : (
+							runningContracts.length
+						)}
 					</h4>
 					<p>ACTIVE</p>
 				</div>
 				<div className='stat'>
-					<h4>{completedContracts.length}</h4>
+					<h4>
+						{props.isLoading ? (
+							<Skeleton variant='rectangular' width={40} height={28} />
+						) : (
+							completedContracts.length
+						)}
+					</h4>
 					<p>COMPLETED</p>
 				</div>
 			</div>

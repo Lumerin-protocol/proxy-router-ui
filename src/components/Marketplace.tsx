@@ -12,16 +12,26 @@ import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
 import styled from '@emotion/styled';
 import { SortToolbar } from './ui/SortToolbar';
+import { BuyerOrdersWidget } from './ui/Widgets/BuyerOrdersWidget';
+import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
 
 interface MarketplaceProps {
 	web3: Web3 | undefined;
 	contracts: HashRentalContract[];
 	setContractId: Dispatch<SetStateAction<string>>;
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
+	userAccount: string;
+	isMetaMask: boolean;
+	currentBlockTimestamp: number;
+	lumerinBalance: number;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
 	web3,
+	userAccount,
+	isMetaMask,
+	currentBlockTimestamp,
+	lumerinBalance,
 	contracts,
 	setContractId,
 	buyClickHandler,
@@ -99,8 +109,44 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		}
 	});
 
+	const WidgetsWrapper = styled.div`
+		display: flex;
+		flex-wrap: wrap;
+		margin-top: 2rem;
+		width: 100%;
+		column-gap: 1rem;
+		row-gap: 1rem;
+
+		.widget {
+			display: flex;
+			flex-direction: column;
+			flex: 1 1 0px;
+		}
+	`;
+
 	return (
 		<>
+			<WidgetsWrapper>
+				<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
+					<p>
+						Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any bugs you
+						notice to the{' '}
+						<a
+							className='link underline'
+							href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
+						>
+							Github Repo.
+						</a>
+					</p>
+				</div>
+				<BuyerOrdersWidget
+					isLoading={isLoading}
+					contracts={contracts}
+					userAccount={userAccount}
+					currentBlockTimestamp={currentBlockTimestamp}
+				/>
+				{isMetaMask && <WalletBalanceWidget lumerinBalance={lumerinBalance} />}
+			</WidgetsWrapper>
 			<SortToolbar pageTitle='Hashrate For Sale' sortType={sortType} setSortType={setSortType} />
 			<AvailableContracts contracts={availableContracts} loading={isLoading} />
 		</>
