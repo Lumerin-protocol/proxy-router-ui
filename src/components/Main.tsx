@@ -341,8 +341,12 @@ export const Main: React.FC = () => {
 						<Marketplace
 							{...props}
 							web3={web3}
+							userAccount={userAccount}
+							isMetaMask={isMetaMask}
+							lumerinBalance={lumerinBalance}
 							contracts={contracts}
 							setContractId={setContractId}
+							currentBlockTimestamp={currentBlockTimestamp}
 							buyClickHandler={(event) => buttonClickHandler(event, buyModalOpen, setBuyModalOpen)}
 						/>
 					)}
@@ -385,21 +389,6 @@ export const Main: React.FC = () => {
 		background-position: bottom right, right top, left top, left bottom;
 		background-repeat: no-repeat;
 		background-size: 25% 15% 15% 10%;
-	`;
-
-	const WidgetsWrapper = styled.div`
-		display: flex;
-		flex-wrap: wrap;
-		margin-top: 2rem;
-		width: 100%;
-		column-gap: 1rem;
-		row-gap: 1rem;
-
-		.widget {
-			display: flex;
-			flex-direction: column;
-			flex: 1 1 0px;
-		}
 	`;
 
 	const drawerWidth = 240;
@@ -519,28 +508,6 @@ export const Main: React.FC = () => {
 					drawerWidth={drawerWidth}
 				/>
 				<Box component='main'>
-					{pathName === PathName.Marketplace && (
-						<WidgetsWrapper>
-							<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
-								<p>
-									Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
-									bugs you notice to the{' '}
-									<a
-										className='link underline'
-										href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
-									>
-										Github Repo.
-									</a>
-								</p>
-							</div>
-							<BuyerOrdersWidget
-								contracts={contracts}
-								userAccount={userAccount}
-								currentBlockTimestamp={currentBlockTimestamp}
-							/>
-							{isMetaMask && <WalletBalanceWidget lumerinBalance={lumerinBalance} />}
-						</WidgetsWrapper>
-					)}
 					<main>{getContent()}</main>
 				</Box>
 			</Box>
