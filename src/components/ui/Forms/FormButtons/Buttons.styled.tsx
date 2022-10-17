@@ -62,3 +62,8 @@ export const SecondaryButton = styled(Button)`
 	background: none;
 	border: 2px solid #014353;
 `;
+
+export const CancelButton = styled(Button)`
+	color: red;
+	border: 2px solid red;
+`;
