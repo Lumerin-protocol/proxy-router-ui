@@ -47,9 +47,16 @@ export const BuyerOrdersWidget = (props: {
 			padding: 0.75rem;
 		}
 
+		.active {
+			color: #0e4353;
+		}
+		.completed {
+			color: #a7a9b6;
+		}
+
 		.stat {
 			h4 {
-				font-size: 1.75rem;
+				font-size: 1.85rem;
 				line-height: 1.75rem;
 				text-align: center;
 				flex: 1 1 0%;
@@ -68,7 +75,7 @@ export const BuyerOrdersWidget = (props: {
 		<BuyerOrdersWrapper>
 			<h3>Purchased Contracts</h3>
 			<div className='stats'>
-				<div className='stat'>
+				<div className='stat active'>
 					<h4>
 						{props.isLoading ? (
 							<Skeleton variant='rectangular' width={40} height={28} />
@@ -78,7 +85,7 @@ export const BuyerOrdersWidget = (props: {
 					</h4>
 					<p>ACTIVE</p>
 				</div>
-				<div className='stat'>
+				<div className='stat completed'>
 					<h4>
 						{props.isLoading ? (
 							<Skeleton variant='rectangular' width={40} height={28} />
