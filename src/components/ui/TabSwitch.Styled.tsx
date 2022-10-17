@@ -11,9 +11,11 @@ export const TabSwitch = styled.div`
 	height: 53px;
 	border-radius: 99px;
 	margin-bottom: 3rem;
+	margin-top: 2rem;
 
-	@media (max-width: 700px) {
-		transform: scale(0.6);
+	@media (max-width: 900px) {
+		margin: 2rem auto;
+		transform: scale(0.9);
 	}
 
 	button {

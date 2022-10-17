@@ -212,7 +212,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		display: flex;
 		justify-content: flex-end;
 		width: 100%;
-		margin-bottom: 2rem;
+		margin-bottom: 3rem;
+		margin-top: 2rem;
 
 		.create-button {
 			justify-self: flex-end;
@@ -229,7 +230,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	`;
 
 	return (
-		<div className='flex flex-col items-center'>
+		<>
 			<SellerToolbar>
 				<PrimaryButton
 					className='create-button'
@@ -250,11 +251,11 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 							<Spinner />
 						</div>
 					) : (
-						<div className='text-2xl'>You have no contracts.</div>
+						<div className='text-center text-2xl'>You have no contracts.</div>
 					)}
 				</>
 			)}
-		</div>
+		</>
 	);
 };
 

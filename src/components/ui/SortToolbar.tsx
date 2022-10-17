@@ -1,12 +1,11 @@
 import styled from '@emotion/styled';
 import { Box, FormControl, InputLabel, MenuItem, Select, Toolbar } from '@mui/material';
-import React, { SetStateAction, useEffect } from 'react';
+import React, { SetStateAction } from 'react';
 import { SortTypes } from '../../types';
 
 const StyledToolbar = styled(Toolbar)`
 	justify-content: space-between;
 	align-items: flex-start;
-	margin-top: 2rem;
 	margin-bottom: 1rem;
 	width: 100%;
 	padding: 0 !important;
@@ -21,9 +20,6 @@ export const SortToolbar = (props: {
 	sortType: string;
 	setSortType: React.Dispatch<SetStateAction<string>>;
 }) => {
-	useEffect(() => {
-		console.log(props.sortType);
-	});
 	return (
 		<StyledToolbar>
 			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-regular text-left mb-5'>
