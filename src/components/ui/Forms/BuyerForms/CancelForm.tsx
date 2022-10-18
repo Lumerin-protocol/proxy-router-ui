@@ -13,6 +13,9 @@ import { Alert } from '../../Alert';
 import { Spinner } from '../../Spinner.styled';
 import ImplementationContract from '../../../../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
+import { ButtonGroup } from '../../ButtonGroup';
+import { CancelButton } from '../FormButtons/Buttons.styled';
+import { SecondaryButton } from '../FormButtons/Buttons.styled';
 
 export const CancelForm: React.FC<UpdateFormProps> = ({
 	contracts,
@@ -93,28 +96,31 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 			<div
 				className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium `}
 			>
-				{!isConfirmModal && contentState === ContentState.Review ? (
-					<Fragment>
-						<div className='flex flex-col justify-center bg-white text-black modal-input-spacing pb-4 border-transparent rounded-5'>
-							<h2 className='text-3xl text-red-500 mb-3'>Cancel Order</h2>
-							<p className='mb-3 font-normal'>
-								You are about to cancel your order, and the purchased hashrate will no longer be
-								delivered.
-							</p>
-							<p className='text-sm font-light mb-6'>
-								Please note - Gas fees are required in order to proceed with the cancellation.
-							</p>
-							<button
-								type='submit'
-								className={`h-16 w-full mb-4 py-2 px-4 btn-modal border-red-500 bg-white text-sm font-medium text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
-								onClick={cancelSubmitHandler}
-							>
-								Cancel Order
-							</button>
-						</div>
-					</Fragment>
-				) : null}
-				{isConfirmModal && contentState === ContentState.Confirm ? (
+				{!isConfirmModal && contentState === ContentState.Review && (
+					<div className='flex flex-col justify-center bg-white text-black modal-input-spacing pb-4 border-transparent rounded-5'>
+						<h2 className='text-3xl mb-3'>Cancel Order</h2>
+						<p className='mb-3 font-normal'>
+							You are about to cancel your order, and the purchased hashrate will no longer be
+							delivered.
+						</p>
+						<p className='text-sm font-light'>
+							Please note - Gas fees are required in order to proceed with the cancellation.
+						</p>
+						<ButtonGroup
+							button1={
+								<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+									Close
+								</SecondaryButton>
+							}
+							button2={
+								<CancelButton type='submit' onClick={cancelSubmitHandler}>
+									Cancel Order
+								</CancelButton>
+							}
+						></ButtonGroup>
+					</div>
+				)}
+				{isConfirmModal && contentState === ContentState.Confirm && (
 					<Fragment>
 						<div className='flex flex-col text-red-500'>
 							<p className='bg-white modal-input-spacing border-transparent rounded-t-5'>
@@ -125,17 +131,17 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 							</p>
 						</div>
 						<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
-							<button
+							<CancelButton
 								type='submit'
 								className={`h-16 w-full py-2 px-4 btn-modal border-red-500 bg-white text-sm font-medium text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
 								onClick={cancelContractAsync}
 							>
 								Confirm Cancellation
-							</button>
+							</CancelButton>
 						</div>
 					</Fragment>
-				) : null}
-				{contentState === ContentState.Pending ? (
+				)}
+				{contentState === ContentState.Pending && (
 					<div className='flex flex-col items-center bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
 						<div className='flex justify-center'>
 							<p className='bg-white modal-input-spacing border-transparent pt-0 mb-8 text-xl text-center'>
@@ -144,14 +150,14 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 						</div>
 						<Spinner />
 					</div>
-				) : null}
-				{contentState === ContentState.Complete ? (
+				)}
+				{contentState === ContentState.Complete && (
 					<div className='flex bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5'>
 						<p className='mb-1'>
 							The order has been cancelled successfully, and its status will update shortly.
 						</p>
 					</div>
-				) : null}
+				)}
 			</div>
 		</Fragment>
 	);

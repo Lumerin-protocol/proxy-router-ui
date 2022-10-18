@@ -8,18 +8,18 @@ export const DrawerContent = styled.div`
 	flex-direction: column;
 	justify-content: space-between;
 
-	nav a {
+	nav a,
+	.resources a {
 		display: flex;
 		padding: 0.5rem;
-		font-size: 1rem;
-		line-height: 1.25rem;
-		font-weight: 500;
 		align-items: center;
-		border-radius: 0.375rem;
 	}
 
 	.item-name {
 		margin-left: 1rem;
+		font-size: 0.925rem;
+		line-height: 1.25rem;
+		font-weight: 500;
 	}
 
 	.menu-icon {
@@ -29,5 +29,22 @@ export const DrawerContent = styled.div`
 	img {
 		width: 20px;
 		margin: 0.5rem 0;
+	}
+
+	.resources {
+		padding-top: 2rem;
+		padding-bottom: 2rem;
+		border-top: 2px solid #f4f4f4;
+
+		h3 {
+			color: #0e4353;
+			margin-bottom: 1rem;
+			font-weight: 500;
+			padding-left: 0.5rem;
+		}
+
+		a {
+			margin-bottom: 0.5rem;
+		}
 	}
 `;
