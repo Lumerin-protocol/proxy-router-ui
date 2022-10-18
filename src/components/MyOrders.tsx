@@ -188,14 +188,14 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					className={currentTab === CurrentTab.Running ? 'active' : ''}
 					onClick={handleRunningTab}
 				>
-					Running <span>{runningContracts.length}</span>
+					Running <span>{showSpinner ? '' : runningContracts.length}</span>
 				</button>
 				<button
 					id='completed'
 					className={currentTab === CurrentTab.Completed ? 'active' : ''}
 					onClick={handleCompletedTab}
 				>
-					Completed <span>{completedContracts.length}</span>
+					Completed <span>{showSpinner ? '' : completedContracts.length}</span>
 				</button>
 				<span className='glider'></span>
 			</TabSwitch>

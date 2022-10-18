@@ -45,9 +45,7 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 import styled from '@emotion/styled';
-import { BuyerOrdersWidget } from './ui/BuyerOrdersWidget';
-import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
-import EastIcon from '@mui/icons-material/East';
+import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Box } from '@mui/material';
 import { Header } from './ui/Header';
@@ -276,19 +274,16 @@ export const Main: React.FC = () => {
 
 	// Content setup
 	const ActionButtons: JSX.Element = (
-		<div className='flex flex-row'>
-			<SecondaryButton type='button' onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}>
-				<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
+		<ConnectButtonsWrapper>
+			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}>
+				<span>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
-			</SecondaryButton>
-			<SecondaryButton
-				type='button'
-				onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}
-			>
-				<span className='mr-2'>{WalletText.ConnectViaWalletConnect}</span>
+			</button>
+			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
+				<span>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</SecondaryButton>
-		</div>
+			</button>
+		</ConnectButtonsWrapper>
 	);
 
 	const routes = (
@@ -341,8 +336,12 @@ export const Main: React.FC = () => {
 						<Marketplace
 							{...props}
 							web3={web3}
+							userAccount={userAccount}
+							isMetaMask={isMetaMask}
+							lumerinBalance={lumerinBalance}
 							contracts={contracts}
 							setContractId={setContractId}
+							currentBlockTimestamp={currentBlockTimestamp}
 							buyClickHandler={(event) => buttonClickHandler(event, buyModalOpen, setBuyModalOpen)}
 						/>
 					)}
@@ -385,21 +384,6 @@ export const Main: React.FC = () => {
 		background-position: bottom right, right top, left top, left bottom;
 		background-repeat: no-repeat;
 		background-size: 25% 15% 15% 10%;
-	`;
-
-	const WidgetsWrapper = styled.div`
-		display: flex;
-		flex-wrap: wrap;
-		margin-top: 2rem;
-		width: 100%;
-		column-gap: 1rem;
-		row-gap: 1rem;
-
-		.widget {
-			display: flex;
-			flex-direction: column;
-			flex: 1 1 0px;
-		}
 	`;
 
 	const drawerWidth = 240;
@@ -519,40 +503,6 @@ export const Main: React.FC = () => {
 					drawerWidth={drawerWidth}
 				/>
 				<Box component='main'>
-					{pathName === PathName.Marketplace && (
-						<WidgetsWrapper>
-							<div className='card bg-white rounded-15 p-6 flex flex-col items-center justify-center text-sm w-96 h-32 flex-auto'>
-								<p>
-									Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any
-									bugs you notice to the{' '}
-									<a
-										className='link underline'
-										href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
-									>
-										Github Repo.
-									</a>
-								</p>
-							</div>
-							<BuyerOrdersWidget contracts={contracts} userAccount={userAccount} />
-							{isMetaMask && (
-								<div className='flex bg-white rounded-15 p-2 w-32 h-32 flex-auto justify-center flex-col widget'>
-									<p className='text-xs text-center'>Wallet Balance</p>
-									<div className='flex items-center justify-center flex-1'>
-										<LumerinIcon />
-										<span className='ml-2 text-lg md:text-lg text-lumerin-blue-text'>
-											{Math.ceil(lumerinBalance).toLocaleString()}{' '}
-											<span className='text-sm'>LMR</span>
-										</span>
-									</div>
-									<p className='text-xxs text-center border-t-2 border-lumerin-light-gray pt-1.5'>
-										<a className='' href='/buyerhub'>
-											Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
-										</a>
-									</p>
-								</div>
-							)}
-						</WidgetsWrapper>
-					)}
 					<main>{getContent()}</main>
 				</Box>
 			</Box>
