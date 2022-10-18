@@ -11,7 +11,6 @@ import SellerIconInactive from '../../images/icons/seller-grey.png';
 import { Link } from 'react-router-dom';
 import HelpIcon from '@mui/icons-material/Help';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
-import PolicyIcon from '@mui/icons-material/Policy';
 
 // Navigation setup
 interface Navigation {
@@ -91,10 +90,6 @@ export const ResponsiveNavigation = (prop: {
 				>
 					<FlagCircleIcon style={{ fill: '#0E4353' }} />
 					<span className='item-name'>Report issue</span>
-				</a>
-				<a href='#' target='_blank' rel='noreferrer'>
-					<PolicyIcon style={{ fill: '#0E4353' }} />
-					<span className='item-name'>Coinspect audit</span>
 				</a>
 			</div>
 		</DrawerContent>
