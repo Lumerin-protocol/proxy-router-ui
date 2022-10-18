@@ -45,13 +45,11 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import _ from 'lodash';
 import styled from '@emotion/styled';
-import { BuyerOrdersWidget } from './ui/Widgets/BuyerOrdersWidget';
-import { SecondaryButton } from './ui/Forms/FormButtons/Buttons.styled';
+import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Box } from '@mui/material';
 import { Header } from './ui/Header';
 import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
-import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -276,19 +274,16 @@ export const Main: React.FC = () => {
 
 	// Content setup
 	const ActionButtons: JSX.Element = (
-		<div className='flex flex-row'>
-			<SecondaryButton type='button' onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}>
-				<span className='mr-4'>{WalletText.ConnectViaMetaMask}</span>
+		<ConnectButtonsWrapper>
+			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaMetaMask)}>
+				<span>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
-			</SecondaryButton>
-			<SecondaryButton
-				type='button'
-				onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}
-			>
-				<span className='mr-2'>{WalletText.ConnectViaWalletConnect}</span>
+			</button>
+			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
+				<span>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</SecondaryButton>
-		</div>
+			</button>
+		</ConnectButtonsWrapper>
 	);
 
 	const routes = (

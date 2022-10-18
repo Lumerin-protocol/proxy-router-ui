@@ -17,6 +17,7 @@ export const ContractCards = styled.div`
 		background: white;
 		border-radius: 15px;
 		padding: 1.75rem;
+		padding-bottom: 3rem;
 		margin-bottom: 1rem;
 		.utils {
 			display: flex;
