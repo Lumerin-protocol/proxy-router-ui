@@ -27,12 +27,10 @@ export const Header = (prop: {
 				<span className='sr-only'>Open sidebar</span>
 				<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 			</button>
-			<div className='flex items-center ml-1 md:ml-4 xl:ml-0'>
-				<h1 className='text-xl font-semibold font-Raleway text-lumerin-blue-text'>
-					{prop.pageTitle}
-				</h1>
-			</div>
-			<div className='block justify-self-end'>
+			<h1 className='text-xl font-semibold font-Raleway text-lumerin-blue-text'>
+				{prop.pageTitle}
+			</h1>
+			<div>
 				<div className='btn-connected cursor-default flex justify-between items-center px-8'>
 					<span className='pr-3'>{prop.truncatedWalletAddress}</span>
 					{prop.isMetamask ? <MetaMaskIcon /> : <WalletConnectIcon />}

@@ -26,6 +26,7 @@ import { ReviewContent } from './ReviewContent';
 import { Alert } from '../../Alert';
 import { buttonText, paragraphText } from '../../../../shared';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
+import { ContractLink } from '../../Modal.styled';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -198,9 +199,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 			{display && (
 				<>
 					<h2>Edit Order</h2>
-					<span className='order-ID'>
-						Order ID: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
-					</span>
+					<ContractLink
+						href={`${process.env.REACT_APP_ETHERSCAN_URL}${contract.id as string}`}
+						target='_blank'
+						rel='noreferrer'
+					>
+						Contract Address: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+					</ContractLink>
 				</>
 			)}
 			{content}
