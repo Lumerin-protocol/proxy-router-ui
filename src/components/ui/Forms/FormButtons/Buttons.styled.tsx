@@ -24,6 +24,25 @@ export const ActionButtonWrapper = styled.div`
 	}
 `;
 
+export const ConnectButtonsWrapper = styled.div`
+	display: flex;
+	flex-direction: column;
+
+	button {
+		background-color: #eaf7fc;
+		padding: 1.75rem;
+		border-radius: 20px;
+		margin-bottom: 2rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		span {
+			margin-right: 1rem;
+		}
+	}
+`;
+
 export const FormButtonsWrapper = styled.div`
 	display: flex;
 	flex-direction: row;

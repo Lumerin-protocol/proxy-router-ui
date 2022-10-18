@@ -7,7 +7,7 @@ import Web3 from 'web3';
 
 // Enums
 export enum WalletText {
-	ConnectViaMetaMask = 'Connect Via MetaMask',
+	ConnectViaMetaMask = 'MetaMask',
 	ConnectViaWalletConnect = 'WalletConnect',
 	Disconnect = 'Disconnect',
 }
