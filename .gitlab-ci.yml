@@ -45,7 +45,7 @@ default:
         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
         - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
         - echo "Review input.json file...."
-        - cat input.json | jq.
+        - cat input.json | jq .
         
         - echo "*****************************"
         - echo "Deploying new container definition..."
