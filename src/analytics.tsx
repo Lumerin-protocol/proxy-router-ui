@@ -1,8 +1,8 @@
 import ReactGA from 'react-ga4';
 
 export const purchasedHashrate = (totalHashrate: number) =>
-	ReactGA.event({
-		action: 'purchased_hashrate',
+	ReactGA.event('purchase_hashrate', {
 		category: 'Hashrate',
+		action: 'Purchase',
 		value: totalHashrate,
 	});
