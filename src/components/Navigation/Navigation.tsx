@@ -56,9 +56,9 @@ export const ResponsiveNavigation = (prop: {
 		<DrawerContent>
 			<nav>
 				<LogoIcon className='menu-icon' />
-				{navigation.map((item, index) => (
+				{navigation.map((item) => (
 					<Link
-						key={index}
+						key={item.name}
 						to={item.to}
 						className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
 						onClick={() => {
