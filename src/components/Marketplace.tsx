@@ -13,6 +13,7 @@ import styled from '@emotion/styled';
 import { SortToolbar } from './ui/SortToolbar';
 import { BuyerOrdersWidget } from './ui/Widgets/BuyerOrdersWidget';
 import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
+import { sortContracts } from '../utils';
 
 interface MarketplaceProps {
 	web3: Web3 | undefined;
