@@ -1,13 +1,19 @@
 variables:
-        REACT_APP_LUMERIN_TOKEN_ADDRESS: $LUMERIN_TOKEN_ADDRESS
-        REACT_APP_CLONE_FACTORY: $CLONE_FACTORY_ADDRESS
-        REACT_APP_ETHERSCAN_URL: $ETH_NODE_ADDRESS_HTTPS
+    REACT_APP_LUMERIN_TOKEN_ADDRESS: $LUMERIN_TOKEN_ADDRESS
+    REACT_APP_CLONE_FACTORY: $CLONE_FACTORY_ADDRESS
+    REACT_APP_ETHERSCAN_URL: $ETH_NODE_ADDRESS_HTTPS
+    
 stages:
     - develop
     - review
     - deploy
+
 default:
     before_script:
+        - echo $REACT_APP_LUMERIN_TOKEN_ADDRESS
+        - echo $REACT_APP_CLONE_FACTORY
+        - echo $REACT_APP_ETHERSCAN_URL
+
         - echo "*****************************"
         - echo "Updating lumerin.json"
         - echo "*****************************"
