@@ -299,16 +299,12 @@ export const sortContracts = (
 interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}
 export const getButton: (
 	contentState: string,
-	bgColor: string,
-	buttonOpacity: string,
 	buttonContent: string,
 	setOpen: Dispatch<SetStateAction<boolean>>,
 	handleSubmit: UseFormHandleSubmit<InputValues>,
 	createTransactionAsync: (data: InputValues) => void
 ) => JSX.Element = (
 	contentState,
-	bgColor,
-	buttonOpacity,
 	buttonContent,
 	setOpen,
 	handleSubmit,

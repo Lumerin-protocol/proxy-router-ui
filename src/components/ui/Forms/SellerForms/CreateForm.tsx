@@ -41,7 +41,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	web3,
 	setOpen,
 }) => {
-	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
 
@@ -102,15 +101,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 		if (contentState === ContentState.Pending) createContractAsync(formData);
 	}, [contentState]);
 
-	// Change opacity of Review Order button based on input validation
-	useEffect(() => {
-		if (isValid) {
-			setButtonOpacity('100');
-		} else {
-			setButtonOpacity('25');
-		}
-	}, [isValid]);
-
 	// Content setup
 	// Defaults to create state
 	// Initialize since html element needs a value on first render
@@ -138,11 +128,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	const display =
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 
-	const bgColor =
-		contentState === ContentState.Complete || contentState === ContentState.Confirm
-			? 'bg-black'
-			: 'bg-lumerin-aqua';
-
 	return (
 		<Fragment>
 			{display && (
@@ -159,8 +144,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 				{contentState !== ContentState.Pending &&
 					getButton(
 						contentState,
-						bgColor,
-						buttonOpacity,
 						buttonContent,
 						setOpen,
 						handleSubmit,

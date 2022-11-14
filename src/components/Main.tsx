@@ -1,15 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, Suspense, useEffect, useState } from 'react';
-import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
-import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
-import { MetaMaskIcon, LogoIcon, LogoIcon2, LumerinIcon, WalletConnectIcon } from '../images/index';
+import { Suspense, useEffect, useState } from 'react';
+import { Route, RouteComponentProps, Switch } from 'react-router-dom';
+import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
 import BubbleGraphic1 from '../images/Bubble_1.png';
 import BubbleGraphic2 from '../images/Bubble_2.png';
 import BubbleGraphic3 from '../images/Bubble_3.png';
 import BubbleGraphic4 from '../images/Bubble_4.png';
 import ImplementationContract from '../contracts/Implementation.json';
 import { AbiItem } from 'web3-utils';
-import { Alert } from './ui/Alert';
 import { ModalItem } from './ui/Modal';
 import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
@@ -32,7 +30,6 @@ import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
 import {
 	AddressLength,
 	AlertMessage,
-	ContractState,
 	Ethereum,
 	HashRentalContract,
 	PathName,

@@ -66,7 +66,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	lumerinbalance,
 	setOpen,
 }) => {
-	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isAvailable, setIsAvailable] = useState<boolean>(true);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -85,6 +84,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
+		setValue
 	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
 
 	// Contract setup
@@ -195,15 +195,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		if (contentState === ContentState.Pending) buyContractAsync(formData);
 	}, [contentState]);
 
-	// Change opacity of Review Order button based on input validation
-	useEffect(() => {
-		if (isValid) {
-			setButtonOpacity('100');
-		} else {
-			setButtonOpacity('25');
-		}
-	}, [isValid]);
-
 	// Content setup
 	// Defaults to review state
 	// Initialize variables since html elements need values on first render
@@ -225,7 +216,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			default:
 				paragraphContent = paragraphText.review as string;
 				buttonContent = buttonText.review as string;
-				content = <ReviewContent register={register} errors={errors} />;
+				content = <ReviewContent register={register} errors={errors} setValue={setValue} />;
 		}
 	};
 	createContent();
@@ -233,10 +224,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	// Set styles and button based on ContentState
 	const display =
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
-	const bgColor =
-		contentState === ContentState.Complete || contentState === ContentState.Confirm
-			? 'bg-black'
-			: 'bg-lumerin-aqua';
 
 	return (
 		<Fragment>
@@ -270,8 +257,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				{contentState !== ContentState.Pending &&
 					getButton(
 						contentState,
-						bgColor,
-						buttonOpacity,
 						buttonContent,
 						setOpen,
 						handleSubmit,
