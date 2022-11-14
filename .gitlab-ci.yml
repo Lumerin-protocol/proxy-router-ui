@@ -64,6 +64,7 @@ default:
         - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
 
 bedrock-02-dev:
+    environment: dev
     stage: develop
     only:
         - dev
@@ -79,6 +80,7 @@ bedrock-02-dev:
     script: echo "$TGT_ENV Updated"
 
 titanio-03-stg:
+    environment: stg
     stage: review
     only:
         - stg
@@ -94,6 +96,7 @@ titanio-03-stg:
     script: echo "$TGT_ENV Updated"
 
 titanio-04-lmn-PROD:
+    environment: lmn
     stage: deploy
     only:
         - main
