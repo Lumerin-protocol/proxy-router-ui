@@ -200,13 +200,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(
-						contentState,
-						buttonContent,
-						setOpen,
-						handleSubmit,
-						editContractAsync
-					)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit, editContractAsync)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

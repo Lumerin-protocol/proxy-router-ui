@@ -178,13 +178,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(
-								contentState,
-								buttonContent,
-								setOpen,
-								handleSubmit,
-								editContractAsync
-						  )
+						? getButton(contentState, buttonContent, setOpen, handleSubmit, editContractAsync)
 						: null}
 				</div>
 			</div>

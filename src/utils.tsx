@@ -303,13 +303,7 @@ export const getButton: (
 	setOpen: Dispatch<SetStateAction<boolean>>,
 	handleSubmit: UseFormHandleSubmit<InputValues>,
 	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (
-	contentState,
-	buttonContent,
-	setOpen,
-	handleSubmit,
-	createTransactionAsync
-) => {
+) => JSX.Element = (contentState, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {

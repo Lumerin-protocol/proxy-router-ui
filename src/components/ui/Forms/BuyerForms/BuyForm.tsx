@@ -84,7 +84,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
-		setValue
+		setValue,
 	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
 
 	// Contract setup
@@ -255,13 +255,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(
-						contentState,
-						buttonContent,
-						setOpen,
-						handleSubmit,
-						buyContractAsync
-					)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit, buyContractAsync)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);
