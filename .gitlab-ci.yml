@@ -2,13 +2,14 @@ variables:
     REACT_APP_LUMERIN_TOKEN_ADDRESS: $LUMERIN_TOKEN_ADDRESS
     REACT_APP_CLONE_FACTORY: $CLONE_FACTORY_ADDRESS
     REACT_APP_ETHERSCAN_URL: $ETH_NODE_ADDRESS_HTTPS
-    
+
 stages:
     - develop
     - review
     - deploy
 
 default:
+    image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     before_script:
         - echo $REACT_APP_LUMERIN_TOKEN_ADDRESS
         - echo $REACT_APP_CLONE_FACTORY
@@ -18,34 +19,33 @@ default:
         - echo "Updating lumerin.json"
         - echo "*****************************"
         - sed -i -e "s/LUMERIN_TOKEN_ADDRESS_VAR/${REACT_APP_LUMERIN_TOKEN_ADDRESS}/g" src/contracts/Lumerin.json
-        
+
         - echo "*****************************"
         - echo "Logging in to Titanio-NET ECR ..."
         - echo "*****************************"
         - docker system prune -af
         - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $CI_AWS_TitanIO_NET_ECR
-        
+
         - echo "*****************************"
         - echo "Combined Repo and Tag....."
         - echo "*****************************"
         - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
         - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
-        
+
         - echo "*****************************"
         - echo "Building image..."
         - echo "*****************************"
-        - 
-            docker build 
-          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS  
-          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY  
-          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL  
+        - docker build
+          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS
+          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY
+          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL
           -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG --no-cache .
-        
+
         - echo "*****************************"
         - echo "Pushing image..."
         - echo "*****************************"
         - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
-        
+
         - echo "*****************************"
         - echo "Preparing deployment of $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG to $TGT_ACCOUNT, titanio-$TGT_ENV Environment..."
         - echo "*****************************"
@@ -56,7 +56,7 @@ default:
         - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
         - echo "Review input.json file...."
         - cat input.json | jq .
-        
+
         - echo "*****************************"
         - echo "Deploying new container definition..."
         - echo "*****************************"
@@ -71,9 +71,14 @@ default:
 
 bedrock-02-dev:
     stage: develop
-    only:
-        - dev
-    image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+    environment: dev
+    rules:
+        - if: $CI_COMMIT_BRANCH == "dev"
+          when: always
+        - if: $CI_COMMIT_BRANCH != "dev"
+          when: manual
+        - if: $CI_MERGE_REQUEST_ID
+          when: never
     tags:
         - devops
         - bedrock
@@ -85,10 +90,10 @@ bedrock-02-dev:
     script: echo "$TGT_ENV Updated"
 
 titanio-03-stg:
+    environment: stg
     stage: review
     only:
         - stg
-    image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
         - devops
         - bedrock
@@ -100,11 +105,11 @@ titanio-03-stg:
     script: echo "$TGT_ENV Updated"
 
 titanio-04-lmn-PROD:
+    environment: lmn
     stage: deploy
     only:
         - main
     when: manual
-    image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
         - devops
         - bedrock
