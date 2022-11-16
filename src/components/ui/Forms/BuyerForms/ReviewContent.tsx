@@ -34,9 +34,13 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	const checkboxLabel = 'Titan Validator Service';
 	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.'; */
 
+	const closeRemovePortAlert = () => {
+		setAlertOpen(false);
+	}
+
 	return (
 		<React.Fragment>
-			<Alert message={AlertMessage.RemovePort} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert message={AlertMessage.RemovePort} open={alertOpen} setOpen={closeRemovePortAlert} />
 			<InputWrapper>
 				<label htmlFor='poolAddress'>Pool Address *</label>
 				<input
