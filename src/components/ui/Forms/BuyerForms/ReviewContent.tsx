@@ -36,7 +36,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 
 	const closeRemovePortAlert = () => {
 		setAlertOpen(false);
-	}
+	};
 
 	return (
 		<React.Fragment>

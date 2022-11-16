@@ -18,7 +18,7 @@ export const Alert: React.FC<AlertProps> = ({ message, open, setOpen, onClick })
 						className='inline-flex justify-center w-full bg-white text-base text-color-white font-medium'
 						onClick={onClick ? () => onClick() : () => {}}
 					>
-						<h3 className='text-md font-medium text-lumerin-aqua'>{message}</h3>	
+						<h3 className='text-md font-medium text-lumerin-aqua'>{message}</h3>
 					</button>
 				</div>
 			</ModalBox>
