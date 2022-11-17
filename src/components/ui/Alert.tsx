@@ -3,14 +3,14 @@ import { ModalBox } from './Modal.styled';
 
 interface AlertProps {
 	message: string;
-	open: boolean;
-	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	isOpen: boolean;
+	onClose: React.Dispatch<React.SetStateAction<boolean>>;
 	onClick?: () => void;
 }
 
-export const Alert: React.FC<AlertProps> = ({ message, open, setOpen, onClick }) => {
+export const Alert: React.FC<AlertProps> = ({ message, isOpen, onClose, onClick }) => {
 	return (
-		<Dialog open={open} onClose={setOpen} PaperProps={{ style: { borderRadius: 20 } }}>
+		<Dialog open={isOpen} onClose={onClose} PaperProps={{ style: { borderRadius: 20 } }}>
 			<ModalBox>
 				<div className='modal-card'>
 					<button

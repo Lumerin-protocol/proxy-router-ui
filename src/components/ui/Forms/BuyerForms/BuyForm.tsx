@@ -242,8 +242,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		<Fragment>
 			<Alert
 				message={!isAvailable ? AlertMessage.ContractIsPurchased : AlertMessage.InsufficientBalance}
-				open={alertOpen}
-				setOpen={setAlertOpen}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
 			/>
 			{display && (
 				<>
