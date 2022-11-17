@@ -195,7 +195,11 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.NoEditBuyer} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
+			<Alert
+				message={AlertMessage.NoEditBuyer}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
 			{display && (
 				<>
 					<h2>Edit Order</h2>

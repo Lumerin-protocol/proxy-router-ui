@@ -92,7 +92,11 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.NoCancelBuyer} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
+			<Alert
+				message={AlertMessage.NoCancelBuyer}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
 			<div
 				className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium `}
 			>
