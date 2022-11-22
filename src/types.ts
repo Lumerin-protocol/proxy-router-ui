@@ -57,8 +57,8 @@ export enum AlertMessage {
 	NoEditBuyer = 'An order must be running to be edited.',
 	NoCancelBuyer = 'An order must be running to be cancelled.',
 	InvalidPoolAddress = 'The pool address is invalid.',
-	RemovePort = 'Please remove the port number from the pool address, and enter it in the Port Number field.',
-	ContractIsPurchased = 'The contract has already been purchased, and its status will update shortly.',
+	RemovePort = 'Oops, looks like you included the port number with the pool address. Please remove the port number from the pool address. The port number should be inputted in the port number field.',
+	ContractIsPurchased = 'The contract you have attempted to purchase has already been sold. Please purchase another contract.',
 }
 
 export enum SortByType {
