@@ -1,20 +1,32 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Suspense, useEffect, useState } from 'react';
 import { Route, RouteComponentProps, Switch } from 'react-router-dom';
-import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
-import BubbleGraphic1 from '../images/Bubble_1.png';
-import BubbleGraphic2 from '../images/Bubble_2.png';
-import BubbleGraphic3 from '../images/Bubble_3.png';
-import BubbleGraphic4 from '../images/Bubble_4.png';
-import ImplementationContract from '../contracts/Implementation.json';
+import MetaMaskOnboarding from '@metamask/onboarding';
+import styled from '@emotion/styled';
+import { Box } from '@mui/material';
+import _ from 'lodash';
+import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { ModalItem } from './ui/Modal';
-import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
-import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
+
+import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
+import { Hero } from './Hero';
+import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Spinner } from './ui/Spinner.styled';
+import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
+import { ModalItem } from './ui/Modal';
+import { Header } from './ui/Header';
+import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
+import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
+import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
+import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
+import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
+import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
+import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
+
+import ImplementationContract from '../contracts/Implementation.json';
 import { useInterval } from './hooks/useInterval';
 import {
 	addLumerinTokenToMetaMaskAsync,
@@ -22,11 +34,7 @@ import {
 	getLumerinTokenBalanceAsync,
 	getWeb3ResultAsync,
 } from '../web3/helpers';
-import { buttonClickHandler, classNames, truncateAddress } from '../utils';
-import MetaMaskOnboarding from '@metamask/onboarding';
-import Web3 from 'web3';
-import { printError } from '../utils';
-import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
+import { buttonClickHandler, truncateAddress, printError } from '../utils';
 import {
 	AddressLength,
 	AlertMessage,
@@ -35,18 +43,12 @@ import {
 	PathName,
 	WalletText,
 } from '../types';
-import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
-import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
-import { Hero } from './Hero';
-import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
-import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
-import _ from 'lodash';
-import styled from '@emotion/styled';
-import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
-import { ResponsiveNavigation } from './Navigation/Navigation';
-import { Box } from '@mui/material';
-import { Header } from './ui/Header';
-import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
+
+import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
+import BubbleGraphic1 from '../images/Bubble_1.png';
+import BubbleGraphic2 from '../images/Bubble_2.png';
+import BubbleGraphic3 from '../images/Bubble_3.png';
+import BubbleGraphic4 from '../images/Bubble_4.png';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {

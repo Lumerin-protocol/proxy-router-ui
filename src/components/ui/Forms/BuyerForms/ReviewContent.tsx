@@ -63,7 +63,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 
 	return (
 		<React.Fragment>
-			<Alert message={AlertMessage.RemovePort} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={AlertMessage.RemovePort}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
 			<InputWrapper>
 				<InputLabel sx={{ color: 'black', fontFamily: 'inherit' }} id='preferred-pools-label'>
 					Preferred Pools

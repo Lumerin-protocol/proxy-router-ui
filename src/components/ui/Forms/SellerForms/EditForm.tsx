@@ -152,7 +152,11 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.NoEditSeller} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={AlertMessage.NoEditSeller}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
 			<div
 				className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}
 			>
