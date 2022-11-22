@@ -36,7 +36,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 
 	return (
 		<React.Fragment>
-			<Alert message={AlertMessage.RemovePort} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={AlertMessage.RemovePort}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
 			<InputWrapper>
 				<label htmlFor='poolAddress'>Pool Address *</label>
 				<input
