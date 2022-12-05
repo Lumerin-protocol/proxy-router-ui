@@ -7,7 +7,7 @@ export const TabSwitch = styled.div`
 	color: #0e4353;
 	box-shadow: 0 0 1px 0 rgba(#185ee0, 0.15), 0 6px 12px 0 rgba(#185ee0, 0.15);
 	padding: 0.7rem 0.25rem;
-	width: 408px;
+	max-width: 408px;
 	height: 53px;
 	border-radius: 99px;
 	margin-bottom: 3rem;
@@ -16,6 +16,9 @@ export const TabSwitch = styled.div`
 	@media (max-width: 900px) {
 		margin: 2rem auto;
 		transform: scale(0.9);
+	}
+	@media (max-width: 360px) {
+		transform: scale(0.85);
 	}
 
 	button {
@@ -29,6 +32,9 @@ export const TabSwitch = styled.div`
 		cursor: pointer;
 		transition: color 0.15s ease-in;
 		z-index: 2;
+		@media (max-width: 360px) {
+			transform: scale(0.85);
+		}
 
 		span {
 			display: flex;
@@ -74,5 +80,9 @@ export const TabSwitch = styled.div`
 		z-index: 1;
 		border-radius: 99px;
 		transition: 0.25s ease-out;
+
+		@media (max-width: 450px) {
+			width: 49%;
+		}
 	}
 `;
