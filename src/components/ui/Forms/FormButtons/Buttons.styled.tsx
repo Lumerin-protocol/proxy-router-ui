@@ -48,6 +48,7 @@ export const ConnectButtonsWrapper = styled.div`
 export const FormButtonsWrapper = styled.div`
 	display: flex;
 	flex-direction: row;
+	margin-top: 1.5rem;
 
 	button {
 		flex: auto;

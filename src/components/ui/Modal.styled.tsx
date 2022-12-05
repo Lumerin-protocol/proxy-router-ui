@@ -35,6 +35,11 @@ export const ModalCard = styled.div`
 	padding: 4rem;
 	padding-top: 2rem;
 
+	@media (max-width: 600px) {
+		padding: 2rem;
+		padding-top: 1rem;
+	}
+
 	.close {
 		margin-left: auto;
 	}
