@@ -77,6 +77,20 @@ export const Main: React.FC = () => {
 	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === 5;
 
+	const [width, setWidth] = useState<number>(window.innerWidth);
+
+	function handleWindowSizeChange() {
+		setWidth(window.innerWidth);
+	}
+	useEffect(() => {
+		window.addEventListener('resize', handleWindowSizeChange);
+		return () => {
+			window.removeEventListener('resize', handleWindowSizeChange);
+		};
+	}, []);
+
+	const isMobile = width <= 768;
+
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
 	const onboardMetaMask: () => void = () => {
@@ -303,6 +317,7 @@ export const Main: React.FC = () => {
 							cancelClickHandler={(event) =>
 								buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)
 							}
+							isMobile={isMobile}
 						/>
 					)}
 				/>
@@ -340,6 +355,7 @@ export const Main: React.FC = () => {
 							setContractId={setContractId}
 							currentBlockTimestamp={currentBlockTimestamp}
 							buyClickHandler={(event) => buttonClickHandler(event, buyModalOpen, setBuyModalOpen)}
+							isMobile={isMobile}
 						/>
 					)}
 				/>
@@ -497,6 +513,7 @@ export const Main: React.FC = () => {
 					truncatedWalletAddress={getTruncatedWalletAddress()}
 					addTokenToMetamask={addLumerinTokenToMetaMaskAsync}
 					isMetamask={isMetaMask}
+					isMobile={isMobile}
 					drawerWidth={drawerWidth}
 				/>
 				<Box component='main'>
