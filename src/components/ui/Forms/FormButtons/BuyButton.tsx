@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
+import { PrimaryButton } from './Buttons.styled';
 
 interface BuyButtonProps {
 	contractId: string;
@@ -18,15 +19,7 @@ export const BuyButton: React.FC<BuyButtonProps> = ({
 		buyClickHandler(event);
 	};
 
-	return (
-		<button
-			type='button'
-			className='px-4 py-2 rounded-10 bg-lumerin-dark-blue max-w-3/4 text-white text-xs'
-			onClick={(event) => clickHandler(event)}
-		>
-			Purchase
-		</button>
-	);
+	return <PrimaryButton onClick={(event) => clickHandler(event)}>Purchase</PrimaryButton>;
 };
 
 BuyButton.displayName = 'BuyButton';

@@ -3,13 +3,32 @@ import { getReadableDate } from '../../../utils';
 import SpeedIcon from '../../../images/icons/download-speed.png';
 import PriceIcon from '../../../images/icons/price-tag.png';
 import TimeIcon from '../../../images/icons/time-left.png';
-import { AvailableContract, SkeletonWrap } from './AvailableContract.styled';
-import { Skeleton } from '@mui/material';
+import {
+	AvailableContract,
+	MobileAvailableContract,
+	SkeletonWrap,
+} from './AvailableContract.styled';
+import { ButtonGroup, Skeleton } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { SecondaryButton } from '../Forms/FormButtons/Buttons.styled';
 
 export const AvailableContracts = (prop: {
 	contracts: Array<HashRentalContract>;
 	loading: boolean;
 }) => {
+	const [width, setWidth] = useState<number>(window.innerWidth);
+
+	function handleWindowSizeChange() {
+		setWidth(window.innerWidth);
+	}
+	useEffect(() => {
+		window.addEventListener('resize', handleWindowSizeChange);
+		return () => {
+			window.removeEventListener('resize', handleWindowSizeChange);
+		};
+	}, []);
+
+	const isMobile = width <= 768;
 	return (
 		<>
 			{prop.loading ? (
@@ -22,35 +41,76 @@ export const AvailableContracts = (prop: {
 				<>
 					{prop.contracts.length > 0 ? (
 						<ul>
-							{prop.contracts.map((item, index) => (
-								<AvailableContract key={index}>
-									<p>
-										<a
-											className='underline pb-0 font-Raleway cursor-pointer'
-											href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
-											target='_blank'
-											rel='noreferrer'
-										>
-											View Contract
-										</a>
-									</p>
-									<p>
-										<img src={SpeedIcon} alt='' />
-										{item.speed} th/s
-									</p>
-									{item.length && (
-										<p>
-											<img src={TimeIcon} alt='' />
-											{getReadableDate(item.length.toString())}
-										</p>
-									)}
-									<p>
-										<img src={PriceIcon} alt='' />
-										{item.price} LMR
-									</p>
-									{item.trade}
-								</AvailableContract>
-							))}
+							{isMobile ? (
+								<>
+									{prop.contracts.map((item, index) => (
+										<MobileAvailableContract key={index}>
+											<div className='stats'>
+												<div>
+													<img src={SpeedIcon} alt='' />
+													{item.speed} th/s
+												</div>
+												{item.length && (
+													<div>
+														<img src={TimeIcon} alt='' />
+														{getReadableDate(item.length.toString())}
+													</div>
+												)}
+												<div>
+													<img src={PriceIcon} alt='' />
+													{item.price} LMR
+												</div>
+											</div>
+											<div className='actions'>
+												<ButtonGroup>
+													<SecondaryButton>
+														<a
+															href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.contractId}`}
+															target='_blank'
+															rel='noreferrer'
+														>
+															View Contract
+														</a>
+													</SecondaryButton>
+													{item.trade}
+												</ButtonGroup>
+											</div>
+										</MobileAvailableContract>
+									))}
+								</>
+							) : (
+								<>
+									{prop.contracts.map((item, index) => (
+										<AvailableContract key={index}>
+											<p>
+												<a
+													className='underline pb-0 font-Raleway cursor-pointer'
+													href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
+													target='_blank'
+													rel='noreferrer'
+												>
+													View Contract
+												</a>
+											</p>
+											<p>
+												<img src={SpeedIcon} alt='' />
+												{item.speed} th/s
+											</p>
+											{item.length && (
+												<p>
+													<img src={TimeIcon} alt='' />
+													{getReadableDate(item.length.toString())}
+												</p>
+											)}
+											<p>
+												<img src={PriceIcon} alt='' />
+												{item.price} LMR
+											</p>
+											{item.trade}
+										</AvailableContract>
+									))}
+								</>
+							)}
 						</ul>
 					) : (
 						<h2>No contracts available for purchase.</h2>

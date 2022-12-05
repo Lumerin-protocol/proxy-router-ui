@@ -24,6 +24,7 @@ interface MarketplaceProps {
 	isMetaMask: boolean;
 	currentBlockTimestamp: number;
 	lumerinBalance: number;
+	isMobile: boolean;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
@@ -35,6 +36,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	contracts,
 	setContractId,
 	buyClickHandler,
+	isMobile,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -148,7 +150,12 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 				/>
 				{isMetaMask && <WalletBalanceWidget lumerinBalance={lumerinBalance} />}
 			</WidgetsWrapper>
-			<SortToolbar pageTitle='Hashrate For Sale' sortType={sortType} setSortType={setSortType} />
+			<SortToolbar
+				pageTitle='Hashrate For Sale'
+				sortType={sortType}
+				setSortType={setSortType}
+				isMobile={isMobile}
+			/>
 			<AvailableContracts contracts={availableContracts} loading={isLoading} />
 		</>
 	);

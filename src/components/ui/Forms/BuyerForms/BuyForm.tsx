@@ -177,9 +177,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							//.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
 							.setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
 							.send(sendOptions);
-						//if (!receipt.status) {
-						//	// TODO: purchasing contract has failed, surface to user
-						//}
+						if (!receipt.status) {
+							// TODO: purchasing contract has failed, surface to user
+							console.log(receipt);
+						}
 					} else {
 						// TODO: call to increaseAllowance() has failed, surface to user
 					}

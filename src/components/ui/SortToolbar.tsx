@@ -19,11 +19,12 @@ export const SortToolbar = (props: {
 	pageTitle: string;
 	sortType: string;
 	setSortType: React.Dispatch<SetStateAction<string>>;
+	isMobile: boolean;
 }) => {
 	return (
 		<StyledToolbar>
 			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-regular text-left mb-5'>
-				{props.pageTitle}
+				{!props.isMobile ? props.pageTitle : ''}
 			</h2>
 
 			<Box sx={{ minWidth: 120 }}>
