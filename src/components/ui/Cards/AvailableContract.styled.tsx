@@ -26,6 +26,40 @@ export const AvailableContract = styled.li`
 	}
 `;
 
+export const MobileAvailableContract = styled.div`
+	background: white;
+	border-radius: 15px;
+	margin-bottom: 1rem;
+	padding: 1.5rem;
+	width: 100%;
+	min-height: 100px;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+
+	.stats {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		margin-bottom: 0.5rem;
+		div {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			img {
+				height: 17px;
+				margin-right: 5px;
+				width: auto;
+			}
+		}
+	}
+
+	.actions {
+		display: flex;
+		flex-direction: row;
+	}
+`;
+
 export const SkeletonWrap = styled.div`
 	& span {
 		border-radius: 15px;
