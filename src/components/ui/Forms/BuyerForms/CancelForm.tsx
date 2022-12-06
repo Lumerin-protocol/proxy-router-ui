@@ -97,11 +97,9 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 				isOpen={alertOpen}
 				onClose={() => setAlertOpen(false)}
 			/>
-			<div
-				className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium `}
-			>
+			<div>
 				{!isConfirmModal && contentState === ContentState.Review && (
-					<div className='flex flex-col justify-center bg-white text-black modal-input-spacing pb-4 border-transparent rounded-5'>
+					<>
 						<h2 className='text-3xl mb-3'>Cancel Order</h2>
 						<p className='mb-3 font-normal'>
 							You are about to cancel your order, and the purchased hashrate will no longer be
@@ -122,15 +120,15 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 								</CancelButton>
 							}
 						></ButtonGroup>
-					</div>
+					</>
 				)}
 				{isConfirmModal && contentState === ContentState.Confirm && (
 					<Fragment>
 						<div className='flex flex-col text-red-500'>
-							<p className='bg-white modal-input-spacing border-transparent rounded-t-5'>
+							<p className='bg-white modal-input-spacing border-transparent rounded-t-5 pb-2'>
 								Make sure you want to cancel the order.
 							</p>
-							<p className='bg-white modal-input-spacing border-transparent pt-0'>
+							<p className='bg-white modal-input-spacing border-transparent pt-0 pb-5'>
 								The cancellation is permanent.
 							</p>
 						</div>
