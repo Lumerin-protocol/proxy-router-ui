@@ -8,9 +8,10 @@ import {
 	MobileAvailableContract,
 	SkeletonWrap,
 } from './AvailableContract.styled';
-import { ButtonGroup, Skeleton } from '@mui/material';
+import { Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { SecondaryButton } from '../Forms/FormButtons/Buttons.styled';
+import styled from '@emotion/styled';
 
 export const AvailableContracts = (prop: {
 	contracts: Array<HashRentalContract>;
@@ -27,6 +28,15 @@ export const AvailableContracts = (prop: {
 			window.removeEventListener('resize', handleWindowSizeChange);
 		};
 	}, []);
+
+	const TradeButtonsGroup = styled.div`
+		display: flex;
+		justify-content: space-between;
+		flex: 1;
+		button {
+			width: 100%;
+		}
+	`;
 
 	const isMobile = width <= 768;
 	return (
@@ -62,7 +72,7 @@ export const AvailableContracts = (prop: {
 												</div>
 											</div>
 											<div className='actions'>
-												<ButtonGroup>
+												<TradeButtonsGroup>
 													<SecondaryButton>
 														<a
 															href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.contractId}`}
@@ -73,7 +83,7 @@ export const AvailableContracts = (prop: {
 														</a>
 													</SecondaryButton>
 													{item.trade}
-												</ButtonGroup>
+												</TradeButtonsGroup>
 											</div>
 										</MobileAvailableContract>
 									))}

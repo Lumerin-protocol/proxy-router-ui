@@ -71,6 +71,9 @@ export const Button = styled.button`
 	&:not(:last-child) {
 		margin-right: 1rem;
 	}
+	@media (max-width: 410px) {
+		font-size: 0.85rem;
+	}
 `;
 
 export const PrimaryButton = styled(Button)`
