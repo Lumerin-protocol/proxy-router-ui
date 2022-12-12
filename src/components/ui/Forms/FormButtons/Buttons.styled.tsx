@@ -73,6 +73,7 @@ export const Button = styled.button`
 	}
 	@media (max-width: 410px) {
 		font-size: 0.85rem;
+		padding: 1rem 1rem;
 	}
 `;
 
