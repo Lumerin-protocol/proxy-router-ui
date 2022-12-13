@@ -38,6 +38,7 @@ export const ConnectButtonsWrapper = styled.div`
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		padding: 1rem;
 
 		span {
 			margin-right: 1rem;
@@ -70,6 +71,10 @@ export const Button = styled.button`
 	font-weight: 500;
 	&:not(:last-child) {
 		margin-right: 1rem;
+	}
+	@media (max-width: 410px) {
+		font-size: 0.85rem;
+		padding: 1rem 1rem;
 	}
 `;
 

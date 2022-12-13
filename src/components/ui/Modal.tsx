@@ -12,8 +12,11 @@ const StyledModal = styled(Modal)`
 	position: absolute;
 	top: 10%;
 	overflow: scroll;
-	height: 100%;
+	min-height: 100%;
 	display: block;
+	@media (max-width: 600px) {
+		/* top: 5%; */
+	}
 `;
 
 export const ModalItem: React.FC<ModalProps> = ({ open, setOpen, content }) => {
