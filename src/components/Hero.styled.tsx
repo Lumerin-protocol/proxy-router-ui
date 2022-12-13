@@ -23,10 +23,18 @@ export const HeroWrapper = styled.div`
 	background-size: 80% 80% 80% 80% 100%;
 	background-repeat: no-repeat;
 
+	@media (max-width: 650px) {
+		background-position: top 414px right 2px, top 500px right 200px, top right -75px, bottom right,
+			top;
+		background-size: 34%, 50%, 72%, 100%, 100%;
+		background-repeat: no-repeat;
+	}
+
 	.content-wrapper {
 		max-width: 1150px;
 		margin: 0 auto;
 		padding: 2rem;
+		padding-bottom: 5rem;
 	}
 	p {
 		font-family: Montserrat;
@@ -38,6 +46,9 @@ export const HeroWrapper = styled.div`
 		font-weight: 600;
 		font-family: Raleway;
 		margin-top: 2rem;
+		@media (max-width: 650px) {
+			font-size: 1.5rem;
+		}
 	}
 
 	.instructions-link {
@@ -59,6 +70,10 @@ export const HeroHeadline = styled.h1`
 	color: #004c5f;
 	font-family: Raleway;
 	line-height: 1.25;
+
+	@media (max-width: 450px) {
+		font-size: 3rem;
+	}
 `;
 
 export const HeroSubheadline = styled.div`
@@ -72,6 +87,19 @@ export const Steps = styled.ul`
 	flex-direction: row;
 	margin-top: 2rem;
 	margin-bottom: 2rem;
+
+	@media (max-width: 650px) {
+		flex-direction: column;
+		justify-content: center;
+		.step {
+			margin-right: 1rem;
+		}
+		li {
+			display: flex;
+			flex-direction: row;
+			margin-bottom: 1rem;
+		}
+	}
 
 	.step {
 		border-radius: 50%;

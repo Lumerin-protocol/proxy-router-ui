@@ -97,11 +97,9 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 				isOpen={alertOpen}
 				onClose={() => setAlertOpen(false)}
 			/>
-			<div
-				className={`flex flex-col justify-center w-full min-w-21 max-w-xl sm:min-w-26 font-medium `}
-			>
+			<div>
 				{!isConfirmModal && contentState === ContentState.Review && (
-					<div className='flex flex-col justify-center bg-white text-black modal-input-spacing pb-4 border-transparent rounded-5'>
+					<>
 						<h2 className='text-3xl mb-3'>Cancel Order</h2>
 						<p className='mb-3 font-normal'>
 							You are about to cancel your order, and the purchased hashrate will no longer be
@@ -121,28 +119,25 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 									Cancel Order
 								</CancelButton>
 							}
-						></ButtonGroup>
-					</div>
+						/>
+					</>
 				)}
 				{isConfirmModal && contentState === ContentState.Confirm && (
 					<Fragment>
-						<div className='flex flex-col text-red-500'>
-							<p className='bg-white modal-input-spacing border-transparent rounded-t-5'>
-								Make sure you want to cancel the order.
-							</p>
-							<p className='bg-white modal-input-spacing border-transparent pt-0'>
-								The cancellation is permanent.
-							</p>
-						</div>
-						<div className='flex gap-6 bg-white modal-input-spacing pb-8 rounded-b-5'>
-							<CancelButton
-								type='submit'
-								className={`h-16 w-full py-2 px-4 btn-modal border-red-500 bg-white text-sm font-medium text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
-								onClick={cancelContractAsync}
-							>
-								Confirm Cancellation
-							</CancelButton>
-						</div>
+						<p className='mb-2'>Make sure you want to cancel the order.</p>
+						<p>The cancellation is permanent.</p>
+						<ButtonGroup
+							button1={
+								<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+									Close
+								</SecondaryButton>
+							}
+							button2={
+								<CancelButton type='submit' onClick={cancelContractAsync}>
+									Confirm Cancellation
+								</CancelButton>
+							}
+						/>
 					</Fragment>
 				)}
 				{contentState === ContentState.Pending && (

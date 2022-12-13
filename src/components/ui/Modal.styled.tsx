@@ -31,6 +31,7 @@ export const ModalCard = styled.div`
 	flex-direction: column;
 	margin: auto;
 	margin-top: 3rem;
+	margin-bottom: 3rem;
 	max-width: 600px;
 	padding: 4rem;
 	padding-top: 2rem;
@@ -38,6 +39,10 @@ export const ModalCard = styled.div`
 	@media (max-width: 600px) {
 		padding: 2rem;
 		padding-top: 1rem;
+		margin-top: 1rem;
+		p {
+			font-size: 0.9rem;
+		}
 	}
 
 	.close {
@@ -48,6 +53,9 @@ export const ModalCard = styled.div`
 		font-size: 2rem;
 		font-weight: 500;
 		padding-bottom: 1rem;
+		@media (max-width: 600px) {
+			font-size: 1.5rem;
+		}
 	}
 
 	.subtext {
