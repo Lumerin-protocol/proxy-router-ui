@@ -30,8 +30,11 @@ declare module 'web3-core' {
 	interface Transaction {
 		// @ts-ignore
 		r: string;
+		// @ts-ignore
 		s: string;
+		// @ts-ignore
 		v: string;
+		// @ts-ignore
 		chainId?: string;
 	}
 }
