@@ -25,6 +25,8 @@ import { ethers } from 'ethers';
 import { abi, bytecode } from './contracts/CloneFactory.json';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+
+// @ts-ignore
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
