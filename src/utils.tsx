@@ -35,7 +35,7 @@ declare module 'web3-core' {
 		// @ts-ignore
 		v: string;
 		// @ts-ignore
-		chainId?: string;
+		chainId: string;
 	}
 }
 
