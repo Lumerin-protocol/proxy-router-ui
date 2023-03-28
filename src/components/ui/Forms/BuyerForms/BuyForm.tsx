@@ -36,6 +36,7 @@ import { divideByDigits } from '../../../../web3/helpers';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { purchasedHashrate } from '../../../../analytics';
 import { ContractLink } from '../../Modal.styled';
+import { Alert as AlertMUI } from '@mui/material';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -253,8 +254,22 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					</ContractLink>
 				</>
 			)}
+			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+				Thank you for choosing the Lumerin Hashpower Marketplace. To purchase hashpower, please
+				download the{' '}
+				<a
+					href='https://lumerin.io/wallet'
+					target='_blank'
+					rel='noreferrer'
+					className='text-lumerin-dark-blue underline'
+				>
+					Lumerin wallet desktop application
+				</a>{' '}
+				to ensure a smooth and secure transaction.
+			</AlertMUI>
 			{content}
-			{display && <p className='subtext'>{paragraphContent}</p>}
+
+			{/* {display && <p className='subtext'>{paragraphContent}</p>} */}
 			<FormButtonsWrapper>
 				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
 					Close

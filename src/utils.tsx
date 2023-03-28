@@ -24,7 +24,7 @@ import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
 import { abi, bytecode } from './contracts/CloneFactory.json';
 import * as URI from 'uri-js';
-import { PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
 declare module 'web3-core' {
 	interface Transaction {
 		r: string;
@@ -326,9 +326,9 @@ export const getButton: (
 			</Link>
 		</PrimaryButton>
 	) : (
-		<PrimaryButton type='submit' onClick={handleSubmit((data) => createTransactionAsync(data))}>
+		<DisabledButton type='submit' disabled>
 			{buttonContent}
-		</PrimaryButton>
+		</DisabledButton>
 	);
 };
 

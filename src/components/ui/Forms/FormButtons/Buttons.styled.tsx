@@ -83,6 +83,13 @@ export const PrimaryButton = styled(Button)`
 	background: #014353;
 `;
 
+export const DisabledButton = styled(Button)`
+	color: rgba(0, 0, 0, 0.26);
+	box-shadow: none;
+	background-color: rgba(0, 0, 0, 0.12);
+	cursor: not-allowed;
+`;
+
 export const SecondaryButton = styled(Button)`
 	color: #014353;
 	background: none;

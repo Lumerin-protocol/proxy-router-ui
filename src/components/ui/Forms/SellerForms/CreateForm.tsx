@@ -10,6 +10,7 @@ import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styl
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
+import { Alert as AlertMUI } from '@mui/material';
 
 // Form text setup
 const buttonText: Text = {
@@ -136,6 +137,19 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					<p>Sell your hashpower on the Lumerin Marketplace</p>
 				</>
 			)}
+			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+				Thank you for choosing the Lumerin Hashpower Marketplace. To sell hashpower, please download
+				the{' '}
+				<a
+					href='https://lumerin.io/wallet'
+					target='_blank'
+					rel='noreferrer'
+					className='text-lumerin-dark-blue underline'
+				>
+					Lumerin wallet desktop application
+				</a>{' '}
+				to ensure a smooth and secure transaction.
+			</AlertMUI>
 			{content}
 			<FormButtonsWrapper>
 				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
