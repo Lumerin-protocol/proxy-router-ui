@@ -47,7 +47,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
-	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -137,15 +136,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		if (contentState === ContentState.Pending) editContractAsync(formData);
 	}, [contentState]);
 
-	// Change opacity of Review Order button based on input validation
-	useEffect(() => {
-		if (isValid) {
-			setButtonOpacity('100');
-		} else {
-			setButtonOpacity('25');
-		}
-	}, [isValid]);
-
 	useEffect(() => {
 		console.log({ contract: contract });
 		console.log(contentState);
@@ -188,14 +178,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 	const display =
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 
-	const bgColor =
-		contentState === ContentState.Complete || contentState === ContentState.Confirm
-			? 'bg-black'
-			: 'bg-lumerin-aqua';
-
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.NoEditBuyer} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={AlertMessage.NoEditBuyer}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
 			{display && (
 				<>
 					<h2>Edit Order</h2>
@@ -215,15 +204,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(
-						contentState,
-						bgColor,
-						buttonOpacity,
-						buttonContent,
-						setOpen,
-						handleSubmit,
-						editContractAsync
-					)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit, editContractAsync)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

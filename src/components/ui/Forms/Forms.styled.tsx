@@ -3,6 +3,9 @@ import styled from '@emotion/styled';
 export const InputWrapper = styled.div`
 	margin-top: 0.75rem;
 	margin-bottom: 0.75rem;
+	@media (max-width: 600px) {
+		margin-top: 0;
+	}
 	label {
 		font-size: 0.75rem;
 	}
@@ -28,11 +31,9 @@ export const ReviewItems = styled.div`
 		&:last-child {
 			border-bottom: none;
 		}
-
 		h3 {
 			font-size: 0.75rem;
 		}
-
 		p {
 			color: #014353;
 			font-weight: 500;

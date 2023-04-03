@@ -1,24 +1,27 @@
 import styled from '@emotion/styled';
 
 export const ActionButtonWrapper = styled.div`
-	width: 35px;
+	width: 30px;
 	margin-left: 0.75rem;
 	button {
 		border-radius: 50px;
-		width: 35px;
-		height: 35px;
+		width: 30px;
+		height: 30px;
 		border: none;
 		background: #e2edfb;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		img {
-			width: 15px;
+			width: 0.85rem;
+		}
+		.cancel {
+			width: 1rem;
 		}
 	}
 	p {
 		font-family: Inter, sans-serif;
-		font-size: 0.7rem;
+		font-size: 0.65rem;
 		text-align: center;
 		color: #0f4454;
 	}
@@ -30,12 +33,12 @@ export const ConnectButtonsWrapper = styled.div`
 
 	button {
 		background-color: #eaf7fc;
-		padding: 1.75rem;
 		border-radius: 20px;
 		margin-bottom: 2rem;
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		padding: 1rem;
 
 		span {
 			margin-right: 1rem;
@@ -46,7 +49,7 @@ export const ConnectButtonsWrapper = styled.div`
 export const FormButtonsWrapper = styled.div`
 	display: flex;
 	flex-direction: row;
-	margin-top: 2.5rem;
+	margin-top: 1.5rem;
 
 	button {
 		flex: auto;
@@ -58,7 +61,7 @@ export const FormButtonsWrapper = styled.div`
 
 export const Button = styled.button`
 	border-radius: 85px;
-	padding: 0.75rem 1.5rem;
+	padding: 0.5rem 1rem;
 	outline: none;
 	display: flex;
 	flex-direction: row;
@@ -69,11 +72,22 @@ export const Button = styled.button`
 	&:not(:last-child) {
 		margin-right: 1rem;
 	}
+	@media (max-width: 410px) {
+		font-size: 0.85rem;
+		padding: 1rem 1rem;
+	}
 `;
 
 export const PrimaryButton = styled(Button)`
 	color: white;
 	background: #014353;
+`;
+
+export const DisabledButton = styled(Button)`
+	color: rgba(0, 0, 0, 0.26);
+	box-shadow: none;
+	background-color: rgba(0, 0, 0, 0.12);
+	cursor: not-allowed;
 `;
 
 export const SecondaryButton = styled(Button)`
