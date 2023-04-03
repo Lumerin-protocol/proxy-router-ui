@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
@@ -24,13 +25,18 @@ import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
 import { abi, bytecode } from './contracts/CloneFactory.json';
 import * as URI from 'uri-js';
-import { PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+
 declare module 'web3-core' {
 	interface Transaction {
+		// @ts-ignore
 		r: string;
+		// @ts-ignore
 		s: string;
+		// @ts-ignore
 		v: string;
-		chainId?: string;
+		// @ts-ignore
+		chainId: string;
 	}
 }
 
@@ -299,21 +305,11 @@ export const sortContracts = (
 interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}
 export const getButton: (
 	contentState: string,
-	bgColor: string,
-	buttonOpacity: string,
 	buttonContent: string,
 	setOpen: Dispatch<SetStateAction<boolean>>,
 	handleSubmit: UseFormHandleSubmit<InputValues>,
 	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (
-	contentState,
-	bgColor,
-	buttonOpacity,
-	buttonContent,
-	setOpen,
-	handleSubmit,
-	createTransactionAsync
-) => {
+) => JSX.Element = (contentState, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -336,9 +332,9 @@ export const getButton: (
 			</Link>
 		</PrimaryButton>
 	) : (
-		<PrimaryButton type='submit' onClick={handleSubmit((data) => createTransactionAsync(data))}>
+		<DisabledButton type='submit' disabled>
 			{buttonContent}
-		</PrimaryButton>
+		</DisabledButton>
 	);
 };
 

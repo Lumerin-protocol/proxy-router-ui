@@ -23,7 +23,7 @@ export const CancelButton: React.FC<CancelButtonProps> = ({
 	return (
 		<ActionButtonWrapper>
 			<button type='button' onClick={(event) => clickHandler(event)}>
-				<img src={CancelIcon} alt='' />
+				<img className='cancel' src={CancelIcon} alt='' />
 			</button>
 			<p>Cancel</p>
 		</ActionButtonWrapper>

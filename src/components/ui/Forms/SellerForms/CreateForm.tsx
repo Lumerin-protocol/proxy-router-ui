@@ -10,6 +10,7 @@ import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styl
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
+import { Alert as AlertMUI } from '@mui/material';
 
 // Form text setup
 const buttonText: Text = {
@@ -41,7 +42,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	web3,
 	setOpen,
 }) => {
-	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
 
@@ -102,15 +102,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 		if (contentState === ContentState.Pending) createContractAsync(formData);
 	}, [contentState]);
 
-	// Change opacity of Review Order button based on input validation
-	useEffect(() => {
-		if (isValid) {
-			setButtonOpacity('100');
-		} else {
-			setButtonOpacity('25');
-		}
-	}, [isValid]);
-
 	// Content setup
 	// Defaults to create state
 	// Initialize since html element needs a value on first render
@@ -138,11 +129,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	const display =
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 
-	const bgColor =
-		contentState === ContentState.Complete || contentState === ContentState.Confirm
-			? 'bg-black'
-			: 'bg-lumerin-aqua';
-
 	return (
 		<Fragment>
 			{display && (
@@ -151,21 +137,26 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					<p>Sell your hashpower on the Lumerin Marketplace</p>
 				</>
 			)}
+			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+				Thank you for choosing the Lumerin Hashpower Marketplace. To sell hashpower, please download
+				the{' '}
+				<a
+					href='https://lumerin.io/wallet'
+					target='_blank'
+					rel='noreferrer'
+					className='text-lumerin-dark-blue underline'
+				>
+					Lumerin wallet desktop application
+				</a>{' '}
+				to ensure a smooth and secure transaction.
+			</AlertMUI>
 			{content}
 			<FormButtonsWrapper>
 				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(
-						contentState,
-						bgColor,
-						buttonOpacity,
-						buttonContent,
-						setOpen,
-						handleSubmit,
-						createContractAsync
-					)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit, createContractAsync)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

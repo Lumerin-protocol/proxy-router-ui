@@ -1,14 +1,16 @@
 import { MenuAlt2Icon } from '@heroicons/react/outline';
-import { Toolbar } from '@mui/material';
-import { MetaMaskIcon, WalletConnectIcon } from '../../images';
+import { Toolbar, Typography } from '@mui/material';
+import { LumerinIcon, MetaMaskIcon, WalletConnectIcon, LogoIcon } from '../../images';
 import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
+import { ConnectedWalletWidget } from './Widgets/ConnectedWalletWidget';
 
 export const Header = (prop: {
 	setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	pageTitle: string;
 	truncatedWalletAddress: string | null;
 	isMetamask: boolean;
+	isMobile: boolean;
 	addTokenToMetamask: Function;
 	drawerWidth: number;
 }) => {
@@ -17,6 +19,14 @@ export const Header = (prop: {
 		justify-content: space-between;
 		padding: 0 !important;
 	`;
+
+	const PageTitle = styled(Typography)`
+		color: #004c5f;
+		font-weight: 600;
+		font-family: Raleway, sans-serif;
+		font-size: 2rem;
+	`;
+
 	return (
 		<StyledToolbar>
 			<button
@@ -27,24 +37,17 @@ export const Header = (prop: {
 				<span className='sr-only'>Open sidebar</span>
 				<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
 			</button>
-			<h1 className='text-xl font-semibold font-Raleway text-lumerin-blue-text'>
-				{prop.pageTitle}
-			</h1>
-			<div>
-				<div className='btn-connected cursor-default flex justify-between items-center px-8'>
-					<span className='pr-3'>{prop.truncatedWalletAddress}</span>
-					{prop.isMetamask ? <MetaMaskIcon /> : <WalletConnectIcon />}
-				</div>
-				<button
-					className='link text-xs text-lumerin-blue-text'
-					onClick={() => prop.addTokenToMetamask()}
-				>
-					<span style={{ display: 'flex', alignItems: 'center' }}>
-						Import LMR into MetaMask{' '}
-						<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
-					</span>
-				</button>
-			</div>
+			<PageTitle>{prop.pageTitle}</PageTitle>
+			{prop.isMobile ? (
+				<LumerinIcon />
+			) : (
+				<ConnectedWalletWidget
+					addTokenToMetamask={prop.addTokenToMetamask}
+					truncatedWalletAddress={prop.truncatedWalletAddress}
+					isMetamask={prop.isMetamask}
+					isMobile={prop.isMobile}
+				/>
+			)}
 		</StyledToolbar>
 	);
 };

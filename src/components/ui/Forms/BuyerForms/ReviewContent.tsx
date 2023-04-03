@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
+import { InputLabel, MenuItem, Select } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { DeepMap, FieldError, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
 import {
 	getHostName,
@@ -15,28 +16,78 @@ import { Alert } from '../../Alert';
 import { InputWrapper } from '../Forms.styled';
 // import { Checkbox } from '../../Checkbox';
 
+interface PoolData {
+	name: string;
+	address: string;
+	port: string;
+}
+
 interface ReviewContentProps {
 	register: UseFormRegister<InputValuesBuyForm>;
 	errors: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
+	setValue?: UseFormSetValue<InputValuesBuyForm>;
 	buyerString?: string;
 	isEdit?: boolean;
 }
 export const ReviewContent: React.FC<ReviewContentProps> = ({
 	register,
 	errors,
+	setValue,
 	buyerString,
 	isEdit,
 }) => {
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
+
+	const preferredPools = [
+		{ name: 'Titan', address: 'stratum+tcp://mining.pool.titan.io', port: '4242' },
+		{ name: 'Lincoin', address: 'stratum+tcp://ca.lincoin.com', port: '3333' },
+		{ name: 'Luxor', address: 'stratum+tcp://btc.global.luxor.tech', port: '700' },
+		{ name: 'Braiins', address: 'stratum+tcp://stratum.braiins.com', port: '3333' },
+	];
 
 	// hiding references to validator service at the moment: my 5/9/22
 	/* const checkboxLegend = 'Validator';
 	const checkboxLabel = 'Titan Validator Service';
 	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.'; */
 
+	const handlePoolChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const selectedPool = preferredPools.find((item) => item.name === event.target.value);
+		setPreferredPool({ ...preferredPool, ...selectedPool });
+	};
+
+	useEffect(() => {
+		setValue?.('poolAddress', preferredPool.address);
+		setValue?.('portNumber', preferredPool.port);
+	}, [preferredPool]);
+
 	return (
 		<React.Fragment>
-			<Alert message={AlertMessage.RemovePort} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={AlertMessage.RemovePort}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
+			<InputWrapper>
+				<InputLabel sx={{ color: 'black', fontFamily: 'inherit' }} id='preferred-pools-label'>
+					Preferred Pools
+				</InputLabel>
+				<Select
+					labelId='preferred-pools-label'
+					id='preferred-pools'
+					displayEmpty
+					value={preferredPool.name}
+					label='Preferred Pools'
+					onChange={(event: any) => handlePoolChange(event)}
+				>
+					<MenuItem value=''>Select a preferred pool</MenuItem>
+					{preferredPools.map((item) => (
+						<MenuItem value={item.name} key={item.name}>
+							{item.name}
+						</MenuItem>
+					))}
+				</Select>
+			</InputWrapper>
 			<InputWrapper>
 				<label htmlFor='poolAddress'>Pool Address *</label>
 				<input

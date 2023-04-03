@@ -37,6 +37,7 @@ interface MyOrdersProps {
 	setContractId: Dispatch<SetStateAction<string>>;
 	editClickHandler: MouseEventHandler<HTMLButtonElement>;
 	cancelClickHandler: MouseEventHandler<HTMLButtonElement>;
+	isMobile: boolean;
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
@@ -47,6 +48,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	setContractId,
 	editClickHandler,
 	cancelClickHandler,
+	isMobile,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
@@ -208,6 +210,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									pageTitle='Running Contracts'
 									sortType={runningSortType}
 									setSortType={setRunningSortType}
+									isMobile={isMobile}
 								/>
 								<PurchasedContracts
 									sortType={runningSortType}
@@ -228,6 +231,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									pageTitle='Completed Contracts'
 									sortType={completedSortType}
 									setSortType={setCompletedSortType}
+									isMobile={isMobile}
 								/>
 								<PurchasedContracts
 									contracts={completedContracts}

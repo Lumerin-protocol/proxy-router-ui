@@ -45,7 +45,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
-	const [buttonOpacity, setButtonOpacity] = useState<string>('25');
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(contract));
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -128,15 +127,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		if (contentState === ContentState.Pending) editContractAsync(formData);
 	}, [contentState]);
 
-	// Change opacity of Review Order button based on input validation
-	useEffect(() => {
-		if (isValid) {
-			setButtonOpacity('100');
-		} else {
-			setButtonOpacity('25');
-		}
-	}, [isValid]);
-
 	// Content setup
 	// Defaults to create state
 	// Initialize since html element needs a value on first render
@@ -160,15 +150,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 	};
 	createContent();
 
-	// Set styles and button based on ContentState
-	const bgColor =
-		contentState === ContentState.Complete || contentState === ContentState.Confirm
-			? 'bg-black'
-			: 'bg-lumerin-aqua';
-
 	return (
 		<Fragment>
-			<Alert message={AlertMessage.NoEditSeller} open={alertOpen} setOpen={setAlertOpen} />
+			<Alert
+				message={AlertMessage.NoEditSeller}
+				isOpen={alertOpen}
+				onClose={() => setAlertOpen(false)}
+			/>
 			<div
 				className={`flex flex-col justify-center w-full min-w-21 max-w-32 sm:min-w-26 font-Inter font-medium`}
 			>
@@ -194,15 +182,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(
-								contentState,
-								bgColor,
-								buttonOpacity,
-								buttonContent,
-								setOpen,
-								handleSubmit,
-								editContractAsync
-						  )
+						? getButton(contentState, buttonContent, setOpen, handleSubmit, editContractAsync)
 						: null}
 				</div>
 			</div>

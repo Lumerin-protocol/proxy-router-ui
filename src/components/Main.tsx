@@ -1,22 +1,32 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, Suspense, useEffect, useState } from 'react';
-import { Link, Route, RouteComponentProps, Switch } from 'react-router-dom';
-import { MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
-import { MetaMaskIcon, LogoIcon, LogoIcon2, LumerinIcon, WalletConnectIcon } from '../images/index';
-import BubbleGraphic1 from '../images/Bubble_1.png';
-import BubbleGraphic2 from '../images/Bubble_2.png';
-import BubbleGraphic3 from '../images/Bubble_3.png';
-import BubbleGraphic4 from '../images/Bubble_4.png';
-import ImplementationContract from '../contracts/Implementation.json';
+import { Suspense, useEffect, useState } from 'react';
+import { Route, RouteComponentProps, Switch } from 'react-router-dom';
+import MetaMaskOnboarding from '@metamask/onboarding';
+import styled from '@emotion/styled';
+import { Box } from '@mui/material';
+import _ from 'lodash';
+import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { Alert } from './ui/Alert';
-import { ModalItem } from './ui/Modal';
-import { Marketplace } from './Marketplace';
 import { Contract } from 'web3-eth-contract';
-import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
+
+import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
 import { MyContracts } from './MyContracts';
+import { Hero } from './Hero';
+import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Spinner } from './ui/Spinner.styled';
+import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
+import { ModalItem } from './ui/Modal';
+import { Header } from './ui/Header';
+import { BuyForm } from './ui/Forms/BuyerForms/BuyForm';
+import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
+import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
+import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
+import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
+import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
+import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
+
+import ImplementationContract from '../contracts/Implementation.json';
 import { useInterval } from './hooks/useInterval';
 import {
 	addLumerinTokenToMetaMaskAsync,
@@ -24,32 +34,21 @@ import {
 	getLumerinTokenBalanceAsync,
 	getWeb3ResultAsync,
 } from '../web3/helpers';
-import { buttonClickHandler, classNames, truncateAddress } from '../utils';
-import MetaMaskOnboarding from '@metamask/onboarding';
-import Web3 from 'web3';
-import { printError } from '../utils';
-import { CreateForm } from './ui/Forms/SellerForms/CreateForm';
+import { buttonClickHandler, truncateAddress, printError } from '../utils';
 import {
 	AddressLength,
 	AlertMessage,
-	ContractState,
 	Ethereum,
 	HashRentalContract,
 	PathName,
 	WalletText,
 } from '../types';
-import { EditForm as SellerEditForm } from './ui/Forms/SellerForms/EditForm';
-import { EditForm as BuyerEditForm } from './ui/Forms/BuyerForms/EditForm';
-import { Hero } from './Hero';
-import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
-import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
-import _ from 'lodash';
-import styled from '@emotion/styled';
-import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
-import { ResponsiveNavigation } from './Navigation/Navigation';
-import { Box } from '@mui/material';
-import { Header } from './ui/Header';
-import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
+
+import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
+import BubbleGraphic1 from '../images/Bubble_1.png';
+import BubbleGraphic2 from '../images/Bubble_2.png';
+import BubbleGraphic3 from '../images/Bubble_3.png';
+import BubbleGraphic4 from '../images/Bubble_4.png';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -79,6 +78,20 @@ export const Main: React.FC = () => {
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === 5;
+
+	const [width, setWidth] = useState<number>(window.innerWidth);
+
+	function handleWindowSizeChange() {
+		setWidth(window.innerWidth);
+	}
+	useEffect(() => {
+		window.addEventListener('resize', handleWindowSizeChange);
+		return () => {
+			window.removeEventListener('resize', handleWindowSizeChange);
+		};
+	}, []);
+
+	const isMobile = width <= 768;
 
 	// Onboard metamask and set wallet text
 	const onboarding = new MetaMaskOnboarding();
@@ -306,6 +319,7 @@ export const Main: React.FC = () => {
 							cancelClickHandler={(event) =>
 								buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)
 							}
+							isMobile={isMobile}
 						/>
 					)}
 				/>
@@ -343,6 +357,7 @@ export const Main: React.FC = () => {
 							setContractId={setContractId}
 							currentBlockTimestamp={currentBlockTimestamp}
 							buyClickHandler={(event) => buttonClickHandler(event, buyModalOpen, setBuyModalOpen)}
+							isMobile={isMobile}
 						/>
 					)}
 				/>
@@ -500,6 +515,7 @@ export const Main: React.FC = () => {
 					truncatedWalletAddress={getTruncatedWalletAddress()}
 					addTokenToMetamask={addLumerinTokenToMetaMaskAsync}
 					isMetamask={isMetaMask}
+					isMobile={isMobile}
 					drawerWidth={drawerWidth}
 				/>
 				<Box component='main'>
