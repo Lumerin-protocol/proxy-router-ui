@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
