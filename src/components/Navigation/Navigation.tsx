@@ -11,6 +11,7 @@ import SellerIconInactive from '../../images/icons/seller-grey.png';
 import { Link } from 'react-router-dom';
 import HelpIcon from '@mui/icons-material/Help';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
+import ShieldIcon from '@mui/icons-material/Shield';
 
 // Navigation setup
 interface Navigation {
@@ -88,6 +89,10 @@ export const ResponsiveNavigation = (prop: {
 				>
 					<FlagCircleIcon style={{ fill: '#0E4353' }} />
 					<span className='item-name'>Report issue</span>
+				</a>
+				<a href='https://lumerin.io/privacy-policy' target='_blank' rel='noreferrer'>
+					<ShieldIcon style={{ fill: '#0E4353' }} />
+					<span className='item-name'>Privacy Policy</span>
 				</a>
 			</div>
 		</DrawerContent>
