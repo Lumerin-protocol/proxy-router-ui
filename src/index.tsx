@@ -1,7 +1,7 @@
 import './wdyr.ts';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Redirect } from 'react-router-dom';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { App } from './App';
 import { ErrorPage } from './components/ui/ErrorPage';
@@ -21,12 +21,17 @@ const onResetHandler: () => void = () => {};
 // log to local filestore or localStorage if needed
 const errorHandler: (error: Error, info: { componentStack: string }) => void = (error, info) => {};
 
+// redirect to marketplace page on lumerin.io
+window.location.href = 'https://lumerin.io/marketplace';
+
 ReactDOM.render(
 	<React.StrictMode>
 		<BrowserRouter>
-			<ErrorBoundary fallbackRender={ErrorFallback} onReset={onResetHandler} onError={errorHandler}>
-				<App />
-			</ErrorBoundary>
+			<ErrorBoundary
+				fallbackRender={ErrorFallback}
+				onReset={onResetHandler}
+				onError={errorHandler}
+			></ErrorBoundary>
 		</BrowserRouter>
 	</React.StrictMode>,
 	document.getElementById('root')
