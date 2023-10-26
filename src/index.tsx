@@ -21,9 +21,6 @@ const onResetHandler: () => void = () => {};
 // log to local filestore or localStorage if needed
 const errorHandler: (error: Error, info: { componentStack: string }) => void = (error, info) => {};
 
-// redirect to marketplace page on lumerin.io
-window.location.href = 'https://lumerin.io/marketplace';
-
 ReactDOM.render(
 	<React.StrictMode>
 		<BrowserRouter>
