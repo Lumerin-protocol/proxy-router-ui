@@ -1,7 +1,7 @@
 import './wdyr.ts';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter, Redirect } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { App } from './App';
 import { ErrorPage } from './components/ui/ErrorPage';
@@ -24,11 +24,9 @@ const errorHandler: (error: Error, info: { componentStack: string }) => void = (
 ReactDOM.render(
 	<React.StrictMode>
 		<BrowserRouter>
-			<ErrorBoundary
-				fallbackRender={ErrorFallback}
-				onReset={onResetHandler}
-				onError={errorHandler}
-			></ErrorBoundary>
+			<ErrorBoundary fallbackRender={ErrorFallback} onReset={onResetHandler} onError={errorHandler}>
+				<App />
+			</ErrorBoundary>
 		</BrowserRouter>
 	</React.StrictMode>,
 	document.getElementById('root')
