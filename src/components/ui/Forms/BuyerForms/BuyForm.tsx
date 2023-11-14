@@ -15,7 +15,7 @@ import {
 	getPublicKey,
 } from '../../../../utils';
 
-import { LumerinAbi as LumerinContract, ImplementationAbi as ImplementationContract } from "contracts-js"
+import { LumerinContract, ImplementationContract } from "contracts-js"
 
 import { AbiItem } from 'web3-utils';
 import {
