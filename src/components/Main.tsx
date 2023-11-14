@@ -26,7 +26,7 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 
-import ImplementationContract from '../contracts/Implementation.json';
+import { ImplementationContract } from 'contracts-js';
 import { useInterval } from './hooks/useInterval';
 import {
 	addLumerinTokenToMetaMaskAsync,

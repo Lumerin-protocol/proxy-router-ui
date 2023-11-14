@@ -11,7 +11,7 @@ import {
 import { isNoCancel, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { Spinner } from '../../Spinner.styled';
-import ImplementationContract from '../../../../contracts/Implementation.json';
+import {ImplementationContract} from 'contracts-js';
 import { AbiItem } from 'web3-utils';
 import { ButtonGroup } from '../../ButtonGroup';
 import { CancelButton } from '../FormButtons/Buttons.styled';

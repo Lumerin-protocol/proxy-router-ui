@@ -14,8 +14,9 @@ import {
 	getCreationTxIDOfContract,
 	getPublicKey,
 } from '../../../../utils';
-import LumerinContract from '../../../../contracts/Lumerin.json';
-import ImplementationContract from '../../../../contracts/Implementation.json';
+
+import { LumerinAbi as LumerinContract, ImplementationAbi as ImplementationContract } from "contracts-js"
+
 import { AbiItem } from 'web3-utils';
 import {
 	AddressLength,

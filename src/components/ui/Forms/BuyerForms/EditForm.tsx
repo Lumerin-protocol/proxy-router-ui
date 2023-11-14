@@ -12,7 +12,7 @@ import {
 	UpdateFormProps,
 } from '../../../../types';
 import { AbiItem } from 'web3-utils';
-import ImplementationContract from '../../../../contracts/Implementation.json';
+import {ImplementationContract} from 'contracts-js';
 import {
 	toRfc2396,
 	getButton,

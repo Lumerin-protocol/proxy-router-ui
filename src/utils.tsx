@@ -23,9 +23,11 @@ import { Transaction as Web3Transaction } from 'web3-eth';
 import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
-import { abi, bytecode } from './contracts/CloneFactory.json';
+import { CloneFactoryAbi } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+
+const {abi, bytecode} = CloneFactoryAbi;
 
 declare module 'web3-core' {
 	interface Transaction {
@@ -112,7 +114,7 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	//import the JSON of CloneFactory.json
 	let cf = new ethers.ContractFactory(abi, bytecode);
 	let provider = ethers.getDefaultProvider(
-		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
+		process.env.REACT_APP_ETHERSCAN_URL as string
 	);
 
 	//the clonefactory contract address should become a variable that is configurable
