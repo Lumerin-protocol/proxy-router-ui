@@ -7,7 +7,7 @@ import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { registerEventListeners } from './eventListeners';
 import { CloneFactoryContract as CloneFactory } from 'contracts-js';
-import {LumerinContract} from 'contracts-js';
+import { LumerinContract } from 'contracts-js';
 import { ContractJson, Ethereum, Receipt, WalletText } from '../types';
 import { printError } from '../utils';
 import WalletConnectProvider from '@walletconnect/web3-provider';

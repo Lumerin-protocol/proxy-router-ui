@@ -10,7 +10,7 @@ import {
 } from '../../../../types';
 import { isNoClaim, printError } from '../../../../utils';
 import { Spinner } from '../../Spinner.styled';
-import {ImplementationContract} from 'contracts-js';
+import { ImplementationContract } from 'contracts-js';
 import { AbiItem } from 'web3-utils';
 
 export const ClaimLmrForm: React.FC<UpdateFormProps> = ({

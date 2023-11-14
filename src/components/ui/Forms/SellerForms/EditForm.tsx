@@ -16,7 +16,7 @@ import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
 import { AbiItem } from 'web3-utils';
-import {ImplementationContract} from 'contracts-js';
+import { ImplementationContract } from 'contracts-js';
 import { multiplyByDigits } from '../../../../web3/helpers';
 
 // Form text setup

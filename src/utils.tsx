@@ -23,11 +23,11 @@ import { Transaction as Web3Transaction } from 'web3-eth';
 import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
-import { CloneFactoryAbi } from 'contracts-js';
+import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
 
-const {abi, bytecode} = CloneFactoryAbi;
+const { abi, bytecode } = CloneFactoryContract;
 
 declare module 'web3-core' {
 	interface Transaction {
