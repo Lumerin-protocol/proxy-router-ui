@@ -166,11 +166,10 @@ export const transferLumerinAsync: (
 	sellerAccount: string,
 	amount: number
 ) => Promise<Receipt> = async (web3, userAccount, sellerAccount, amount) => {
-	const networkId = await web3.eth.net.getId();
-	const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
+	
 	const lumerinContractInstance = new web3.eth.Contract(
 		LumerinContract.abi as AbiItem[],
-		deployedNetwork && deployedNetwork.address
+		lumerinTokenAddress
 	);
 	return await lumerinContractInstance.methods
 		.transfer(sellerAccount, multiplyByDigits(amount))
