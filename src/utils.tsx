@@ -113,9 +113,7 @@ export const getPublicKey = async (txId: string) => {
 export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	//import the JSON of CloneFactory.json
 	let cf = new ethers.ContractFactory(abi, bytecode);
-	let provider = ethers.getDefaultProvider(
-		process.env.REACT_APP_ETHERSCAN_URL as string
-	);
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_ETHERSCAN_URL as string);
 
 	//the clonefactory contract address should become a variable that is configurable
 	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
