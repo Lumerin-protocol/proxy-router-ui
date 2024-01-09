@@ -30,7 +30,7 @@ export const registerEventListeners: (
 		if (walletName === WalletText.ConnectViaWalletConnect) {
 			const web3 = new Web3(provider as any);
 			const chainId = await web3.eth.net.getId();
-			if (chainId !== 3) {
+			if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
 				disconnectWalletConnectAsync(false, web3, setIsConnected);
 				setAlertOpen(true);
 				return;

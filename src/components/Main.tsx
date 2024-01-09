@@ -77,8 +77,9 @@ export const Main: React.FC = () => {
 
 	const userAccount = accounts && accounts[0] ? accounts[0] : '';
 	const ethereum = window.ethereum as Ethereum;
-	const isCorrectNetwork = chainId === 5;
+	const isCorrectNetwork = chainId === parseInt(process.env.REACT_APP_CHAIN_ID!);
 
+	console.log('isCorrectNetwork: ', isCorrectNetwork);
 	const [width, setWidth] = useState<number>(window.innerWidth);
 
 	function handleWindowSizeChange() {
@@ -115,7 +116,9 @@ export const Main: React.FC = () => {
 		if (web3Result) {
 			const { accounts, contractInstance, web3 } = web3Result;
 			const chainId = await web3.eth.net.getId();
-			if (chainId !== 5) {
+			console.log('ENV CHAIN ID:', process.env.REACT_APP_CHAIN_ID);
+			console.log('CHAIN ID:', chainId);
+			if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
 				disconnectWalletConnectAsync(
 					walletName === WalletText.ConnectViaMetaMask,
 					web3,
@@ -163,12 +166,16 @@ export const Main: React.FC = () => {
 	}, []);
 
 	// Get timestamp of current block
-	const getCurrentBlockTimestampAsync: () => void = async () => {
+	const getCurrentBlockTimestampAsync: () => Promise<void> = async () => {
 		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
 		setCurrentBlockTimestamp(currentBlockTimestamp as number);
 	};
 
-	useEffect(() => getCurrentBlockTimestampAsync(), [web3]);
+	useInterval(() => {
+		getCurrentBlockTimestampAsync().then(() => {
+			if (isCorrectNetwork && !anyModalOpen) createContractsAsync();
+		});
+	}, 30000);
 
 	// Contracts setup
 	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (
@@ -212,16 +219,39 @@ export const Main: React.FC = () => {
 		const hashRentalContracts = await Promise.all(
 			addresses.map(async (address) => await createContractAsync(address))
 		);
-
+		console.log('hashrate contracts: ', hashRentalContracts);
 		// Update contracts if deep equality is false
-		if (!_.isEqual(contracts, hashRentalContracts))
+		if (!_.isEqual(contracts, hashRentalContracts)) {
+			console.log('contracts changed');
 			setContracts(hashRentalContracts as HashRentalContract[]);
+		}
 	};
 
 	const createContractsAsync: () => void = async () => {
 		try {
-			const addresses: string[] = await cloneFactoryContract?.methods.getContractList().call();
+			console.log('Fetching contract list...');
+			console.log('methods: ', Object.keys(cloneFactoryContract?.methods));
+			console.log('env: ', {
+				'REACT_APP_LUMERIN_TOKEN_ADDRESS: ': process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
+				'REACT_APP_CLONE_FACTORY: ': process.env.REACT_APP_CLONE_FACTORY,
+				'REACT_APP_ETHERSCAN_URL: ': process.env.REACT_APP_ETHERSCAN_URL,
+				'REACT_APP_NODE_URL: ': process.env.REACT_APP_NODE_URL,
+				'REACT_APP_CHAIN_ID: ': process.env.REACT_APP_CHAIN_ID,
+			});
+
+			const addresses: string[] = await cloneFactoryContract?.methods
+				.getContractList()
+				.call()
+				.catch((error: any) => {
+					console.log(
+						'Error when trying get list of contract addresses from CloneFactory contract: ',
+						error
+					);
+				});
+			console.log('addresses: ', addresses, !!addresses);
+
 			if (addresses) {
+				console.log('adding contracts...');
 				addContractsAsync(addresses);
 			}
 		} catch (error) {
@@ -242,8 +272,12 @@ export const Main: React.FC = () => {
 
 	// Set contracts and orders once cloneFactoryContract exists
 	useEffect(() => {
-		if (isCorrectNetwork) createContractsAsync();
-	}, [cloneFactoryContract, accounts, web3]);
+		if (cloneFactoryContract && accounts) {
+			console.log('cloneFactoryContract:', cloneFactoryContract);
+			console.log('accounts: ', accounts);
+			if (isCorrectNetwork) createContractsAsync();
+		}
+	}, [cloneFactoryContract, accounts]);
 
 	// Check if any modals or alerts are open
 	// TODO: Replace this with a better way to track all modal states
@@ -271,15 +305,9 @@ export const Main: React.FC = () => {
 		claimLmrModalOpen,
 	]);
 
-	// Get contracts at interval of 5 seconds
-	// TODO: Replace this with something like web sockets
-	useInterval(() => {
-		if (isCorrectNetwork && !anyModalOpen) createContractsAsync();
-	}, 5000);
-
 	useEffect(() => {
 		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
-	}, [web3, accounts, chainId]);
+	}, [accounts, chainId]);
 
 	useEffect(() => {
 		setPathname(window.location.pathname);
@@ -384,7 +412,7 @@ export const Main: React.FC = () => {
 	const changeNetworkAsync: () => void = async () => {
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
-			params: [{ chainId: web3?.utils.toHex(5) }],
+			params: [{ chainId: web3?.utils.toHex(process.env.REACT_APP_CHAIN_ID!) }],
 		});
 		setAlertOpen(false);
 		connectWallet(WalletText.ConnectViaMetaMask);

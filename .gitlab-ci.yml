@@ -34,6 +34,7 @@ default:
           --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS  
           --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY  
           --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL  
+          --build-arg REACT_APP_NODE_URL=$ETHEREUM_NODE_RPC_CONNECTION_URL
           -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG --no-cache .
         
         - echo "*****************************"

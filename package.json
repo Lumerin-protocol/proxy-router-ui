@@ -3,7 +3,6 @@
 	"version": "0.1.0",
 	"private": true,
 	"dependencies": {
-		"@craco/craco": "^6.2.0",
 		"@emotion/react": "^11.10.0",
 		"@emotion/styled": "^11.10.0",
 		"@fontsource/inter": "^4.5.12",
@@ -32,7 +31,7 @@
 		"@types/react-table": "^7.7.2",
 		"@walletconnect/web3-provider": "^1.7.3",
 		"buffer": "^6.0.3",
-		"contracts-js": "github:Lumerin-protocol/contracts-js#v0.0.30",
+		"contracts-js": "github:Lumerin-protocol/contracts-js",
 		"ecies-geth": "^1.6.2",
 		"ethereumjs-tx": "^2.1.2",
 		"ethereumjs-util": "^7.1.5",
@@ -66,8 +65,7 @@
 		"lint:fix": "npm run lint -- --fix",
 		"prettier": "npx prettier src --check",
 		"prettier:fix": "npm run prettier -- --write",
-		"format": "npm run prettier:fix && npm run lint:fix",
-		"prepare": "husky install"
+		"format": "npm run prettier:fix && npm run lint:fix"
 	},
 	"browserslist": {
 		"production": [
@@ -87,6 +85,7 @@
 		"@types/lodash": "^4.14.172",
 		"@welldone-software/why-did-you-render": "^6.2.0",
 		"autoprefixer": "^9.8.6",
+		"@craco/craco": "^6.2.0",
 		"debug": "^4.3.2",
 		"eslint": "^7.32.0",
 		"husky": "^8.0.0",

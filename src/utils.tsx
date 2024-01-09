@@ -16,7 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
-import _ from 'lodash';
+import _, { chain } from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { Transaction as Web3Transaction } from 'web3-eth';
@@ -87,7 +87,7 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
 
 export const getPublicKey = async (txId: string) => {
 	let provider = ethers.getDefaultProvider(
-		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
+		process.env.REACT_APP_NODE_URL
 	);
 	let tx = await provider.getTransaction(txId)!;
 	console.log(txId);
@@ -309,7 +309,7 @@ export const getButton: (
 	setOpen: Dispatch<SetStateAction<boolean>>,
 	handleSubmit: UseFormHandleSubmit<InputValues>,
 	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (contentState, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
+) => JSX.Element = (contentState, buttonContent, setOpen) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -332,9 +332,9 @@ export const getButton: (
 			</Link>
 		</PrimaryButton>
 	) : (
-		<DisabledButton type='submit' disabled>
+		<PrimaryButton type='submit' >
 			{buttonContent}
-		</DisabledButton>
+		</PrimaryButton>
 	);
 };
 
@@ -501,7 +501,9 @@ const getV: (v: string, chainId: number) => string = (v, chainId) => {
 export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
 	transaction
 ) => {
-	const chainId = 3; // Ropsten
+	const chainId = process.env.REACT_APP_CHAIN_ID;
+	const chainName = process.env.REACT_APP_CHAIN_NAME;
+
 	const ethTx = new EthJsTx(
 		{
 			nonce: transaction.nonce,
