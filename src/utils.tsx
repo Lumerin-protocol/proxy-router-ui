@@ -16,7 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
-import _, { chain } from 'lodash';
+import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { Transaction as Web3Transaction } from 'web3-eth';
@@ -86,9 +86,7 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
 };
 
 export const getPublicKey = async (txId: string) => {
-	let provider = ethers.getDefaultProvider(
-		process.env.REACT_APP_NODE_URL
-	);
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
 	let tx = await provider.getTransaction(txId)!;
 	console.log(txId);
 	console.log(tx);
@@ -332,9 +330,7 @@ export const getButton: (
 			</Link>
 		</PrimaryButton>
 	) : (
-		<PrimaryButton type='submit' >
-			{buttonContent}
-		</PrimaryButton>
+		<PrimaryButton type='submit'>{buttonContent}</PrimaryButton>
 	);
 };
 
@@ -502,7 +498,6 @@ export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buff
 	transaction
 ) => {
 	const chainId = process.env.REACT_APP_CHAIN_ID;
-	const chainName = process.env.REACT_APP_CHAIN_NAME;
 
 	const ethTx = new EthJsTx(
 		{

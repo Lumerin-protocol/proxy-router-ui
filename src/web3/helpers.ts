@@ -29,17 +29,17 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 ) => {
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
-			console.log("Using MetaMask");
-			
+			console.log('Using MetaMask');
+
 			return (await detectEthereumProvider()) as provider;
 		default:
-			console.log("Using WalletConnect");
-			console.log("process.env.REACT_APP_NODE_URL: " + process.env.REACT_APP_NODE_URL);
-			console.log("process.env.REACT_APP_CHAIN_ID: " + process.env.REACT_APP_CHAIN_ID);
+			console.log('Using WalletConnect');
+			console.log('process.env.REACT_APP_NODE_URL: ' + process.env.REACT_APP_NODE_URL);
+			console.log('process.env.REACT_APP_CHAIN_ID: ' + process.env.REACT_APP_CHAIN_ID);
 
 			return new WalletConnectProvider({
 				rpc: {
-					1: process.env.REACT_APP_NODE_URL!
+					1: process.env.REACT_APP_NODE_URL!,
 				},
 				chainId: parseInt(process.env.REACT_APP_CHAIN_ID!),
 				clientMeta: {
@@ -62,7 +62,7 @@ export const getWeb3ResultAsync: (
 ) => Promise<Web3Result | null> = async (setAlertOpen, setIsConnected, setAccounts, walletName) => {
 	try {
 		const provider = await getProviderAsync(walletName);
-		console.log("provider: ", provider);
+		console.log('provider: ', provider);
 		if (provider) {
 			registerEventListeners(
 				walletName,
@@ -87,10 +87,10 @@ export const getWeb3ResultAsync: (
 				process.env.REACT_APP_CLONE_FACTORY
 			);
 
-// 			const contractResult = await contractInstance?.methods
-// 			.setCreateNewRentalContract(1, 0, 1, 24, "0x9064d6589F9745614c9F5736BB9C027294718453", '')
-// 			.send({ from: "0x9064d6589F9745614c9F5736BB9C027294718453" });
-// console.log("contract result: ", contractResult);
+			// 			const contractResult = await contractInstance?.methods
+			// 			.setCreateNewRentalContract(1, 0, 1, 24, "0x9064d6589F9745614c9F5736BB9C027294718453", '')
+			// 			.send({ from: "0x9064d6589F9745614c9F5736BB9C027294718453" });
+			// console.log("contract result: ", contractResult);
 			return { accounts, contractInstance, web3 };
 		}
 		return null;
