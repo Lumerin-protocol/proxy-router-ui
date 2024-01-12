@@ -75,9 +75,9 @@ export const Main: React.FC = () => {
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
 
-	const userAccount = useMemo(()=>{ 
-		console.log("updating user account value")
-		return accounts && accounts[0] ? accounts[0] : ''
+	const userAccount = useMemo(() => {
+		console.log('updating user account value');
+		return accounts && accounts[0] ? accounts[0] : '';
 	}, [accounts]);
 	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === parseInt(process.env.REACT_APP_CHAIN_ID!);
@@ -434,17 +434,27 @@ export const Main: React.FC = () => {
 
 	const drawerWidth = 240;
 
-	const BuyerFormMemo = ({contracts, contractId, userAccount, cloneFactoryContract, web3, lumerinBalance, setBuyModalOpen}) => {
-		console.log("re-render buyer form");
-		return <BuyForm
-			contracts={contracts}
-			contractId={contractId}
-			userAccount={userAccount}
-			cloneFactoryContract={cloneFactoryContract}
-			web3={web3}
-			lumerinbalance={lumerinBalance}
-			setOpen={setBuyModalOpen}
-		/>;
+	const BuyerFormMemo = ({
+		contracts,
+		contractId,
+		userAccount,
+		cloneFactoryContract,
+		web3,
+		lumerinBalance,
+		setBuyModalOpen,
+	}) => {
+		console.log('re-render buyer form');
+		return (
+			<BuyForm
+				contracts={contracts}
+				contractId={contractId}
+				userAccount={userAccount}
+				cloneFactoryContract={cloneFactoryContract}
+				web3={web3}
+				lumerinbalance={lumerinBalance}
+				setOpen={setBuyModalOpen}
+			/>
+		);
 	};
 
 	return isConnected ? (
@@ -458,15 +468,17 @@ export const Main: React.FC = () => {
 			<ModalItem
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
-				content={<BuyerFormMemo
-					contracts={contracts}
-					contractId={contractId}
-					userAccount={userAccount}
-					cloneFactoryContract={cloneFactoryContract}
-					web3={web3}
-					lumerinbalance={lumerinBalance}
-					setOpen={setBuyModalOpen}
-				/>}
+				content={
+					<BuyerFormMemo
+						contracts={contracts}
+						contractId={contractId}
+						userAccount={userAccount}
+						cloneFactoryContract={cloneFactoryContract}
+						web3={web3}
+						lumerinbalance={lumerinBalance}
+						setOpen={setBuyModalOpen}
+					/>
+				}
 			/>
 			<ModalItem
 				open={createModalOpen}

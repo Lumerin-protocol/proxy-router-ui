@@ -36,17 +36,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	buyerString,
 	isEdit,
 	setFormData,
-	inputData
+	inputData,
 }) => {
-	const {
-		withValidator,
-		poolAddress,
-		portNumber,
-		username,
-		password,
-		speed,
-		price
-	} = inputData;
+	const { withValidator, poolAddress, portNumber, username, password, speed, price } = inputData;
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
 
@@ -120,10 +112,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					// 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
 					// 		: ''
 					// }
-					onChange={e => setFormData({
-						...inputData,
-						poolAddress: e.target.value,
-					})}
+					onChange={(e) =>
+						setFormData({
+							...inputData,
+							poolAddress: e.target.value,
+						})
+					}
 					value={poolAddress}
 				/>
 				{errors.poolAddress && (
@@ -148,10 +142,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					}
 					//defaultValue={isEdit && buyerString ? getPortString(buyerString) : ''}
 					value={portNumber}
-					onChange={e => setFormData({
-						...inputData,
-						portNumber: e.target.value,
-					})}
+					onChange={(e) =>
+						setFormData({
+							...inputData,
+							portNumber: e.target.value,
+						})
+					}
 				/>
 				{errors.portNumber && (
 					<div className='text-xs text-red-500'>{errors.portNumber.message}</div>
@@ -174,10 +170,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					}
 					//defaultValue={isEdit && buyerString ? getWorkerName(buyerString) : ''}
 					value={username}
-					onChange={e => setFormData({
-						...inputData,
-						username: e.target.value,
-					})}
+					onChange={(e) =>
+						setFormData({
+							...inputData,
+							username: e.target.value,
+						})
+					}
 				/>
 				{errors.username?.type === 'required' && (
 					<div className='text-xs text-red-500'>{errors.username.message}</div>
@@ -196,10 +194,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					className='review-no-errors review-input'
 					// defaultValue={isEdit && buyerString ? getPassword(buyerString) : ''}
 					value={password}
-					onChange={e => setFormData({
-						...inputData,
-						password: e.target.value,
-					})}
+					onChange={(e) =>
+						setFormData({
+							...inputData,
+							password: e.target.value,
+						})
+					}
 				/>
 			</InputWrapper>
 			{/* {!isEdit && <Checkbox legend={checkboxLegend} label={checkboxLabel} description={checkboxDescription} register={register} />} */}

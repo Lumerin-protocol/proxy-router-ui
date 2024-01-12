@@ -71,17 +71,19 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	lumerinbalance,
 	setOpen,
 }) => {
-	console.log("buy form: ", {contracts,
-	contractId,
-	userAccount,
-	cloneFactoryContract,
-	web3,
-	lumerinbalance});
+	console.log('buy form: ', {
+		contracts,
+		contractId,
+		userAccount,
+		cloneFactoryContract,
+		web3,
+		lumerinbalance,
+	});
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isAvailable, setIsAvailable] = useState<boolean>(true);
 	let setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-	
-	[formData, setFormData]= useState<FormData>(formData);
+
+	[formData, setFormData] = useState<FormData>(formData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [totalHashrate, setTotalHashrate] = useState<number>();
 
@@ -113,10 +115,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	};
 
 	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
-		console.log("buyContractAsync: ", data);
+		console.log('buyContractAsync: ', data);
 		// Review
 		if (isValid && contentState === ContentState.Review) {
-			console.log("reviewing");
+			console.log('reviewing');
 			setContentState(ContentState.Confirm);
 			setFormData({
 				poolAddress: data.poolAddress,
@@ -221,7 +223,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	let buttonContent = '';
 	let content = <div></div>;
 	const createContent: () => void = () => {
-		console.log("content state: ", contentState);
+		console.log('content state: ', contentState);
 		switch (contentState) {
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
@@ -236,7 +238,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			default:
 				paragraphContent = paragraphText.review as string;
 				buttonContent = buttonText.review as string;
-				content = <ReviewContent register={register} errors={errors} setValue={setValue} setFormData={setFormData}  inputData={formData} />;
+				content = (
+					<ReviewContent
+						register={register}
+						errors={errors}
+						setValue={setValue}
+						setFormData={setFormData}
+						inputData={formData}
+					/>
+				);
 		}
 	};
 	createContent();
@@ -289,7 +299,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, ()=> buyContractAsync(formData))}
+					getButton(contentState, buttonContent, setOpen, () => buyContractAsync(formData))}
 			</FormButtonsWrapper>
 		</Fragment>
 	);
