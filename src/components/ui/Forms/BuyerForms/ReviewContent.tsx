@@ -29,6 +29,9 @@ interface ReviewContentProps {
 	buyerString?: string;
 	isEdit?: boolean;
 }
+
+let  preferredPool: PoolData, setPreferredPool: React.Dispatch<React.SetStateAction<PoolData>>
+
 export const ReviewContent: React.FC<ReviewContentProps> = ({
 	register,
 	errors,
@@ -40,7 +43,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 }) => {
 	const { withValidator, poolAddress, portNumber, username, password, speed, price } = inputData;
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
-	const [preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
+	[preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
 
 	const preferredPools = [
 		{ name: 'Titan', address: 'stratum+tcp://mining.pool.titan.io', port: '4242' },
@@ -59,10 +62,15 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 		setPreferredPool({ ...preferredPool, ...selectedPool });
 	};
 
-	useEffect(() => {
-		setValue?.('poolAddress', preferredPool.address);
-		setValue?.('portNumber', preferredPool.port);
-	}, [preferredPool]);
+	// useEffect(() => {
+	// 	setFormData({
+	// 		...inputData,
+	// 		poolAddress: preferredPool.address,
+	// 		portNumber: preferredPool.port,
+	// 	})
+	// 	// setValue?.('poolAddress', preferredPool.address);
+	// 	// setValue?.('portNumber', preferredPool.port);
+	// }, [preferredPool]);
 
 	return (
 		<React.Fragment>
@@ -94,19 +102,19 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 			<InputWrapper>
 				<label htmlFor='poolAddress'>Pool Address *</label>
 				<input
-					{...register('poolAddress', {
-						required: 'Pool Address is required',
-						validate: (poolAddress) =>
-							isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
-					})}
+					// {...register('poolAddress', {
+					// 	required: 'Pool Address is required',
+					// 	validate: (poolAddress) =>
+					// 		isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
+					// })}
 					id='poolAddress'
 					type='text'
 					placeholder='stratum+tcp://IPADDRESS'
-					className={
-						errors.poolAddress
-							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
-							: 'review-no-errors review-input'
-					}
+					// className={
+					// 	errors.poolAddress
+					// 		? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+					// 		: 'review-no-errors review-input'
+					// }
 					//defaultValue={
 					// 	isEdit && buyerString
 					// 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
@@ -120,26 +128,26 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					}
 					value={poolAddress}
 				/>
-				{errors.poolAddress && (
+				{/* {errors.poolAddress && (
 					<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
-				)}
+				)} */}
 			</InputWrapper>
 			<InputWrapper>
 				<label htmlFor='portNumber'>Port Number *</label>
 				<input
-					{...register('portNumber', {
-						required: 'Port Number is required',
-						validate: (portNumber) =>
-							isValidPortNumber(portNumber as string) || 'Invalid port number.',
-					})}
+					// {...register('portNumber', {
+					// 	required: 'Port Number is required',
+					// 	validate: (portNumber) =>
+					// 		isValidPortNumber(portNumber as string) || 'Invalid port number.',
+					// })}
 					id='portNumber'
 					type='number'
 					placeholder='4242'
-					className={
-						errors.portNumber
-							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
-							: 'review-no-errors review-input'
-					}
+					// className={
+					// 	errors.portNumber
+					// 		? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+					// 		: 'review-no-errors review-input'
+					// }
 					//defaultValue={isEdit && buyerString ? getPortString(buyerString) : ''}
 					value={portNumber}
 					onChange={(e) =>
@@ -149,25 +157,25 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 						})
 					}
 				/>
-				{errors.portNumber && (
+				{/* {errors.portNumber && (
 					<div className='text-xs text-red-500'>{errors.portNumber.message}</div>
-				)}
+				)} */}
 			</InputWrapper>
 			<InputWrapper>
 				<label htmlFor='username'>Username *</label>
 				<input
-					{...register('username', {
-						required: 'Username is required',
-						validate: (username) => isValidUsername(username as string) || 'Invalid username.',
-					})}
+					// {...register('username', {
+					// 	required: 'Username is required',
+					// 	validate: (username) => isValidUsername(username as string) || 'Invalid username.',
+					// })}
 					id='username'
 					type='text'
 					placeholder='account.worker'
-					className={
-						errors.username
-							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
-							: 'review-no-errors review-input'
-					}
+					// className={
+					// 	errors.username
+					// 		? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+					// 		: 'review-no-errors review-input'
+					// }
 					//defaultValue={isEdit && buyerString ? getWorkerName(buyerString) : ''}
 					value={username}
 					onChange={(e) =>
@@ -177,17 +185,17 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 						})
 					}
 				/>
-				{errors.username?.type === 'required' && (
+				{/* {errors.username?.type === 'required' && (
 					<div className='text-xs text-red-500'>{errors.username.message}</div>
 				)}
 				{errors.username?.type === 'validate' && (
 					<div className='text-xs text-red-500'>{errors.username.message}</div>
-				)}
+				)} */}
 			</InputWrapper>
 			<InputWrapper>
 				<label htmlFor='password'>Password</label>
 				<input
-					{...register('password')}
+					// {...register('password')}
 					id='password'
 					type='password'
 					placeholder='password'

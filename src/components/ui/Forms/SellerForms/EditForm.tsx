@@ -25,6 +25,7 @@ const buttonText: Text = {
 	confirm: 'Confirm Changes',
 	completed: 'Close',
 };
+let contentState, setContentState;
 
 // Set initial state to current contract values
 const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {
@@ -44,8 +45,8 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 	setOpen,
 }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
+	[contentState, setContentState] = useState<string>(ContentState.Create);
 
-	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(contract));
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
@@ -182,7 +183,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, buttonContent, setOpen, handleSubmit, editContractAsync)
+						? getButton(contentState, buttonContent, setOpen, handleSubmit)
 						: null}
 				</div>
 			</div>

@@ -434,29 +434,6 @@ export const Main: React.FC = () => {
 
 	const drawerWidth = 240;
 
-	const BuyerFormMemo = ({
-		contracts,
-		contractId,
-		userAccount,
-		cloneFactoryContract,
-		web3,
-		lumerinBalance,
-		setBuyModalOpen,
-	}) => {
-		console.log('re-render buyer form');
-		return (
-			<BuyForm
-				contracts={contracts}
-				contractId={contractId}
-				userAccount={userAccount}
-				cloneFactoryContract={cloneFactoryContract}
-				web3={web3}
-				lumerinbalance={lumerinBalance}
-				setOpen={setBuyModalOpen}
-			/>
-		);
-	};
-
 	return isConnected ? (
 		<BodyWrapper>
 			<SwitchNetworkAlert
@@ -469,7 +446,7 @@ export const Main: React.FC = () => {
 				open={buyModalOpen}
 				setOpen={setBuyModalOpen}
 				content={
-					<BuyerFormMemo
+					<BuyForm
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}

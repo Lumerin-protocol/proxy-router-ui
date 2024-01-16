@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 interface ModalProps {
 	open: boolean;
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	content: React.MemoExoticComponent<any>;
+	content: React.ReactElement<any>;
 }
 
 const StyledModal = styled(Modal)`
