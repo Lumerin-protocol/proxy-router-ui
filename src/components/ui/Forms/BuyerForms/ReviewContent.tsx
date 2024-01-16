@@ -30,7 +30,7 @@ interface ReviewContentProps {
 	isEdit?: boolean;
 }
 
-let  preferredPool: PoolData, setPreferredPool: React.Dispatch<React.SetStateAction<PoolData>>
+let preferredPool: PoolData, setPreferredPool: React.Dispatch<React.SetStateAction<PoolData>>;
 
 export const ReviewContent: React.FC<ReviewContentProps> = ({
 	register,

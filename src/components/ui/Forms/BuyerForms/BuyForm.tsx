@@ -51,7 +51,8 @@ const initialFormData: FormData = {
 };
 
 let formData: FormData = initialFormData,
-contentState: string, setContentState: React.Dispatch<React.SetStateAction<string>>;
+	contentState: string,
+	setContentState: React.Dispatch<React.SetStateAction<string>>;
 
 interface BuyFormProps {
 	contracts: HashRentalContract[];
@@ -80,7 +81,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		web3,
 		lumerinbalance,
 	});
-	 [contentState, setContentState] = useState<string>(ContentState.Review);
+	[contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isAvailable, setIsAvailable] = useState<boolean>(true);
 	let setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 
@@ -119,7 +120,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		console.log('buyContractAsync: ', data);
 		// Review
 		// if (isValid && contentState === ContentState.Review) {
-			if ( contentState === ContentState.Review) {
+		if (contentState === ContentState.Review) {
 			console.log('reviewing');
 			setContentState(ContentState.Confirm);
 			setFormData({
@@ -134,13 +135,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 		// Confirm
 		// if (isValid && contentState === ContentState.Confirm) {
-			if (contentState === ContentState.Confirm) {
+		if (contentState === ContentState.Confirm) {
 			setContentState(ContentState.Pending);
 		}
 
 		// Pending
 		// if (isValid && contentState === ContentState.Pending) {
-			if (contentState === ContentState.Pending) {
+		if (contentState === ContentState.Pending) {
 			// Order of events
 			// 1. Purchase hashrental contract
 			// 2. Transfer contract price (LMR) to escrow account
