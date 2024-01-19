@@ -76,7 +76,7 @@ export const Main: React.FC = () => {
 	const [pathName, setPathname] = useState<string>('/');
 
 	const userAccount = useMemo(() => {
-		console.log('updating user account value');
+		console.log('updating user account value: ', accounts && accounts[0] ? accounts[0] : '');
 		return accounts && accounts[0] ? accounts[0] : '';
 	}, [accounts]);
 	const ethereum = window.ethereum as Ethereum;
@@ -200,6 +200,7 @@ export const Main: React.FC = () => {
 				6: buyer,
 				7: seller,
 				8: encryptedPoolData,
+				12: version,
 			} = await implementationContractInstance.methods.getPublicVariables().call();
 
 			return {
@@ -212,6 +213,7 @@ export const Main: React.FC = () => {
 				timestamp,
 				state,
 				encryptedPoolData,
+				version,
 			} as HashRentalContract;
 		}
 

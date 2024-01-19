@@ -25,7 +25,7 @@ const buttonText: Text = {
 	confirm: 'Confirm Changes',
 	completed: 'Close',
 };
-let contentState, setContentState;
+let contentState: any, setContentState: any;
 
 // Set initial state to current contract values
 const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (contract) => {

@@ -113,6 +113,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			speed: contract.speed as string,
 			price: contract.price as string,
 			length: contract.length as string,
+			//TODO: test validity of this field in this context
+			version: contract.version as string,
 		};
 	};
 
@@ -183,26 +185,46 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					if (receipt?.status) {
 						// Purchase contract
 						const buyerInput: string = toRfc2396(formData)!;
+						let encryptedBuyerInput: string = '';
 						try {
 							let contractAddress = contract.id!;
+							console.log('getting contract creation tx: ', contractAddress);
 							const contractCreationTx = await getCreationTxIDOfContract(
 								contractAddress.toString()
 							);
-							const pubKey = await getPublicKey(contractCreationTx);
-							const encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
+							console.log('getting pubkey - contract creation tx: ', contractCreationTx);
+							let pubKey = await getPublicKey(contractCreationTx);
+							console.log('pubkey: ', pubKey);
+							encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
 							console.log(`encryptedBuyerInput: ${encryptedBuyerInput}`);
+
+							const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
+
+							const purchaseGas = await cloneFactoryContract?.methods
+								.setPurchaseRentalContract(contractId, encryptedBuyerInput, contract.version)
+								.estimateGas({
+									from: sendOptions.from,
+									value: marketplaceFee,
+								});
+
+							console.log('submitting purchase for contract: ', contract);
+							const receipt: Receipt = await cloneFactoryContract?.methods
+								.setPurchaseRentalContract(contract.id, encryptedBuyerInput, contract.version) //commented out for testing
+								// .setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
+								.send({
+									...sendOptions,
+									gas: purchaseGas,
+									value: marketplaceFee,
+								});
+							if (!receipt.status) {
+								// TODO: purchasing contract has failed, surface to user
+								console.log('contract purchase failed: ', receipt);
+							}
 						} catch (e) {
-							console.log(e);
-						}
-						const receipt: Receipt = await cloneFactoryContract?.methods
-							//.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
-							.setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
-							.send(sendOptions);
-						if (!receipt.status) {
-							// TODO: purchasing contract has failed, surface to user
-							console.log(receipt);
+							console.log('failed to prepare or complete contract purchase: ', e);
 						}
 					} else {
+						console.log('call to increaseAllowance() has failed, surface to user');
 						// TODO: call to increaseAllowance() has failed, surface to user
 					}
 				}

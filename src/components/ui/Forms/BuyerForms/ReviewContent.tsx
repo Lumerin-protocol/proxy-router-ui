@@ -23,11 +23,13 @@ interface PoolData {
 }
 
 interface ReviewContentProps {
-	register: UseFormRegister<InputValuesBuyForm>;
-	errors: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
+	register?: UseFormRegister<InputValuesBuyForm>;
+	errors?: DeepMap<InputValuesBuyForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	setValue?: UseFormSetValue<InputValuesBuyForm>;
 	buyerString?: string;
 	isEdit?: boolean;
+	setFormData?: any;
+	inputData?: any;
 }
 
 let preferredPool: PoolData, setPreferredPool: React.Dispatch<React.SetStateAction<PoolData>>;
