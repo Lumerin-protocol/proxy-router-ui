@@ -110,6 +110,7 @@ export interface HashRentalContract {
 	timestamp?: string;
 	state?: string;
 	encryptedPoolData?: string;
+	version?: string;
 }
 
 // Making fields optional bc a user might not have filled out the input fields

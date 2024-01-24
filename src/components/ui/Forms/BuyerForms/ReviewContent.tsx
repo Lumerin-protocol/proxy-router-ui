@@ -43,7 +43,17 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	setFormData,
 	inputData,
 }) => {
-	const { withValidator, poolAddress, portNumber, username, password, speed, price } = inputData;
+	const {
+		withValidator,
+		poolAddress,
+		portNumber,
+		username,
+		password,
+		speed,
+		price,
+		useExternalValidator,
+		validatorAddress,
+	} = inputData;
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	[preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
 
@@ -102,6 +112,38 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				</Select>
 			</InputWrapper>
 			<InputWrapper>
+				<label htmlFor='useExternalValidator'>Use Validator</label>
+				<input
+					// {...register('poolAddress', {
+					// 	required: 'Pool Address is required',
+					// 	validate: (poolAddress) =>
+					// 		isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
+					// })}
+					id='useExternalValidator'
+					type='checkbox'
+					// className={
+					// 	errors.poolAddress
+					// 		? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+					// 		: 'review-no-errors review-input'
+					// }
+					//defaultValue={
+					// 	isEdit && buyerString
+					// 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
+					// 		: ''
+					// }
+					onChange={(e) =>
+						setFormData({
+							...inputData,
+							useExternalValidator: e.target.value,
+						})
+					}
+					value={useExternalValidator}
+				/>
+				{/* {errors.poolAddress && (
+					<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
+				)} */}
+			</InputWrapper>
+			<InputWrapper>
 				<label htmlFor='poolAddress'>Pool Address *</label>
 				<input
 					// {...register('poolAddress', {
@@ -110,6 +152,39 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					// 		isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
 					// })}
 					id='poolAddress'
+					type='text'
+					placeholder='stratum+tcp://IPADDRESS'
+					// className={
+					// 	errors.poolAddress
+					// 		? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+					// 		: 'review-no-errors review-input'
+					// }
+					//defaultValue={
+					// 	isEdit && buyerString
+					// 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
+					// 		: ''
+					// }
+					onChange={(e) =>
+						setFormData({
+							...inputData,
+							poolAddress: e.target.value,
+						})
+					}
+					value={poolAddress}
+				/>
+				{/* {errors.poolAddress && (
+					<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
+				)} */}
+			</InputWrapper>
+			<InputWrapper>
+				<label htmlFor='validatorAddress'>Validator Address *</label>
+				<input
+					// {...register('poolAddress', {
+					// 	required: 'Pool Address is required',
+					// 	validate: (poolAddress) =>
+					// 		isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
+					// })}
+					id='validatorAddress'
 					type='text'
 					placeholder='stratum+tcp://IPADDRESS'
 					// className={

@@ -13,6 +13,9 @@ import {
 	truncateAddress,
 	getCreationTxIDOfContract,
 	getPublicKey,
+	getValidatorPublicKey,
+	getPoolRfc2396,
+	getValidatorRfc2396,
 } from '../../../../utils';
 
 import { LumerinContract, ImplementationContract } from 'contracts-js';
@@ -184,24 +187,38 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						.send(sendOptions);
 					if (receipt?.status) {
 						// Purchase contract
-						const buyerInput: string = toRfc2396(formData)!;
-						let encryptedBuyerInput: string = '';
 						try {
+							const buyerInput: string = getPoolRfc2396(formData)!;
+							let encryptedBuyerInput: string = '';
+
 							let contractAddress = contract.id!;
 							console.log('getting contract creation tx: ', contractAddress);
 							const contractCreationTx = await getCreationTxIDOfContract(
 								contractAddress.toString()
 							);
 							console.log('getting pubkey - contract creation tx: ', contractCreationTx);
-							let pubKey = await getPublicKey(contractCreationTx);
-							console.log('pubkey: ', pubKey);
-							encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
+							let sellerPublicKey = await getPublicKey(contractCreationTx);
+							console.log('pubkey: ', sellerPublicKey);
+							encryptedBuyerInput = await encryptMessage(sellerPublicKey, buyerInput);
 							console.log(`encryptedBuyerInput: ${encryptedBuyerInput}`);
+
+							const validatorInput = await getValidatorRfc2396(formData);
+							const validatorPublicKey = await getValidatorPublicKey();
+							const encryptedValidatorInput = await encryptMessage(
+								validatorPublicKey,
+								validatorInput!
+							);
 
 							const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
 
 							const purchaseGas = await cloneFactoryContract?.methods
-								.setPurchaseRentalContract(contractId, encryptedBuyerInput, contract.version)
+								.setPurchaseRentalContract(
+									contractId,
+									validatorPublicKey,
+									encryptedValidatorInput,
+									encryptedBuyerInput,
+									contract.version
+								)
 								.estimateGas({
 									from: sendOptions.from,
 									value: marketplaceFee,
