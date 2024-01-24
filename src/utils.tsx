@@ -68,7 +68,9 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (address, username, password, portNumber) => string | undefined = (formData) => {
+export const toRfc2396: (address, username, password, portNumber) => string | undefined = (
+	formData
+) => {
 	const regex = /(^.*):\/\/(.*$)/;
 	const poolAddressGroups = address?.match(regex) as RegExpMatchArray;
 	if (!poolAddressGroups) return;
@@ -83,7 +85,12 @@ export const getPoolRfc2396: (formData: FormData) => string | undefined = (formD
 };
 
 export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(formData.validatorAddress, formData.username, formData.password, formData.portNumber);
+	return toRfc2396(
+		formData.validatorAddress,
+		formData.username,
+		formData.password,
+		formData.portNumber
+	);
 };
 
 //encrypts a string passed into it
@@ -95,7 +102,7 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
 
 export const getValidatorPublicKey = () => {
 	return process.env.REACT_APP_VALIDATOR_ADDRESS;
-}
+};
 
 export const getPublicKey = async (txId: string) => {
 	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);

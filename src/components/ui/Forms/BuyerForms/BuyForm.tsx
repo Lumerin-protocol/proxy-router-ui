@@ -8,7 +8,6 @@ import { CompletedContent } from './CompletedContent';
 import {
 	getButton,
 	printError,
-	toRfc2396,
 	encryptMessage,
 	truncateAddress,
 	getCreationTxIDOfContract,
@@ -199,14 +198,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							console.log('getting pubkey - contract creation tx: ', contractCreationTx);
 							let sellerPublicKey = await getPublicKey(contractCreationTx);
 							console.log('pubkey: ', sellerPublicKey);
-							encryptedBuyerInput = await encryptMessage(sellerPublicKey, buyerInput);
+							const validatorInput = await getValidatorRfc2396(formData);
+							encryptedBuyerInput = await encryptMessage(sellerPublicKey, validatorInput!);
 							console.log(`encryptedBuyerInput: ${encryptedBuyerInput}`);
 
-							const validatorInput = await getValidatorRfc2396(formData);
 							const validatorPublicKey = await getValidatorPublicKey();
 							const encryptedValidatorInput = await encryptMessage(
-								validatorPublicKey,
-								validatorInput!
+								validatorPublicKey!,
+								buyerInput!
 							);
 
 							const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
