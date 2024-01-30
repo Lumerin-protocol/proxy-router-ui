@@ -429,7 +429,11 @@ export const Main: React.FC = () => {
 		background: #eaf7fc;
 		background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
 			url(${BubbleGraphic4});
-		background-position: bottom right, right top, left top, left bottom;
+		background-position:
+			bottom right,
+			right top,
+			left top,
+			left bottom;
 		background-repeat: no-repeat;
 		background-size: 25% 15% 15% 10%;
 	`;

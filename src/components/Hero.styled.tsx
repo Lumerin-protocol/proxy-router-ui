@@ -19,12 +19,21 @@ export const HeroWrapper = styled.div`
 			#f7fcfe,
 			#ffffff
 		);
-	background-position: top 375px right 200px, top 500px right 200px, top right, bottom right, top;
+	background-position:
+		top 375px right 200px,
+		top 500px right 200px,
+		top right,
+		bottom right,
+		top;
 	background-size: 80% 80% 80% 80% 100%;
 	background-repeat: no-repeat;
 
 	@media (max-width: 650px) {
-		background-position: top 414px right 2px, top 500px right 200px, top right -75px, bottom right,
+		background-position:
+			top 414px right 2px,
+			top 500px right 200px,
+			top right -75px,
+			bottom right,
 			top;
 		background-size: 34%, 50%, 72%, 100%, 100%;
 		background-repeat: no-repeat;

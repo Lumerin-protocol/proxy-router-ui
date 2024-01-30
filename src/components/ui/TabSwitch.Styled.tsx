@@ -5,7 +5,9 @@ export const TabSwitch = styled.div`
 	align-items: center;
 	background-color: #fff;
 	color: #0e4353;
-	box-shadow: 0 0 1px 0 rgba(#185ee0, 0.15), 0 6px 12px 0 rgba(#185ee0, 0.15);
+	box-shadow:
+		0 0 1px 0 rgba(#185ee0, 0.15),
+		0 6px 12px 0 rgba(#185ee0, 0.15);
 	padding: 0.7rem 0.25rem;
 	max-width: 408px;
 	height: 53px;

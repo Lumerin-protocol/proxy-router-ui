@@ -176,39 +176,43 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
 				)} */}
 			</InputWrapper>
-			<InputWrapper>
-				<label htmlFor='validatorAddress'>Validator Address *</label>
-				<input
-					// {...register('poolAddress', {
-					// 	required: 'Pool Address is required',
-					// 	validate: (poolAddress) =>
-					// 		isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
-					// })}
-					id='validatorAddress'
-					type='text'
-					placeholder='stratum+tcp://IPADDRESS'
-					// className={
-					// 	errors.poolAddress
-					// 		? 'bg-red-100 btn-modal placeholder-red-400 review-input'
-					// 		: 'review-no-errors review-input'
-					// }
-					//defaultValue={
-					// 	isEdit && buyerString
-					// 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
-					// 		: ''
-					// }
-					onChange={(e) =>
-						setFormData({
-							...inputData,
-							poolAddress: e.target.value,
-						})
-					}
-					value={poolAddress}
-				/>
-				{/* {errors.poolAddress && (
+			{useExternalValidator ? (
+				<>
+					<InputWrapper>
+						<label htmlFor='validatorAddress'>Validator Address *</label>
+						<input
+							// {...register('poolAddress', {
+							// 	required: 'Pool Address is required',
+							// 	validate: (poolAddress) =>
+							// 		isValidPoolAddress(poolAddress as string, setAlertOpen) || 'Invalid pool address.',
+							// })}
+							id='validatorAddress'
+							type='text'
+							placeholder='stratum+tcp://IPADDRESS'
+							// className={
+							// 	errors.poolAddress
+							// 		? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+							// 		: 'review-no-errors review-input'
+							// }
+							//defaultValue={
+							// 	isEdit && buyerString
+							// 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
+							// 		: ''
+							// }
+							onChange={(e) =>
+								setFormData({
+									...inputData,
+									poolAddress: e.target.value,
+								})
+							}
+							value={poolAddress}
+						/>
+						{/* {errors.poolAddress && (
 					<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
 				)} */}
-			</InputWrapper>
+					</InputWrapper>
+				</>
+			) : null}
 			<InputWrapper>
 				<label htmlFor='portNumber'>Port Number *</label>
 				<input
