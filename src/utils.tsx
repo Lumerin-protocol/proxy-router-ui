@@ -186,7 +186,7 @@ export const getPassword = (connectionString: string): string | undefined => {
 		? usernameWithPassword?.substring(
 				usernameWithPassword.indexOf(':') + 1,
 				usernameWithPassword.length
-			)
+		  )
 		: '';
 };
 

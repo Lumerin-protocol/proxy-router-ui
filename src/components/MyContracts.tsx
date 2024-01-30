@@ -111,7 +111,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 								updatedOrder.timestamp as string,
 								parseInt(updatedOrder.length as string),
 								currentBlockTimestamp
-							);
+						  );
 				updatedOrder.progressPercentage = getProgressPercentage(
 					updatedOrder.state as string,
 					updatedOrder.timestamp as string,
@@ -188,7 +188,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 					{ Header: 'DURATION', accessor: 'length', sortType: 'customSort' },
 					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
 					{ Header: 'EDIT', accessor: 'editClaim', disableSortBy: true },
-				]
+			  ]
 			: [
 					{ Header: 'CONTRACT ADDRESS', accessor: 'id', disableSortBy: true },
 					{ Header: 'STATUS', accessor: 'status', sortType: 'customSort' },
@@ -197,7 +197,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 					{ Header: 'STARTED', accessor: 'timestamp', sortType: 'customSort' },
 					{ Header: 'PROGRESS', accessor: 'progress', sortType: 'customSort' },
 					{ Header: 'EDIT', accessor: 'editClaim', disableSortBy: true },
-				];
+			  ];
 	}, [isMediumBreakpointOrBelow]);
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
