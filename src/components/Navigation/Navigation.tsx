@@ -44,13 +44,13 @@ export const ResponsiveNavigation = (prop: {
 			inactiveIcon: BuyerIconInactive,
 			current: prop.pathName === PathName.MyOrders,
 		},
-		{
-			name: 'Seller Hub',
-			to: PathName.MyContracts,
-			activeIcon: SellerIconActive,
-			inactiveIcon: SellerIconInactive,
-			current: prop.pathName === PathName.MyContracts,
-		},
+		// {
+		// 	name: 'Seller Hub',
+		// 	to: PathName.MyContracts,
+		// 	activeIcon: SellerIconActive,
+		// 	inactiveIcon: SellerIconInactive,
+		// 	current: prop.pathName === PathName.MyContracts,
+		// },
 	];
 
 	const drawer = (

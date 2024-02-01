@@ -169,14 +169,17 @@ export const Main: React.FC = () => {
 	}, []);
 
 	// Get timestamp of current block
-	const getCurrentBlockTimestampAsync: () => Promise<void> = async () => {
+	const getCurrentBlockTimestampAsync: () => Promise<number> = async () => {
 		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
-		setCurrentBlockTimestamp(currentBlockTimestamp as number);
+		return currentBlockTimestamp as number;
 	};
 
 	useInterval(() => {
 		getCurrentBlockTimestampAsync().then(() => {
-			if (isCorrectNetwork && !anyModalOpen) createContractsAsync();
+			if (isCorrectNetwork && !anyModalOpen) {
+				setCurrentBlockTimestamp(currentBlockTimestamp as number);
+				createContractsAsync();
+			}
 		});
 	}, 10000);
 
@@ -235,14 +238,6 @@ export const Main: React.FC = () => {
 	const createContractsAsync: () => void = async () => {
 		try {
 			console.log('Fetching contract list...');
-			console.log('methods: ', Object.keys(cloneFactoryContract?.methods));
-			console.log('env: ', {
-				'REACT_APP_LUMERIN_TOKEN_ADDRESS: ': process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
-				'REACT_APP_CLONE_FACTORY: ': process.env.REACT_APP_CLONE_FACTORY,
-				'REACT_APP_ETHERSCAN_URL: ': process.env.REACT_APP_ETHERSCAN_URL,
-				'REACT_APP_NODE_URL: ': process.env.REACT_APP_NODE_URL,
-				'REACT_APP_CHAIN_ID: ': process.env.REACT_APP_CHAIN_ID,
-			});
 
 			const addresses: string[] = await cloneFactoryContract?.methods
 				.getContractList()

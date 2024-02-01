@@ -15,11 +15,13 @@ import {
 	getValidatorPublicKey,
 	getPoolRfc2396,
 	getValidatorRfc2396,
+	getValidatorAddress,
 } from '../../../../utils';
 
 import { LumerinContract, ImplementationContract } from 'contracts-js';
 
 import { AbiItem } from 'web3-utils';
+import { ethers } from 'ethers';
 import {
 	AddressLength,
 	AlertMessage,
@@ -45,6 +47,7 @@ import { Alert as AlertMUI } from '@mui/material';
 const initialFormData: FormData = {
 	withValidator: false,
 	poolAddress: '',
+	validatorAddress: '',
 	portNumber: '',
 	username: '',
 	password: '',
@@ -100,12 +103,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS;
 
 	// Input validation setup
-	// const {
-	// 	register,
-	// 	handleSubmit,
-	// 	formState: { errors, isValid },
-	// 	setValue,
-	// } = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isValid },
+		setValue,
+	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
 
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
@@ -160,7 +163,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			try {
 				// const validatorFee = '100';
 				const gasLimit = 1000000;
-				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
+				let sendOptions: Partial<SendOptions> = { from: userAccount };
 				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
@@ -187,34 +190,30 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					if (receipt?.status) {
 						// Purchase contract
 						try {
-							const buyerInput: string = getPoolRfc2396(formData)!;
-							let encryptedBuyerInput: string = '';
+							debugger;
+							const buyerDest: string = getPoolRfc2396(formData)!;
 
-							let contractAddress = contract.id!;
-							console.log('getting contract creation tx: ', contractAddress);
-							const contractCreationTx = await getCreationTxIDOfContract(
-								contractAddress.toString()
-							);
-							console.log('getting pubkey - contract creation tx: ', contractCreationTx);
-							let sellerPublicKey = await getPublicKey(contractCreationTx);
-							console.log('pubkey: ', sellerPublicKey);
-							const validatorInput = await getValidatorRfc2396(formData);
-							encryptedBuyerInput = await encryptMessage(sellerPublicKey, validatorInput!);
-							console.log(`encryptedBuyerInput: ${encryptedBuyerInput}`);
+							const validatorPublicKey = (await getValidatorPublicKey()) as string;
+							const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
 
-							const validatorPublicKey = await getValidatorPublicKey();
-							const encryptedValidatorInput = await encryptMessage(
-								validatorPublicKey!,
-								buyerInput!
+							const encryptedBuyerInput = (
+								await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+							).toString('hex');
+
+							const validatorAddress: string = `stratum+tcp://:@${getValidatorAddress()}`;
+
+							const pubKey = await implementationContract.methods.pubKey().call();
+							let validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
+								'hex'
 							);
 
 							const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
 
 							const purchaseGas = await cloneFactoryContract?.methods
-								.setPurchaseRentalContract(
+								.setPurchaseRentalContractV2(
 									contractId,
-									validatorPublicKey,
-									encryptedValidatorInput,
+									ethAddress,
+									validatorEncr,
 									encryptedBuyerInput,
 									contract.version
 								)
@@ -225,8 +224,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 							console.log('submitting purchase for contract: ', contract);
 							const receipt: Receipt = await cloneFactoryContract?.methods
-								.setPurchaseRentalContract(contract.id, encryptedBuyerInput, contract.version) //commented out for testing
-								// .setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
+								.setPurchaseRentalContractV2(
+									contractId,
+									ethAddress,
+									validatorEncr,
+									encryptedBuyerInput,
+									contract.version
+								)
 								.send({
 									...sendOptions,
 									gas: purchaseGas,
@@ -283,9 +287,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				buttonContent = buttonText.review as string;
 				content = (
 					<ReviewContent
-						// register={register}
-						// errors={errors}
-						// setValue={setValue}
+						register={register}
+						errors={errors}
+						setValue={setValue}
 						setFormData={setFormData}
 						inputData={formData}
 					/>
