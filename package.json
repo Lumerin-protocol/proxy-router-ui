@@ -2,6 +2,20 @@
 	"name": "titan-proxyrouter-ui",
 	"version": "0.1.0",
 	"private": true,
+	"engines": {
+		"node": "16.*"
+	},
+	"scripts": {
+		"start": "craco start",
+		"build": "craco build",
+		"test": "craco test",
+		"eject": "react-scripts eject",
+		"lint": "eslint \"**/*.{ts,tsx,js,jsx}\"",
+		"lint:fix": "npm run lint -- --fix",
+		"prettier": "npx prettier src --check",
+		"prettier:fix": "npm run prettier -- --write",
+		"format": "npm run prettier:fix && npm run lint:fix"
+	},
 	"dependencies": {
 		"@emotion/react": "^11.10.0",
 		"@emotion/styled": "^11.10.0",
@@ -36,7 +50,6 @@
 		"ethereumjs-tx": "^2.1.2",
 		"ethereumjs-util": "^7.1.5",
 		"ethers": "^5.5.4",
-		"hardhat": "^2.8.4",
 		"lodash": "^4.17.21",
 		"luxon": "^2.0.2",
 		"react": "^17.0.2",
@@ -51,21 +64,26 @@
 		"react-router-dom": "^5.2.0",
 		"react-scripts": "4.0.3",
 		"react-table": "^7.7.0",
-		"typescript": "^4.3.5",
 		"uri-js": "^4.4.1",
 		"web-vitals": "^1.1.2",
 		"web3": "^1.5.2"
 	},
-	"scripts": {
-		"start": "craco start",
-		"build": "craco build",
-		"test": "craco test",
-		"eject": "react-scripts eject",
-		"lint": "eslint \"**/*.{ts,tsx,js,jsx}\"",
-		"lint:fix": "npm run lint -- --fix",
-		"prettier": "npx prettier src --check",
-		"prettier:fix": "npm run prettier -- --write",
-		"format": "npm run prettier:fix && npm run lint:fix"
+
+	"devDependencies": {
+		"@openzeppelin/contracts": "^4.2.0",
+		"@types/crypto-js": "^4.1.0",
+		"@types/lodash": "^4.14.172",
+		"@welldone-software/why-did-you-render": "^6.2.0",
+		"autoprefixer": "^9.8.6",
+		"@craco/craco": "^6.2.0",
+		"debug": "^4.3.2",
+		"eslint": "^7.32.0",
+		"husky": "^8.0.0",
+		"lint-staged": "^13.0.3",
+		"postcss": "^7.0.39",
+		"prettier": "2.7.1",
+		"tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7",
+		"typescript": "^4.5.0"
 	},
 	"browserslist": {
 		"production": [
@@ -78,22 +96,6 @@
 			"last 1 firefox version",
 			"last 1 safari version"
 		]
-	},
-	"devDependencies": {
-		"@openzeppelin/contracts": "^4.2.0",
-		"@types/crypto-js": "^4.1.0",
-		"@types/lodash": "^4.14.172",
-		"@welldone-software/why-did-you-render": "^6.2.0",
-		"autoprefixer": "^9.8.6",
-		"@craco/craco": "^6.2.0",
-		"debug": "^4.3.2",
-		"eslint": "^7.32.0",
-		"husky": "^8.0.0",
-		"lint-staged": "^13.0.3",
-		"postcss": "^7.0.36",
-		"prettier": "2.7.1",
-		"tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7",
-		"tslint-config-prettier": "^1.18.0"
 	},
 	"jest": {
 		"moduleNameMapper": {

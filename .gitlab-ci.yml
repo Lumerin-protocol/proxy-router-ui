@@ -1,7 +1,10 @@
 variables:
-    REACT_APP_LUMERIN_TOKEN_ADDRESS: $LUMERIN_TOKEN_ADDRESS
+    REACT_APP_CHAIN_ID: $CHAIN_ID
     REACT_APP_CLONE_FACTORY: $CLONE_FACTORY_ADDRESS
     REACT_APP_ETHERSCAN_URL: $ETHERSCAN_URL
+    REACT_APP_LUMERIN_TOKEN_ADDRESS: $LUMERIN_TOKEN_ADDRESS
+    REACT_APP_VALIDATOR_ADDRESS: $VALIDATOR_ADDRESS
+    REACT_APP_VALIDATOR_PUBLIC_KEY: $VALIDATOR_PUBLIC_KEY
 
 stages:
     - develop
@@ -29,12 +32,13 @@ default:
         - echo "*****************************"
         - echo "Building image..."
         - echo "*****************************"
-        - 
-            docker build 
-          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS  
-          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY  
-          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL  
-          --build-arg REACT_APP_NODE_URL=$ETHEREUM_NODE_RPC_CONNECTION_URL
+        - docker build 
+          --build-arg REACT_APP_CHAIN_ID=$REACT_APP_CHAIN_ID
+          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY
+          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL
+          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS
+          --build-arg REACT_APP_VALIDATOR_ADDRESS=$REACT_APP_VALIDATOR_ADDRESS
+          --build-arg REACT_APP_VALIDATOR_PUBLIC_KEY=$REACT_APP_VALIDATOR_PUBLIC_KEY
           -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG --no-cache .
         
         - echo "*****************************"
