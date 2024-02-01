@@ -68,14 +68,29 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (formData: FormData) => string | undefined = (formData) => {
+export const toRfc2396: (address, username, password, portNumber) => string | undefined = (
+	formData
+) => {
 	const regex = /(^.*):\/\/(.*$)/;
-	const poolAddressGroups = formData.poolAddress?.match(regex) as RegExpMatchArray;
+	const poolAddressGroups = address?.match(regex) as RegExpMatchArray;
 	if (!poolAddressGroups) return;
 	const protocol = poolAddressGroups[1];
 	const host = poolAddressGroups[2];
 
-	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
+	return `${protocol}://${username}:${password}@${host}:${portNumber}`;
+};
+
+export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
+	return toRfc2396(formData.poolAddress, formData.username, formData.password, formData.portNumber);
+};
+
+export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
+	return toRfc2396(
+		formData.validatorAddress,
+		formData.username,
+		formData.password,
+		formData.portNumber
+	);
 };
 
 //encrypts a string passed into it
@@ -85,10 +100,12 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
 	return ciphertext.toString('hex');
 };
 
+export const getValidatorPublicKey = () => {
+	return process.env.REACT_APP_VALIDATOR_ADDRESS;
+};
+
 export const getPublicKey = async (txId: string) => {
-	let provider = ethers.getDefaultProvider(
-		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
-	);
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
 	let tx = await provider.getTransaction(txId)!;
 	console.log(txId);
 	console.log(tx);
@@ -113,8 +130,10 @@ export const getPublicKey = async (txId: string) => {
 export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	//import the JSON of CloneFactory.json
 	let cf = new ethers.ContractFactory(abi, bytecode);
-	let provider = ethers.getDefaultProvider(process.env.REACT_APP_ETHERSCAN_URL as string);
+	console.log('getting default provider');
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL as string);
 
+	console.log('got default provider');
 	//the clonefactory contract address should become a variable that is configurable
 	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
 
@@ -307,9 +326,8 @@ export const getButton: (
 	contentState: string,
 	buttonContent: string,
 	setOpen: Dispatch<SetStateAction<boolean>>,
-	handleSubmit: UseFormHandleSubmit<InputValues>,
-	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (contentState, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
+	onSubmit
+) => JSX.Element = (contentState, buttonContent, setOpen, onSubmit) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -332,9 +350,9 @@ export const getButton: (
 			</Link>
 		</PrimaryButton>
 	) : (
-		<DisabledButton type='submit' disabled>
+		<PrimaryButton type='button' onClick={onSubmit}>
 			{buttonContent}
-		</DisabledButton>
+		</PrimaryButton>
 	);
 };
 
@@ -501,7 +519,8 @@ const getV: (v: string, chainId: number) => string = (v, chainId) => {
 export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
 	transaction
 ) => {
-	const chainId = 3; // Ropsten
+	const chainId = process.env.REACT_APP_CHAIN_ID;
+
 	const ethTx = new EthJsTx(
 		{
 			nonce: transaction.nonce,

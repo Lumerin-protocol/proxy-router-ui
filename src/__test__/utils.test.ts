@@ -4,7 +4,7 @@ import {
 	classNames,
 	getLengthDisplay,
 	isValidPoolAddress,
-	toRfc2396,
+	getPoolRfc2396,
 	hexToBytes,
 	getPublicKeyFromTransaction,
 } from '../utils';
@@ -90,7 +90,7 @@ describe('utils', () => {
 		});
 	});
 
-	describe('toRfc2396', () => {
+	describe('getPoolRfc2396', () => {
 		it('converts to correct format', () => {
 			// Arrange
 			const formData: FormData = {
@@ -101,7 +101,7 @@ describe('utils', () => {
 			};
 
 			// Act
-			const result = toRfc2396(formData);
+			const result = getPoolRfc2396(formData);
 
 			// Assert
 			const expectedResult = 'stratum+tcp://test.worker:test1234@mining.dev.pool.titan.io:4242';

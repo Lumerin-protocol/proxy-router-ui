@@ -29,16 +29,19 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 ) => {
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
+			console.log('Using MetaMask');
+
 			return (await detectEthereumProvider()) as provider;
 		default:
+			console.log('Using WalletConnect');
+			console.log('process.env.REACT_APP_NODE_URL: ' + process.env.REACT_APP_NODE_URL);
+			console.log('process.env.REACT_APP_CHAIN_ID: ' + process.env.REACT_APP_CHAIN_ID);
+
 			return new WalletConnectProvider({
 				rpc: {
-					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
-					3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
-					// TODO replace with a bloq connect link
-					5: 'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A', //gorli
+					1: process.env.REACT_APP_NODE_URL!,
 				},
-				chainId: 5,
+				chainId: parseInt(process.env.REACT_APP_CHAIN_ID!),
 				clientMeta: {
 					description:
 						'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',
@@ -59,6 +62,7 @@ export const getWeb3ResultAsync: (
 ) => Promise<Web3Result | null> = async (setAlertOpen, setIsConnected, setAccounts, walletName) => {
 	try {
 		const provider = await getProviderAsync(walletName);
+		console.log('provider: ', provider);
 		if (provider) {
 			registerEventListeners(
 				walletName,
@@ -74,15 +78,19 @@ export const getWeb3ResultAsync: (
 				await ethereum.request({ method: 'eth_requestAccounts' });
 			else await (provider as WalletConnectProvider).enable();
 			const web3 = new Web3(provider as provider);
-			const deployedNetwork = { address: process.env.REACT_APP_CLONE_FACTORY };
 			const accounts = await web3.eth.getAccounts();
 			if (accounts.length === 0 || accounts[0] === '') {
 				setAlertOpen(true);
 			}
 			const contractInstance = new web3.eth.Contract(
 				CloneFactory.abi as AbiItem[],
-				deployedNetwork && deployedNetwork.address
+				process.env.REACT_APP_CLONE_FACTORY
 			);
+
+			// 			const contractResult = await contractInstance?.methods
+			// 			.setCreateNewRentalContract(1, 0, 1, 24, "0x9064d6589F9745614c9F5736BB9C027294718453", '')
+			// 			.send({ from: "0x9064d6589F9745614c9F5736BB9C027294718453" });
+			// console.log("contract result: ", contractResult);
 			return { accounts, contractInstance, web3 };
 		}
 		return null;
@@ -166,7 +174,6 @@ export const transferLumerinAsync: (
 	sellerAccount: string,
 	amount: number
 ) => Promise<Receipt> = async (web3, userAccount, sellerAccount, amount) => {
-	
 	const lumerinContractInstance = new web3.eth.Contract(
 		LumerinContract.abi as AbiItem[],
 		lumerinTokenAddress

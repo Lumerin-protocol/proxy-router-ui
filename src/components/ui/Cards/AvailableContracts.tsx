@@ -37,7 +37,7 @@ export const AvailableContracts = (prop: {
 			width: 100%;
 		}
 	`;
-
+	console.log('contracts: ', prop.contracts);
 	const isMobile = width <= 768;
 	return (
 		<>

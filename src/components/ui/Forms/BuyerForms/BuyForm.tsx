@@ -8,11 +8,13 @@ import { CompletedContent } from './CompletedContent';
 import {
 	getButton,
 	printError,
-	toRfc2396,
 	encryptMessage,
 	truncateAddress,
 	getCreationTxIDOfContract,
 	getPublicKey,
+	getValidatorPublicKey,
+	getPoolRfc2396,
+	getValidatorRfc2396,
 } from '../../../../utils';
 
 import { LumerinContract, ImplementationContract } from 'contracts-js';
@@ -50,6 +52,10 @@ const initialFormData: FormData = {
 	price: '',
 };
 
+let formData: FormData = initialFormData,
+	contentState: string,
+	setContentState: React.Dispatch<React.SetStateAction<string>>;
+
 interface BuyFormProps {
 	contracts: HashRentalContract[];
 	contractId: string;
@@ -69,9 +75,19 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	lumerinbalance,
 	setOpen,
 }) => {
-	const [contentState, setContentState] = useState<string>(ContentState.Review);
+	console.log('buy form: ', {
+		contracts,
+		contractId,
+		userAccount,
+		cloneFactoryContract,
+		web3,
+		lumerinbalance,
+	});
+	[contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isAvailable, setIsAvailable] = useState<boolean>(true);
-	const [formData, setFormData] = useState<FormData>(initialFormData);
+	let setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+
+	[formData, setFormData] = useState<FormData>(formData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [totalHashrate, setTotalHashrate] = useState<number>();
 
@@ -84,12 +100,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS;
 
 	// Input validation setup
-	const {
-		register,
-		handleSubmit,
-		formState: { errors, isValid },
-		setValue,
-	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
+	// const {
+	// 	register,
+	// 	handleSubmit,
+	// 	formState: { errors, isValid },
+	// 	setValue,
+	// } = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
 
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
@@ -99,12 +115,17 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			speed: contract.speed as string,
 			price: contract.price as string,
 			length: contract.length as string,
+			//TODO: test validity of this field in this context
+			version: contract.version as string,
 		};
 	};
 
 	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
+		console.log('buyContractAsync: ', data);
 		// Review
-		if (isValid && contentState === ContentState.Review) {
+		// if (isValid && contentState === ContentState.Review) {
+		if (contentState === ContentState.Review) {
+			console.log('reviewing');
 			setContentState(ContentState.Confirm);
 			setFormData({
 				poolAddress: data.poolAddress,
@@ -117,12 +138,14 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		}
 
 		// Confirm
-		if (isValid && contentState === ContentState.Confirm) {
+		// if (isValid && contentState === ContentState.Confirm) {
+		if (contentState === ContentState.Confirm) {
 			setContentState(ContentState.Pending);
 		}
 
 		// Pending
-		if (isValid && contentState === ContentState.Pending) {
+		// if (isValid && contentState === ContentState.Pending) {
+		if (contentState === ContentState.Pending) {
 			// Order of events
 			// 1. Purchase hashrental contract
 			// 2. Transfer contract price (LMR) to escrow account
@@ -163,27 +186,61 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						.send(sendOptions);
 					if (receipt?.status) {
 						// Purchase contract
-						const buyerInput: string = toRfc2396(formData)!;
 						try {
+							const buyerInput: string = getPoolRfc2396(formData)!;
+							let encryptedBuyerInput: string = '';
+
 							let contractAddress = contract.id!;
+							console.log('getting contract creation tx: ', contractAddress);
 							const contractCreationTx = await getCreationTxIDOfContract(
 								contractAddress.toString()
 							);
-							const pubKey = await getPublicKey(contractCreationTx);
-							const encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
+							console.log('getting pubkey - contract creation tx: ', contractCreationTx);
+							let sellerPublicKey = await getPublicKey(contractCreationTx);
+							console.log('pubkey: ', sellerPublicKey);
+							const validatorInput = await getValidatorRfc2396(formData);
+							encryptedBuyerInput = await encryptMessage(sellerPublicKey, validatorInput!);
 							console.log(`encryptedBuyerInput: ${encryptedBuyerInput}`);
+
+							const validatorPublicKey = await getValidatorPublicKey();
+							const encryptedValidatorInput = await encryptMessage(
+								validatorPublicKey!,
+								buyerInput!
+							);
+
+							const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
+
+							const purchaseGas = await cloneFactoryContract?.methods
+								.setPurchaseRentalContract(
+									contractId,
+									validatorPublicKey,
+									encryptedValidatorInput,
+									encryptedBuyerInput,
+									contract.version
+								)
+								.estimateGas({
+									from: sendOptions.from,
+									value: marketplaceFee,
+								});
+
+							console.log('submitting purchase for contract: ', contract);
+							const receipt: Receipt = await cloneFactoryContract?.methods
+								.setPurchaseRentalContract(contract.id, encryptedBuyerInput, contract.version) //commented out for testing
+								// .setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
+								.send({
+									...sendOptions,
+									gas: purchaseGas,
+									value: marketplaceFee,
+								});
+							if (!receipt.status) {
+								// TODO: purchasing contract has failed, surface to user
+								console.log('contract purchase failed: ', receipt);
+							}
 						} catch (e) {
-							console.log(e);
-						}
-						const receipt: Receipt = await cloneFactoryContract?.methods
-							//.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
-							.setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
-							.send(sendOptions);
-						if (!receipt.status) {
-							// TODO: purchasing contract has failed, surface to user
-							console.log(receipt);
+							console.log('failed to prepare or complete contract purchase: ', e);
 						}
 					} else {
+						console.log('call to increaseAllowance() has failed, surface to user');
 						// TODO: call to increaseAllowance() has failed, surface to user
 					}
 				}
@@ -209,6 +266,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	let buttonContent = '';
 	let content = <div></div>;
 	const createContent: () => void = () => {
+		console.log('content state: ', contentState);
 		switch (contentState) {
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
@@ -223,7 +281,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			default:
 				paragraphContent = paragraphText.review as string;
 				buttonContent = buttonText.review as string;
-				content = <ReviewContent register={register} errors={errors} setValue={setValue} />;
+				content = (
+					<ReviewContent
+						// register={register}
+						// errors={errors}
+						// setValue={setValue}
+						setFormData={setFormData}
+						inputData={formData}
+					/>
+				);
 		}
 	};
 	createContent();
@@ -276,7 +342,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit, buyContractAsync)}
+					getButton(contentState, buttonContent, setOpen, () => buyContractAsync(formData))}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

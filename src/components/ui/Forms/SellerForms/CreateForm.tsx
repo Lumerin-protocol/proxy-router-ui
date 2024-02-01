@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Form, useForm } from 'react-hook-form';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
@@ -53,6 +53,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
 	const createContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
+		console.log('createContractAsync: ', data);
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
@@ -82,6 +83,13 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					} else {
 						speed = 0;
 					}
+					console.log({
+						price,
+						limit: 0,
+						speed,
+						contractDuration,
+						validatorAddress,
+					});
 					const receipt = await cloneFactoryContract?.methods
 						.setCreateNewRentalContract(price, 0, speed, contractDuration, validatorAddress, '')
 						.send({ from: userAccount });
@@ -130,7 +138,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 
 	return (
-		<Fragment>
+		<form onSubmit={handleSubmit(createContractAsync)}>
 			{display && (
 				<>
 					<h2>Create New Contract</h2>
@@ -156,9 +164,9 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit, createContractAsync)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit)}
 			</FormButtonsWrapper>
-		</Fragment>
+		</form>
 	);
 };
 

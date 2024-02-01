@@ -14,7 +14,7 @@ import {
 import { AbiItem } from 'web3-utils';
 import { ImplementationContract } from 'contracts-js';
 import {
-	toRfc2396,
+	getPoolRfc2396,
 	getButton,
 	isNoEditBuyer,
 	printError,
@@ -95,7 +95,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 				if (web3) {
 					const gasLimit = 1000000;
 					// TODO: encrypt poolAddress, username, password
-					const encryptedBuyerInput = toRfc2396(formData);
+					const encryptedBuyerInput = getPoolRfc2396(formData);
 					const implementationContract = new web3.eth.Contract(
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
@@ -204,7 +204,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit, editContractAsync)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);
