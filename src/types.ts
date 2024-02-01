@@ -117,6 +117,7 @@ export interface HashRentalContract {
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValuesBuyForm {
 	withValidator?: boolean;
+	validatorAddress?: string;
 	poolAddress?: string;
 	portNumber?: string;
 	username?: string;

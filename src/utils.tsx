@@ -69,7 +69,10 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 
 // Convert buyer input into RFC2396 URL format
 export const toRfc2396: (address, username, password, portNumber) => string | undefined = (
-	formData
+	address,
+	username,
+	password,
+	portNumber
 ) => {
 	const regex = /(^.*):\/\/(.*$)/;
 	const poolAddressGroups = address?.match(regex) as RegExpMatchArray;
@@ -95,13 +98,16 @@ export const getValidatorRfc2396: (formData: FormData) => string | undefined = (
 
 //encrypts a string passed into it
 export const encryptMessage = async (pubKey: string, msg: string) => {
-	let ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
-	await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg)).then(console.log);
-	return ciphertext.toString('hex');
+	const ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
+	return ciphertext;
 };
 
 export const getValidatorPublicKey = () => {
-	return process.env.REACT_APP_VALIDATOR_ADDRESS;
+	return process.env.REACT_APP_VALIDATOR_PUBLIC_KEY;
+};
+
+export const getValidatorAddress = () => {
+	return `${process.env.REACT_APP_VALIDATOR_ADDRESS}`;
 };
 
 export const getPublicKey = async (txId: string) => {

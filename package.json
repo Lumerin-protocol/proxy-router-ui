@@ -45,7 +45,7 @@
 		"@types/react-table": "^7.7.2",
 		"@walletconnect/web3-provider": "^1.7.3",
 		"buffer": "^6.0.3",
-		"contracts-js": "github:Lumerin-protocol/contracts-js",
+		"contracts-js": "github:Lumerin-protocol/contracts-js#v0.2.0",
 		"ecies-geth": "^1.6.2",
 		"ethereumjs-tx": "^2.1.2",
 		"ethereumjs-util": "^7.1.5",
@@ -70,12 +70,12 @@
 	},
 
 	"devDependencies": {
+		"@craco/craco": "^6.2.0",
 		"@openzeppelin/contracts": "^4.2.0",
 		"@types/crypto-js": "^4.1.0",
 		"@types/lodash": "^4.14.172",
 		"@welldone-software/why-did-you-render": "^6.2.0",
 		"autoprefixer": "^9.8.6",
-		"@craco/craco": "^6.2.0",
 		"debug": "^4.3.2",
 		"eslint": "^7.32.0",
 		"husky": "^8.0.0",

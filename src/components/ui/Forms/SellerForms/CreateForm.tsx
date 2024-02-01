@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
-import { Form, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
