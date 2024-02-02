@@ -108,7 +108,7 @@ export const getValidatorPublicKey = () => {
 
 export const getValidatorURL = () => {
 	const url = process.env.REACT_APP_VALIDATOR_URL || "";
-	return url.replace(/(^(\w|\+)+:|^)\/\//, '');
+	return url.replace(/(^(\w|\+)+:|^)\/\//, ''); // removes protocol from url if present
 };
 
 export const getPublicKey = async (txId: string) => {
