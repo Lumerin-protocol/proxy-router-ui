@@ -106,8 +106,8 @@ export const getValidatorPublicKey = () => {
 	return process.env.REACT_APP_VALIDATOR_PUBLIC_KEY;
 };
 
-export const getValidatorAddress = () => {
-	return `${process.env.REACT_APP_VALIDATOR_ADDRESS}`;
+export const getValidatorURL = () => {
+	return new URL(process.env.REACT_APP_VALIDATOR_URL).host;
 };
 
 export const getPublicKey = async (txId: string) => {

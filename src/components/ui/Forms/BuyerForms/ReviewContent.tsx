@@ -11,7 +11,7 @@ import {
 	isValidPoolAddress,
 	isValidPortNumber,
 	isValidUsername,
-	getValidatorAddress,
+	getValidatorURL,
 } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { InputWrapper } from '../Forms.styled';
@@ -124,7 +124,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
 							: 'review-no-errors review-input'
 					}
-					value={getValidatorAddress()}
+					value={getValidatorURL()}
 				/>
 			</InputWrapper>
 			<InputWrapper>

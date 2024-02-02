@@ -15,7 +15,7 @@ import {
 	getValidatorPublicKey,
 	getPoolRfc2396,
 	getValidatorRfc2396,
-	getValidatorAddress,
+	getValidatorURL,
 } from '../../../../utils';
 
 import { LumerinContract, ImplementationContract } from 'contracts-js';
@@ -200,7 +200,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 								await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 							).toString('hex');
 
-							const validatorAddress: string = `stratum+tcp://:@${getValidatorAddress()}`;
+							const validatorAddress: string = `stratum+tcp://:@${getValidatorURL()}`;
 
 							const pubKey = await implementationContract.methods.pubKey().call();
 							let validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
