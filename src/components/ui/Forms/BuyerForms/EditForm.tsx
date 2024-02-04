@@ -19,9 +19,9 @@ import {
 	isNoEditBuyer,
 	printError,
 	truncateAddress,
-	getValidatorAddress,
 	getValidatorPublicKey,
 	encryptMessage,
+	getValidatorURL,
 } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
@@ -108,7 +108,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 					).toString('hex');
 
-					const validatorAddress: string = `stratum+tcp://:@${getValidatorAddress()}`;
+					const validatorAddress: string = `stratum+tcp://:@${getValidatorURL()}`;
 
 					const pubKey = await implementationContract.methods.pubKey().call();
 
