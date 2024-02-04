@@ -19,6 +19,9 @@ import {
 	isNoEditBuyer,
 	printError,
 	truncateAddress,
+	getValidatorAddress,
+	getValidatorPublicKey,
+	encryptMessage,
 } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
@@ -27,10 +30,10 @@ import { Alert } from '../../Alert';
 import { buttonText, paragraphText } from '../../../../shared';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { ContractLink } from '../../Modal.styled';
+import { ethers } from 'ethers';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
-	withValidator: false,
 	poolAddress: '',
 	portNumber: '',
 	username: '',
@@ -79,7 +82,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 				portNumber: data.portNumber,
 				username: data.username,
 				password: data.password,
-				withValidator: data.withValidator,
 				...getContractInfo(),
 			});
 		}
@@ -93,16 +95,39 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		if (isValid && contentState === ContentState.Pending) {
 			try {
 				if (web3) {
-					const gasLimit = 1000000;
-					// TODO: encrypt poolAddress, username, password
-					const encryptedBuyerInput = getPoolRfc2396(formData);
 					const implementationContract = new web3.eth.Contract(
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
 					);
+
+					const buyerDest: string = getPoolRfc2396(formData)!;
+
+					const validatorPublicKey = (await getValidatorPublicKey()) as string;
+
+					const encryptedBuyerInput = (
+						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+					).toString('hex');
+
+					const validatorAddress: string = `stratum+tcp://:@${getValidatorAddress()}`;
+
+					const pubKey = await implementationContract.methods.pubKey().call();
+
+					let validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
+						'hex'
+					);
+
+					const updateDestGas = await implementationContract?.methods
+						.setDestination(encryptedBuyerInput, validatorEncr)
+						.estimateGas({
+							from: userAccount,
+						});
+
 					const receipt: Receipt = await implementationContract.methods
-						.setUpdateMiningInformation(encryptedBuyerInput)
-						.send({ from: userAccount, gas: gasLimit });
+						.setDestination(encryptedBuyerInput, validatorEncr)
+						.send({
+							from: userAccount,
+							gas: updateDestGas,
+						});
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
 					} else {
@@ -167,7 +192,9 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						register={register}
 						errors={errors}
 						buyerString={contract.encryptedPoolData}
-						isEdit
+						isEdit={true}
+						inputData={formData}
+						setFormData={setFormData}
 					/>
 				);
 		}
@@ -204,7 +231,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit)}
+					getButton(contentState, buttonContent, setOpen, () => editContractAsync(formData))}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

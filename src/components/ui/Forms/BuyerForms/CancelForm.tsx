@@ -7,6 +7,7 @@ import {
 	ContractState,
 	Receipt,
 	UpdateFormProps,
+	CancelFormProps,
 } from '../../../../types';
 import { isNoCancel, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
@@ -17,12 +18,13 @@ import { ButtonGroup } from '../../ButtonGroup';
 import { CancelButton } from '../FormButtons/Buttons.styled';
 import { SecondaryButton } from '../FormButtons/Buttons.styled';
 
-export const CancelForm: React.FC<UpdateFormProps> = ({
+export const CancelForm: React.FC<CancelFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
 	web3,
 	setOpen,
+	cloneFactoryContract,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
@@ -57,9 +59,20 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
 					);
+
+					const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
+
+					const gas = await implementationContract.methods
+						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
+						.estimateGas({
+							from: userAccount,
+							value: marketplaceFee,
+						});
+
 					const receipt: Receipt = await implementationContract.methods
 						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
-						.send({ from: userAccount, gas: 1000000 });
+						.send({ from: userAccount, gas });
+
 					if (receipt.status) {
 						setContentState(ContentState.Complete);
 					} else {

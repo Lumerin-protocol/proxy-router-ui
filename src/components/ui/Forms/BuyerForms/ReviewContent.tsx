@@ -44,19 +44,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	setFormData,
 	inputData,
 }) => {
-	const {
-		withValidator,
-		poolAddress,
-		portNumber,
-		username,
-		password,
-		speed,
-		price,
-		useExternalValidator,
-		validatorAddress,
-	} = inputData;
+	const { poolAddress, portNumber, username } = inputData;
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	[preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
+
+	console.log(buyerString);
 
 	const preferredPools = [
 		{ name: 'Titan', address: 'stratum+tcp://mining.pool.titan.io', port: '4242' },
@@ -92,7 +84,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				isOpen={alertOpen}
 				onClose={() => setAlertOpen(false)}
 			/>
-			<InputWrapper>
+			<InputWrapper style={{ display: isEdit ? 'none' : undefined }}>
 				<InputLabel sx={{ color: 'black', fontFamily: 'inherit' }} id='preferred-pools-label'>
 					Preferred Pools
 				</InputLabel>

@@ -63,6 +63,7 @@ export const Main: React.FC = () => {
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
+
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 	const [sellerEditModalOpen, setSellerEditModalOpen] = useState<boolean>(false);
@@ -71,6 +72,7 @@ export const Main: React.FC = () => {
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
 	const [anyModalOpen, setAnyModalOpen] = useState<boolean>(false);
+
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
@@ -137,6 +139,7 @@ export const Main: React.FC = () => {
 			localStorage.setItem('isConnected', 'true');
 			setChainId(chainId);
 			localStorage.setItem('walletName', walletName);
+			refreshContracts();
 			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
 		}
 	};
@@ -175,13 +178,17 @@ export const Main: React.FC = () => {
 	};
 
 	useInterval(() => {
-		getCurrentBlockTimestampAsync().then(() => {
+		refreshContracts();
+	}, 60 * 1000);
+
+	const refreshContracts = () => {
+		getCurrentBlockTimestampAsync().then((currentBlockTimestamp) => {
 			if (isCorrectNetwork && !anyModalOpen) {
 				setCurrentBlockTimestamp(currentBlockTimestamp as number);
 				createContractsAsync();
 			}
 		});
-	}, 10000);
+	};
 
 	// Contracts setup
 	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (
@@ -239,6 +246,8 @@ export const Main: React.FC = () => {
 		try {
 			console.log('Fetching contract list...');
 
+			if (!cloneFactoryContract) return;
+
 			const addresses: string[] = await cloneFactoryContract?.methods
 				.getContractList()
 				.call()
@@ -275,7 +284,9 @@ export const Main: React.FC = () => {
 		if (cloneFactoryContract && accounts) {
 			console.log('cloneFactoryContract:', cloneFactoryContract);
 			console.log('accounts: ', accounts);
-			if (isCorrectNetwork) createContractsAsync();
+			if (isCorrectNetwork) {
+				refreshContracts();
+			}
 		}
 	}, [cloneFactoryContract, accounts]);
 
@@ -294,6 +305,7 @@ export const Main: React.FC = () => {
 			setAnyModalOpen(true);
 		} else {
 			setAnyModalOpen(false);
+			refreshContracts();
 		}
 	}, [
 		alertOpen,
@@ -306,7 +318,10 @@ export const Main: React.FC = () => {
 	]);
 
 	useEffect(() => {
-		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
+		if (isCorrectNetwork) {
+			refreshContracts();
+			updateLumerinTokenBalanceAsync();
+		}
 	}, [accounts, chainId]);
 
 	useEffect(() => {
@@ -351,7 +366,7 @@ export const Main: React.FC = () => {
 						/>
 					)}
 				/>
-				<Route
+				{/* <Route
 					path={PathName.MyContracts}
 					render={(props: RouteComponentProps) => (
 						<MyContracts
@@ -371,7 +386,7 @@ export const Main: React.FC = () => {
 							setSidebarOpen={setSidebarOpen}
 						/>
 					)}
-				/>
+				/> */}
 				<Route
 					path={PathName.Marketplace}
 					render={(props: RouteComponentProps) => (
@@ -501,6 +516,7 @@ export const Main: React.FC = () => {
 						contractId={contractId}
 						userAccount={userAccount}
 						web3={web3}
+						cloneFactoryContract={cloneFactoryContract}
 						setOpen={setCancelModalOpen}
 					/>
 				}

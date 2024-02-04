@@ -11,7 +11,7 @@ interface ConfirmContentProps {
 
 export const ConfirmContent: React.FC<ConfirmContentProps> = ({
 	web3,
-	data: { poolAddress, portNumber, username, speed, price, withValidator, length },
+	data: { poolAddress, portNumber, username, speed, price, length },
 }) => {
 	return (
 		<ReviewItems>
@@ -27,18 +27,18 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({
 				<h3>Username</h3>
 				<p>{username}</p>
 			</div>
-			<div>
+			{/* <div>
 				<h3>Speed (TH/S)</h3>
 				<p>{String(Number(speed) / 10 ** 12)}</p>
 			</div>
 			<div>
 				<h3>Duration (HOURS)</h3>
 				<p>{String(parseInt(length as string) / 3600)}</p>
-			</div>
-			<div className='total-cost'>
+			</div> */}
+			{/* <div className='total-cost'>
 				<h3>Total Cost</h3>
 				<p className='price'>{price ? divideByDigits(parseInt(price)) : price} LMR</p>
-			</div>
+			</div> */}
 			{/* <div className='confirm-div'>
 				<p>Use Titan Validator Service</p>
 				<p>{withValidator ? 'Yes' : 'No'}</p>

@@ -4,6 +4,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { HttpProvider } from 'web3-core';
 import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
 
 // Enums
 export enum WalletText {
@@ -116,7 +117,6 @@ export interface HashRentalContract {
 // Making fields optional bc a user might not have filled out the input fields
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValuesBuyForm {
-	withValidator?: boolean;
 	validatorAddress?: string;
 	poolAddress?: string;
 	portNumber?: string;
@@ -183,6 +183,10 @@ export interface UpdateFormProps {
 	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	currentBlockTimestamp?: number;
+}
+
+export interface CancelFormProps extends UpdateFormProps {
+	cloneFactoryContract: Contract | undefined;
 }
 
 interface Networks {

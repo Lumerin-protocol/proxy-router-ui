@@ -45,7 +45,6 @@ import { Alert as AlertMUI } from '@mui/material';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
-	withValidator: false,
 	poolAddress: '',
 	validatorAddress: '',
 	portNumber: '',
@@ -135,7 +134,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				portNumber: data.portNumber,
 				username: data.username,
 				password: data.password,
-				withValidator: data.withValidator,
 				...getContractInfo(),
 			});
 		}
@@ -190,7 +188,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					if (receipt?.status) {
 						// Purchase contract
 						try {
-							debugger;
 							const buyerDest: string = getPoolRfc2396(formData)!;
 
 							const validatorPublicKey = (await getValidatorPublicKey()) as string;

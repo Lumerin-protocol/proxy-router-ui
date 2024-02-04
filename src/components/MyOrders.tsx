@@ -87,6 +87,10 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 			(contract) => contract.buyer === userAccount && contract.state === ContractState.Running
 		);
 
+		if (contracts.length) {
+			setShowSpinner(false);
+		}
+
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
 			if (!_.isEmpty(contract)) {
@@ -157,7 +161,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	// Remove spinner if no orders after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 7000);
+	}, 15000);
 
 	useEffect(() => {
 		if (data.length > 0) {
