@@ -117,13 +117,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					);
 
 					const updateDestGas = await implementationContract?.methods
-						.setDestination(encryptedBuyerInput, validatorEncr)
+						.setDestination(validatorEncr, encryptedBuyerInput)
 						.estimateGas({
 							from: userAccount,
 						});
 
 					const receipt: Receipt = await implementationContract.methods
-						.setDestination(encryptedBuyerInput, validatorEncr)
+						.setDestination(validatorEncr, encryptedBuyerInput)
 						.send({
 							from: userAccount,
 							gas: updateDestGas,

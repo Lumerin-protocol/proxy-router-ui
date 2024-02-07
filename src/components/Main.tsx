@@ -234,12 +234,7 @@ export const Main: React.FC = () => {
 		const hashRentalContracts = await Promise.all(
 			addresses.map(async (address) => await createContractAsync(address))
 		);
-		console.log('hashrate contracts: ', hashRentalContracts);
-		// Update contracts if deep equality is false
-		if (!_.isEqual(contracts, hashRentalContracts)) {
-			console.log('contracts changed');
-			setContracts(hashRentalContracts as HashRentalContract[]);
-		}
+		setContracts(hashRentalContracts as HashRentalContract[]);
 	};
 
 	const createContractsAsync: () => void = async () => {
