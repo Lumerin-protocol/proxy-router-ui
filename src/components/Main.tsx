@@ -181,9 +181,9 @@ export const Main: React.FC = () => {
 		refreshContracts();
 	}, 60 * 1000);
 
-	const refreshContracts = () => {
+	const refreshContracts = (ignoreCheck: boolean | any = false) => {
 		getCurrentBlockTimestampAsync().then((currentBlockTimestamp) => {
-			if (isCorrectNetwork && !anyModalOpen) {
+			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
 				setCurrentBlockTimestamp(currentBlockTimestamp as number);
 				createContractsAsync();
 			}
@@ -302,7 +302,7 @@ export const Main: React.FC = () => {
 			setAnyModalOpen(true);
 		} else {
 			setAnyModalOpen(false);
-			refreshContracts();
+			refreshContracts(true);
 		}
 	}, [
 		alertOpen,
