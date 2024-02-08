@@ -200,17 +200,18 @@ export const Main: React.FC = () => {
 				address
 			);
 			const {
-				0: state,
-				1: price,
+				_state: state,
+				_price: price,
+				_isDeleted: isDeleted,
 				// eslint-disable-next-line
-				2: limit,
-				3: speed,
-				4: length,
-				5: timestamp,
-				6: buyer,
-				7: seller,
-				8: encryptedPoolData,
-				12: version,
+				_limit: limit,
+				_speed: speed,
+				_length: length,
+				_startingBlockTimestamp: timestamp,
+				_buyer: buyer,
+				_seller: seller,
+				_encryptedPoolData: encryptedPoolData,
+				_version: version,
 			} = await implementationContractInstance.methods.getPublicVariables().call();
 
 			return {
@@ -224,6 +225,7 @@ export const Main: React.FC = () => {
 				state,
 				encryptedPoolData,
 				version,
+				isDeleted,
 			} as HashRentalContract;
 		}
 
@@ -231,9 +233,9 @@ export const Main: React.FC = () => {
 	};
 
 	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
-		const hashRentalContracts = await Promise.all(
-			addresses.map(async (address) => await createContractAsync(address))
-		);
+		const hashRentalContracts = (
+			await Promise.all(addresses.map(async (address) => await createContractAsync(address)))
+		).filter((c: any) => !c?.isDeleted);
 		setContracts(hashRentalContracts as HashRentalContract[]);
 	};
 
@@ -351,6 +353,7 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
+							refreshContracts={refreshContracts}
 							editClickHandler={(event) =>
 								buttonClickHandler(event, buyerEditModalOpen, setBuyerEditModalOpen)
 							}

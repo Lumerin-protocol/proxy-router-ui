@@ -68,7 +68,6 @@ export enum SortByType {
 }
 
 export enum SortTypes {
-	Default = '',
 	PriceLowToHigh = 'Price: Low to High',
 	PriceHighToLow = 'Price: High to Low',
 	DurationShortToLong = 'Duration: Short to Long',
@@ -112,6 +111,7 @@ export interface HashRentalContract {
 	state?: string;
 	encryptedPoolData?: string;
 	version?: string;
+	//isDeleted: boolean;
 }
 
 // Making fields optional bc a user might not have filled out the input fields

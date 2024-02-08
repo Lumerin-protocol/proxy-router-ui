@@ -68,32 +68,23 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (address, username, password, portNumber) => string | undefined = (
+export const toRfc2396: (address, username, password) => string | undefined = (
 	address,
 	username,
 	password,
 	portNumber
 ) => {
-	const regex = /(^.*):\/\/(.*$)/;
-	const poolAddressGroups = address?.match(regex) as RegExpMatchArray;
-	if (!poolAddressGroups) return;
-	const protocol = poolAddressGroups[1];
-	const host = poolAddressGroups[2];
+	const protocol = 'stratum+tcp';
 
-	return `${protocol}://${username}:${password}@${host}:${portNumber}`;
+	return `${protocol}://${username}:${password}@${address}`;
 };
 
 export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(formData.poolAddress, formData.username, formData.password, formData.portNumber);
+	return toRfc2396(formData.poolAddress, formData.username, formData.password);
 };
 
 export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(
-		formData.validatorAddress,
-		formData.username,
-		formData.password,
-		formData.portNumber
-	);
+	return toRfc2396(formData.validatorAddress, formData.username, formData.password);
 };
 
 //encrypts a string passed into it
@@ -169,9 +160,7 @@ export const isValidPoolAddress: (
 ) => boolean = (poolAddress, setAlertOpen) => {
 	const regexPortNumber = /:\d+/;
 	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
-	if (hasPortNumber) setAlertOpen(true);
-	const regexAddress = /(^.*):\/\/(.*$)/;
-	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
+	return hasPortNumber;
 };
 
 // Parse connectionString as URI to get worker and host name
