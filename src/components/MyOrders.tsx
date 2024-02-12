@@ -38,6 +38,7 @@ interface MyOrdersProps {
 	editClickHandler: MouseEventHandler<HTMLButtonElement>;
 	cancelClickHandler: MouseEventHandler<HTMLButtonElement>;
 	isMobile: boolean;
+	refreshContracts: any;
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
@@ -49,6 +50,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	editClickHandler,
 	cancelClickHandler,
 	isMobile,
+	refreshContracts,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
@@ -67,6 +69,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		isMediumBreakpointOrBelow,
 		setIsMediumBreakpointOrBelow
 	);
+
+	useEffect(() => {
+		// console.log("refresh page data");
+		//refreshContracts();
+	}, []);
 
 	useEffect(() => {
 		if (!mediaQueryListLarge?.matches) {

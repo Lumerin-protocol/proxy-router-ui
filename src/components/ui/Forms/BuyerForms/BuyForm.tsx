@@ -322,7 +322,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					</ContractLink>
 				</>
 			)}
-			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+			{/* <AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
 				Thank you for choosing the Lumerin Hashpower Marketplace. To purchase hashpower, please
 				download the{' '}
 				<a
@@ -334,7 +334,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					Lumerin wallet desktop application
 				</a>{' '}
 				to ensure a smooth and secure transaction.
-			</AlertMUI>
+			</AlertMUI> */}
 			{content}
 
 			{/* {display && <p className='subtext'>{paragraphContent}</p>} */}
