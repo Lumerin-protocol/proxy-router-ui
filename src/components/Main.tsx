@@ -8,6 +8,7 @@ import _ from 'lodash';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
+import { provider } from 'web3-core'
 
 import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
@@ -33,6 +34,7 @@ import {
 	disconnectWalletConnectAsync,
 	getLumerinTokenBalanceAsync,
 	getWeb3ResultAsync,
+	reconnectWalletAsync,
 } from '../web3/helpers';
 import { buttonClickHandler, truncateAddress, printError } from '../utils';
 import {
@@ -42,6 +44,7 @@ import {
 	HashRentalContract,
 	PathName,
 	WalletText,
+	ConnectInfo,
 } from '../types';
 
 import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
@@ -112,35 +115,86 @@ export const Main: React.FC = () => {
 	const connectWallet: (walletName: string) => void = async (walletName) => {
 		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
 
-		const web3Result = await getWeb3ResultAsync(
-			setAlertOpen,
-			setIsConnected,
-			setAccounts,
-			walletName
-		);
-		if (web3Result) {
-			const { accounts, contractInstance, web3 } = web3Result;
-			const chainId = await web3.eth.net.getId();
-			console.log('ENV CHAIN ID:', process.env.REACT_APP_CHAIN_ID);
-			console.log('CHAIN ID:', chainId);
-			if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
-				disconnectWalletConnectAsync(
-					walletName === WalletText.ConnectViaMetaMask,
-					web3,
-					setIsConnected
-				);
-				setAlertOpen(true);
+		const handleOnConnect = (connectInfo: ConnectInfo): void => {
+			console.log(`on connect, chain ID: ${connectInfo.chainId}`);
+			setIsConnected(false);
+		};
+	
+		const handleOnDisconnect: (error: Error) => void = (error) => {
+			console.log(`on disconnect: ${error.message}`);
+			setAlertOpen(true);
+			setIsConnected(false);
+			if (walletName === WalletText.ConnectViaMetaMask) {
+				reconnectWalletAsync();
 			}
-			setAccounts(accounts);
-			setCloneFactoryContract(contractInstance);
-			setWeb3(web3);
-			setIsConnected(true);
-			localStorage.setItem('walletName', walletName);
-			localStorage.setItem('isConnected', 'true');
-			setChainId(chainId);
-			localStorage.setItem('walletName', walletName);
-			refreshContracts();
-			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
+		};
+	
+		// chainChanged
+		const handleChainChanged = (chainId: string, pr: provider): void => {
+			console.log(`on chain changed: ${chainId}`);
+			if (walletName === WalletText.ConnectViaWalletConnect) {
+				new Web3(pr).eth.net.getId()
+					.then(chainID => {
+						if (chainID !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+							disconnectWalletConnectAsync(false, web3, setIsConnected);
+							setAlertOpen(true);
+							return;
+						}
+					});
+			}
+			window.location.reload();
+		};
+	
+		// accountsChanged
+		const handleAccountsChanged: (accounts: string[]) => void = (accounts) => {
+			console.log('on accounts changed');
+			if (accounts.length === 0 || accounts[0] === '') {
+				setAlertOpen(true);
+			} else {
+				setAccounts(accounts);
+			}
+		};
+
+		const web3Result = await getWeb3ResultAsync(
+			handleOnConnect,
+			handleOnDisconnect,
+			handleChainChanged,
+			handleAccountsChanged,
+			walletName,
+		);
+
+		if (!web3Result) {
+			console.error("Missing web3 instance")
+			return
+		}
+
+		const { accounts, contractInstance, web3 } = web3Result;
+		
+		if (accounts.length === 0 || accounts[0] === '') {
+			setAlertOpen(true);
+		}
+
+		const chainId = await web3.eth.net.getId();
+
+		if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+			disconnectWalletConnectAsync(
+				walletName === WalletText.ConnectViaMetaMask,
+				web3,
+				setIsConnected
+			);
+			setAlertOpen(true);
+		}
+		setAccounts(accounts);
+		setCloneFactoryContract(contractInstance);
+		setWeb3(web3);
+		setIsConnected(true);
+		localStorage.setItem('walletName', walletName);
+		localStorage.setItem('isConnected', 'true');
+		setChainId(chainId);
+		localStorage.setItem('walletName', walletName);
+		refreshContracts();
+		if (walletName === WalletText.ConnectViaMetaMask){
+			setIsMetaMask(true);
 		}
 	};
 
