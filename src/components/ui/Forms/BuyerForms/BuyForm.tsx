@@ -343,7 +343,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, () => buyContractAsync(formData))}
+					getButton(
+						contentState,
+						buttonContent,
+						setOpen,
+						() => buyContractAsync(formData),
+						!isValid
+					)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

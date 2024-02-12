@@ -322,8 +322,9 @@ export const getButton: (
 	contentState: string,
 	buttonContent: string,
 	setOpen: Dispatch<SetStateAction<boolean>>,
-	onSubmit
-) => JSX.Element = (contentState, buttonContent, setOpen, onSubmit) => {
+	onSubmit,
+	isDisabled
+) => JSX.Element = (contentState, buttonContent, setOpen, onSubmit, isDisabled) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -345,6 +346,8 @@ export const getButton: (
 				<span>{`View ${viewText}`}</span>
 			</Link>
 		</PrimaryButton>
+	) : isDisabled ? (
+		<DisabledButton type='button'>{buttonContent}</DisabledButton>
 	) : (
 		<PrimaryButton type='button' onClick={onSubmit}>
 			{buttonContent}
