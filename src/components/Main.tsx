@@ -103,17 +103,18 @@ export const Main: React.FC = () => {
 	const isMobile = width <= 768;
 
 	// Onboard metamask and set wallet text
-	const onboarding = new MetaMaskOnboarding();
-	const onboardMetaMask: () => void = () => {
-		// Onboard metamask if not installed
-		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
-			onboarding.startOnboarding();
-		} else {
-			onboarding.stopOnboarding();
-		}
-	};
+	// const onboarding = new MetaMaskOnboarding();
+	// const onboardMetaMask: () => void = () => {
+	// 	// Onboard metamask if not installed
+	// 	if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+	// 		onboarding.startOnboarding();
+	// 	} else {
+	// 		onboarding.stopOnboarding();
+	// 	}
+	// };
+
 	const connectWallet: (walletName: string) => void = async (walletName) => {
-		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
+		// if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
 
 		const handleOnConnect = (connectInfo: ConnectInfo): void => {
 			console.log(`on connect, chain ID: ${connectInfo.chainId}`);
@@ -175,6 +176,7 @@ export const Main: React.FC = () => {
 		}
 
 		const chainId = await web3.eth.net.getId();
+		console.log("CHAIN ID", chainId)
 
 		if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
 			disconnectWalletConnectAsync(
@@ -386,10 +388,10 @@ export const Main: React.FC = () => {
 				<span>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
 			</button>
-			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
+			{/* <button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
 				<span>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</button>
+			</button> */}
 		</ConnectButtonsWrapper>
 	);
 
