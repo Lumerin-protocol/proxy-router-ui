@@ -145,7 +145,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		if (error.message.includes('execution reverted')) {
 			let msg;
 			try {
-			/*
+				/*
 				When transaction is reverted, the error message is a such JSON string:
 					`Internal JSON-RPC error.
 					{
@@ -284,7 +284,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							});
 
 						if (!receipt.status) {
-							setAlertMessage('Failed to purchase contract');
+							setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
 							setAlertOpen(true);
 							setContentState(ContentState.Cancel);
 							return;
@@ -351,11 +351,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert
-				message={alertMessage}
-				isOpen={alertOpen}
-				onClose={() => setAlertOpen(false)}
-			/>
+			<Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
 			{display && (
 				<>
 					<h2>Purchase Hashpower</h2>
