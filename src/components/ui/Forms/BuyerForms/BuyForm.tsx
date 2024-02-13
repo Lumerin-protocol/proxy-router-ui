@@ -43,6 +43,10 @@ import { purchasedHashrate } from '../../../../analytics';
 import { ContractLink } from '../../Modal.styled';
 import { Alert as AlertMUI } from '@mui/material';
 
+interface ErrorWithCode extends Error {
+	code?: number;
+}
+
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
 	poolAddress: '',
@@ -86,11 +90,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		lumerinbalance,
 	});
 	[contentState, setContentState] = useState<string>(ContentState.Review);
-	const [isAvailable, setIsAvailable] = useState<boolean>(true);
 	let setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 
 	[formData, setFormData] = useState<FormData>(formData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [totalHashrate, setTotalHashrate] = useState<number>();
 
 	/*
@@ -120,6 +124,46 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			//TODO: test validity of this field in this context
 			version: contract.version as string,
 		};
+	};
+
+	const handlePurchaseError = (error: ErrorWithCode) => {
+		// If user rejects transaction
+		if (error.code === 4001) {
+			setAlertMessage(error.message);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('execution reverted: contract is not in an available state')) {
+			setAlertMessage(`Execution reverted: ${AlertMessage.ContractIsPurchased}`);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('execution reverted')) {
+			let msg;
+			try {
+				/*
+				When transaction is reverted, the error message is a such JSON string:
+					`Internal JSON-RPC error.
+					{
+						"code": 3,
+						"message": "execution reverted: contract is not in an available state",
+						"data": "0x08c379a",
+						"cause": null
+					}`
+			*/
+				msg = JSON.parse(error.message.replace('Internal JSON-RPC error.', '')).message;
+			} catch (e) {
+				msg = 'Failed to purchase contract. Execution reverted.';
+			}
+			setAlertMessage(msg);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
 	};
 
 	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
@@ -154,14 +198,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 			if (contract.price && lumerinbalance < divideByDigits(contract.price as number)) {
 				setAlertOpen(true);
-				setIsAvailable(true);
+				setAlertMessage(AlertMessage.InsufficientBalance);
 				return;
 			}
 
 			try {
-				// const validatorFee = '100';
-				const gasLimit = 1000000;
-				let sendOptions: Partial<SendOptions> = { from: userAccount };
+				const sendOptions: Partial<SendOptions> = { from: userAccount };
 				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
@@ -172,8 +214,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					);
 					const contractState = await implementationContract.methods.contractState().call();
 					if (contractState !== ContractState.Available) {
-						setIsAvailable(false);
+						setAlertMessage(AlertMessage.ContractIsPurchased);
 						setAlertOpen(true);
+						setContentState(ContentState.Review);
 						return;
 					}
 
@@ -185,72 +228,79 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);
-					if (receipt?.status) {
-						// Purchase contract
-						try {
-							const buyerDest: string = getPoolRfc2396(formData)!;
 
-							const validatorPublicKey = (await getValidatorPublicKey()) as string;
-							const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
+					if (!receipt.status) {
+						setAlertMessage('Failed to approve LMR transfer');
+						setAlertOpen(true);
+						setContentState(ContentState.Cancel);
+						return;
+					}
+					// Purchase contract
+					try {
+						const buyerDest: string = getPoolRfc2396(formData)!;
 
-							const encryptedBuyerInput = (
-								await encryptMessage(validatorPublicKey.slice(2), buyerDest)
-							).toString('hex');
+						const validatorPublicKey = (await getValidatorPublicKey()) as string;
+						const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
 
-							const validatorAddress: string = `stratum+tcp://:@${getValidatorURL()}`;
+						const encryptedBuyerInput = (
+							await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+						).toString('hex');
 
-							const pubKey = await implementationContract.methods.pubKey().call();
-							let validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
-								'hex'
-							);
+						const validatorAddress: string = `stratum+tcp://:@${getValidatorURL()}`;
 
-							const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
+						const pubKey = await implementationContract.methods.pubKey().call();
+						const validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
+							'hex'
+						);
 
-							const purchaseGas = await cloneFactoryContract?.methods
-								.setPurchaseRentalContractV2(
-									contractId,
-									ethAddress,
-									validatorEncr,
-									encryptedBuyerInput,
-									contract.version
-								)
-								.estimateGas({
-									from: sendOptions.from,
-									value: marketplaceFee,
-								});
+						const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
 
-							console.log('submitting purchase for contract: ', contract);
-							const receipt: Receipt = await cloneFactoryContract?.methods
-								.setPurchaseRentalContractV2(
-									contractId,
-									ethAddress,
-									validatorEncr,
-									encryptedBuyerInput,
-									contract.version
-								)
-								.send({
-									...sendOptions,
-									gas: purchaseGas,
-									value: marketplaceFee,
-								});
-							if (!receipt.status) {
-								// TODO: purchasing contract has failed, surface to user
-								console.log('contract purchase failed: ', receipt);
-							}
-						} catch (e) {
-							console.log('failed to prepare or complete contract purchase: ', e);
+						const purchaseGas = await cloneFactoryContract?.methods
+							.setPurchaseRentalContractV2(
+								contractId,
+								ethAddress,
+								validatorEncr,
+								encryptedBuyerInput,
+								contract.version
+							)
+							.estimateGas({
+								from: sendOptions.from,
+								value: marketplaceFee,
+							});
+
+						console.log('submitting purchase for contract: ', contract);
+						const receipt: Receipt = await cloneFactoryContract?.methods
+							.setPurchaseRentalContractV2(
+								contractId,
+								ethAddress,
+								validatorEncr,
+								encryptedBuyerInput,
+								contract.version
+							)
+							.send({
+								...sendOptions,
+								gas: purchaseGas,
+								value: marketplaceFee,
+							});
+
+						if (!receipt.status) {
+							setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
+							setAlertOpen(true);
+							setContentState(ContentState.Cancel);
+							return;
 						}
-					} else {
-						console.log('call to increaseAllowance() has failed, surface to user');
-						// TODO: call to increaseAllowance() has failed, surface to user
+						purchasedHashrate(totalHashrate!);
+						setContentState(ContentState.Complete);
+					} catch (e) {
+						const typedError = e as ErrorWithCode;
+						printError(typedError.message, typedError.stack as string);
+						handlePurchaseError(typedError);
 					}
 				}
-				purchasedHashrate(totalHashrate!);
-				setContentState(ContentState.Complete);
 			} catch (error) {
-				const typedError = error as Error;
+				const typedError = error as ErrorWithCode;
 				printError(typedError.message, typedError.stack as string);
-				setOpen(false);
+				handlePurchaseError(typedError);
 			}
 		}
 	};
@@ -301,11 +351,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert
-				message={!isAvailable ? AlertMessage.ContractIsPurchased : AlertMessage.InsufficientBalance}
-				isOpen={alertOpen}
-				onClose={() => setAlertOpen(false)}
-			/>
+			<Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
 			{display && (
 				<>
 					<h2>Purchase Hashpower</h2>

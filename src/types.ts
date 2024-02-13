@@ -60,6 +60,7 @@ export enum AlertMessage {
 	InvalidPoolAddress = 'The pool address is invalid.',
 	RemovePort = 'Oops, looks like you included the port number with the pool address. Please remove the port number from the pool address. The port number should be inputted in the port number field.',
 	ContractIsPurchased = 'The contract you have attempted to purchase has already been sold. Please purchase another contract.',
+	IncreaseAllowanceFailed = 'Failed to approve LMR transfer',
 }
 
 export enum SortByType {
