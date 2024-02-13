@@ -29,8 +29,8 @@ const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnect
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
 			console.log('Using MetaMask');
-
-			return (await detectEthereumProvider()) as Ethereum;
+			const provider = await detectEthereumProvider();
+			return provider as Ethereum;
 		default:
 			console.log('Using WalletConnect');
 			console.log('process.env.REACT_APP_CHAIN_ID: ' + process.env.REACT_APP_CHAIN_ID);
@@ -74,7 +74,6 @@ export const getWeb3ResultAsync = async (
 			ethereum.on('disconnect', onDisconnect);
 			ethereum.on('chainChanged', (chainID: string) => onChainChange(chainID, ethereum));
 			ethereum.on('accountsChanged', onAccountsChange);
-			await ethereum.request({ method: 'eth_requestAccounts' });
 		} else {
 			provider.on('disconnect', onDisconnect);
 			provider.on('chainChanged', onChainChange);
