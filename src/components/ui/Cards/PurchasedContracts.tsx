@@ -35,99 +35,102 @@ export const PurchasedContracts = (props: {
 		},
 	}));
 
-	console.log(props.contracts);
-
 	return (
 		<ContractCards>
-			{purchasedContracts.map((item, index) => (
-				<div className='card' key={item.contractId}>
-					<div className='progress'>
-						<div className='pickaxe'>
-							{props.isCompleted ? (
-								<DoneIcon sx={{ color: 'white' }} />
-							) : (
-								<img src={PickaxeAnimated} alt='' />
-							)}
-						</div>
-						<div className='utils'>
-							<div className='percentage-and-actions'>
-								<h2>{item.progressPercentage?.toFixed()}% complete</h2>
-								{!props.isCompleted && (
-									<div className='status'>
-										<div>{item.editCancel}</div>
-									</div>
+			{purchasedContracts.map((item, index) => {
+				const stored = localStorage.getItem(item.contractId!);
+				const poolInfo = stored ? JSON.parse(stored) : '';
+
+				return (
+					<div className='card' key={item.contractId}>
+						<div className='progress'>
+							<div className='pickaxe'>
+								{props.isCompleted ? (
+									<DoneIcon sx={{ color: 'white' }} />
+								) : (
+									<img src={PickaxeAnimated} alt='' />
 								)}
 							</div>
-							<BorderLinearProgress variant='determinate' value={item.progressPercentage} />
+							<div className='utils'>
+								<div className='percentage-and-actions'>
+									<h2>{item.progressPercentage?.toFixed()}% complete</h2>
+									{!props.isCompleted && (
+										<div className='status'>
+											<div>{item.editCancel}</div>
+										</div>
+									)}
+								</div>
+								<BorderLinearProgress variant='determinate' value={item.progressPercentage} />
+							</div>
+						</div>
+						<div className='grid'>
+							<div className='row'>
+								<div className='item-value started'>
+									<div>
+										<h3>CONTRACT START</h3>
+										<p>{item.timestamp}</p>
+									</div>
+								</div>
+								<div className='item-value started'>
+									<div>
+										<h3>CONTRACT END</h3>
+										<p>{item.timestamp}</p>
+									</div>
+								</div>
+							</div>
+							<div className='item-value address'>
+								<div>
+									<h3>CONTRACT ADDRESS</h3>
+									<a
+										href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
+										target='_blank'
+										rel='noreferrer'
+									>
+										{truncateAddress(item.contractId!, AddressLength.LONG)}
+									</a>
+								</div>
+							</div>
+							<div className='row'>
+								<div className='item-value speed'>
+									<img src={Speed} alt='' />
+									<div>
+										<h3>SPEED</h3>
+										<p>{item.speed} th/s</p>
+									</div>
+								</div>
+								<div className='item-value price'>
+									<img src={PriceTag} alt='' />
+									<div>
+										<h3>PRICE</h3>
+										<p>{item.price} LMR</p>
+									</div>
+								</div>
+								<div className='item-value duration'>
+									<img src={Time} alt='' />
+									<div>
+										<h3>DURATION</h3>
+										<p>{item.length && getReadableDate(item.length.toString())}</p>
+									</div>
+								</div>
+							</div>
+							<Divider variant='middle' sx={{ my: 2 }} />
+							<h3 className='sm-header'>POOL CONNECTION</h3>
+							<div className='item-value username'>
+								<img src={IDCard} alt='' />
+								<div>
+									<p>{poolInfo?.poolAddress || ''} </p>
+								</div>
+							</div>
+							<div className='item-value address'>
+								<img src={Pickaxe} alt='' />
+								<div>
+									<p>{poolInfo?.username || ''}</p>
+								</div>
+							</div>
 						</div>
 					</div>
-					<div className='grid'>
-						<div className='row'>
-							<div className='item-value started'>
-								<div>
-									<h3>CONTRACT START</h3>
-									<p>{item.timestamp}</p>
-								</div>
-							</div>
-							<div className='item-value started'>
-								<div>
-									<h3>CONTRACT END</h3>
-									<p>{item.timestamp}</p>
-								</div>
-							</div>
-						</div>
-						<div className='item-value address'>
-							<div>
-								<h3>CONTRACT ADDRESS</h3>
-								<a
-									href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
-									target='_blank'
-									rel='noreferrer'
-								>
-									{truncateAddress(item.contractId!, AddressLength.LONG)}
-								</a>
-							</div>
-						</div>
-						<div className='row'>
-							<div className='item-value speed'>
-								<img src={Speed} alt='' />
-								<div>
-									<h3>SPEED</h3>
-									<p>{item.speed} th/s</p>
-								</div>
-							</div>
-							<div className='item-value price'>
-								<img src={PriceTag} alt='' />
-								<div>
-									<h3>PRICE</h3>
-									<p>{item.price} LMR</p>
-								</div>
-							</div>
-							<div className='item-value duration'>
-								<img src={Time} alt='' />
-								<div>
-									<h3>DURATION</h3>
-									<p>{item.length && getReadableDate(item.length.toString())}</p>
-								</div>
-							</div>
-						</div>
-						<Divider variant='middle' sx={{ my: 2 }} />
-						<h3 className='sm-header'>POOL CONNECTION</h3>
-						<div className='item-value username'>
-							<img src={IDCard} alt='' />
-							<div>
-								<p>{item.encryptedPoolData && getWorkerName(item.encryptedPoolData)} </p>
-							</div>
-						</div>
-						<div className='item-value address'>
-							<img src={Pickaxe} alt='' />
-							<div>
-								<p>{item.encryptedPoolData && getHostName(item.encryptedPoolData)}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			))}
+				);
+			})}
 		</ContractCards>
 	);
 };

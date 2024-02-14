@@ -67,12 +67,13 @@ export const ContractCards = styled.div`
 				font-size: 0.65rem;
 				color: #384764;
 				font-weight: 300;
-				margin-bottom: 0.15rem;
+				margin-bottom: 0.6rem;
 			}
 			.item-value {
 				display: flex;
 				flex-direction: row;
 				align-items: center;
+				padding-bottom: 0.8rem;
 				img {
 					width: 20px;
 					height: 20px;
@@ -82,7 +83,6 @@ export const ContractCards = styled.div`
 					font-weight: 400;
 					font-size: 0.85rem;
 					color: #0f4454;
-					padding-bottom: 0.8rem;
 				}
 			}
 			.address {
