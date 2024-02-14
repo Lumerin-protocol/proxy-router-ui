@@ -16,6 +16,7 @@ import {
 	getPoolRfc2396,
 	getValidatorRfc2396,
 	getValidatorURL,
+	getHandlerBlockchainError,
 } from '../../../../utils';
 
 import { LumerinContract, ImplementationContract } from 'contracts-js';
@@ -126,45 +127,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		};
 	};
 
-	const handlePurchaseError = (error: ErrorWithCode) => {
-		// If user rejects transaction
-		if (error.code === 4001) {
-			setAlertMessage(error.message);
-			setAlertOpen(true);
-			setContentState(ContentState.Review);
-			return;
-		}
-
-		if (error.message.includes('execution reverted: contract is not in an available state')) {
-			setAlertMessage(`Execution reverted: ${AlertMessage.ContractIsPurchased}`);
-			setAlertOpen(true);
-			setContentState(ContentState.Review);
-			return;
-		}
-
-		if (error.message.includes('execution reverted')) {
-			let msg;
-			try {
-				/*
-				When transaction is reverted, the error message is a such JSON string:
-					`Internal JSON-RPC error.
-					{
-						"code": 3,
-						"message": "execution reverted: contract is not in an available state",
-						"data": "0x08c379a",
-						"cause": null
-					}`
-			*/
-				msg = JSON.parse(error.message.replace('Internal JSON-RPC error.', '')).message;
-			} catch (e) {
-				msg = 'Failed to purchase contract. Execution reverted.';
-			}
-			setAlertMessage(msg);
-			setAlertOpen(true);
-			setContentState(ContentState.Review);
-			return;
-		}
-	};
+	const handlePurchaseError = getHandlerBlockchainError(
+		setAlertMessage,
+		setAlertOpen,
+		setContentState
+	);
 
 	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
 		console.log('buyContractAsync: ', data);
