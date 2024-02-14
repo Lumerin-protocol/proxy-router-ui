@@ -130,6 +130,10 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						});
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
+						localStorage.setItem(
+							contractId,
+							JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
+						);
 					} else {
 						// TODO: edit has failed, surface this to user
 					}

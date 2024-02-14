@@ -7,7 +7,7 @@ import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { CloneFactoryContract as CloneFactory } from 'contracts-js';
 import { LumerinContract } from 'contracts-js';
-import { 	ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
+import { ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
 import { printError } from '../utils';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 
@@ -50,23 +50,23 @@ const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnect
 
 // Get accounts, web3 and contract instances
 export const getWeb3ResultAsync = async (
-		onConnect: (info: ConnectInfo) => void, 
-		onDisconnect: (err: Error) => void, 
-		onChainChange: (chainId: string, pr: provider) => void, 
-		onAccountsChange: (accounts: string[]) => void, 
-		walletName: string
-	): Promise<Web3Result | null> => {
+	onConnect: (info: ConnectInfo) => void,
+	onDisconnect: (err: Error) => void,
+	onChainChange: (chainId: string, pr: provider) => void,
+	onAccountsChange: (accounts: string[]) => void,
+	walletName: string
+): Promise<Web3Result | null> => {
 	try {
 		const provider = await getProviderAsync(walletName);
 
 		if (!provider) {
-			console.error("Missing provider")
-			return null
+			console.error('Missing provider');
+			return null;
 		}
 
-		if (typeof provider === "string"){
-			console.error("Invalid string provider", provider)
-			return null
+		if (typeof provider === 'string') {
+			console.error('Invalid string provider', provider);
+			return null;
 		}
 
 		if (walletName === WalletText.ConnectViaMetaMask) {
@@ -80,7 +80,7 @@ export const getWeb3ResultAsync = async (
 			provider.on('accountsChanged', onAccountsChange);
 			await WalletConnectProvider.enable();
 		}
-		
+
 		const web3 = new Web3(provider as provider);
 		const accounts = await web3.eth.getAccounts();
 

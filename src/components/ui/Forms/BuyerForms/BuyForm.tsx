@@ -291,6 +291,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						}
 						purchasedHashrate(totalHashrate!);
 						setContentState(ContentState.Complete);
+						localStorage.setItem(
+							contractId,
+							JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
+						);
 					} catch (e) {
 						const typedError = e as ErrorWithCode;
 						printError(typedError.message, typedError.stack as string);
