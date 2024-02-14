@@ -3,8 +3,7 @@ import { Text } from './types';
 // Form text setup
 export const paragraphText: Text = {
 	review: '',
-	confirm:
-		'Please review the following information above is correct. Once submitted, you will not be able to make any changes.',
+	confirm: 'Please review the following information above is correct.',
 };
 
 export const buttonText: Text = {

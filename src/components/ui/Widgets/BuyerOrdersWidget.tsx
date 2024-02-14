@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import { getProgressPercentage } from '../../../utils';
 import { SmallWidget } from '../Cards/Cards.styled';
 import { Skeleton } from '@mui/material';
+import { useHistory } from 'react-router-dom';
 
 export const BuyerOrdersWidget = (props: {
 	contracts: Array<HashRentalContract>;
@@ -12,6 +13,8 @@ export const BuyerOrdersWidget = (props: {
 	currentBlockTimestamp: number;
 	isLoading: boolean;
 }) => {
+	const history = useHistory();
+
 	const buyerOrders = props.contracts.filter(
 		(contract: HashRentalContract) => contract.buyer === props.userAccount
 	);
@@ -97,7 +100,7 @@ export const BuyerOrdersWidget = (props: {
 				</div>
 			</div>
 			<div className='link'>
-				<a href='/buyerhub'>
+				<a onClick={() => history.push('buyerhub')}>
 					View all purchased contracts <EastIcon style={{ fontSize: '0.75rem' }} />
 				</a>
 			</div>

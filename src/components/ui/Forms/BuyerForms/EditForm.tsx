@@ -12,13 +12,17 @@ import {
 	UpdateFormProps,
 } from '../../../../types';
 import { AbiItem } from 'web3-utils';
-import ImplementationContract from '../../../../contracts/Implementation.json';
+import { ImplementationContract } from 'contracts-js';
 import {
-	toRfc2396,
+	getPoolRfc2396,
 	getButton,
 	isNoEditBuyer,
 	printError,
 	truncateAddress,
+	getValidatorPublicKey,
+	encryptMessage,
+	getValidatorURL,
+	getHandlerBlockchainError,
 } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
@@ -27,10 +31,10 @@ import { Alert } from '../../Alert';
 import { buttonText, paragraphText } from '../../../../shared';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { ContractLink } from '../../Modal.styled';
+import { ethers } from 'ethers';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
-	withValidator: false,
 	poolAddress: '',
 	portNumber: '',
 	username: '',
@@ -50,6 +54,9 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [alertMessage, setAlertMessage] = useState<string>('');
+
+	const handleEditError = getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState);
 
 	// Input validation setup
 	const {
@@ -79,7 +86,6 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 				portNumber: data.portNumber,
 				username: data.username,
 				password: data.password,
-				withValidator: data.withValidator,
 				...getContractInfo(),
 			});
 		}
@@ -93,26 +99,55 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		if (isValid && contentState === ContentState.Pending) {
 			try {
 				if (web3) {
-					const gasLimit = 1000000;
-					// TODO: encrypt poolAddress, username, password
-					const encryptedBuyerInput = toRfc2396(formData);
 					const implementationContract = new web3.eth.Contract(
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
 					);
+
+					const buyerDest: string = getPoolRfc2396(formData)!;
+
+					const validatorPublicKey = (await getValidatorPublicKey()) as string;
+
+					const encryptedBuyerInput = (
+						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+					).toString('hex');
+
+					const validatorAddress: string = `stratum+tcp://:@${getValidatorURL()}`;
+
+					const pubKey = await implementationContract.methods.pubKey().call();
+
+					let validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
+						'hex'
+					);
+
+					const updateDestGas = await implementationContract?.methods
+						.setDestination(validatorEncr, encryptedBuyerInput)
+						.estimateGas({
+							from: userAccount,
+						});
+
 					const receipt: Receipt = await implementationContract.methods
-						.setUpdateMiningInformation(encryptedBuyerInput)
-						.send({ from: userAccount, gas: gasLimit });
+						.setDestination(validatorEncr, encryptedBuyerInput)
+						.send({
+							from: userAccount,
+							gas: updateDestGas,
+						});
 					if (receipt?.status) {
 						setContentState(ContentState.Complete);
+						localStorage.setItem(
+							contractId,
+							JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
+						);
 					} else {
-						// TODO: edit has failed, surface this to user
+						setAlertMessage(AlertMessage.EditFailed);
+						setAlertOpen(true);
+						setContentState(ContentState.Cancel);
 					}
 				}
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				setOpen(false);
+				handleEditError(typedError);
 			}
 		}
 
@@ -125,6 +160,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		let timeoutId: NodeJS.Timeout;
 		if (isNoEditBuyer(contract, userAccount)) {
 			setAlertOpen(true);
+			setAlertMessage(AlertMessage.NoEditBuyer);
 			timeoutId = setTimeout(() => setOpen(false), 3000);
 		}
 
@@ -167,7 +203,9 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						register={register}
 						errors={errors}
 						buyerString={contract.encryptedPoolData}
-						isEdit
+						isEdit={true}
+						inputData={formData}
+						setFormData={setFormData}
 					/>
 				);
 		}
@@ -180,11 +218,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert
-				message={AlertMessage.NoEditBuyer}
-				isOpen={alertOpen}
-				onClose={() => setAlertOpen(false)}
-			/>
+			<Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
 			{display && (
 				<>
 					<h2>Edit Order</h2>
@@ -204,7 +238,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit, editContractAsync)}
+					getButton(
+						contentState,
+						buttonContent,
+						setOpen,
+						() => editContractAsync(formData),
+						!isValid
+					)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

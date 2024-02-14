@@ -15,8 +15,8 @@ export const SwitchNetworkAlert: React.FC<AlertProps> = ({ message, open, setOpe
 			<NetworkBox>
 				<h3>Switch Network</h3>
 				<p>
-					Your wallet must be connected to the Goerli testnet to use the Marketplace. Please change
-					the network in your wallet, or click the button below.
+					Your wallet must be connected to the Sepolia Arbitrum testnet to use the Marketplace.
+					Please change the network in your wallet, or click the button below.
 				</p>
 				<PrimaryButton
 					type='button'

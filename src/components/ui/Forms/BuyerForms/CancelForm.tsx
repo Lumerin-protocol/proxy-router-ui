@@ -7,28 +7,36 @@ import {
 	ContractState,
 	Receipt,
 	UpdateFormProps,
+	CancelFormProps,
 } from '../../../../types';
-import { isNoCancel, printError } from '../../../../utils';
+import { getHandlerBlockchainError, isNoCancel, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { Spinner } from '../../Spinner.styled';
-import ImplementationContract from '../../../../contracts/Implementation.json';
+import { ImplementationContract } from 'contracts-js';
 import { AbiItem } from 'web3-utils';
 import { ButtonGroup } from '../../ButtonGroup';
 import { CancelButton } from '../FormButtons/Buttons.styled';
 import { SecondaryButton } from '../FormButtons/Buttons.styled';
 
-export const CancelForm: React.FC<UpdateFormProps> = ({
+export const CancelForm: React.FC<CancelFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
 	web3,
 	setOpen,
+	cloneFactoryContract,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [alertMessage, setAlertMessage] = useState<string>('');
 
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
+	const handleCancelError = getHandlerBlockchainError(
+		setAlertMessage,
+		setAlertOpen,
+		setContentState
+	);
 
 	const cancelSubmitHandler: MouseEventHandler<HTMLButtonElement> = (event) => {
 		if (isNoCancel(contract, userAccount)) return;
@@ -40,6 +48,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 		// Confirm
 		if (contentState === ContentState.Confirm) {
 			if (contract.state !== ContractState.Available && contract.state !== ContractState.Running) {
+				setAlertMessage(AlertMessage.NoCancelBuyer);
 				setAlertOpen(true);
 				return;
 			}
@@ -57,19 +66,32 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
 					);
+
+					const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
+
+					const gas = await implementationContract.methods
+						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
+						.estimateGas({
+							from: userAccount,
+							value: marketplaceFee,
+						});
+
 					const receipt: Receipt = await implementationContract.methods
 						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
-						.send({ from: userAccount, gas: 1000000 });
+						.send({ from: userAccount, gas });
+
 					if (receipt.status) {
 						setContentState(ContentState.Complete);
 					} else {
-						// TODO: cancellation has failed so surface to user
+						setAlertMessage(AlertMessage.CancelFailed);
+						setAlertOpen(true);
+						setContentState(ContentState.Cancel);
 					}
 				}
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				setOpen(false);
+				handleCancelError(typedError);
 			}
 		}
 	};
@@ -78,6 +100,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
 		if (isNoCancel(contract, userAccount)) {
+			setAlertMessage(AlertMessage.NoCancelBuyer);
 			setAlertOpen(true);
 			timeoutId = setTimeout(() => setOpen(false), 3000);
 		}
@@ -92,11 +115,7 @@ export const CancelForm: React.FC<UpdateFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert
-				message={AlertMessage.NoCancelBuyer}
-				isOpen={alertOpen}
-				onClose={() => setAlertOpen(false)}
-			/>
+			<Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
 			<div>
 				{!isConfirmModal && contentState === ContentState.Review && (
 					<>

@@ -53,6 +53,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
 	const createContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
+		console.log('createContractAsync: ', data);
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
@@ -82,6 +83,13 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					} else {
 						speed = 0;
 					}
+					console.log({
+						price,
+						limit: 0,
+						speed,
+						contractDuration,
+						validatorAddress,
+					});
 					const receipt = await cloneFactoryContract?.methods
 						.setCreateNewRentalContract(price, 0, speed, contractDuration, validatorAddress, '')
 						.send({ from: userAccount });
@@ -130,14 +138,14 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 
 	return (
-		<Fragment>
+		<form onSubmit={handleSubmit(createContractAsync)}>
 			{display && (
 				<>
 					<h2>Create New Contract</h2>
 					<p>Sell your hashpower on the Lumerin Marketplace</p>
 				</>
 			)}
-			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+			{/* <AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
 				Thank you for choosing the Lumerin Hashpower Marketplace. To sell hashpower, please download
 				the{' '}
 				<a
@@ -149,16 +157,16 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					Lumerin wallet desktop application
 				</a>{' '}
 				to ensure a smooth and secure transaction.
-			</AlertMUI>
+			</AlertMUI> */}
 			{content}
 			<FormButtonsWrapper>
 				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit, createContractAsync)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit, !isValid)}
 			</FormButtonsWrapper>
-		</Fragment>
+		</form>
 	);
 };
 

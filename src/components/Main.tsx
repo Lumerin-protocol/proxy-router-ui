@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import styled from '@emotion/styled';
@@ -8,6 +8,7 @@ import _ from 'lodash';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
+import { provider } from 'web3-core';
 
 import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
@@ -26,13 +27,14 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 
-import ImplementationContract from '../contracts/Implementation.json';
+import { ImplementationContract } from 'contracts-js';
 import { useInterval } from './hooks/useInterval';
 import {
 	addLumerinTokenToMetaMaskAsync,
 	disconnectWalletConnectAsync,
 	getLumerinTokenBalanceAsync,
 	getWeb3ResultAsync,
+	reconnectWalletAsync,
 } from '../web3/helpers';
 import { buttonClickHandler, truncateAddress, printError } from '../utils';
 import {
@@ -42,6 +44,7 @@ import {
 	HashRentalContract,
 	PathName,
 	WalletText,
+	ConnectInfo,
 } from '../types';
 
 import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
@@ -63,6 +66,7 @@ export const Main: React.FC = () => {
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
+
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 	const [sellerEditModalOpen, setSellerEditModalOpen] = useState<boolean>(false);
@@ -71,14 +75,19 @@ export const Main: React.FC = () => {
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
 	const [anyModalOpen, setAnyModalOpen] = useState<boolean>(false);
+
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
 
-	const userAccount = accounts && accounts[0] ? accounts[0] : '';
+	const userAccount = useMemo(() => {
+		console.log('updating user account value: ', accounts && accounts[0] ? accounts[0] : '');
+		return accounts && accounts[0] ? accounts[0] : '';
+	}, [accounts]);
 	const ethereum = window.ethereum as Ethereum;
-	const isCorrectNetwork = chainId === 5;
+	const isCorrectNetwork = chainId === parseInt(process.env.REACT_APP_CHAIN_ID!);
 
+	console.log('isCorrectNetwork: ', isCorrectNetwork);
 	const [width, setWidth] = useState<number>(window.innerWidth);
 
 	function handleWindowSizeChange() {
@@ -94,44 +103,99 @@ export const Main: React.FC = () => {
 	const isMobile = width <= 768;
 
 	// Onboard metamask and set wallet text
-	const onboarding = new MetaMaskOnboarding();
-	const onboardMetaMask: () => void = () => {
-		// Onboard metamask if not installed
-		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
-			onboarding.startOnboarding();
-		} else {
-			onboarding.stopOnboarding();
-		}
-	};
+	// const onboarding = new MetaMaskOnboarding();
+	// const onboardMetaMask: () => void = () => {
+	// 	// Onboard metamask if not installed
+	// 	if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+	// 		onboarding.startOnboarding();
+	// 	} else {
+	// 		onboarding.stopOnboarding();
+	// 	}
+	// };
+
 	const connectWallet: (walletName: string) => void = async (walletName) => {
-		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
+		// if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
+
+		const handleOnConnect = (connectInfo: ConnectInfo): void => {
+			console.log(`on connect, chain ID: ${connectInfo.chainId}`);
+			setIsConnected(false);
+		};
+
+		const handleOnDisconnect: (error: Error) => void = (error) => {
+			console.log(`on disconnect: ${error.message}`);
+			setAlertOpen(true);
+			setIsConnected(false);
+			if (walletName === WalletText.ConnectViaMetaMask) {
+				reconnectWalletAsync();
+			}
+		};
+
+		// chainChanged
+		const handleChainChanged = (chainId: string, pr: provider): void => {
+			console.log(`on chain changed: ${chainId}`);
+			if (walletName === WalletText.ConnectViaWalletConnect) {
+				new Web3(pr).eth.net.getId().then((chainID) => {
+					if (chainID !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+						disconnectWalletConnectAsync(false, web3, setIsConnected);
+						setAlertOpen(true);
+						return;
+					}
+				});
+			}
+			window.location.reload();
+		};
+
+		// accountsChanged
+		const handleAccountsChanged: (accounts: string[]) => void = (accounts) => {
+			console.log('on accounts changed');
+			if (accounts.length === 0 || accounts[0] === '') {
+				setAlertOpen(true);
+			} else {
+				setAccounts(accounts);
+			}
+		};
 
 		const web3Result = await getWeb3ResultAsync(
-			setAlertOpen,
-			setIsConnected,
-			setAccounts,
+			handleOnConnect,
+			handleOnDisconnect,
+			handleChainChanged,
+			handleAccountsChanged,
 			walletName
 		);
-		if (web3Result) {
-			const { accounts, contractInstance, web3 } = web3Result;
-			const chainId = await web3.eth.net.getId();
-			if (chainId !== 5) {
-				disconnectWalletConnectAsync(
-					walletName === WalletText.ConnectViaMetaMask,
-					web3,
-					setIsConnected
-				);
-				setAlertOpen(true);
-			}
-			setAccounts(accounts);
-			setCloneFactoryContract(contractInstance);
-			setWeb3(web3);
-			setIsConnected(true);
-			localStorage.setItem('walletName', walletName);
-			localStorage.setItem('isConnected', 'true');
-			setChainId(chainId);
-			localStorage.setItem('walletName', walletName);
-			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
+
+		if (!web3Result) {
+			console.error('Missing web3 instance');
+			return;
+		}
+
+		const { accounts, contractInstance, web3 } = web3Result;
+
+		if (accounts.length === 0 || accounts[0] === '') {
+			setAlertOpen(true);
+		}
+
+		const chainId = await web3.eth.net.getId();
+		console.log('CHAIN ID', chainId);
+
+		if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+			disconnectWalletConnectAsync(
+				walletName === WalletText.ConnectViaMetaMask,
+				web3,
+				setIsConnected
+			);
+			setAlertOpen(true);
+		}
+		setAccounts(accounts);
+		setCloneFactoryContract(contractInstance);
+		setWeb3(web3);
+		setIsConnected(true);
+		localStorage.setItem('walletName', walletName);
+		localStorage.setItem('isConnected', 'true');
+		setChainId(chainId);
+		localStorage.setItem('walletName', walletName);
+		refreshContracts();
+		if (walletName === WalletText.ConnectViaMetaMask) {
+			setIsMetaMask(true);
 		}
 	};
 
@@ -163,12 +227,23 @@ export const Main: React.FC = () => {
 	}, []);
 
 	// Get timestamp of current block
-	const getCurrentBlockTimestampAsync: () => void = async () => {
+	const getCurrentBlockTimestampAsync: () => Promise<number> = async () => {
 		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
-		setCurrentBlockTimestamp(currentBlockTimestamp as number);
+		return currentBlockTimestamp as number;
 	};
 
-	useEffect(() => getCurrentBlockTimestampAsync(), [web3]);
+	useInterval(() => {
+		refreshContracts();
+	}, 60 * 1000);
+
+	const refreshContracts = (ignoreCheck: boolean | any = false) => {
+		getCurrentBlockTimestampAsync().then((currentBlockTimestamp) => {
+			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
+				setCurrentBlockTimestamp(currentBlockTimestamp as number);
+				createContractsAsync();
+			}
+		});
+	};
 
 	// Contracts setup
 	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (
@@ -180,16 +255,18 @@ export const Main: React.FC = () => {
 				address
 			);
 			const {
-				0: state,
-				1: price,
+				_state: state,
+				_price: price,
+				_isDeleted: isDeleted,
 				// eslint-disable-next-line
-				2: limit,
-				3: speed,
-				4: length,
-				5: timestamp,
-				6: buyer,
-				7: seller,
-				8: encryptedPoolData,
+				_limit: limit,
+				_speed: speed,
+				_length: length,
+				_startingBlockTimestamp: timestamp,
+				_buyer: buyer,
+				_seller: seller,
+				_encryptedPoolData: encryptedPoolData,
+				_version: version,
 			} = await implementationContractInstance.methods.getPublicVariables().call();
 
 			return {
@@ -202,6 +279,8 @@ export const Main: React.FC = () => {
 				timestamp,
 				state,
 				encryptedPoolData,
+				version,
+				isDeleted,
 			} as HashRentalContract;
 		}
 
@@ -209,19 +288,31 @@ export const Main: React.FC = () => {
 	};
 
 	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
-		const hashRentalContracts = await Promise.all(
-			addresses.map(async (address) => await createContractAsync(address))
-		);
-
-		// Update contracts if deep equality is false
-		if (!_.isEqual(contracts, hashRentalContracts))
-			setContracts(hashRentalContracts as HashRentalContract[]);
+		const hashRentalContracts = (
+			await Promise.all(addresses.map(async (address) => await createContractAsync(address)))
+		).filter((c: any) => !c?.isDeleted);
+		setContracts(hashRentalContracts as HashRentalContract[]);
 	};
 
 	const createContractsAsync: () => void = async () => {
 		try {
-			const addresses: string[] = await cloneFactoryContract?.methods.getContractList().call();
+			console.log('Fetching contract list...');
+
+			if (!cloneFactoryContract) return;
+
+			const addresses: string[] = await cloneFactoryContract?.methods
+				.getContractList()
+				.call()
+				.catch((error: any) => {
+					console.log(
+						'Error when trying get list of contract addresses from CloneFactory contract: ',
+						error
+					);
+				});
+			console.log('addresses: ', addresses, !!addresses);
+
 			if (addresses) {
+				console.log('adding contracts...');
 				addContractsAsync(addresses);
 			}
 		} catch (error) {
@@ -242,8 +333,14 @@ export const Main: React.FC = () => {
 
 	// Set contracts and orders once cloneFactoryContract exists
 	useEffect(() => {
-		if (isCorrectNetwork) createContractsAsync();
-	}, [cloneFactoryContract, accounts, web3]);
+		if (cloneFactoryContract && accounts) {
+			console.log('cloneFactoryContract:', cloneFactoryContract);
+			console.log('accounts: ', accounts);
+			if (isCorrectNetwork) {
+				refreshContracts();
+			}
+		}
+	}, [cloneFactoryContract, accounts]);
 
 	// Check if any modals or alerts are open
 	// TODO: Replace this with a better way to track all modal states
@@ -260,6 +357,7 @@ export const Main: React.FC = () => {
 			setAnyModalOpen(true);
 		} else {
 			setAnyModalOpen(false);
+			refreshContracts(true);
 		}
 	}, [
 		alertOpen,
@@ -271,15 +369,12 @@ export const Main: React.FC = () => {
 		claimLmrModalOpen,
 	]);
 
-	// Get contracts at interval of 5 seconds
-	// TODO: Replace this with something like web sockets
-	useInterval(() => {
-		if (isCorrectNetwork && !anyModalOpen) createContractsAsync();
-	}, 5000);
-
 	useEffect(() => {
-		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
-	}, [web3, accounts, chainId]);
+		if (isCorrectNetwork) {
+			refreshContracts();
+			updateLumerinTokenBalanceAsync();
+		}
+	}, [accounts, chainId]);
 
 	useEffect(() => {
 		setPathname(window.location.pathname);
@@ -292,10 +387,10 @@ export const Main: React.FC = () => {
 				<span>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
 			</button>
-			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
+			{/* <button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
 				<span>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</button>
+			</button> */}
 		</ConnectButtonsWrapper>
 	);
 
@@ -313,6 +408,7 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
+							refreshContracts={refreshContracts}
 							editClickHandler={(event) =>
 								buttonClickHandler(event, buyerEditModalOpen, setBuyerEditModalOpen)
 							}
@@ -323,7 +419,7 @@ export const Main: React.FC = () => {
 						/>
 					)}
 				/>
-				<Route
+				{/* <Route
 					path={PathName.MyContracts}
 					render={(props: RouteComponentProps) => (
 						<MyContracts
@@ -343,7 +439,7 @@ export const Main: React.FC = () => {
 							setSidebarOpen={setSidebarOpen}
 						/>
 					)}
-				/>
+				/> */}
 				<Route
 					path={PathName.Marketplace}
 					render={(props: RouteComponentProps) => (
@@ -384,7 +480,7 @@ export const Main: React.FC = () => {
 	const changeNetworkAsync: () => void = async () => {
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
-			params: [{ chainId: web3?.utils.toHex(5) }],
+			params: [{ chainId: web3?.utils.toHex(process.env.REACT_APP_CHAIN_ID!) }],
 		});
 		setAlertOpen(false);
 		connectWallet(WalletText.ConnectViaMetaMask);
@@ -473,6 +569,7 @@ export const Main: React.FC = () => {
 						contractId={contractId}
 						userAccount={userAccount}
 						web3={web3}
+						cloneFactoryContract={cloneFactoryContract}
 						setOpen={setCancelModalOpen}
 					/>
 				}

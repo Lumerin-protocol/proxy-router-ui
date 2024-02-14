@@ -23,9 +23,11 @@ import { Transaction as Web3Transaction } from 'web3-eth';
 import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
-import { abi, bytecode } from './contracts/CloneFactory.json';
+import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+
+const { abi, bytecode } = CloneFactoryContract;
 
 declare module 'web3-core' {
 	interface Transaction {
@@ -66,27 +68,42 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	const regex = /(^.*):\/\/(.*$)/;
-	const poolAddressGroups = formData.poolAddress?.match(regex) as RegExpMatchArray;
-	if (!poolAddressGroups) return;
-	const protocol = poolAddressGroups[1];
-	const host = poolAddressGroups[2];
+export const toRfc2396: (address, username, password) => string | undefined = (
+	address,
+	username,
+	password,
+	portNumber
+) => {
+	const protocol = 'stratum+tcp';
 
-	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
+	return `${protocol}://${username}:${password}@${address}`;
+};
+
+export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
+	return toRfc2396(formData.poolAddress, formData.username, formData.password);
+};
+
+export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
+	return toRfc2396(formData.validatorAddress, formData.username, formData.password);
 };
 
 //encrypts a string passed into it
 export const encryptMessage = async (pubKey: string, msg: string) => {
-	let ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
-	await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg)).then(console.log);
-	return ciphertext.toString('hex');
+	const ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
+	return ciphertext;
+};
+
+export const getValidatorPublicKey = () => {
+	return process.env.REACT_APP_VALIDATOR_PUBLIC_KEY;
+};
+
+export const getValidatorURL = () => {
+	const url = process.env.REACT_APP_VALIDATOR_URL || '';
+	return url.replace(/(^(\w|\+)+:|^)\/\//, ''); // removes protocol from url if present
 };
 
 export const getPublicKey = async (txId: string) => {
-	let provider = ethers.getDefaultProvider(
-		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
-	);
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
 	let tx = await provider.getTransaction(txId)!;
 	console.log(txId);
 	console.log(tx);
@@ -111,10 +128,10 @@ export const getPublicKey = async (txId: string) => {
 export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	//import the JSON of CloneFactory.json
 	let cf = new ethers.ContractFactory(abi, bytecode);
-	let provider = ethers.getDefaultProvider(
-		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
-	);
+	console.log('getting default provider');
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL as string);
 
+	console.log('got default provider');
 	//the clonefactory contract address should become a variable that is configurable
 	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
 
@@ -143,9 +160,7 @@ export const isValidPoolAddress: (
 ) => boolean = (poolAddress, setAlertOpen) => {
 	const regexPortNumber = /:\d+/;
 	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
-	if (hasPortNumber) setAlertOpen(true);
-	const regexAddress = /(^.*):\/\/(.*$)/;
-	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
+	return hasPortNumber;
 };
 
 // Parse connectionString as URI to get worker and host name
@@ -307,9 +322,9 @@ export const getButton: (
 	contentState: string,
 	buttonContent: string,
 	setOpen: Dispatch<SetStateAction<boolean>>,
-	handleSubmit: UseFormHandleSubmit<InputValues>,
-	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (contentState, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
+	onSubmit,
+	isDisabled
+) => JSX.Element = (contentState, buttonContent, setOpen, onSubmit, isDisabled) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -331,10 +346,12 @@ export const getButton: (
 				<span>{`View ${viewText}`}</span>
 			</Link>
 		</PrimaryButton>
+	) : isDisabled ? (
+		<DisabledButton type='button'>{buttonContent}</DisabledButton>
 	) : (
-		<DisabledButton type='submit' disabled>
+		<PrimaryButton type='button' onClick={onSubmit}>
 			{buttonContent}
-		</DisabledButton>
+		</PrimaryButton>
 	);
 };
 
@@ -501,7 +518,8 @@ const getV: (v: string, chainId: number) => string = (v, chainId) => {
 export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
 	transaction
 ) => {
-	const chainId = 3; // Ropsten
+	const chainId = process.env.REACT_APP_CHAIN_ID;
+
 	const ethTx = new EthJsTx(
 		{
 			nonce: transaction.nonce,
@@ -540,3 +558,44 @@ export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = 
 		printError(typedError.message, typedError.stack as string);
 	}
 };
+
+export const getHandlerBlockchainError =
+	(setAlertMessage, setAlertOpen, setContentState) => (error: ErrorWithCode) => {
+		// If user rejects transaction
+		if (error.code === 4001) {
+			setAlertMessage(error.message);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('execution reverted: contract is not in an available state')) {
+			setAlertMessage(`Execution reverted: ${AlertMessage.ContractIsPurchased}`);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('execution reverted')) {
+			let msg;
+			try {
+				/*
+			When transaction is reverted, the error message is a such JSON string:
+				`Internal JSON-RPC error.
+				{
+					"code": 3,
+					"message": "execution reverted: contract is not in an available state",
+					"data": "0x08c379a",
+					"cause": null
+				}`
+		*/
+				msg = JSON.parse(error.message.replace('Internal JSON-RPC error.', '')).message;
+			} catch (e) {
+				msg = 'Failed to send transaction. Execution reverted.';
+			}
+			setAlertMessage(msg);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+	};

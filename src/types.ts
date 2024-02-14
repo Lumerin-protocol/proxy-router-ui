@@ -4,6 +4,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { HttpProvider } from 'web3-core';
 import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
 
 // Enums
 export enum WalletText {
@@ -59,6 +60,9 @@ export enum AlertMessage {
 	InvalidPoolAddress = 'The pool address is invalid.',
 	RemovePort = 'Oops, looks like you included the port number with the pool address. Please remove the port number from the pool address. The port number should be inputted in the port number field.',
 	ContractIsPurchased = 'The contract you have attempted to purchase has already been sold. Please purchase another contract.',
+	IncreaseAllowanceFailed = 'Failed to approve LMR transfer',
+	CancelFailed = 'Failed to close contract',
+	EditFailed = 'Failed to edit contract',
 }
 
 export enum SortByType {
@@ -67,7 +71,6 @@ export enum SortByType {
 }
 
 export enum SortTypes {
-	Default = '',
 	PriceLowToHigh = 'Price: Low to High',
 	PriceHighToLow = 'Price: High to Low',
 	DurationShortToLong = 'Duration: Short to Long',
@@ -110,12 +113,14 @@ export interface HashRentalContract {
 	timestamp?: string;
 	state?: string;
 	encryptedPoolData?: string;
+	version?: string;
+	//isDeleted: boolean;
 }
 
 // Making fields optional bc a user might not have filled out the input fields
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValuesBuyForm {
-	withValidator?: boolean;
+	validatorAddress?: string;
 	poolAddress?: string;
 	portNumber?: string;
 	username?: string;
@@ -181,6 +186,10 @@ export interface UpdateFormProps {
 	web3: Web3 | undefined;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	currentBlockTimestamp?: number;
+}
+
+export interface CancelFormProps extends UpdateFormProps {
+	cloneFactoryContract: Contract | undefined;
 }
 
 interface Networks {

@@ -5,10 +5,9 @@ import lumerin from '../images/lumerin_metamask.png';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
-import { registerEventListeners } from './eventListeners';
-import CloneFactory from '../contracts/CloneFactory.json';
-import LumerinContract from '../contracts/Lumerin.json';
-import { ContractJson, Ethereum, Receipt, WalletText } from '../types';
+import { CloneFactoryContract as CloneFactory } from 'contracts-js';
+import { LumerinContract } from 'contracts-js';
+import { ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
 import { printError } from '../utils';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 
@@ -24,21 +23,20 @@ const ethereum = window.ethereum as Ethereum;
 const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS; //gorli token
 
 // Web3 setup helpers
-const getProviderAsync: (walletName: string) => Promise<provider | WalletConnectProvider> = async (
+const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnectProvider> = async (
 	walletName
 ) => {
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
-			return (await detectEthereumProvider()) as provider;
+			console.log('Using MetaMask');
+			const provider = await detectEthereumProvider();
+			return provider as Ethereum;
 		default:
+			console.log('Using WalletConnect');
+			console.log('process.env.REACT_APP_CHAIN_ID: ' + process.env.REACT_APP_CHAIN_ID);
+
 			return new WalletConnectProvider({
-				rpc: {
-					1: 'https://eth.connect.bloq.cloud/v1/stable-relax-science',
-					3: 'https://ropsten.infura.io/v3/5bef921b3d3a45b68a7cd15655c9ec3a ',
-					// TODO replace with a bloq connect link
-					5: 'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A', //gorli
-				},
-				chainId: 5,
+				chainId: parseInt(process.env.REACT_APP_CHAIN_ID!),
 				clientMeta: {
 					description:
 						'Welcome to the Lumerin Token Distribution site. Claim your LMR tokens here.',
@@ -51,41 +49,47 @@ const getProviderAsync: (walletName: string) => Promise<provider | WalletConnect
 };
 
 // Get accounts, web3 and contract instances
-export const getWeb3ResultAsync: (
-	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>,
-	setIsConnected: React.Dispatch<React.SetStateAction<boolean>>,
-	setAccounts: React.Dispatch<React.SetStateAction<string[] | undefined>>,
+export const getWeb3ResultAsync = async (
+	onConnect: (info: ConnectInfo) => void,
+	onDisconnect: (err: Error) => void,
+	onChainChange: (chainId: string, pr: provider) => void,
+	onAccountsChange: (accounts: string[]) => void,
 	walletName: string
-) => Promise<Web3Result | null> = async (setAlertOpen, setIsConnected, setAccounts, walletName) => {
+): Promise<Web3Result | null> => {
 	try {
 		const provider = await getProviderAsync(walletName);
-		if (provider) {
-			registerEventListeners(
-				walletName,
-				walletName === WalletText.ConnectViaWalletConnect
-					? (provider as WalletConnectProvider)
-					: null,
-				setAlertOpen,
-				setIsConnected,
-				setAccounts
-			);
-			// Expose accounts
-			if (walletName === WalletText.ConnectViaMetaMask)
-				await ethereum.request({ method: 'eth_requestAccounts' });
-			else await (provider as WalletConnectProvider).enable();
-			const web3 = new Web3(provider as provider);
-			const deployedNetwork = { address: process.env.REACT_APP_CLONE_FACTORY };
-			const accounts = await web3.eth.getAccounts();
-			if (accounts.length === 0 || accounts[0] === '') {
-				setAlertOpen(true);
-			}
-			const contractInstance = new web3.eth.Contract(
-				CloneFactory.abi as AbiItem[],
-				deployedNetwork && deployedNetwork.address
-			);
-			return { accounts, contractInstance, web3 };
+
+		if (!provider) {
+			console.error('Missing provider');
+			return null;
 		}
-		return null;
+
+		if (typeof provider === 'string') {
+			console.error('Invalid string provider', provider);
+			return null;
+		}
+
+		if (walletName === WalletText.ConnectViaMetaMask) {
+			ethereum.on('connect', onConnect);
+			ethereum.on('disconnect', onDisconnect);
+			ethereum.on('chainChanged', (chainID: string) => onChainChange(chainID, ethereum));
+			ethereum.on('accountsChanged', onAccountsChange);
+		} else {
+			provider.on('disconnect', onDisconnect);
+			provider.on('chainChanged', onChainChange);
+			provider.on('accountsChanged', onAccountsChange);
+			await WalletConnectProvider.enable();
+		}
+
+		const web3 = new Web3(provider as provider);
+		const accounts = await web3.eth.getAccounts();
+
+		const contractInstance = new web3.eth.Contract(
+			CloneFactory.abi as AbiItem[],
+			process.env.REACT_APP_CLONE_FACTORY
+		);
+
+		return { accounts, contractInstance, web3 };
 	} catch (error) {
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);
@@ -166,11 +170,9 @@ export const transferLumerinAsync: (
 	sellerAccount: string,
 	amount: number
 ) => Promise<Receipt> = async (web3, userAccount, sellerAccount, amount) => {
-	const networkId = await web3.eth.net.getId();
-	const deployedNetwork = (LumerinContract as ContractJson).networks[networkId];
 	const lumerinContractInstance = new web3.eth.Contract(
 		LumerinContract.abi as AbiItem[],
-		deployedNetwork && deployedNetwork.address
+		lumerinTokenAddress
 	);
 	return await lumerinContractInstance.methods
 		.transfer(sellerAccount, multiplyByDigits(amount))

@@ -37,7 +37,7 @@ export const AvailableContracts = (prop: {
 			width: 100%;
 		}
 	`;
-
+	console.log('contracts: ', prop.contracts);
 	const isMobile = width <= 768;
 	return (
 		<>
@@ -54,7 +54,7 @@ export const AvailableContracts = (prop: {
 							{isMobile ? (
 								<>
 									{prop.contracts.map((item, index) => (
-										<MobileAvailableContract key={index}>
+										<MobileAvailableContract key={item.contractId as any}>
 											<div className='stats'>
 												<div>
 													<img src={SpeedIcon} alt='' />
@@ -91,7 +91,7 @@ export const AvailableContracts = (prop: {
 							) : (
 								<>
 									{prop.contracts.map((item, index) => (
-										<AvailableContract key={index}>
+										<AvailableContract key={item.contractId as any}>
 											<p>
 												<a
 													className='underline pb-0 font-Raleway cursor-pointer'

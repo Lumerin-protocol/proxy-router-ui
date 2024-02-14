@@ -38,6 +38,7 @@ interface MyOrdersProps {
 	editClickHandler: MouseEventHandler<HTMLButtonElement>;
 	cancelClickHandler: MouseEventHandler<HTMLButtonElement>;
 	isMobile: boolean;
+	refreshContracts: any;
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
@@ -49,6 +50,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	editClickHandler,
 	cancelClickHandler,
 	isMobile,
+	refreshContracts,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
@@ -69,6 +71,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	);
 
 	useEffect(() => {
+		// console.log("refresh page data");
+		//refreshContracts();
+	}, []);
+
+	useEffect(() => {
 		if (!mediaQueryListLarge?.matches) {
 			setIsLargeBreakpointOrGreater(false);
 		} else {
@@ -86,6 +93,10 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		const buyerOrders = contracts.filter(
 			(contract) => contract.buyer === userAccount && contract.state === ContractState.Running
 		);
+
+		if (contracts.length) {
+			setShowSpinner(false);
+		}
 
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
@@ -157,7 +168,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	// Remove spinner if no orders after 1 minute
 	useInterval(() => {
 		if (showSpinner) setShowSpinner(false);
-	}, 7000);
+	}, 15000);
 
 	useEffect(() => {
 		if (data.length > 0) {
