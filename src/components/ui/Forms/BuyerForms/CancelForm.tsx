@@ -32,7 +32,11 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 	const [alertMessage, setAlertMessage] = useState<string>('');
 
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
-	const handleCancelError = getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState);
+	const handleCancelError = getHandlerBlockchainError(
+		setAlertMessage,
+		setAlertOpen,
+		setContentState
+	);
 
 	const cancelSubmitHandler: MouseEventHandler<HTMLButtonElement> = (event) => {
 		if (isNoCancel(contract, userAccount)) return;
@@ -87,7 +91,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				handleCancelError(typedError)
+				handleCancelError(typedError);
 			}
 		}
 	};
@@ -111,11 +115,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert
-				message={alertMessage}
-				isOpen={alertOpen}
-				onClose={() => setAlertOpen(false)}
-			/>
+			<Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
 			<div>
 				{!isConfirmModal && contentState === ContentState.Review && (
 					<>

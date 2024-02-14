@@ -559,26 +559,27 @@ export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = 
 	}
 };
 
-export const getHandlerBlockchainError = (setAlertMessage, setAlertOpen, setContentState) =>  (error: ErrorWithCode) => {
-	// If user rejects transaction
-	if (error.code === 4001) {
-		setAlertMessage(error.message);
-		setAlertOpen(true);
-		setContentState(ContentState.Review);
-		return;
-	}
+export const getHandlerBlockchainError =
+	(setAlertMessage, setAlertOpen, setContentState) => (error: ErrorWithCode) => {
+		// If user rejects transaction
+		if (error.code === 4001) {
+			setAlertMessage(error.message);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
 
-	if (error.message.includes('execution reverted: contract is not in an available state')) {
-		setAlertMessage(`Execution reverted: ${AlertMessage.ContractIsPurchased}`);
-		setAlertOpen(true);
-		setContentState(ContentState.Review);
-		return;
-	}
+		if (error.message.includes('execution reverted: contract is not in an available state')) {
+			setAlertMessage(`Execution reverted: ${AlertMessage.ContractIsPurchased}`);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
 
-	if (error.message.includes('execution reverted')) {
-		let msg;
-		try {
-			/*
+		if (error.message.includes('execution reverted')) {
+			let msg;
+			try {
+				/*
 			When transaction is reverted, the error message is a such JSON string:
 				`Internal JSON-RPC error.
 				{
@@ -588,13 +589,13 @@ export const getHandlerBlockchainError = (setAlertMessage, setAlertOpen, setCont
 					"cause": null
 				}`
 		*/
-			msg = JSON.parse(error.message.replace('Internal JSON-RPC error.', '')).message;
-		} catch (e) {
-			msg = 'Failed to send transaction. Execution reverted.';
+				msg = JSON.parse(error.message.replace('Internal JSON-RPC error.', '')).message;
+			} catch (e) {
+				msg = 'Failed to send transaction. Execution reverted.';
+			}
+			setAlertMessage(msg);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
 		}
-		setAlertMessage(msg);
-		setAlertOpen(true);
-		setContentState(ContentState.Review);
-		return;
-	}
-};
+	};

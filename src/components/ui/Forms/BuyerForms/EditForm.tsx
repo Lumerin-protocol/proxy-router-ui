@@ -143,7 +143,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				handleEditError(typedError)
+				handleEditError(typedError);
 			}
 		}
 
@@ -214,11 +214,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert
-				message={alertMessage}
-				isOpen={alertOpen}
-				onClose={() => setAlertOpen(false)}
-			/>
+			<Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
 			{display && (
 				<>
 					<h2>Edit Order</h2>

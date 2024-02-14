@@ -8,7 +8,7 @@ import _ from 'lodash';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
-import { provider } from 'web3-core'
+import { provider } from 'web3-core';
 
 import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
@@ -120,7 +120,7 @@ export const Main: React.FC = () => {
 			console.log(`on connect, chain ID: ${connectInfo.chainId}`);
 			setIsConnected(false);
 		};
-	
+
 		const handleOnDisconnect: (error: Error) => void = (error) => {
 			console.log(`on disconnect: ${error.message}`);
 			setAlertOpen(true);
@@ -129,23 +129,22 @@ export const Main: React.FC = () => {
 				reconnectWalletAsync();
 			}
 		};
-	
+
 		// chainChanged
 		const handleChainChanged = (chainId: string, pr: provider): void => {
 			console.log(`on chain changed: ${chainId}`);
 			if (walletName === WalletText.ConnectViaWalletConnect) {
-				new Web3(pr).eth.net.getId()
-					.then(chainID => {
-						if (chainID !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
-							disconnectWalletConnectAsync(false, web3, setIsConnected);
-							setAlertOpen(true);
-							return;
-						}
-					});
+				new Web3(pr).eth.net.getId().then((chainID) => {
+					if (chainID !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+						disconnectWalletConnectAsync(false, web3, setIsConnected);
+						setAlertOpen(true);
+						return;
+					}
+				});
 			}
 			window.location.reload();
 		};
-	
+
 		// accountsChanged
 		const handleAccountsChanged: (accounts: string[]) => void = (accounts) => {
 			console.log('on accounts changed');
@@ -161,22 +160,22 @@ export const Main: React.FC = () => {
 			handleOnDisconnect,
 			handleChainChanged,
 			handleAccountsChanged,
-			walletName,
+			walletName
 		);
 
 		if (!web3Result) {
-			console.error("Missing web3 instance")
-			return
+			console.error('Missing web3 instance');
+			return;
 		}
 
 		const { accounts, contractInstance, web3 } = web3Result;
-		
+
 		if (accounts.length === 0 || accounts[0] === '') {
 			setAlertOpen(true);
 		}
 
 		const chainId = await web3.eth.net.getId();
-		console.log("CHAIN ID", chainId)
+		console.log('CHAIN ID', chainId);
 
 		if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
 			disconnectWalletConnectAsync(
@@ -195,7 +194,7 @@ export const Main: React.FC = () => {
 		setChainId(chainId);
 		localStorage.setItem('walletName', walletName);
 		refreshContracts();
-		if (walletName === WalletText.ConnectViaMetaMask){
+		if (walletName === WalletText.ConnectViaMetaMask) {
 			setIsMetaMask(true);
 		}
 	};

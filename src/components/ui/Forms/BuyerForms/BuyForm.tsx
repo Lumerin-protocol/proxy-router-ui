@@ -127,7 +127,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		};
 	};
 
-	const handlePurchaseError = getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState);
+	const handlePurchaseError = getHandlerBlockchainError(
+		setAlertMessage,
+		setAlertOpen,
+		setContentState
+	);
 
 	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
 		console.log('buyContractAsync: ', data);
