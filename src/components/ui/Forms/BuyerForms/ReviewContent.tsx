@@ -123,7 +123,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					{...register('poolAddress', {
 						required: 'Pool Address is required',
 						validate: (poolAddress: string) =>
-							isValidPoolAddress(poolAddress as string) || 'Invalid pool address.',
+							isValidPoolAddress(poolAddress) || 'Invalid pool address.',
 					})}
 					id='poolAddress'
 					type='text'
@@ -185,7 +185,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					{...register('username', {
 						required: 'Username is required',
 						validate: (username: string) =>
-							isValidUsername(username as string) ||
+							isValidUsername(username) ||
 							'Invalid username. Only letters a-z, numbers and .@- allowed',
 					})}
 					id='username'

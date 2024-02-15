@@ -154,7 +154,7 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	return tx;
 };
 
-export const isValidPoolAddress: (address: string) => boolean = (address) => {
+export const isValidPoolAddress = (address: string): boolean => {
 	const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
 	if (!regexP.test(address)) return false;
 
