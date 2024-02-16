@@ -103,18 +103,18 @@ export const Main: React.FC = () => {
 	const isMobile = width <= 768;
 
 	// Onboard metamask and set wallet text
-	// const onboarding = new MetaMaskOnboarding();
-	// const onboardMetaMask: () => void = () => {
-	// 	// Onboard metamask if not installed
-	// 	if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
-	// 		onboarding.startOnboarding();
-	// 	} else {
-	// 		onboarding.stopOnboarding();
-	// 	}
-	// };
+	const onboarding = new MetaMaskOnboarding();
+	const onboardMetaMask: () => void = () => {
+		// Onboard metamask if not installed
+		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+			onboarding.startOnboarding();
+		} else {
+			onboarding.stopOnboarding();
+		}
+	};
 
 	const connectWallet: (walletName: string) => void = async (walletName) => {
-		// if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
+		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
 
 		const handleOnConnect = (connectInfo: ConnectInfo): void => {
 			console.log(`on connect, chain ID: ${connectInfo.chainId}`);
@@ -123,7 +123,6 @@ export const Main: React.FC = () => {
 
 		const handleOnDisconnect: (error: Error) => void = (error) => {
 			console.log(`on disconnect: ${error.message}`);
-			setAlertOpen(true);
 			setIsConnected(false);
 			if (walletName === WalletText.ConnectViaMetaMask) {
 				reconnectWalletAsync();
@@ -149,7 +148,7 @@ export const Main: React.FC = () => {
 		const handleAccountsChanged: (accounts: string[]) => void = (accounts) => {
 			console.log('on accounts changed');
 			if (accounts.length === 0 || accounts[0] === '') {
-				setAlertOpen(true);
+				console.log('missed accounts');
 			} else {
 				setAccounts(accounts);
 			}

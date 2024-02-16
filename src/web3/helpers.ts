@@ -74,6 +74,7 @@ export const getWeb3ResultAsync = async (
 			ethereum.on('disconnect', onDisconnect);
 			ethereum.on('chainChanged', (chainID: string) => onChainChange(chainID, ethereum));
 			ethereum.on('accountsChanged', onAccountsChange);
+			await ethereum.request({ method: 'eth_requestAccounts' });
 		} else {
 			provider.on('disconnect', onDisconnect);
 			provider.on('chainChanged', onChainChange);
