@@ -71,12 +71,12 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 export const toRfc2396: (address, username, password) => string | undefined = (
 	address,
 	username,
-	password,
-	portNumber
+	password
 ) => {
 	const protocol = 'stratum+tcp';
 
-	return `${protocol}://${username}:${password}@${address}`;
+	const encodedUsername = encodeURIComponent(username);
+	return `${protocol}://${encodedUsername}:${password}@${address}`;
 };
 
 export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
@@ -154,13 +154,18 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	return tx;
 };
 
-export const isValidPoolAddress: (
-	poolAddress: string,
-	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>
-) => boolean = (poolAddress, setAlertOpen) => {
+export const isValidPoolAddress = (address: string): boolean => {
+	const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
+	if (!regexP.test(address)) return false;
+
 	const regexPortNumber = /:\d+/;
-	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
-	return hasPortNumber;
+	const portMatch = address.match(regexPortNumber);
+	if (!portMatch) return false;
+
+	const port = portMatch[0].replace(':', '');
+	if (Number(port) < 0 || Number(port) > 65536) return false;
+
+	return true;
 };
 
 // Parse connectionString as URI to get worker and host name
@@ -197,7 +202,7 @@ export const getSchemeName = (connectionString: string): string | undefined =>
 
 // Make sure username contains no spaces
 export const isValidUsername: (username: string) => boolean = (username) =>
-	!!username.match(/^\S*$/);
+	/^[a-zA-Z0-9.@-]+$/.test(username);
 
 // Make sure port number is a number between 1 and 65535
 export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>

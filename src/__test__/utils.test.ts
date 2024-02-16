@@ -115,7 +115,7 @@ describe('utils', () => {
 			const validPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io';
 
 			// Act
-			const result = isValidPoolAddress(validPoolAddress, setAlertOpen);
+			const result = isValidPoolAddress(validPoolAddress);
 
 			// Assert
 			expect(result).toBeTruthy();
@@ -126,7 +126,7 @@ describe('utils', () => {
 			const invalidPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io:4242';
 
 			// Act
-			const result = isValidPoolAddress(invalidPoolAddress, setAlertOpen);
+			const result = isValidPoolAddress(invalidPoolAddress);
 
 			// Assert
 			expect(result).toBeFalsy();
