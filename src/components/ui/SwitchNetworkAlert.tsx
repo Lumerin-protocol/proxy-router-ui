@@ -11,7 +11,7 @@ interface AlertProps {
 
 export const SwitchNetworkAlert: React.FC<AlertProps> = ({ message, open, setOpen, onClick }) => {
 	const showNetwork = () => {
-		return process.env.REACT_APP_CHAIN_ID == '421614' ? 'Sepolia Arbitrum testnet' : 'Arbitrum';
+		return process.env.REACT_APP_CHAIN_ID == '421614' ? 'Sepolia Arbitrum testnet' : 'Arbitrum network';
 	};
 
 	return (
