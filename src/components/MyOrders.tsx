@@ -16,7 +16,14 @@ import {
 	sortContracts,
 } from '../utils';
 import { DateTime } from 'luxon';
-import { ContractData, ContractState, HashRentalContract, CurrentTab, ContractHistory, ContractHistoryData } from '../types';
+import {
+	ContractData,
+	ContractState,
+	HashRentalContract,
+	CurrentTab,
+	ContractHistory,
+	ContractHistoryData,
+} from '../types';
 import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
@@ -156,9 +163,10 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	};
 
 	const getHistoryTableData: () => ContractHistoryData[] = () => {
-		const buyerOrders = contracts.filter(
-			(contract) => contract?.history?.length
-		).map((c) => c.history).flat();
+		const buyerOrders = contracts
+			.filter((contract) => contract?.history?.length)
+			.map((c) => c.history)
+			.flat();
 
 		if (contracts.length) {
 			setShowSpinner(false);
@@ -228,9 +236,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [runningContracts, setRunningContracts] = useState<HashRentalContract[]>([
 		...data.filter((contract) => contract.progressPercentage! < 100),
 	]);
-	const [completedContracts, setCompletedContracts] = useState<ContractHistory[]>([
-		...historyData,
-	]);
+	const [completedContracts, setCompletedContracts] = useState<ContractHistory[]>([...historyData]);
 	const [runningSortType, setRunningSortType] = useState('');
 	const [completedSortType, setCompletedSortType] = useState('');
 
@@ -272,10 +278,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									setSortType={setRunningSortType}
 									isMobile={isMobile}
 								/>
-								<PurchasedContracts
-									sortType={runningSortType}
-									contracts={runningContracts}
-								/>
+								<PurchasedContracts sortType={runningSortType} contracts={runningContracts} />
 							</>
 						) : (
 							!showSpinner && <p className='text-2xl'>You have no running contracts.</p>
@@ -292,10 +295,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									setSortType={setCompletedSortType}
 									isMobile={isMobile}
 								/>
-								<FinishedContracts
-									contracts={completedContracts}
-									sortType={completedSortType}
-								/>
+								<FinishedContracts contracts={completedContracts} sortType={completedSortType} />
 							</>
 						) : (
 							!showSpinner && <p className='text-2xl'>You have no finished contracts.</p>

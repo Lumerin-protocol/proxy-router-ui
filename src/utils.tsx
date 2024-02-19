@@ -292,7 +292,6 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	return 0;
 };
 
-
 export const sortContracts = <T,>(
 	sortType: string,
 	contractData: T[],

@@ -125,7 +125,7 @@ export interface HashRentalContract {
 	state?: string;
 	encryptedPoolData?: string;
 	version?: string;
-	history?: ContractHistory[]
+	history?: ContractHistory[];
 	// isDeleted: boolean;
 }
 

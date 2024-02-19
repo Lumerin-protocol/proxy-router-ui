@@ -35,14 +35,12 @@ const getIcon = (contract: any, isCompleted = false) => {
 		return <CancelIcon sx={{ color: 'white' }} />;
 	}
 	return <img src={PickaxeAnimated} alt='' />;
-}
+};
 
 const getCard = (key: string, item: HashRentalContract, poolInfo: any, isCompleted = false) => (
 	<div className='card' key={key}>
 		<div className='progress'>
-			<div className='pickaxe'>
-				{getIcon(item, isCompleted)}
-			</div>
+			<div className='pickaxe'>{getIcon(item, isCompleted)}</div>
 			<div className='utils'>
 				<div className='percentage-and-actions'>
 					<h2>{item.progressPercentage?.toFixed()}% complete</h2>
@@ -125,7 +123,7 @@ const getCard = (key: string, item: HashRentalContract, poolInfo: any, isComplet
 			)}
 		</div>
 	</div>
-)
+);
 
 export const PurchasedContracts = (props: {
 	contracts: Array<HashRentalContract>;
@@ -153,7 +151,9 @@ export const FinishedContracts = (props: {
 	contracts: ContractHistoryData[];
 	sortType: string;
 }) => {
-	const purchastTimeAscending = [...props.contracts].sort((a, b) => +b._purchaseTime! - +a._purchaseTime!);
+	const purchastTimeAscending = [...props.contracts].sort(
+		(a, b) => +b._purchaseTime! - +a._purchaseTime!
+	);
 	const purchasedContracts = props.sortType ? props.contracts : purchastTimeAscending;
 
 	return (

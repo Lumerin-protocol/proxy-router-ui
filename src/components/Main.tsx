@@ -235,7 +235,11 @@ export const Main: React.FC = () => {
 		refreshContracts(false, undefined, true);
 	}, 60 * 1000);
 
-	const refreshContracts = (ignoreCheck: boolean | any = false, contractId?: string, updateByChunks = false) => {
+	const refreshContracts = (
+		ignoreCheck: boolean | any = false,
+		contractId?: string,
+		updateByChunks = false
+	) => {
 		getCurrentBlockTimestampAsync().then((currentBlockTimestamp) => {
 			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
 				setCurrentBlockTimestamp(currentBlockTimestamp as number);
@@ -270,17 +274,15 @@ export const Main: React.FC = () => {
 
 			let buyerHistory = [];
 			if (localStorage.getItem(address)) {
-				const history = await implementationContractInstance.methods
-					.getHistory('0', '100')
-					.call()
+				const history = await implementationContractInstance.methods.getHistory('0', '100').call();
 				buyerHistory = history
 					.filter((h: any) => {
-						return h[6] === userAccount
+						return h[6] === userAccount;
 					})
 					.map((h: any) => ({
 						...h,
 						id: address,
-					}))
+					}));
 			}
 
 			return {
@@ -304,7 +306,7 @@ export const Main: React.FC = () => {
 
 	const addContractsAsync = async (addresses: string[], updateByChunks = false) => {
 		const chunkSize = updateByChunks ? 10 : addresses.length;
-		let newContracts = []
+		let newContracts = [];
 		for (let i = 0; i < addresses.length; i += chunkSize) {
 			const chunk = addresses.slice(i, i + chunkSize);
 			const hashRentalContracts = (
@@ -316,21 +318,26 @@ export const Main: React.FC = () => {
 		setContracts(result as HashRentalContract[]);
 	};
 
-	const createContractsAsync = async (contractId?: string, updateByChunks = false): Promise<void> => {
+	const createContractsAsync = async (
+		contractId?: string,
+		updateByChunks = false
+	): Promise<void> => {
 		try {
 			console.log('Fetching contract list...');
 
 			if (!cloneFactoryContract) return;
 
-			const addresses: string[] = contractId ? [contractId] : await cloneFactoryContract?.methods
-				.getContractList()
-				.call()
-				.catch((error: any) => {
-					console.log(
-						'Error when trying get list of contract addresses from CloneFactory contract: ',
-						error
-					);
-				});
+			const addresses: string[] = contractId
+				? [contractId]
+				: await cloneFactoryContract?.methods
+						.getContractList()
+						.call()
+						.catch((error: any) => {
+							console.log(
+								'Error when trying get list of contract addresses from CloneFactory contract: ',
+								error
+							);
+						});
 			console.log('addresses: ', addresses, !!addresses);
 
 			if (addresses) {
@@ -528,7 +535,7 @@ export const Main: React.FC = () => {
 				message={getAlertMessage()}
 				open={alertOpen}
 				setOpen={setAlertOpen}
-				onClick={isMetaMask ? changeNetworkAsync : () => { }}
+				onClick={isMetaMask ? changeNetworkAsync : () => {}}
 			/>
 			<ModalItem
 				open={buyModalOpen}
