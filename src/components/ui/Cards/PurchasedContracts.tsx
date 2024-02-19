@@ -126,7 +126,7 @@ const getCard = (key: string, item: HashRentalContract, poolInfo: any, isComplet
 );
 
 export const PurchasedContracts = (props: {
-	contracts: Array<HashRentalContract>;
+	contracts: HashRentalContract[];
 	sortType: string;
 }) => {
 	const progressAscending = [...props.contracts].sort(
