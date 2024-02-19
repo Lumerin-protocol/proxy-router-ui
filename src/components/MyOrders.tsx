@@ -16,7 +16,7 @@ import {
 	sortContracts,
 } from '../utils';
 import { DateTime } from 'luxon';
-import { ContractData, ContractState, HashRentalContract, CurrentTab } from '../types';
+import { ContractData, ContractState, HashRentalContract, CurrentTab, ContractHistory, ContractHistoryData } from '../types';
 import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
@@ -25,7 +25,7 @@ import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
 import { divideByDigits } from '../web3/helpers';
 import Web3 from 'web3';
 import _ from 'lodash';
-import { PurchasedContracts } from './ui/Cards/PurchasedContracts';
+import { FinishedContracts, PurchasedContracts } from './ui/Cards/PurchasedContracts';
 import { TabSwitch } from './ui/TabSwitch.Styled';
 import { SortToolbar } from './ui/SortToolbar';
 
@@ -155,7 +155,56 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		return updatedOrders;
 	};
 
+	const getHistoryTableData: () => ContractHistoryData[] = () => {
+		const buyerOrders = contracts.filter(
+			(contract) => contract?.history?.length
+		).map((c) => c.history).flat();
+
+		if (contracts.length) {
+			setShowSpinner(false);
+		}
+
+		const updatedOrders = buyerOrders.map((contract) => {
+			const updatedOrder = { ...contract } as any;
+			if (!_.isEmpty(contract)) {
+				updatedOrder.id = (
+					<TableIcon
+						icon={null}
+						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
+						text={updatedOrder.id as string}
+						hasLink
+						justify='start'
+					/>
+				);
+				updatedOrder.price = divideByDigits(updatedOrder._price as number);
+				updatedOrder.status = getStatusDiv(ContractState.Running);
+				updatedOrder.progress = getProgressDiv(
+					ContractState.Running as string,
+					updatedOrder._purchaseTime as string,
+					parseInt(updatedOrder._length as string),
+					updatedOrder._endTime
+				);
+				updatedOrder.progressPercentage = getProgressPercentage(
+					ContractState.Running as string,
+					updatedOrder._purchaseTime as string,
+					parseInt(updatedOrder._length as string),
+					updatedOrder._endTime
+				);
+				updatedOrder.speed = String(Number(updatedOrder._speed) / 10 ** 12);
+				updatedOrder.length = String(parseInt(updatedOrder._length as string) / 3600);
+				updatedOrder.timestamp = DateTime.fromSeconds(
+					parseInt(updatedOrder._purchaseTime as string)
+				).toFormat('MM/dd/yyyy');
+				updatedOrder.contractId = contract.id as string;
+			}
+			return updatedOrder as ContractHistoryData;
+		});
+
+		return updatedOrders;
+	};
+
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
+	const historyData = useMemo(() => getHistoryTableData(), [contracts, isLargeBreakpointOrGreater]);
 
 	const handleRunningTab = () => {
 		setCurrentTab(CurrentTab.Running);
@@ -176,11 +225,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 	});
 
-	const [runningContracts, setRunningContracts] = useState<Array<HashRentalContract>>([
+	const [runningContracts, setRunningContracts] = useState<HashRentalContract[]>([
 		...data.filter((contract) => contract.progressPercentage! < 100),
 	]);
-	const [completedContracts, setCompletedContracts] = useState<Array<HashRentalContract>>([
-		...data.filter((contract) => contract.progressPercentage === 100),
+	const [completedContracts, setCompletedContracts] = useState<ContractHistory[]>([
+		...historyData,
 	]);
 	const [runningSortType, setRunningSortType] = useState('');
 	const [completedSortType, setCompletedSortType] = useState('');
@@ -208,7 +257,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					className={currentTab === CurrentTab.Completed ? 'active' : ''}
 					onClick={handleCompletedTab}
 				>
-					Completed <span>{showSpinner ? '' : completedContracts.length}</span>
+					Finished <span>{showSpinner ? '' : completedContracts.length}</span>
 				</button>
 				<span className='glider'></span>
 			</TabSwitch>
@@ -226,7 +275,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 								<PurchasedContracts
 									sortType={runningSortType}
 									contracts={runningContracts}
-									isCompleted={false}
 								/>
 							</>
 						) : (
@@ -239,19 +287,18 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						{completedContracts.length > 0 ? (
 							<>
 								<SortToolbar
-									pageTitle='Completed Contracts'
+									pageTitle='Finished Contracts'
 									sortType={completedSortType}
 									setSortType={setCompletedSortType}
 									isMobile={isMobile}
 								/>
-								<PurchasedContracts
+								<FinishedContracts
 									contracts={completedContracts}
-									isCompleted={true}
 									sortType={completedSortType}
 								/>
 							</>
 						) : (
-							!showSpinner && <p className='text-2xl'>You have no completed contracts.</p>
+							!showSpinner && <p className='text-2xl'>You have no finished contracts.</p>
 						)}
 					</>
 				)}
