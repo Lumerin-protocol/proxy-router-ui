@@ -4,7 +4,7 @@ import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
-import _ from 'lodash';
+import { uniqBy } from 'lodash';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
@@ -232,14 +232,18 @@ export const Main: React.FC = () => {
 	};
 
 	useInterval(() => {
-		refreshContracts();
+		refreshContracts(false, undefined, true);
 	}, 60 * 1000);
 
-	const refreshContracts = (ignoreCheck: boolean | any = false) => {
+	const refreshContracts = (
+		ignoreCheck: boolean | any = false,
+		contractId?: string,
+		updateByChunks = false
+	) => {
 		getCurrentBlockTimestampAsync().then((currentBlockTimestamp) => {
 			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
 				setCurrentBlockTimestamp(currentBlockTimestamp as number);
-				createContractsAsync();
+				createContractsAsync(contractId, updateByChunks);
 			}
 		});
 	};
@@ -268,6 +272,19 @@ export const Main: React.FC = () => {
 				_version: version,
 			} = await implementationContractInstance.methods.getPublicVariables().call();
 
+			let buyerHistory = [];
+			if (localStorage.getItem(address)) {
+				const history = await implementationContractInstance.methods.getHistory('0', '100').call();
+				buyerHistory = history
+					.filter((h: any) => {
+						return h[6] === userAccount;
+					})
+					.map((h: any) => ({
+						...h,
+						id: address,
+					}));
+			}
+
 			return {
 				id: address,
 				price,
@@ -280,39 +297,52 @@ export const Main: React.FC = () => {
 				encryptedPoolData,
 				version,
 				isDeleted,
+				history: buyerHistory,
 			} as HashRentalContract;
 		}
 
 		return null;
 	};
 
-	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
-		const hashRentalContracts = (
-			await Promise.all(addresses.map(async (address) => await createContractAsync(address)))
-		).filter((c: any) => !c?.isDeleted);
-		setContracts(hashRentalContracts as HashRentalContract[]);
+	const addContractsAsync = async (addresses: string[], updateByChunks = false) => {
+		const chunkSize = updateByChunks ? 10 : addresses.length;
+		let newContracts = [];
+		for (let i = 0; i < addresses.length; i += chunkSize) {
+			const chunk = addresses.slice(i, i + chunkSize);
+			const hashRentalContracts = (
+				await Promise.all(chunk.map(async (address) => await createContractAsync(address)))
+			).filter((c: any) => !c?.isDeleted);
+			newContracts.push(...hashRentalContracts);
+		}
+		const result = uniqBy([...newContracts, ...contracts], 'id');
+		setContracts(result as HashRentalContract[]);
 	};
 
-	const createContractsAsync: () => void = async () => {
+	const createContractsAsync = async (
+		contractId?: string,
+		updateByChunks = false
+	): Promise<void> => {
 		try {
 			console.log('Fetching contract list...');
 
 			if (!cloneFactoryContract) return;
 
-			const addresses: string[] = await cloneFactoryContract?.methods
-				.getContractList()
-				.call()
-				.catch((error: any) => {
-					console.log(
-						'Error when trying get list of contract addresses from CloneFactory contract: ',
-						error
-					);
-				});
+			const addresses: string[] = contractId
+				? [contractId]
+				: await cloneFactoryContract?.methods
+						.getContractList()
+						.call()
+						.catch((error: any) => {
+							console.log(
+								'Error when trying get list of contract addresses from CloneFactory contract: ',
+								error
+							);
+						});
 			console.log('addresses: ', addresses, !!addresses);
 
 			if (addresses) {
 				console.log('adding contracts...');
-				addContractsAsync(addresses);
+				addContractsAsync(addresses, updateByChunks);
 			}
 		} catch (error) {
 			const typedError = error as Error;
@@ -356,7 +386,8 @@ export const Main: React.FC = () => {
 			setAnyModalOpen(true);
 		} else {
 			setAnyModalOpen(false);
-			refreshContracts(true);
+			refreshContracts(true, contractId);
+			setContractId('');
 		}
 	}, [
 		alertOpen,

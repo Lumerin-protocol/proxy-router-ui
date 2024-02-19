@@ -95,7 +95,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 
-	const [availableContracts, setAvailableContracts] = useState<Array<object>>([...data]);
+	const [availableContracts, setAvailableContracts] = useState<HashRentalContract[]>([...data]);
 	const [sortType, setSortType] = useState('');
 
 	useEffect(() => {
