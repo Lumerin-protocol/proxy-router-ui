@@ -191,9 +191,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							const buyerDest: string = getPoolRfc2396(formData)!;
 
 							const validatorPublicKey = (await getValidatorPublicKey()) as string;
-							console.log("validatorPublicKey", validatorPublicKey);
+							console.log('validatorPublicKey', validatorPublicKey);
 							const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
-console.log("validator public key slice 2: ", validatorPublicKey.slice(2));
+							console.log('validator public key slice 2: ', validatorPublicKey.slice(2));
 							const encryptedBuyerInput = (
 								await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 							).toString('hex');
@@ -221,8 +221,8 @@ console.log("validator public key slice 2: ", validatorPublicKey.slice(2));
 								});
 
 							console.log('submitting purchase for contract: ', contract);
-							console.log("exitmated gas: ", purchaseGas);
-							console.log("marketplace fee: ", marketplaceFee);
+							console.log('exitmated gas: ', purchaseGas);
+							console.log('marketplace fee: ', marketplaceFee);
 
 							const receipt: Receipt = await cloneFactoryContract?.methods
 								.setPurchaseRentalContractV2(
@@ -327,9 +327,10 @@ console.log("validator public key slice 2: ", validatorPublicKey.slice(2));
 				</>
 			)}
 			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
-				Thank you for choosing the Lumerin Hashpower Marketplace. 
-				Click "Review Ordrer" below.  You will pe prompted to approve a transaction through your wallet.
-				Stand by for a second transaction.  Once both transactions are confirmed, you will be redirected to view your orders.
+				Thank you for choosing the Lumerin Hashpower Marketplace. Click "Review Ordrer" below. You
+				will pe prompted to approve a transaction through your wallet. Stand by for a second
+				transaction. Once both transactions are confirmed, you will be redirected to view your
+				orders.
 			</AlertMUI>
 			{content}
 
