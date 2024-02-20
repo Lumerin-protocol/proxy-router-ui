@@ -68,32 +68,23 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (address, username, password, portNumber) => string | undefined = (
+export const toRfc2396: (address, username, password) => string | undefined = (
 	address,
 	username,
-	password,
-	portNumber
+	password
 ) => {
-	const regex = /(^.*):\/\/(.*$)/;
-	const poolAddressGroups = address?.match(regex) as RegExpMatchArray;
-	if (!poolAddressGroups) return;
-	const protocol = poolAddressGroups[1];
-	const host = poolAddressGroups[2];
+	const protocol = 'stratum+tcp';
 
-	return `${protocol}://${username}:${password}@${host}:${portNumber}`;
+	const encodedUsername = encodeURIComponent(username);
+	return `${protocol}://${encodedUsername}:${password}@${address}`;
 };
 
 export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(formData.poolAddress, formData.username, formData.password, formData.portNumber);
+	return toRfc2396(formData.poolAddress, formData.username, formData.password);
 };
 
 export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(
-		formData.validatorAddress,
-		formData.username,
-		formData.password,
-		formData.portNumber
-	);
+	return toRfc2396(formData.validatorAddress, formData.username, formData.password);
 };
 
 //encrypts a string passed into it
@@ -163,15 +154,18 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	return tx;
 };
 
-export const isValidPoolAddress: (
-	poolAddress: string,
-	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>
-) => boolean = (poolAddress, setAlertOpen) => {
+export const isValidPoolAddress = (address: string): boolean => {
+	const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
+	if (!regexP.test(address)) return false;
+
 	const regexPortNumber = /:\d+/;
-	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
-	if (hasPortNumber) setAlertOpen(true);
-	const regexAddress = /(^.*):\/\/(.*$)/;
-	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
+	const portMatch = address.match(regexPortNumber);
+	if (!portMatch) return false;
+
+	const port = portMatch[0].replace(':', '');
+	if (Number(port) < 0 || Number(port) > 65536) return false;
+
+	return true;
 };
 
 // Parse connectionString as URI to get worker and host name
@@ -208,7 +202,7 @@ export const getSchemeName = (connectionString: string): string | undefined =>
 
 // Make sure username contains no spaces
 export const isValidUsername: (username: string) => boolean = (username) =>
-	!!username.match(/^\S*$/);
+	/^[a-zA-Z0-9.@-]+$/.test(username);
 
 // Make sure port number is a number between 1 and 65535
 export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>
@@ -298,10 +292,10 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	return 0;
 };
 
-export const sortContracts = (
+export const sortContracts = <T,>(
 	sortType: string,
-	contractData: Array<HashRentalContract>,
-	setContractData: React.Dispatch<React.SetStateAction<Array<HashRentalContract>>>
+	contractData: T[],
+	setContractData: React.Dispatch<React.SetStateAction<T[]>>
 ) => {
 	switch (sortType) {
 		case 'Price: Low to High':
@@ -333,8 +327,9 @@ export const getButton: (
 	contentState: string,
 	buttonContent: string,
 	setOpen: Dispatch<SetStateAction<boolean>>,
-	onSubmit
-) => JSX.Element = (contentState, buttonContent, setOpen, onSubmit) => {
+	onSubmit,
+	isDisabled
+) => JSX.Element = (contentState, buttonContent, setOpen, onSubmit, isDisabled) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -356,6 +351,8 @@ export const getButton: (
 				<span>{`View ${viewText}`}</span>
 			</Link>
 		</PrimaryButton>
+	) : isDisabled ? (
+		<DisabledButton type='button'>{buttonContent}</DisabledButton>
 	) : (
 		<PrimaryButton type='button' onClick={onSubmit}>
 			{buttonContent}
@@ -566,3 +563,44 @@ export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = 
 		printError(typedError.message, typedError.stack as string);
 	}
 };
+
+export const getHandlerBlockchainError =
+	(setAlertMessage, setAlertOpen, setContentState) => (error: ErrorWithCode) => {
+		// If user rejects transaction
+		if (error.code === 4001) {
+			setAlertMessage(error.message);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('execution reverted: contract is not in an available state')) {
+			setAlertMessage(`Execution reverted: ${AlertMessage.ContractIsPurchased}`);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('execution reverted')) {
+			let msg;
+			try {
+				/*
+			When transaction is reverted, the error message is a such JSON string:
+				`Internal JSON-RPC error.
+				{
+					"code": 3,
+					"message": "execution reverted: contract is not in an available state",
+					"data": "0x08c379a",
+					"cause": null
+				}`
+		*/
+				msg = JSON.parse(error.message.replace('Internal JSON-RPC error.', '')).message;
+			} catch (e) {
+				msg = 'Failed to send transaction. Execution reverted.';
+			}
+			setAlertMessage(msg);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+	};

@@ -84,6 +84,7 @@
 	}
 
 	.link:hover {
+		cursor: pointer;
 		@apply text-lumerin-aqua ease-in duration-200;
 	}
 }

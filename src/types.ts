@@ -60,6 +60,9 @@ export enum AlertMessage {
 	InvalidPoolAddress = 'The pool address is invalid.',
 	RemovePort = 'Oops, looks like you included the port number with the pool address. Please remove the port number from the pool address. The port number should be inputted in the port number field.',
 	ContractIsPurchased = 'The contract you have attempted to purchase has already been sold. Please purchase another contract.',
+	IncreaseAllowanceFailed = 'Failed to approve LMR transfer',
+	CancelFailed = 'Failed to close contract',
+	EditFailed = 'Failed to edit contract',
 }
 
 export enum SortByType {
@@ -68,7 +71,6 @@ export enum SortByType {
 }
 
 export enum SortTypes {
-	Default = '',
 	PriceLowToHigh = 'Price: Low to High',
 	PriceHighToLow = 'Price: High to Low',
 	DurationShortToLong = 'Duration: Short to Long',
@@ -96,6 +98,17 @@ export interface ConnectInfo {
 	chainId: string;
 }
 
+export interface ContractHistory {
+	id: JSX.Element | string;
+	_goodCloseout: boolean;
+	_buyer: string;
+	_endTime: string;
+	_purchaseTime: string;
+	_price: JSX.Element | string | number;
+	_speed: string | number;
+	_length: string | number;
+}
+
 export interface HashRentalContract {
 	id?: JSX.Element | string;
 	contractId?: string;
@@ -112,6 +125,8 @@ export interface HashRentalContract {
 	state?: string;
 	encryptedPoolData?: string;
 	version?: string;
+	history?: ContractHistory[];
+	// isDeleted: boolean;
 }
 
 // Making fields optional bc a user might not have filled out the input fields
@@ -153,6 +168,13 @@ export interface ContractData extends HashRentalContract {
 	contractId?: string;
 	editCancel?: JSX.Element;
 	editClaim?: JSX.Element;
+}
+
+export interface ContractHistoryData extends ContractHistory {
+	status?: JSX.Element | string;
+	progress?: JSX.Element | string;
+	progressPercentage?: number;
+	contractId?: string;
 }
 
 export interface Text {

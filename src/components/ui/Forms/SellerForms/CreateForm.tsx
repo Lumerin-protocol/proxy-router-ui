@@ -145,7 +145,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					<p>Sell your hashpower on the Lumerin Marketplace</p>
 				</>
 			)}
-			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+			{/* <AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
 				Thank you for choosing the Lumerin Hashpower Marketplace. To sell hashpower, please download
 				the{' '}
 				<a
@@ -157,14 +157,14 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					Lumerin wallet desktop application
 				</a>{' '}
 				to ensure a smooth and secure transaction.
-			</AlertMUI>
+			</AlertMUI> */}
 			{content}
 			<FormButtonsWrapper>
 				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit)}
+					getButton(contentState, buttonContent, setOpen, handleSubmit, !isValid)}
 			</FormButtonsWrapper>
 		</form>
 	);

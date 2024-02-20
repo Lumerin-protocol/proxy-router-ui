@@ -3,6 +3,7 @@ import Web3 from 'web3';
 import { FormData } from '../../../../types';
 import { divideByDigits } from '../../../../web3/helpers';
 import { ReviewItems } from '../Forms.styled';
+import { getValidatorURL } from '../../../../utils';
 
 interface ConfirmContentProps {
 	web3: Web3 | undefined;
@@ -16,13 +17,17 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({
 	return (
 		<ReviewItems>
 			<div>
+				<h3>Validator Address</h3>
+				<p>{getValidatorURL()}</p>
+			</div>
+			<div>
 				<h3>Pool Address</h3>
 				<p>{poolAddress}</p>
 			</div>
-			<div>
+			{/* <div>
 				<h3>Port Number</h3>
 				<p>{portNumber}</p>
-			</div>
+			</div> */}
 			<div>
 				<h3>Username</h3>
 				<p>{username}</p>

@@ -4,10 +4,11 @@ import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
-import _ from 'lodash';
+import { uniqBy } from 'lodash';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
+import { provider } from 'web3-core';
 
 import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
@@ -33,6 +34,7 @@ import {
 	disconnectWalletConnectAsync,
 	getLumerinTokenBalanceAsync,
 	getWeb3ResultAsync,
+	reconnectWalletAsync,
 } from '../web3/helpers';
 import { buttonClickHandler, truncateAddress, printError } from '../utils';
 import {
@@ -42,6 +44,7 @@ import {
 	HashRentalContract,
 	PathName,
 	WalletText,
+	ConnectInfo,
 } from '../types';
 
 import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
@@ -109,38 +112,89 @@ export const Main: React.FC = () => {
 			onboarding.stopOnboarding();
 		}
 	};
+
 	const connectWallet: (walletName: string) => void = async (walletName) => {
 		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
 
+		const handleOnConnect = (connectInfo: ConnectInfo): void => {
+			console.log(`on connect, chain ID: ${connectInfo.chainId}`);
+			setIsConnected(false);
+		};
+
+		const handleOnDisconnect: (error: Error) => void = (error) => {
+			console.log(`on disconnect: ${error.message}`);
+			setIsConnected(false);
+			if (walletName === WalletText.ConnectViaMetaMask) {
+				reconnectWalletAsync();
+			}
+		};
+
+		// chainChanged
+		const handleChainChanged = (chainId: string, pr: provider): void => {
+			console.log(`on chain changed: ${chainId}`);
+			if (walletName === WalletText.ConnectViaWalletConnect) {
+				new Web3(pr).eth.net.getId().then((chainID) => {
+					if (chainID !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+						disconnectWalletConnectAsync(false, web3, setIsConnected);
+						setAlertOpen(true);
+						return;
+					}
+				});
+			}
+			window.location.reload();
+		};
+
+		// accountsChanged
+		const handleAccountsChanged: (accounts: string[]) => void = (accounts) => {
+			console.log('on accounts changed');
+			if (accounts.length === 0 || accounts[0] === '') {
+				console.log('missed accounts');
+			} else {
+				setAccounts(accounts);
+			}
+		};
+
 		const web3Result = await getWeb3ResultAsync(
-			setAlertOpen,
-			setIsConnected,
-			setAccounts,
+			handleOnConnect,
+			handleOnDisconnect,
+			handleChainChanged,
+			handleAccountsChanged,
 			walletName
 		);
-		if (web3Result) {
-			const { accounts, contractInstance, web3 } = web3Result;
-			const chainId = await web3.eth.net.getId();
-			console.log('ENV CHAIN ID:', process.env.REACT_APP_CHAIN_ID);
-			console.log('CHAIN ID:', chainId);
-			if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
-				disconnectWalletConnectAsync(
-					walletName === WalletText.ConnectViaMetaMask,
-					web3,
-					setIsConnected
-				);
-				setAlertOpen(true);
-			}
-			setAccounts(accounts);
-			setCloneFactoryContract(contractInstance);
-			setWeb3(web3);
-			setIsConnected(true);
-			localStorage.setItem('walletName', walletName);
-			localStorage.setItem('isConnected', 'true');
-			setChainId(chainId);
-			localStorage.setItem('walletName', walletName);
-			refreshContracts();
-			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
+
+		if (!web3Result) {
+			console.error('Missing web3 instance');
+			return;
+		}
+
+		const { accounts, contractInstance, web3 } = web3Result;
+
+		if (accounts.length === 0 || accounts[0] === '') {
+			setAlertOpen(true);
+		}
+
+		const chainId = await web3.eth.net.getId();
+		console.log('CHAIN ID', chainId);
+
+		if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+			disconnectWalletConnectAsync(
+				walletName === WalletText.ConnectViaMetaMask,
+				web3,
+				setIsConnected
+			);
+			setAlertOpen(true);
+		}
+		setAccounts(accounts);
+		setCloneFactoryContract(contractInstance);
+		setWeb3(web3);
+		setIsConnected(true);
+		localStorage.setItem('walletName', walletName);
+		localStorage.setItem('isConnected', 'true');
+		setChainId(chainId);
+		localStorage.setItem('walletName', walletName);
+		refreshContracts();
+		if (walletName === WalletText.ConnectViaMetaMask) {
+			setIsMetaMask(true);
 		}
 	};
 
@@ -178,14 +232,18 @@ export const Main: React.FC = () => {
 	};
 
 	useInterval(() => {
-		refreshContracts();
+		refreshContracts(false, undefined, true);
 	}, 60 * 1000);
 
-	const refreshContracts = () => {
+	const refreshContracts = (
+		ignoreCheck: boolean | any = false,
+		contractId?: string,
+		updateByChunks = false
+	) => {
 		getCurrentBlockTimestampAsync().then((currentBlockTimestamp) => {
-			if (isCorrectNetwork && !anyModalOpen) {
+			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
 				setCurrentBlockTimestamp(currentBlockTimestamp as number);
-				createContractsAsync();
+				createContractsAsync(contractId, updateByChunks);
 			}
 		});
 	};
@@ -200,18 +258,32 @@ export const Main: React.FC = () => {
 				address
 			);
 			const {
-				0: state,
-				1: price,
+				_state: state,
+				_price: price,
+				_isDeleted: isDeleted,
 				// eslint-disable-next-line
-				2: limit,
-				3: speed,
-				4: length,
-				5: timestamp,
-				6: buyer,
-				7: seller,
-				8: encryptedPoolData,
-				12: version,
+				_limit: limit,
+				_speed: speed,
+				_length: length,
+				_startingBlockTimestamp: timestamp,
+				_buyer: buyer,
+				_seller: seller,
+				_encryptedPoolData: encryptedPoolData,
+				_version: version,
 			} = await implementationContractInstance.methods.getPublicVariables().call();
+
+			let buyerHistory = [];
+			if (localStorage.getItem(address)) {
+				const history = await implementationContractInstance.methods.getHistory('0', '100').call();
+				buyerHistory = history
+					.filter((h: any) => {
+						return h[6] === userAccount;
+					})
+					.map((h: any) => ({
+						...h,
+						id: address,
+					}));
+			}
 
 			return {
 				id: address,
@@ -224,44 +296,53 @@ export const Main: React.FC = () => {
 				state,
 				encryptedPoolData,
 				version,
+				isDeleted,
+				history: buyerHistory,
 			} as HashRentalContract;
 		}
 
 		return null;
 	};
 
-	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
-		const hashRentalContracts = await Promise.all(
-			addresses.map(async (address) => await createContractAsync(address))
-		);
-		console.log('hashrate contracts: ', hashRentalContracts);
-		// Update contracts if deep equality is false
-		if (!_.isEqual(contracts, hashRentalContracts)) {
-			console.log('contracts changed');
-			setContracts(hashRentalContracts as HashRentalContract[]);
+	const addContractsAsync = async (addresses: string[], updateByChunks = false) => {
+		const chunkSize = updateByChunks ? 10 : addresses.length;
+		let newContracts = [];
+		for (let i = 0; i < addresses.length; i += chunkSize) {
+			const chunk = addresses.slice(i, i + chunkSize);
+			const hashRentalContracts = (
+				await Promise.all(chunk.map(async (address) => await createContractAsync(address)))
+			).filter((c: any) => !c?.isDeleted);
+			newContracts.push(...hashRentalContracts);
 		}
+		const result = uniqBy([...newContracts, ...contracts], 'id');
+		setContracts(result as HashRentalContract[]);
 	};
 
-	const createContractsAsync: () => void = async () => {
+	const createContractsAsync = async (
+		contractId?: string,
+		updateByChunks = false
+	): Promise<void> => {
 		try {
 			console.log('Fetching contract list...');
 
 			if (!cloneFactoryContract) return;
 
-			const addresses: string[] = await cloneFactoryContract?.methods
-				.getContractList()
-				.call()
-				.catch((error: any) => {
-					console.log(
-						'Error when trying get list of contract addresses from CloneFactory contract: ',
-						error
-					);
-				});
+			const addresses: string[] = contractId
+				? [contractId]
+				: await cloneFactoryContract?.methods
+						.getContractList()
+						.call()
+						.catch((error: any) => {
+							console.log(
+								'Error when trying get list of contract addresses from CloneFactory contract: ',
+								error
+							);
+						});
 			console.log('addresses: ', addresses, !!addresses);
 
 			if (addresses) {
 				console.log('adding contracts...');
-				addContractsAsync(addresses);
+				addContractsAsync(addresses, updateByChunks);
 			}
 		} catch (error) {
 			const typedError = error as Error;
@@ -305,7 +386,8 @@ export const Main: React.FC = () => {
 			setAnyModalOpen(true);
 		} else {
 			setAnyModalOpen(false);
-			refreshContracts();
+			refreshContracts(true, contractId);
+			setContractId('');
 		}
 	}, [
 		alertOpen,
@@ -335,10 +417,10 @@ export const Main: React.FC = () => {
 				<span>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
 			</button>
-			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
+			{/* <button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
 				<span>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</button>
+			</button> */}
 		</ConnectButtonsWrapper>
 	);
 
@@ -356,6 +438,7 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
+							refreshContracts={refreshContracts}
 							editClickHandler={(event) =>
 								buttonClickHandler(event, buyerEditModalOpen, setBuyerEditModalOpen)
 							}
