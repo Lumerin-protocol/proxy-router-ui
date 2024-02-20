@@ -207,9 +207,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						const buyerDest: string = getPoolRfc2396(formData)!;
 
 						const validatorPublicKey = (await getValidatorPublicKey()) as string;
-							console.log('validatorPublicKey', validatorPublicKey);
+						console.log('validatorPublicKey', validatorPublicKey);
 						const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
-							console.log('validator public key slice 2: ', validatorPublicKey.slice(2));
+						console.log('validator public key slice 2: ', validatorPublicKey.slice(2));
 						const encryptedBuyerInput = (
 							await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 						).toString('hex');
