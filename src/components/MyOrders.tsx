@@ -46,10 +46,11 @@ interface MyOrdersProps {
 	cancelClickHandler: MouseEventHandler<HTMLButtonElement>;
 	isMobile: boolean;
 	refreshContracts: any;
+	activeOrdersTab: string;
+	setActiveOrdersTab: Dispatch<SetStateAction<string>>;
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
-	web3,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
@@ -57,12 +58,12 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	editClickHandler,
 	cancelClickHandler,
 	isMobile,
-	refreshContracts,
+	activeOrdersTab,
+	setActiveOrdersTab,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
-	const [currentTab, setCurrentTab] = useState<CurrentTab>(CurrentTab.Running);
 
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
 	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
@@ -215,11 +216,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const historyData = useMemo(() => getHistoryTableData(), [contracts, isLargeBreakpointOrGreater]);
 
 	const handleRunningTab = () => {
-		setCurrentTab(CurrentTab.Running);
+		setActiveOrdersTab(CurrentTab.Running);
 	};
 
 	const handleCompletedTab = () => {
-		setCurrentTab(CurrentTab.Completed);
+		setActiveOrdersTab(CurrentTab.Completed);
 	};
 
 	// Remove spinner if no orders after 1 minute
@@ -253,14 +254,14 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 			<TabSwitch>
 				<button
 					id='running'
-					className={currentTab === CurrentTab.Running ? 'active' : ''}
+					className={activeOrdersTab === CurrentTab.Running ? 'active' : ''}
 					onClick={handleRunningTab}
 				>
 					Running <span>{showSpinner ? '' : runningContracts.length}</span>
 				</button>
 				<button
 					id='completed'
-					className={currentTab === CurrentTab.Completed ? 'active' : ''}
+					className={activeOrdersTab === CurrentTab.Completed ? 'active' : ''}
 					onClick={handleCompletedTab}
 				>
 					Finished <span>{showSpinner ? '' : completedContracts.length}</span>
@@ -268,7 +269,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				<span className='glider'></span>
 			</TabSwitch>
 			<div className='flex flex-col items-center'>
-				{currentTab === CurrentTab.Running && (
+				{activeOrdersTab === CurrentTab.Running && (
 					<>
 						{runningContracts.length > 0 ? (
 							<>
@@ -285,7 +286,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						)}
 					</>
 				)}
-				{currentTab === CurrentTab.Completed && (
+				{activeOrdersTab === CurrentTab.Completed && (
 					<>
 						{completedContracts.length > 0 ? (
 							<>

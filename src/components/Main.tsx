@@ -45,6 +45,7 @@ import {
 	PathName,
 	WalletText,
 	ConnectInfo,
+	CurrentTab,
 } from '../types';
 
 import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
@@ -75,6 +76,7 @@ export const Main: React.FC = () => {
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
 	const [anyModalOpen, setAnyModalOpen] = useState<boolean>(false);
+	const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
 
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
@@ -93,6 +95,7 @@ export const Main: React.FC = () => {
 	function handleWindowSizeChange() {
 		setWidth(window.innerWidth);
 	}
+
 	useEffect(() => {
 		window.addEventListener('resize', handleWindowSizeChange);
 		return () => {
@@ -446,6 +449,8 @@ export const Main: React.FC = () => {
 								buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)
 							}
 							isMobile={isMobile}
+							activeOrdersTab={activeOrdersTab}
+							setActiveOrdersTab={setActiveOrdersTab}
 						/>
 					)}
 				/>
