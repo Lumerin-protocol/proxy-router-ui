@@ -61,7 +61,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const getTableData: () => HashRentalContract[] = () => {
 		const filteredContracts = contracts.filter(
-			(contract) => (contract.state as string) === ContractState.Available
+			(contract) =>
+				(contract.state as string) === ContractState.Available && contract.seller !== userAccount
 		);
 		const updatedContracts = filteredContracts.map((contract: any) => {
 			const updatedContract = { ...contract };
