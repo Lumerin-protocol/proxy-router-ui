@@ -2,7 +2,8 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { Spinner } from '../../Spinner.styled';
-import { ContentState } from '../../../../types';
+import { AddressLength, ContentState } from '../../../../types';
+import { truncateAddress } from '../../../../utils';
 const { colors } = require('styles/styles.config.js');
 
 enum buyText {
@@ -18,8 +19,9 @@ enum editText {
 interface CompletedContentProps {
 	contentState: ContentState;
 	isEdit?: boolean;
+	tx?: string;
 }
-export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState, isEdit }) => {
+export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState, isEdit, tx }) => {
 	return (
 		<div className='bg-white flex flex-col'>
 			{contentState === ContentState.Pending ? (
@@ -41,6 +43,15 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState
 					<p className='w-6/6 text-left font-normal text-s'>
 						{isEdit ? editText.view : buyText.view}
 					</p>
+					<br />
+					{tx && <a
+						href={`${process.env.REACT_APP_ETHERSCAN_URL?.replace('address', 'tx')}${tx}`}
+						target='_blank'
+						rel='noreferrer'
+						className='font-light underline'
+					>
+						View Transaction: {truncateAddress(tx, AddressLength.LONG)}
+					</a>}
 				</div>
 			)}
 		</div>
