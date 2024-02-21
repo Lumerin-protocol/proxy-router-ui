@@ -154,6 +154,7 @@ export interface InputValuesCreateForm {
 
 export interface Receipt {
 	status: boolean;
+	transactionHash: string;
 }
 
 export interface Header {

@@ -97,6 +97,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [totalHashrate, setTotalHashrate] = useState<number>();
+	const [purchasedTx, setPurchasedTx] = useState<string>('');
 
 	/*
 	 * This will need to be changed to the mainnet token
@@ -256,6 +257,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							setContentState(ContentState.Cancel);
 							return;
 						}
+						setPurchasedTx(receipt.transactionHash);
 						purchasedHashrate(totalHashrate!);
 						setContentState(ContentState.Complete);
 						localStorage.setItem(
@@ -298,7 +300,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} />;
+				content = <CompletedContent contentState={contentState} tx={purchasedTx} />;
 				break;
 			default:
 				paragraphContent = paragraphText.review as string;
