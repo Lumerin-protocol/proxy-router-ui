@@ -97,6 +97,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [totalHashrate, setTotalHashrate] = useState<number>();
+	const [purchasedTx, setPurchasedTx] = useState<string>('');
 
 	/*
 	 * This will need to be changed to the mainnet token
@@ -207,8 +208,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						const buyerDest: string = getPoolRfc2396(formData)!;
 
 						const validatorPublicKey = (await getValidatorPublicKey()) as string;
+						console.log('validatorPublicKey', validatorPublicKey);
 						const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
-
+						console.log('validator public key slice 2: ', validatorPublicKey.slice(2));
 						const encryptedBuyerInput = (
 							await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 						).toString('hex');
@@ -256,6 +258,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							setContentState(ContentState.Cancel);
 							return;
 						}
+						setPurchasedTx(receipt.transactionHash);
 						purchasedHashrate(totalHashrate!);
 						setContentState(ContentState.Complete);
 						localStorage.setItem(
@@ -298,7 +301,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} />;
+				content = <CompletedContent contentState={contentState} tx={purchasedTx} />;
 				break;
 			default:
 				paragraphContent = paragraphText.review as string;
@@ -339,19 +342,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					</ContractLink>
 				</>
 			)}
-			{/* <AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
-				Thank you for choosing the Lumerin Hashpower Marketplace. To purchase hashpower, please
-				download the{' '}
-				<a
-					href='https://lumerin.io/wallet'
-					target='_blank'
-					rel='noreferrer'
-					className='text-lumerin-dark-blue underline'
-				>
-					Lumerin wallet desktop application
-				</a>{' '}
-				to ensure a smooth and secure transaction.
-			</AlertMUI> */}
+			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+				Thank you for choosing the Lumerin Hashpower Marketplace. Click "Review Ordrer" below. You
+				will pe prompted to approve a transaction through your wallet. Stand by for a second
+				transaction. Once both transactions are confirmed, you will be redirected to view your
+				orders.
+			</AlertMUI>
 			{content}
 
 			{/* {display && <p className='subtext'>{paragraphContent}</p>} */}

@@ -61,7 +61,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const getTableData: () => HashRentalContract[] = () => {
 		const filteredContracts = contracts.filter(
-			(contract) => (contract.state as string) === ContractState.Available
+			(contract) =>
+				(contract.state as string) === ContractState.Available && contract.seller !== userAccount
 		);
 		const updatedContracts = filteredContracts.map((contract: any) => {
 			const updatedContract = { ...contract };
@@ -95,7 +96,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 
-	const [availableContracts, setAvailableContracts] = useState<Array<object>>([...data]);
+	const [availableContracts, setAvailableContracts] = useState<HashRentalContract[]>([...data]);
 	const [sortType, setSortType] = useState('');
 
 	useEffect(() => {
@@ -155,13 +156,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
 						)}
 					</WidgetsWrapper>
-					<SortToolbar
+					{/* <SortToolbar
 						pageTitle='Hashrate For Sale'
 						sortType={sortType}
 						setSortType={setSortType}
 						isMobile={isMobile}
-					/>
-					<AvailableContracts contracts={availableContracts} loading={isLoading} />
+					/> */}
+					<AvailableContracts contracts={availableContracts} loading={isLoading} setSortType={setSortType} sortType={sortType} />
 				</>
 			) : (
 				<>
@@ -174,13 +175,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						</div>
 					</MobileWidgetsWrapper>
 					<MessageWidget isMobile={isMobile} />
-					<SortToolbar
+					{/* <SortToolbar
 						pageTitle='Hashrate For Sale'
 						sortType={sortType}
 						setSortType={setSortType}
 						isMobile={isMobile}
-					/>
-					<AvailableContracts contracts={availableContracts} loading={isLoading} />
+					/> */}
+					<AvailableContracts contracts={availableContracts} loading={isLoading} setSortType={setSortType} sortType={sortType} />
 				</>
 			)}
 		</>

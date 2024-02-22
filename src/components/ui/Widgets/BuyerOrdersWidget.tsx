@@ -38,9 +38,9 @@ export const BuyerOrdersWidget = (props: {
 	const runningContracts = [
 		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage! < 100),
 	];
-	const completedContracts = [
-		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage === 100),
-	];
+	const completedContractsAmount = [
+		...props.contracts.map((contract: HashRentalContract) => contract.history),
+	].flat().length;
 
 	const BuyerOrdersWrapper = styled(SmallWidget)`
 		.stats {
@@ -93,10 +93,10 @@ export const BuyerOrdersWidget = (props: {
 						{props.isLoading ? (
 							<Skeleton variant='rectangular' width={40} height={28} />
 						) : (
-							completedContracts.length
+							completedContractsAmount
 						)}
 					</h4>
-					<p>COMPLETED</p>
+					<p>FINISHED</p>
 				</div>
 			</div>
 			<div className='link'>

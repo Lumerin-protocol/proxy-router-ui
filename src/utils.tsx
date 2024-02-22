@@ -292,10 +292,10 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	return 0;
 };
 
-export const sortContracts = (
+export const sortContracts = <T,>(
 	sortType: string,
-	contractData: Array<HashRentalContract>,
-	setContractData: React.Dispatch<React.SetStateAction<Array<HashRentalContract>>>
+	contractData: T[],
+	setContractData: React.Dispatch<React.SetStateAction<T[]>>
 ) => {
 	switch (sortType) {
 		case 'Price: Low to High':
