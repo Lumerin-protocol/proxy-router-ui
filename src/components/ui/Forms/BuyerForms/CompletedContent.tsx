@@ -44,14 +44,16 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState
 						{isEdit ? editText.view : buyText.view}
 					</p>
 					<br />
-					{tx && <a
-						href={`${process.env.REACT_APP_ETHERSCAN_URL?.replace('address', 'tx')}${tx}`}
-						target='_blank'
-						rel='noreferrer'
-						className='font-light underline'
-					>
-						View Transaction: {truncateAddress(tx, AddressLength.LONG)}
-					</a>}
+					{tx && (
+						<a
+							href={`${process.env.REACT_APP_ETHERSCAN_URL?.replace('address', 'tx')}${tx}`}
+							target='_blank'
+							rel='noreferrer'
+							className='font-light underline'
+						>
+							View Transaction: {truncateAddress(tx, AddressLength.LONG)}
+						</a>
+					)}
 				</div>
 			)}
 		</div>
