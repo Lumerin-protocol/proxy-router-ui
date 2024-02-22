@@ -527,7 +527,6 @@ export const Main: React.FC = () => {
 		min-height: 100vh;
 		background: #eaf7fc;
 		background-image: url(${Bg});
-		background-repeat: no-repeat
 	`;
 
 	const drawerWidth = 240;
