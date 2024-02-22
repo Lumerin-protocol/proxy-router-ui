@@ -135,7 +135,7 @@ export const AvailableContracts = (prop: {
 				</HeaderItem>
 				<HeaderItem onClick={() => onClickSort('length')} >
 					<p>
-						Length
+						Duration
 					</p>
 					{getSortFieldIcon('length')}
 				</HeaderItem>
