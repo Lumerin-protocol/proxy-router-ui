@@ -1,4 +1,4 @@
-import { MenuAlt2Icon } from '@heroicons/react/outline';
+import { Bars3BottomLeftIcon } from '@heroicons/react/24/outline';
 import { Toolbar, Typography } from '@mui/material';
 import { LumerinIcon, MetaMaskIcon, WalletConnectIcon, LogoIcon } from '../../images';
 import EastIcon from '@mui/icons-material/East';
@@ -35,7 +35,7 @@ export const Header = (prop: {
 				onClick={() => prop.setSidebarOpen(true)}
 			>
 				<span className='sr-only'>Open sidebar</span>
-				<MenuAlt2Icon className='h-6 w-6' aria-hidden='true' />
+				<Bars3BottomLeftIcon className='h-8 w-8' aria-hidden='true' />
 			</button>
 			<PageTitle>{prop.pageTitle}</PageTitle>
 			{prop.isMobile ? (

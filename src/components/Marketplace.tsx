@@ -155,13 +155,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
 						)}
 					</WidgetsWrapper>
-					<SortToolbar
+					{/* <SortToolbar
 						pageTitle='Hashrate For Sale'
 						sortType={sortType}
 						setSortType={setSortType}
 						isMobile={isMobile}
-					/>
-					<AvailableContracts contracts={availableContracts} loading={isLoading} />
+					/> */}
+					<AvailableContracts contracts={availableContracts} loading={isLoading} setSortType={setSortType} sortType={sortType} />
 				</>
 			) : (
 				<>
@@ -174,13 +174,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						</div>
 					</MobileWidgetsWrapper>
 					<MessageWidget isMobile={isMobile} />
-					<SortToolbar
+					{/* <SortToolbar
 						pageTitle='Hashrate For Sale'
 						sortType={sortType}
 						setSortType={setSortType}
 						isMobile={isMobile}
-					/>
-					<AvailableContracts contracts={availableContracts} loading={isLoading} />
+					/> */}
+					<AvailableContracts contracts={availableContracts} loading={isLoading} setSortType={setSortType} sortType={sortType} />
 				</>
 			)}
 		</>
