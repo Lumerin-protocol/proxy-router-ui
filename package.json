@@ -68,7 +68,6 @@
 		"web-vitals": "^1.1.2",
 		"web3": "^1.5.2"
 	},
-
 	"devDependencies": {
 		"@craco/craco": "^6.2.0",
 		"@openzeppelin/contracts": "^4.2.0",

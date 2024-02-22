@@ -52,7 +52,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 
 	const preferredPools = [
 		{ name: 'Titan', address: 'mining.pool.titan.io:4242', port: '4242' },
-		{ name: 'Lincoin', address: 'ca.lincoin.com:3333', port: '3333' },
 		{ name: 'Luxor', address: 'btc.global.luxor.tech:700', port: '700' },
 		{ name: 'Braiins', address: 'stratum.braiins.com:3333', port: '3333' },
 	];

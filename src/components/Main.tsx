@@ -53,6 +53,7 @@ import BubbleGraphic1 from '../images/Bubble_1.png';
 import BubbleGraphic2 from '../images/Bubble_2.png';
 import BubbleGraphic3 from '../images/Bubble_3.png';
 import BubbleGraphic4 from '../images/Bubble_4.png';
+import Bg from '../images/bg.png';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -525,11 +526,8 @@ export const Main: React.FC = () => {
 		display: flex;
 		min-height: 100vh;
 		background: #eaf7fc;
-		background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
-			url(${BubbleGraphic4});
-		background-position: bottom right, right top, left top, left bottom;
-		background-repeat: no-repeat;
-		background-size: 25% 15% 15% 10%;
+		background-image: url(${Bg});
+		background-repeat: no-repeat
 	`;
 
 	const drawerWidth = 240;
