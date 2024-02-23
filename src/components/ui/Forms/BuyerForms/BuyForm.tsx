@@ -343,8 +343,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				</>
 			)}
 			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
-				Thank you for choosing the Lumerin Hashpower Marketplace. Click "Review Ordrer" below. You
-				will pe prompted to approve a transaction through your wallet. Stand by for a second
+				Thank you for choosing the Lumerin Hashpower Marketplace. Click "Review Order" below. You
+				will be prompted to approve a transaction through your wallet. Stand by for a second
 				transaction. Once both transactions are confirmed, you will be redirected to view your
 				orders.
 			</AlertMUI>
