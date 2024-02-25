@@ -82,14 +82,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	lumerinbalance,
 	setOpen,
 }) => {
-	console.log('buy form: ', {
-		contracts,
-		contractId,
-		userAccount,
-		cloneFactoryContract,
-		web3,
-		lumerinbalance,
-	});
 	[contentState, setContentState] = useState<string>(ContentState.Review);
 	let setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 
@@ -98,6 +90,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [totalHashrate, setTotalHashrate] = useState<number>();
 	const [purchasedTx, setPurchasedTx] = useState<string>('');
+	const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
 
 	/*
 	 * This will need to be changed to the mainnet token
@@ -111,6 +104,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const {
 		register,
 		handleSubmit,
+		clearErrors,
 		formState: { errors, isValid },
 		setValue,
 	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
@@ -135,11 +129,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	);
 
 	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
-		console.log('buyContractAsync: ', data);
 		// Review
 		// if (isValid && contentState === ContentState.Review) {
 		if (contentState === ContentState.Review) {
-			console.log('reviewing');
 			setContentState(ContentState.Confirm);
 			setFormData({
 				poolAddress: data.poolAddress,
@@ -208,9 +200,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						const buyerDest: string = getPoolRfc2396(formData)!;
 
 						const validatorPublicKey = (await getValidatorPublicKey()) as string;
-						console.log('validatorPublicKey', validatorPublicKey);
 						const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
-						console.log('validator public key slice 2: ', validatorPublicKey.slice(2));
 						const encryptedBuyerInput = (
 							await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 						).toString('hex');
@@ -291,7 +281,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	let buttonContent = '';
 	let content = <div></div>;
 	const createContent: () => void = () => {
-		console.log('content state: ', contentState);
 		switch (contentState) {
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
@@ -301,7 +290,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} tx={purchasedTx} />;
+				content = (
+					<CompletedContent
+						contentState={contentState}
+						tx={purchasedTx}
+						useLightningPayouts={usedLightningPayoutsFlow}
+					/>
+				);
 				break;
 			default:
 				paragraphContent = paragraphText.review as string;
@@ -313,6 +308,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						setValue={setValue}
 						setFormData={setFormData}
 						inputData={formData}
+						onUseLightningPayoutsFlow={setUsedLightningPayoutsFlow}
+						clearErrors={clearErrors}
 					/>
 				);
 		}
@@ -342,12 +339,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					</ContractLink>
 				</>
 			)}
-			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
-				Thank you for choosing the Lumerin Hashpower Marketplace. Click "Review Order" below. You
-				will be prompted to approve a transaction through your wallet. Stand by for a second
-				transaction. Once both transactions are confirmed, you will be redirected to view your
-				orders.
-			</AlertMUI>
+			{contentState !== ContentState.Complete && (
+				<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+					Thank you for choosing the Lumerin Hashpower Marketplace. Click "Review Order" below. You
+					will be prompted to approve a transaction through your wallet. Stand by for a second
+					transaction. Once both transactions are confirmed, you will be redirected to view your
+					orders.
+				</AlertMUI>
+			)}
+
 			{content}
 
 			{/* {display && <p className='subtext'>{paragraphContent}</p>} */}
