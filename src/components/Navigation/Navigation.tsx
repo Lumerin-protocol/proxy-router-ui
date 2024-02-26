@@ -74,11 +74,7 @@ export const ResponsiveNavigation = (prop: {
 			</nav>
 			<div className='resources'>
 				<h3>Resources</h3>
-				<a
-					href='https://app.gitbook.com/o/LyHwPIWryy8bgL99GNF6/s/LOJKfuh83H9XvKG0vaoH/'
-					target='_blank'
-					rel='noreferrer'
-				>
+				<a href={`${process.env.REACT_APP_GITBOOK_URL}`} target='_blank' rel='noreferrer'>
 					<HelpIcon style={{ fill: '#0E4353' }} />
 					<span className='item-name'>Help</span>
 				</a>

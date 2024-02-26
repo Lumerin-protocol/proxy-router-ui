@@ -137,6 +137,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				updatedOrder.timestamp = DateTime.fromSeconds(
 					parseInt(updatedOrder.timestamp as string)
 				).toFormat('MM/dd/yyyy');
+				updatedOrder.endDate = DateTime.fromSeconds(parseInt(contract.timestamp as string))
+					.plus({ hours: parseInt(contract.length as string) / 3600 })
+					.toFormat('MM/dd/yyyy');
 				updatedOrder.contractId = contract.id as string;
 				updatedOrder.editCancel = (
 					<ButtonGroup
@@ -204,6 +207,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 				updatedOrder.timestamp = DateTime.fromSeconds(
 					parseInt(updatedOrder._purchaseTime as string)
 				).toFormat('MM/dd/yyyy');
+				updatedOrder.endDate = DateTime.fromSeconds(parseInt(updatedOrder._purchaseTime as string))
+					.plus({ hours: parseInt(updatedOrder._length as string) / 3600 })
+					.toFormat('MM/dd/yyyy');
 				updatedOrder.contractId = contract.id as string;
 			}
 			return updatedOrder as ContractHistoryData;
