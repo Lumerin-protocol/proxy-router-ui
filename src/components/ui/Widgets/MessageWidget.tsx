@@ -30,9 +30,12 @@ export const MessageWidget = (props: { isMobile: boolean }) => {
 	const Content = () => {
 		return (
 			<p>
-				Welcome to the Lumerin Marketplace Beta, please provide feedback or submit any bugs you
-				notice to the{' '}
-				<a href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'>Github Repo.</a>
+				Welcome to the Lumerin Marketplace Beta! Please find detailed instructions in the{' '}
+				<a href='https://gitbook.lumerin.io/lumerin-hashpower-marketplace/buyer-web-marketplace/overview-web-marketplace '>
+					Lumerin Gitbook
+				</a>{' '}
+				and provide feedback or submit any bugs you notice to the{' '}
+				<a href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'>Github Repo</a>.
 			</p>
 		);
 	};
