@@ -12,7 +12,6 @@ import lumerin from '../images/lumerin_metamask.png';
 import { printError } from '../utils';
 import { ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
 
-
 interface Web3Result {
 	accounts: string[];
 	contractInstance: Contract;
@@ -192,13 +191,13 @@ export const divideByDigits: (amount: number) => number = (amount) => {
 };
 
 export const getGasConfig = () => {
-	const chainId = process.env.REACT_APP_CHAIN_ID;	
+	const chainId = process.env.REACT_APP_CHAIN_ID;
 	if (chainId === '421614' || chainId === '42161') {
 		// no priority fee on Arbitrum, maxFeePerGas is stable at 0.1 gwei
 		return {
 			maxPriorityFeePerGas: ethers.utils.parseUnits('0', 'gwei'),
 			maxFeePerGas: ethers.utils.parseUnits('0.1', 'gwei'),
-		}
+		};
 	}
-	return {}
-}
+	return {};
+};
