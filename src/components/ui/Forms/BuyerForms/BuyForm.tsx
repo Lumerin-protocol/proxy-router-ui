@@ -158,8 +158,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			}
 
 			try {
-				const sendOptions: Partial<SendOptions> = { 
-					from: userAccount, 
+				const sendOptions: Partial<SendOptions> = {
+					from: userAccount,
 					...getGasConfig(),
 				};
 				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
@@ -337,9 +337,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					</ContractLink>
 				</>
 			)}
-			{contentState !== ContentState.Complete && (
+			{contentState === ContentState.Confirm && (
 				<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
-					Thank you for choosing the Lumerin Hashpower Marketplace. Click "Review Order" below. You
+					Thank you for choosing the Lumerin Hashpower Marketplace. Click "Confirm Order" below. You
 					will be prompted to approve a transaction through your wallet. Stand by for a second
 					transaction. Once both transactions are confirmed, you will be redirected to view your
 					orders.
