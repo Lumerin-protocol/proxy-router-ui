@@ -6,7 +6,6 @@ import {
 	ContentState,
 	ContractState,
 	Receipt,
-	UpdateFormProps,
 	CancelFormProps,
 } from '../../../../types';
 import { getHandlerBlockchainError, isNoCancel, printError } from '../../../../utils';
@@ -17,6 +16,7 @@ import { AbiItem } from 'web3-utils';
 import { ButtonGroup } from '../../ButtonGroup';
 import { CancelButton } from '../FormButtons/Buttons.styled';
 import { SecondaryButton } from '../FormButtons/Buttons.styled';
+import { getGasConfig } from '../../../../web3/helpers';
 
 export const CancelForm: React.FC<CancelFormProps> = ({
 	contracts,
@@ -66,19 +66,23 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
 					);
+					const sendOptions = {
+						...getGasConfig(),
+						from: userAccount,
+					};
 
 					const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
 
 					const gas = await implementationContract.methods
 						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
 						.estimateGas({
-							from: userAccount,
+							...sendOptions,
 							value: marketplaceFee,
 						});
 
 					const receipt: Receipt = await implementationContract.methods
 						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
-						.send({ from: userAccount, gas });
+						.send({ ...sendOptions, gas });
 
 					if (receipt.status) {
 						setContentState(ContentState.Complete);

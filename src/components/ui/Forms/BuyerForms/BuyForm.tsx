@@ -38,7 +38,7 @@ import {
 import { Alert } from '../../Alert';
 import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
-import { divideByDigits } from '../../../../web3/helpers';
+import { divideByDigits, getGasConfig } from '../../../../web3/helpers';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { purchasedHashrate } from '../../../../analytics';
 import { ContractLink } from '../../Modal.styled';
@@ -158,7 +158,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			}
 
 			try {
-				const sendOptions: Partial<SendOptions> = { from: userAccount };
+				const sendOptions: Partial<SendOptions> = { 
+					from: userAccount, 
+					...getGasConfig(),
+				};
 				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
 
 				if (web3 && formData) {
@@ -218,7 +221,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 								contract.version
 							)
 							.estimateGas({
-								from: sendOptions.from,
+								...sendOptions,
 								value: marketplaceFee,
 							});
 

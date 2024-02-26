@@ -31,7 +31,7 @@ import { Alert } from '../../Alert';
 import { buttonText, paragraphText } from '../../../../shared';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { ContractLink } from '../../Modal.styled';
-import { ethers } from 'ethers';
+import { getGasConfig } from '../../../../web3/helpers';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -105,6 +105,10 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
 					);
+					const sendOptions = {
+						...getGasConfig(),
+						from: userAccount,
+					};
 
 					const buyerDest: string = getPoolRfc2396(formData)!;
 
@@ -125,13 +129,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					const updateDestGas = await implementationContract?.methods
 						.setDestination(validatorEncr, encryptedBuyerInput)
 						.estimateGas({
-							from: userAccount,
+							...sendOptions,
 						});
 
 					const receipt: Receipt = await implementationContract.methods
 						.setDestination(validatorEncr, encryptedBuyerInput)
 						.send({
-							from: userAccount,
+							...sendOptions,
 							gas: updateDestGas,
 						});
 					if (receipt?.status) {
