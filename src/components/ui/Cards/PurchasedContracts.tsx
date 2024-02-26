@@ -1,4 +1,9 @@
-import { AddressLength, ContractHistoryData, HashRentalContract } from '../../../types';
+import {
+	AddressLength,
+	ContractData,
+	ContractHistoryData,
+	HashRentalContract,
+} from '../../../types';
 import { getReadableDate, truncateAddress } from '../../../utils';
 import 'react-circular-progressbar/dist/styles.css';
 import PickaxeAnimated from '../../../images/icons/pickaxe-animated.gif';
@@ -37,7 +42,7 @@ const getIcon = (contract: any, isCompleted = false) => {
 	return <img src={PickaxeAnimated} alt='' />;
 };
 
-const getCard = (key: string, item: HashRentalContract, poolInfo: any, isCompleted = false) => (
+const getCard = (key: string, item: ContractData, poolInfo: any, isCompleted = false) => (
 	<div className='card' key={key}>
 		<div className='progress'>
 			<div className='pickaxe'>{getIcon(item, isCompleted)}</div>
@@ -64,7 +69,7 @@ const getCard = (key: string, item: HashRentalContract, poolInfo: any, isComplet
 				<div className='item-value started'>
 					<div>
 						<h3>CONTRACT END</h3>
-						<p>{item.timestamp}</p>
+						<p>{item.endDate}</p>
 					</div>
 				</div>
 			</div>
@@ -141,7 +146,7 @@ export const PurchasedContracts = (props: {
 				const stored = localStorage.getItem(item.contractId!);
 				const poolInfo = stored ? JSON.parse(stored) : '';
 
-				return getCard(`${item.contractId}`, item, poolInfo, false);
+				return getCard(`${item.contractId}`, item as ContractData, poolInfo, false);
 			})}
 		</ContractCards>
 	);

@@ -21,9 +21,9 @@ export const TableHeader = styled.li`
 	}
 
 	img {
-			margin-right: 1rem;
-			width: 20px;
-		}
+		margin-right: 1rem;
+		width: 20px;
+	}
 `;
 
 export const MobileTableHeader = styled(TableHeader)`

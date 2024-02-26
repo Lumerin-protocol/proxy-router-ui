@@ -97,6 +97,10 @@ export const getValidatorPublicKey = () => {
 	return process.env.REACT_APP_VALIDATOR_PUBLIC_KEY;
 };
 
+export const getTitanLightningPoolUrl = () => {
+	return process.env.REACT_APP_TITAN_LIGHTNING_POOL || 'pplp.titan.io:4141';
+};
+
 export const getValidatorURL = () => {
 	const url = process.env.REACT_APP_VALIDATOR_URL || '';
 	return url.replace(/(^(\w|\+)+:|^)\/\//, ''); // removes protocol from url if present
@@ -105,8 +109,6 @@ export const getValidatorURL = () => {
 export const getPublicKey = async (txId: string) => {
 	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
 	let tx = await provider.getTransaction(txId)!;
-	console.log(txId);
-	console.log(tx);
 	let transaction = FeeMarketEIP1559Transaction.fromTxData({
 		chainId: tx.chainId,
 		nonce: tx.nonce,
@@ -128,10 +130,8 @@ export const getPublicKey = async (txId: string) => {
 export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	//import the JSON of CloneFactory.json
 	let cf = new ethers.ContractFactory(abi, bytecode);
-	console.log('getting default provider');
 	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL as string);
 
-	console.log('got default provider');
 	//the clonefactory contract address should become a variable that is configurable
 	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
 
@@ -203,6 +203,14 @@ export const getSchemeName = (connectionString: string): string | undefined =>
 // Make sure username contains no spaces
 export const isValidUsername: (username: string) => boolean = (username) =>
 	/^[a-zA-Z0-9.@-]+$/.test(username);
+
+const EMAIL_REGEX =
+	/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+// Make sure username contains no spaces
+export const isValidLightningUsername: (username: string) => boolean = (username) => {
+	return EMAIL_REGEX.test(username);
+};
 
 // Make sure port number is a number between 1 and 65535
 export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>

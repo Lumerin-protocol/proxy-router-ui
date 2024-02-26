@@ -14,7 +14,7 @@ import { Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { SecondaryButton } from '../Forms/FormButtons/Buttons.styled';
 import styled from '@emotion/styled';
-import { ArrowsUpDownIcon, ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
 
 const HeaderItem = styled.div`
 	display: flex;
@@ -23,10 +23,11 @@ const HeaderItem = styled.div`
 	justify-content: center;
 	align-items: center;
 
-	p, svg {
+	p,
+	svg {
 		:hover {
-		cursor: pointer;
-	}
+			cursor: pointer;
+		}
 	}
 `;
 
@@ -61,7 +62,7 @@ export const AvailableContracts = (prop: {
 
 	useEffect(() => {
 		updateSortType();
-	}, [sortState, activeSort])
+	}, [sortState, activeSort]);
 
 	const updateSortType = () => {
 		if (activeSort === 'speed') {
@@ -91,7 +92,7 @@ export const AvailableContracts = (prop: {
 				prop.setSortType(SortTypes.PriceLowToHigh);
 			}
 		}
-	}
+	};
 
 	const onClickSort = (field: string) => {
 		setActiveSort(field);
@@ -100,53 +101,46 @@ export const AvailableContracts = (prop: {
 		} else {
 			setSortState(1);
 		}
-	}
+	};
 
 	const getSortFieldIcon = (field: string) => {
 		if (!activeSort) {
-			return <ArrowsUpDownIcon className='h-4 w-4' />
+			return <ArrowsUpDownIcon className='h-4 w-4' />;
 		}
 
 		if (activeSort === field) {
 			if (sortState === 0) {
-				return <ArrowsUpDownIcon className='h-4 w-4' />
+				return <ArrowsUpDownIcon className='h-4 w-4' />;
 			} else if (sortState === 1) {
-				return <ArrowUpIcon className='h-4 w-4' />
+				return <ArrowUpIcon className='h-4 w-4' />;
 			} else if (sortState === 2) {
-				return <ArrowDownIcon className='h-4 w-4' />
+				return <ArrowDownIcon className='h-4 w-4' />;
 			}
 		} else {
-			return <ArrowsUpDownIcon className='h-4 w-4' />
+			return <ArrowsUpDownIcon className='h-4 w-4' />;
 		}
-	}
+	};
 
 	const getTableHeader = () => {
 		const Header = isMobile ? MobileTableHeader : TableHeader;
 		return (
 			<Header key={'header'}>
-				{!isMobile && <p>
-					Address
-				</p>}
+				{!isMobile && <p>Address</p>}
 				<HeaderItem onClick={() => onClickSort('speed')}>
-					<p>
-						Speed
-					</p>
+					<p>Speed</p>
 					{getSortFieldIcon('speed')}
 				</HeaderItem>
-				<HeaderItem onClick={() => onClickSort('length')} >
-					<p>
-						Duration
-					</p>
+				<HeaderItem onClick={() => onClickSort('length')}>
+					<p>Duration</p>
 					{getSortFieldIcon('length')}
 				</HeaderItem>
 				<HeaderItem onClick={() => onClickSort('price')}>
-					<p>
-						Price
-					</p>
+					<p>Price</p>
 					{getSortFieldIcon('price')}
 				</HeaderItem>
-			</Header>)
-	}
+			</Header>
+		);
+	};
 
 	const isMobile = width <= 768;
 	return (
@@ -200,7 +194,6 @@ export const AvailableContracts = (prop: {
 									))}
 								</>
 							) : (
-
 								<>
 									{getTableHeader()}
 									{prop.contracts.map((item, index) => (

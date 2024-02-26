@@ -12,10 +12,12 @@ import {
 	isValidPortNumber,
 	isValidUsername,
 	getValidatorURL,
+	getTitanLightningPoolUrl,
+	isValidLightningUsername,
 } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { InputWrapper } from '../Forms.styled';
-// import { Checkbox } from '../../Checkbox';
+import { Checkbox } from '../../Checkbox';
 
 interface PoolData {
 	name: string;
@@ -31,6 +33,8 @@ interface ReviewContentProps {
 	isEdit?: boolean;
 	setFormData?: any;
 	inputData?: any;
+	onUseLightningPayoutsFlow: (value: boolean) => void;
+	clearErrors: () => void;
 }
 
 let preferredPool: PoolData, setPreferredPool: React.Dispatch<React.SetStateAction<PoolData>>;
@@ -43,12 +47,14 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	isEdit,
 	setFormData,
 	inputData,
+	onUseLightningPayoutsFlow,
+	clearErrors,
 }) => {
 	const { poolAddress, username } = inputData;
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [useLightningPayouts, setUseLightningPayouts] = useState<boolean>(false);
 	[preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
-
-	console.log(buyerString);
+	const lightningUrl = getTitanLightningPoolUrl();
 
 	const preferredPools = [
 		{ name: 'Titan', address: 'mining.pool.titan.io:4242', port: '4242' },
@@ -57,9 +63,9 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	];
 
 	// hiding references to validator service at the moment: my 5/9/22
-	/* const checkboxLegend = 'Validator';
-	const checkboxLabel = 'Titan Validator Service';
-	const checkboxDescription = 'Use the Titan Validator to verify your delivered hashrate for a small fee.'; */
+	const checkboxLegend = 'Lightning payouts';
+	const checkboxLabel = 'Use Titan Pool for Lightning Payouts';
+	const checkboxDescription = '';
 
 	const handlePoolChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedPool = preferredPools.find((item) => item.name === event.target.value);
@@ -96,100 +102,103 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					value={getValidatorURL()}
 				/>
 			</InputWrapper>
-			<InputWrapper style={{ display: isEdit ? 'none' : undefined }}>
-				<InputLabel sx={{ color: 'black', fontFamily: 'inherit' }} id='preferred-pools-label'>
-					Predefined Pools
-				</InputLabel>
-				<Select
-					labelId='preferred-pools-label'
-					id='preferred-pools'
-					displayEmpty
-					value={preferredPool.name}
-					label='Predefined Pools'
-					onChange={(event: any) => handlePoolChange(event)}
-				>
-					<MenuItem value=''>Select a predefined pool</MenuItem>
-					{preferredPools.map((item) => (
-						<MenuItem value={item.name} key={item.name}>
-							{item.name}
-						</MenuItem>
-					))}
-				</Select>
-			</InputWrapper>
-			<InputWrapper>
-				<label htmlFor='poolAddress'>Pool Address *</label>
-				<input
-					{...register('poolAddress', {
-						required: 'Pool Address is required',
-						validate: (poolAddress: string) =>
-							isValidPoolAddress(poolAddress) || 'Invalid pool address.',
-					})}
-					id='poolAddress'
-					type='text'
-					placeholder='POOL_IP_ADDRESS:PORT'
-					className={
-						errors?.poolAddress
-							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
-							: 'review-no-errors review-input'
+			<Checkbox
+				legend={checkboxLegend}
+				label={checkboxLabel}
+				description={checkboxDescription}
+				onChange={(value) => {
+					onUseLightningPayoutsFlow(value);
+					setUseLightningPayouts(value);
+					if (!value) {
+						setPreferredPool({ name: '', address: '', port: '' });
 					}
-					defaultValue={
-						isEdit && buyerString
-							? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
-							: ''
-					}
-					onChange={(e) =>
-						setFormData({
-							...inputData,
-							poolAddress: e.target.value,
-						})
-					}
-					value={poolAddress}
-				/>
-				{errors.poolAddress && (
-					<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
-				)}
-			</InputWrapper>
-			{/* <InputWrapper>
-				<label htmlFor='portNumber'>Port Number *</label>
-				<input
-					{...register('portNumber', {
-						required: 'Port Number is required',
-						validate: (portNumber: string) =>
-							isValidPortNumber(portNumber as string) || 'Invalid port number.',
-					})}
-					id='portNumber'
-					type='number'
-					placeholder='4242'
-					className={
-						errors?.portNumber
-							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
-							: 'review-no-errors review-input'
-					}
-					defaultValue={isEdit && buyerString ? getPortString(buyerString) : ''}
-					value={portNumber}
-					onChange={(e) =>
-						setFormData({
-							...inputData,
-							portNumber: e.target.value,
-						})
-					}
-				/>
-				{errors.portNumber && (
-					<div className='text-xs text-red-500'>{errors.portNumber.message}</div>
-				)}
-			</InputWrapper> */}
+					setFormData({
+						...inputData,
+						poolAddress: value ? lightningUrl : undefined,
+						username: '',
+					});
+					setValue?.('poolAddress', value ? lightningUrl : undefined);
+					setValue?.('username', undefined);
+					clearErrors();
+				}}
+			/>
+			{!useLightningPayouts && (
+				<InputWrapper style={{ display: isEdit ? 'none' : undefined }}>
+					<InputLabel sx={{ color: 'black', fontFamily: 'inherit' }} id='preferred-pools-label'>
+						Predefined Pools
+					</InputLabel>
+					<Select
+						labelId='preferred-pools-label'
+						id='preferred-pools'
+						displayEmpty
+						value={preferredPool.name}
+						label='Predefined Pools'
+						onChange={(event: any) => handlePoolChange(event)}
+					>
+						<MenuItem value=''>Select a predefined pool</MenuItem>
+						{preferredPools.map((item) => (
+							<MenuItem value={item.name} key={item.name}>
+								{item.name}
+							</MenuItem>
+						))}
+					</Select>
+				</InputWrapper>
+			)}
+			{!useLightningPayouts && (
+				<InputWrapper>
+					<label htmlFor='poolAddress'>Pool Address *</label>
+					<input
+						{...register('poolAddress', {
+							required: 'Pool Address is required',
+							validate: (poolAddress: string) =>
+								isValidPoolAddress(poolAddress) || 'Invalid pool address.',
+						})}
+						id='poolAddress'
+						type='text'
+						disabled={useLightningPayouts}
+						placeholder='POOL_IP_ADDRESS:PORT'
+						className={
+							errors?.poolAddress
+								? 'bg-red-100 btn-modal placeholder-red-400 review-input'
+								: 'review-no-errors review-input'
+						}
+						defaultValue={
+							isEdit && buyerString
+								? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
+								: ''
+						}
+						onChange={(e) =>
+							setFormData({
+								...inputData,
+								poolAddress: e.target.value,
+							})
+						}
+						value={poolAddress}
+					/>
+					{errors.poolAddress && (
+						<div className='text-xs text-red-500'>{errors.poolAddress.message}</div>
+					)}
+				</InputWrapper>
+			)}
 			<InputWrapper>
 				<label htmlFor='username'>Username *</label>
 				<input
 					{...register('username', {
 						required: 'Username is required',
-						validate: (username: string) =>
-							isValidUsername(username) ||
-							'Invalid username. Only letters a-z, numbers and .@- allowed',
+						validate: (username: string) => {
+							if (useLightningPayouts) {
+								return isValidLightningUsername(username) || 'Invalid email.';
+							}
+
+							return (
+								isValidUsername(username) ||
+								'Invalid username. Only letters a-z, numbers and .@- allowed'
+							);
+						},
 					})}
 					id='username'
 					type='text'
-					placeholder='account.worker'
+					placeholder={useLightningPayouts ? 'bob@getalby.com' : 'account.worker'}
 					className={
 						errors?.username
 							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
@@ -211,7 +220,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					<div className='text-xs text-red-500'>{errors.username.message}</div>
 				)}
 			</InputWrapper>
-			{/* {!isEdit && <Checkbox legend={checkboxLegend} label={checkboxLabel} description={checkboxDescription} register={register} />} */}
 		</React.Fragment>
 	);
 };

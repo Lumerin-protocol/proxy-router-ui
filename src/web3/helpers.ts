@@ -1,15 +1,16 @@
-import React, { Dispatch, SetStateAction } from 'react';
 import Web3 from 'web3';
+import WalletConnectProvider from '@walletconnect/web3-provider';
 import detectEthereumProvider from '@metamask/detect-provider';
-import lumerin from '../images/lumerin_metamask.png';
+import { ethers } from 'ethers';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
-import { CloneFactoryContract as CloneFactory } from 'contracts-js';
-import { LumerinContract } from 'contracts-js';
-import { ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
+import { Dispatch, SetStateAction } from 'react';
+import { CloneFactoryContract as CloneFactory, LumerinContract } from 'contracts-js';
+
+import lumerin from '../images/lumerin_metamask.png';
 import { printError } from '../utils';
-import WalletConnectProvider from '@walletconnect/web3-provider';
+import { ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
 
 interface Web3Result {
 	accounts: string[];
@@ -187,4 +188,16 @@ export const multiplyByDigits: (amount: number) => number = (amount) => {
 export const divideByDigits: (amount: number) => number = (amount) => {
 	if (amount < 1000) return amount;
 	return parseInt(String(amount / 10 ** 8));
+};
+
+export const getGasConfig = () => {
+	const chainId = process.env.REACT_APP_CHAIN_ID;
+	if (chainId === '421614' || chainId === '42161') {
+		// no priority fee on Arbitrum, maxFeePerGas is stable at 0.1 gwei
+		return {
+			maxPriorityFeePerGas: ethers.utils.parseUnits('0', 'gwei'),
+			maxFeePerGas: ethers.utils.parseUnits('0.1', 'gwei'),
+		};
+	}
+	return {};
 };
