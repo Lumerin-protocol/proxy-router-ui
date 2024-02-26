@@ -53,7 +53,6 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
 	const createContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
-		console.log('createContractAsync: ', data);
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);

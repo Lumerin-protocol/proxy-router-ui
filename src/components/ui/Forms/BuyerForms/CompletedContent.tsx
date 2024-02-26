@@ -20,8 +20,14 @@ interface CompletedContentProps {
 	contentState: ContentState;
 	isEdit?: boolean;
 	tx?: string;
+	useLightningPayouts?: boolean;
 }
-export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState, isEdit, tx }) => {
+export const CompletedContent: React.FC<CompletedContentProps> = ({
+	contentState,
+	isEdit,
+	tx,
+	useLightningPayouts,
+}) => {
 	return (
 		<div className='bg-white flex flex-col'>
 			{contentState === ContentState.Pending ? (
@@ -52,6 +58,20 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState
 							className='font-light underline'
 						>
 							View Transaction: {truncateAddress(tx, AddressLength.LONG)}
+						</a>
+					)}
+					{useLightningPayouts && (
+						<a
+							onClick={() => {
+								window.open(
+									process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || 'https://lightning.titan.io',
+									'_blank'
+								);
+							}}
+							style={{ cursor: 'pointer' }}
+							className='font-light underline'
+						>
+							Dashboard for Lightning users
 						</a>
 					)}
 				</div>

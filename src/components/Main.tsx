@@ -90,7 +90,6 @@ export const Main: React.FC = () => {
 	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === parseInt(process.env.REACT_APP_CHAIN_ID!);
 
-	console.log('isCorrectNetwork: ', isCorrectNetwork);
 	const [width, setWidth] = useState<number>(window.innerWidth);
 
 	function handleWindowSizeChange() {

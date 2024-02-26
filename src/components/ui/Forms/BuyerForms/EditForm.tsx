@@ -55,6 +55,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [alertMessage, setAlertMessage] = useState<string>('');
+	const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
 
 	const handleEditError = getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState);
 
@@ -62,6 +63,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 	const {
 		register,
 		handleSubmit,
+		clearErrors,
 		formState: { errors, isValid },
 	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
 
@@ -197,7 +199,13 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} isEdit />;
+				content = (
+					<CompletedContent
+						contentState={contentState}
+						isEdit
+						useLightningPayouts={usedLightningPayoutsFlow}
+					/>
+				);
 				break;
 			default:
 				paragraphContent = paragraphText.review as string;
@@ -210,6 +218,8 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						isEdit={true}
 						inputData={formData}
 						setFormData={setFormData}
+						onUseLightningPayoutsFlow={setUsedLightningPayoutsFlow}
+						clearErrors={clearErrors}
 					/>
 				);
 		}
