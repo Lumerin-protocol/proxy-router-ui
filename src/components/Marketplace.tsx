@@ -162,7 +162,12 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						setSortType={setSortType}
 						isMobile={isMobile}
 					/> */}
-					<AvailableContracts contracts={availableContracts} loading={isLoading} setSortType={setSortType} sortType={sortType} />
+					<AvailableContracts
+						contracts={availableContracts}
+						loading={isLoading}
+						setSortType={setSortType}
+						sortType={sortType}
+					/>
 				</>
 			) : (
 				<>
@@ -181,7 +186,12 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						setSortType={setSortType}
 						isMobile={isMobile}
 					/> */}
-					<AvailableContracts contracts={availableContracts} loading={isLoading} setSortType={setSortType} sortType={sortType} />
+					<AvailableContracts
+						contracts={availableContracts}
+						loading={isLoading}
+						setSortType={setSortType}
+						sortType={sortType}
+					/>
 				</>
 			)}
 		</>
