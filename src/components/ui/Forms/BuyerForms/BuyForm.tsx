@@ -59,10 +59,6 @@ const initialFormData: FormData = {
 	price: '',
 };
 
-let formData: FormData = initialFormData,
-	contentState: string,
-	setContentState: React.Dispatch<React.SetStateAction<string>>;
-
 interface BuyFormProps {
 	contracts: HashRentalContract[];
 	contractId: string;
@@ -82,10 +78,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	lumerinbalance,
 	setOpen,
 }) => {
-	[contentState, setContentState] = useState<string>(ContentState.Review);
-	let setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+	const [contentState, setContentState] = useState<string>(ContentState.Review);
 
-	[formData, setFormData] = useState<FormData>(formData);
+	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [totalHashrate, setTotalHashrate] = useState<number>();
