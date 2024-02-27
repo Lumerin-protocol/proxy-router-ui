@@ -145,10 +145,7 @@ export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
 	}
 };
 
-export const getLumerinTokenBalanceAsync: (
-	web3: Web3,
-	userAccount: string
-) => Promise<number | null> = async (web3, userAccount) => {
+export const getLumerinTokenBalanceAsync = async (web3: Web3, userAccount: string): Promise<number | null> => {
 	const lumerinContractInstance = new web3.eth.Contract(
 		LumerinContract.abi as AbiItem[],
 		lumerinTokenAddress

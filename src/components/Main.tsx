@@ -356,7 +356,7 @@ export const Main: React.FC = () => {
 	};
 
 	// Get Lumerin token balance
-	const updateLumerinTokenBalanceAsync: () => void = async () => {
+	const updateLumerinTokenBalanceAsync = async (): Promise<void> => {
 		if (web3) {
 			const lumerinTokenBalance = await getLumerinTokenBalanceAsync(web3, userAccount);
 			if (lumerinTokenBalance) setLumerinBalance(lumerinTokenBalance);
@@ -391,6 +391,10 @@ export const Main: React.FC = () => {
 			setAnyModalOpen(false);
 			refreshContracts(true, contractId);
 			setContractId('');
+			updateLumerinTokenBalanceAsync().catch((error) => {
+				const typedError = error as Error;
+				printError(typedError.message, typedError.stack as string)
+			});
 		}
 	}, [
 		alertOpen,
