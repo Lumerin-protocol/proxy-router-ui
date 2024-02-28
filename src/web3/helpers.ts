@@ -19,7 +19,7 @@ interface Web3Result {
 	web3ReadOnly?: Web3;
 }
 
-const ethereum = window.ethereum as any;
+const ethereum = window.ethereum as Ethereum;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
 //const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b'; Legacy to ropsten
 const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS; //gorli token
