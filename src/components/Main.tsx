@@ -62,6 +62,7 @@ export const Main: React.FC = () => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [isConnected, setIsConnected] = useState<boolean>(false);
 	const [web3, setWeb3] = useState<Web3>();
+	const [web3ReadOnly, setWeb3ReadOnly] = useState<Web3>();
 	const [accounts, setAccounts] = useState<string[]>();
 	const [cloneFactoryContract, setCloneFactoryContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
@@ -87,7 +88,7 @@ export const Main: React.FC = () => {
 		console.log('updating user account value: ', accounts && accounts[0] ? accounts[0] : '');
 		return accounts && accounts[0] ? accounts[0] : '';
 	}, [accounts]);
-	const ethereum = window.ethereum as Ethereum;
+	const ethereum = window.ethereum as any;
 	const isCorrectNetwork = chainId === parseInt(process.env.REACT_APP_CHAIN_ID!);
 
 	const [width, setWidth] = useState<number>(window.innerWidth);
@@ -162,7 +163,7 @@ export const Main: React.FC = () => {
 			handleOnDisconnect,
 			handleChainChanged,
 			handleAccountsChanged,
-			walletName
+			walletName,
 		);
 
 		if (!web3Result) {
@@ -170,7 +171,7 @@ export const Main: React.FC = () => {
 			return;
 		}
 
-		const { accounts, contractInstance, web3 } = web3Result;
+		const { accounts, contractInstance, web3, web3ReadOnly } = web3Result;
 
 		if (accounts.length === 0 || accounts[0] === '') {
 			setAlertOpen(true);
@@ -190,6 +191,7 @@ export const Main: React.FC = () => {
 		setAccounts(accounts);
 		setCloneFactoryContract(contractInstance);
 		setWeb3(web3);
+		setWeb3ReadOnly(web3ReadOnly);
 		setIsConnected(true);
 		localStorage.setItem('walletName', walletName);
 		localStorage.setItem('isConnected', 'true');
@@ -252,59 +254,68 @@ export const Main: React.FC = () => {
 	};
 
 	// Contracts setup
-	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (
-		address
-	) => {
-		if (web3) {
-			const implementationContractInstance = new web3.eth.Contract(
-				ImplementationContract.abi as AbiItem[],
-				address
-			);
-			const {
-				_state: state,
-				_price: price,
-				_isDeleted: isDeleted,
-				// eslint-disable-next-line
-				_limit: limit,
-				_speed: speed,
-				_length: length,
-				_startingBlockTimestamp: timestamp,
-				_buyer: buyer,
-				_seller: seller,
-				_encryptedPoolData: encryptedPoolData,
-				_version: version,
-			} = await implementationContractInstance.methods.getPublicVariables().call();
+	const createContractAsync = async (
+		address: string,
+		usePrivateNode = false
+	): Promise<HashRentalContract | null> => {
+		try {
+			const w3 = usePrivateNode && !!web3ReadOnly ? web3ReadOnly : web3;
+			if (w3) {
+				const implementationContractInstance = new w3.eth.Contract(
+					ImplementationContract.abi as AbiItem[],
+					address
+				);
+				const {
+					_state: state,
+					_price: price,
+					_isDeleted: isDeleted,
+					_speed: speed,
+					_length: length,
+					_startingBlockTimestamp: timestamp,
+					_buyer: buyer,
+					_seller: seller,
+					_encryptedPoolData: encryptedPoolData,
+					_version: version,
+				} = await implementationContractInstance.methods.getPublicVariables().call();
 
-			let buyerHistory = [];
-			if (localStorage.getItem(address)) {
-				const history = await implementationContractInstance.methods.getHistory('0', '100').call();
-				buyerHistory = history
-					.filter((h: any) => {
-						return h[6] === userAccount;
-					})
-					.map((h: any) => ({
-						...h,
-						id: address,
-					}));
+				let buyerHistory = [];
+				if (localStorage.getItem(address)) {
+					const history = await implementationContractInstance.methods.getHistory('0', '100').call();
+					buyerHistory = history
+						.filter((h: any) => {
+							return h[6] === userAccount;
+						})
+						.map((h: any) => ({
+							...h,
+							id: address,
+						}));
+				}
+
+				return {
+					id: address,
+					price,
+					speed,
+					length,
+					buyer,
+					seller,
+					timestamp,
+					state,
+					encryptedPoolData,
+					version,
+					isDeleted,
+					history: buyerHistory,
+				} as HashRentalContract;
 			}
 
-			return {
-				id: address,
-				price,
-				speed,
-				length,
-				buyer,
-				seller,
-				timestamp,
-				state,
-				encryptedPoolData,
-				version,
-				isDeleted,
-				history: buyerHistory,
-			} as HashRentalContract;
+			return null;
+		} catch (err) {
+			console.log("🚀 ~ err:", err)
+			if (!usePrivateNode) {
+				return createContractAsync(address, true);
+			} else {
+				throw err;
+			}
 		}
-
-		return null;
 	};
 
 	const addContractsAsync = async (addresses: string[], updateByChunks = false) => {
@@ -333,14 +344,14 @@ export const Main: React.FC = () => {
 			const addresses: string[] = contractId
 				? [contractId]
 				: await cloneFactoryContract?.methods
-						.getContractList()
-						.call()
-						.catch((error: any) => {
-							console.log(
-								'Error when trying get list of contract addresses from CloneFactory contract: ',
-								error
-							);
-						});
+					.getContractList()
+					.call()
+					.catch((error: any) => {
+						console.log(
+							'Error when trying get list of contract addresses from CloneFactory contract: ',
+							error
+						);
+					});
 			console.log('addresses: ', addresses, !!addresses);
 
 			if (addresses) {
@@ -542,7 +553,7 @@ export const Main: React.FC = () => {
 				message={getAlertMessage()}
 				open={alertOpen}
 				setOpen={setAlertOpen}
-				onClick={isMetaMask ? changeNetworkAsync : () => {}}
+				onClick={isMetaMask ? changeNetworkAsync : () => { }}
 			/>
 			<ModalItem
 				open={buyModalOpen}

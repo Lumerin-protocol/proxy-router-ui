@@ -16,22 +16,21 @@ interface Web3Result {
 	accounts: string[];
 	contractInstance: Contract;
 	web3: Web3;
+	web3ReadOnly?: Web3;
 }
 
-const ethereum = window.ethereum as Ethereum;
+const ethereum = window.ethereum as any;
 //const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
 //const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b'; Legacy to ropsten
 const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS; //gorli token
 
 // Web3 setup helpers
-const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnectProvider> = async (
-	walletName
-) => {
+const getProviderAsync: (walletName: string) => Promise<any> = async (walletName) => {
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
 			console.log('Using MetaMask');
 			const provider = await detectEthereumProvider();
-			return provider as Ethereum;
+			return provider;
 		default:
 			console.log('Using WalletConnect');
 			console.log('process.env.REACT_APP_CHAIN_ID: ' + process.env.REACT_APP_CHAIN_ID);
@@ -47,6 +46,23 @@ const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnect
 				},
 			});
 	}
+};
+
+export const getAlchemyNodeUrl = () => {
+	const alchemyApiKey = process.env.REACT_APP_ETH_NODE_API_KEY;
+	if (!alchemyApiKey) {
+		return null;
+	}
+	const chainId = process.env.REACT_APP_CHAIN_ID;
+	let chainString = '';
+	if (chainId === '421614') {
+		chainString = 'sepolia';
+	} else if (chainId === '42161') {
+		chainString = 'mainnet';
+	} else {
+		return null;
+	}
+	return `https://arb-${chainString}.g.alchemy.com/v2/${alchemyApiKey}`;
 };
 
 // Get accounts, web3 and contract instances
@@ -86,12 +102,17 @@ export const getWeb3ResultAsync = async (
 		const web3 = new Web3(provider as provider);
 		const accounts = await web3.eth.getAccounts();
 
-		const contractInstance = new web3.eth.Contract(
+		const nodeUrl = getAlchemyNodeUrl();
+		let web3ReadOnly;
+		if (nodeUrl) {
+			web3ReadOnly = new Web3(getAlchemyNodeUrl());
+		}
+		const cloneFactoryInstance = new web3.eth.Contract(
 			CloneFactory.abi as AbiItem[],
 			process.env.REACT_APP_CLONE_FACTORY
 		);
 
-		return { accounts, contractInstance, web3 };
+		return { accounts, contractInstance: cloneFactoryInstance, web3, web3ReadOnly };
 	} catch (error) {
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);
@@ -145,7 +166,10 @@ export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
 	}
 };
 
-export const getLumerinTokenBalanceAsync = async (web3: Web3, userAccount: string): Promise<number | null> => {
+export const getLumerinTokenBalanceAsync = async (
+	web3: Web3,
+	userAccount: string
+): Promise<number | null> => {
 	const lumerinContractInstance = new web3.eth.Contract(
 		LumerinContract.abi as AbiItem[],
 		lumerinTokenAddress
