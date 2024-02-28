@@ -14,7 +14,6 @@ import { EthereumGateway } from '../gateway/ethereum';
 
 interface Web3Result {
 	accounts: string[];
-	contractInstance: Contract;
 	web3: Web3;
 	web3Gateway: EthereumGateway;
 }
@@ -23,14 +22,12 @@ const ethereum = window.ethereum as Ethereum;
 const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS; //gorli token
 
 // Web3 setup helpers
-const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnectProvider> = async (
-	walletName
-) => {
+const getProviderAsync: (walletName: string) => Promise<any> = async (walletName) => {
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
 			console.log('Using MetaMask');
 			const provider = await detectEthereumProvider();
-			return provider as Ethereum;
+			return provider;
 		default:
 			console.log('Using WalletConnect');
 			console.log('process.env.REACT_APP_CHAIN_ID: ' + process.env.REACT_APP_CHAIN_ID);
@@ -46,6 +43,13 @@ const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnect
 				},
 			});
 	}
+};
+
+export const getReadonlyNodeURL = () => {
+	if (!process.env.REACT_APP_READ_ONLY_ETH_NODE_URL) {
+		throw new Error('REACT_APP_READ_ONLY_ETH_NODE_URL is not set');
+	};
+	return process.env.REACT_APP_READ_ONLY_ETH_NODE_URL;
 };
 
 // Get accounts, web3 and contract instances
@@ -85,14 +89,11 @@ export const getWeb3ResultAsync = async (
 		const web3 = new Web3(provider as provider);
 		const accounts = await web3.eth.getAccounts();
 
-		const contractInstance = new web3.eth.Contract(
-			CloneFactory.abi as AbiItem[],
-			process.env.REACT_APP_CLONE_FACTORY
-		);
+		const web3ReadOnly = new Web3(getReadonlyNodeURL());
 
-		const web3Gateway = new EthereumGateway(web3, process.env.REACT_APP_CLONE_FACTORY!)
+		const web3Gateway = new EthereumGateway(web3, web3ReadOnly, process.env.REACT_APP_CLONE_FACTORY!)
 
-		return { accounts, contractInstance, web3, web3Gateway };
+		return { accounts, web3, web3Gateway };
 	} catch (error) {
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);

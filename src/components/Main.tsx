@@ -64,10 +64,8 @@ export const Main: React.FC = () => {
 	// TODO: as webapp grows think of using context
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [isConnected, setIsConnected] = useState<boolean>(false);
-	// const [web3, setWeb3] = useState<Web3>();
 	const [web3Gateway, setWeb3Gateway] = useState<EthereumGateway>();
 	const [accounts, setAccounts] = useState<string[]>();
-	// const [cloneFactoryContract, setCloneFactoryContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
@@ -174,7 +172,7 @@ export const Main: React.FC = () => {
 			return;
 		}
 
-		const { accounts, contractInstance, web3, web3Gateway } = web3Result;
+		const { accounts, web3, web3Gateway } = web3Result;
 
 		if (accounts.length === 0 || accounts[0] === '') {
 			setAlertOpen(true);
@@ -192,8 +190,6 @@ export const Main: React.FC = () => {
 			setAlertOpen(true);
 		}
 		setAccounts(accounts);
-		// setCloneFactoryContract(contractInstance);
-		// setWeb3(web3);
 		setWeb3Gateway(web3Gateway);
 		setIsConnected(true);
 		localStorage.setItem('walletName', walletName);
@@ -373,7 +369,7 @@ export const Main: React.FC = () => {
 			setContractId('');
 			updateLumerinTokenBalanceAsync().catch((error) => {
 				const typedError = error as Error;
-				printError(typedError.message, typedError.stack as string)
+				printError(typedError.message, typedError.stack as string);
 			});
 		}
 	}, [

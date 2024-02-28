@@ -11,12 +11,14 @@ interface SendStatus {
 
 export class EthereumGateway {
   private web3: Web3;
+  private web3ReadOnly: Web3;
   private cloneFactory: CloneFactoryContext;
   private lumerin: LumerinContext | null = null;
   private fee: string | null = null;
 
-  constructor(web3: Web3, cloneFactoryAddr: string) {
+  constructor(web3: Web3, web3Readonly: Web3, cloneFactoryAddr: string) {
     this.web3 = web3;
+    this.web3ReadOnly = web3Readonly;
     this.cloneFactory = CloneFactory(web3, cloneFactoryAddr);
   }
 
@@ -146,6 +148,7 @@ export class EthereumGateway {
       isDeleted: data._isDeleted,
     };
   }
+
 
   async getContractPublicKey(contractAddress: string): Promise<string> {
     return Implementation(this.web3, contractAddress).methods.pubKey().call();
