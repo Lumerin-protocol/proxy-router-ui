@@ -13,7 +13,6 @@ import {
 	SortByType,
 	StatusText,
 } from './types';
-import { Link } from 'react-router-dom';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
@@ -334,10 +333,10 @@ interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}
 export const getButton: (
 	contentState: string,
 	buttonContent: string,
-	setOpen: Dispatch<SetStateAction<boolean>>,
+	onComplete: () => void,
 	onSubmit,
 	isDisabled
-) => JSX.Element = (contentState, buttonContent, setOpen, onSubmit, isDisabled) => {
+) => JSX.Element = (contentState, buttonContent, onComplete, onSubmit, isDisabled) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -354,10 +353,8 @@ export const getButton: (
 	}
 
 	return contentState === ContentState.Complete ? (
-		<PrimaryButton>
-			<Link to={pathName} onClick={() => setOpen(false)}>
-				<span>{`View ${viewText}`}</span>
-			</Link>
+		<PrimaryButton onClick={onComplete}>
+			<span>{`View ${viewText}`}</span>
 		</PrimaryButton>
 	) : isDisabled ? (
 		<DisabledButton type='button'>{buttonContent}</DisabledButton>
