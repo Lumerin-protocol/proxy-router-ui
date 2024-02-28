@@ -49,7 +49,7 @@ const getProviderAsync: (walletName: string) => Promise<any> = async (walletName
 };
 
 export const getAlchemyNodeUrl = () => {
-	const alchemyApiKey = process.env.REACT_APP_ETH_NODE_API_KEY;
+	const alchemyApiKey = process.env.REACT_APP_ALCHEMY_NODE_API_KEY;
 	if (!alchemyApiKey) {
 		return null;
 	}
