@@ -80,24 +80,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 		setValue?.('poolAddress', preferredPool.address);
 	}, [preferredPool]);
 
-	const poolAddressController = register('poolAddress', {
-		required: 'Pool Address is required',
-		validate: (poolAddress: string) => isValidPoolAddress(poolAddress) || 'Invalid pool address.',
-	});
-
-	const usernameController = register('username', {
-		required: 'Username is required',
-		validate: (username: string) => {
-			if (useLightningPayouts) {
-				return isValidLightningUsername(username) || 'Invalid email.';
-			}
-
-			return (
-				isValidUsername(username) || 'Invalid username. Only letters a-z, numbers and .@- allowed'
-			);
-		},
-	});
-
 	return (
 		<React.Fragment>
 			<Alert
@@ -166,7 +148,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				<InputWrapper>
 					<label htmlFor='poolAddress'>Pool Address *</label>
 					<input
-						{...poolAddressController}
+						{...register('poolAddress', {
+							required: 'Pool Address is required',
+							validate: (poolAddress: string) =>
+								isValidPoolAddress(poolAddress) || 'Invalid pool address.',
+						})}
 						id='poolAddress'
 						type='text'
 						disabled={useLightningPayouts}
@@ -181,13 +167,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 								? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
 								: ''
 						}
-						onChange={(e) => {
-							poolAddressController.onChange(e);
+						onChange={(e) =>
 							setFormData({
 								...inputData,
 								poolAddress: e.target.value,
-							});
-						}}
+							})
+						}
 						value={poolAddress}
 					/>
 					{errors.poolAddress && (
@@ -198,7 +183,19 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 			<InputWrapper>
 				<label htmlFor='username'>Username *</label>
 				<input
-					{...usernameController}
+					{...register('username', {
+						required: 'Username is required',
+						validate: (username: string) => {
+							if (useLightningPayouts) {
+								return isValidLightningUsername(username) || 'Invalid email.';
+							}
+
+							return (
+								isValidUsername(username) ||
+								'Invalid username. Only letters a-z, numbers and .@- allowed'
+							);
+						},
+					})}
 					id='username'
 					type='text'
 					placeholder={useLightningPayouts ? 'bob@getalby.com' : 'account.worker'}
@@ -209,13 +206,12 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					}
 					defaultValue={isEdit && buyerString ? getWorkerName(buyerString) : ''}
 					value={username}
-					onChange={(e) => {
-						usernameController.onChange(e);
+					onChange={(e) =>
 						setFormData({
 							...inputData,
 							username: e.target.value,
-						});
-					}}
+						})
+					}
 				/>
 				{errors.username?.type === 'required' && (
 					<div className='text-xs text-red-500'>{errors.username.message}</div>

@@ -16,7 +16,6 @@ interface Web3Result {
 	accounts: string[];
 	contractInstance: Contract;
 	web3: Web3;
-	web3ReadOnly?: Web3;
 }
 
 const ethereum = window.ethereum as Ethereum;
@@ -25,12 +24,14 @@ const ethereum = window.ethereum as Ethereum;
 const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS; //gorli token
 
 // Web3 setup helpers
-const getProviderAsync: (walletName: string) => Promise<any> = async (walletName) => {
+const getProviderAsync: (walletName: string) => Promise<Ethereum | WalletConnectProvider> = async (
+	walletName
+) => {
 	switch (walletName) {
 		case WalletText.ConnectViaMetaMask:
 			console.log('Using MetaMask');
 			const provider = await detectEthereumProvider();
-			return provider;
+			return provider as Ethereum;
 		default:
 			console.log('Using WalletConnect');
 			console.log('process.env.REACT_APP_CHAIN_ID: ' + process.env.REACT_APP_CHAIN_ID);
@@ -46,10 +47,6 @@ const getProviderAsync: (walletName: string) => Promise<any> = async (walletName
 				},
 			});
 	}
-};
-
-export const getReadonlyNodeURL = () => {
-	return process.env.REACT_APP_READ_ONLY_ETH_NODE_URL;
 };
 
 // Get accounts, web3 and contract instances
@@ -89,17 +86,12 @@ export const getWeb3ResultAsync = async (
 		const web3 = new Web3(provider as provider);
 		const accounts = await web3.eth.getAccounts();
 
-		const nodeUrl = getReadonlyNodeURL();
-		let web3ReadOnly;
-		if (nodeUrl) {
-			web3ReadOnly = new Web3(nodeUrl);
-		}
-		const cloneFactoryInstance = new web3.eth.Contract(
+		const contractInstance = new web3.eth.Contract(
 			CloneFactory.abi as AbiItem[],
 			process.env.REACT_APP_CLONE_FACTORY
 		);
 
-		return { accounts, contractInstance: cloneFactoryInstance, web3, web3ReadOnly };
+		return { accounts, contractInstance, web3 };
 	} catch (error) {
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);
@@ -153,10 +145,10 @@ export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
 	}
 };
 
-export const getLumerinTokenBalanceAsync = async (
+export const getLumerinTokenBalanceAsync: (
 	web3: Web3,
 	userAccount: string
-): Promise<number | null> => {
+) => Promise<number | null> = async (web3, userAccount) => {
 	const lumerinContractInstance = new web3.eth.Contract(
 		LumerinContract.abi as AbiItem[],
 		lumerinTokenAddress
