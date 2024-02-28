@@ -8,6 +8,7 @@ import {
 	ContractInfo,
 	FormData,
 	InputValuesBuyForm,
+	PathName,
 	Receipt,
 	UpdateFormProps,
 } from '../../../../types';
@@ -32,6 +33,7 @@ import { buttonText, paragraphText } from '../../../../shared';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { ContractLink } from '../../Modal.styled';
 import { getGasConfig } from '../../../../web3/helpers';
+import { useHistory } from 'react-router';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -56,6 +58,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
+	const history = useHistory();
 
 	const handleEditError = getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState);
 
@@ -65,7 +68,9 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		handleSubmit,
 		clearErrors,
 		formState: { errors, isValid },
-	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
+		setValue,
+		trigger,
+	} = useForm<InputValuesBuyForm>({ mode: 'onBlur', reValidateMode: 'onBlur' });
 
 	// Contract setup
 	const getContractInfo: () => ContractInfo = () => {
@@ -218,8 +223,12 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						isEdit={true}
 						inputData={formData}
 						setFormData={setFormData}
-						onUseLightningPayoutsFlow={setUsedLightningPayoutsFlow}
 						clearErrors={clearErrors}
+						onUseLightningPayoutsFlow={(e) => {
+							setUsedLightningPayoutsFlow(e);
+							trigger('poolAddress');
+							clearErrors();
+						}}
 					/>
 				);
 		}
@@ -255,7 +264,10 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					getButton(
 						contentState,
 						buttonContent,
-						setOpen,
+						() => {
+							setOpen(false);
+							history.push(PathName.MyOrders);
+						},
 						() => editContractAsync(formData),
 						!isValid
 					)}
