@@ -32,6 +32,7 @@ import {
 	FormData,
 	HashRentalContract,
 	InputValuesBuyForm,
+	PathName,
 	Receipt,
 	SendOptions,
 } from '../../../../types';
@@ -43,6 +44,7 @@ import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styl
 import { purchasedHashrate } from '../../../../analytics';
 import { ContractLink } from '../../Modal.styled';
 import { Alert as AlertMUI } from '@mui/material';
+import { useHistory } from 'react-router';
 
 interface ErrorWithCode extends Error {
 	code?: number;
@@ -86,6 +88,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [totalHashrate, setTotalHashrate] = useState<number>();
 	const [purchasedTx, setPurchasedTx] = useState<string>('');
 	const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
+	const history = useHistory();
 
 	/*
 	 * This will need to be changed to the mainnet token
@@ -102,7 +105,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		clearErrors,
 		formState: { errors, isValid },
 		setValue,
-	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
+		trigger,
+	} = useForm<InputValuesBuyForm>({ mode: 'onBlur', reValidateMode: 'onBlur' });
 
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
@@ -306,7 +310,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						setValue={setValue}
 						setFormData={setFormData}
 						inputData={formData}
-						onUseLightningPayoutsFlow={setUsedLightningPayoutsFlow}
+						onUseLightningPayoutsFlow={(e) => {
+							setUsedLightningPayoutsFlow(e);
+							trigger('poolAddress');
+							clearErrors();
+						}}
 						clearErrors={clearErrors}
 					/>
 				);
@@ -357,7 +365,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					getButton(
 						contentState,
 						buttonContent,
-						setOpen,
+						() => {
+							setOpen(false);
+							history.push(PathName.MyOrders);
+						},
 						() => buyContractAsync(formData),
 						!isValid
 					)}

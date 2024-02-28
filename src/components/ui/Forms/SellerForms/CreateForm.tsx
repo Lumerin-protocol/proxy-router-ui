@@ -163,7 +163,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit, !isValid)}
+					getButton(contentState, buttonContent, () => {}, handleSubmit, !isValid)}
 			</FormButtonsWrapper>
 		</form>
 	);
