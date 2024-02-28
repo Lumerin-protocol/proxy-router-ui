@@ -92,7 +92,7 @@ export const getWeb3ResultAsync = async (
 		const nodeUrl = getReadonlyNodeURL();
 		let web3ReadOnly;
 		if (nodeUrl) {
-			web3ReadOnly = new Web3(getReadonlyNodeURL());
+			web3ReadOnly = new Web3(nodeUrl);
 		}
 		const cloneFactoryInstance = new web3.eth.Contract(
 			CloneFactory.abi as AbiItem[],
