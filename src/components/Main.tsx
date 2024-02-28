@@ -88,7 +88,7 @@ export const Main: React.FC = () => {
 		console.log('updating user account value: ', accounts && accounts[0] ? accounts[0] : '');
 		return accounts && accounts[0] ? accounts[0] : '';
 	}, [accounts]);
-	const ethereum = window.ethereum as any;
+	const ethereum = window.ethereum as Ethereum;
 	const isCorrectNetwork = chainId === parseInt(process.env.REACT_APP_CHAIN_ID!);
 
 	const [width, setWidth] = useState<number>(window.innerWidth);
@@ -163,7 +163,7 @@ export const Main: React.FC = () => {
 			handleOnDisconnect,
 			handleChainChanged,
 			handleAccountsChanged,
-			walletName,
+			walletName
 		);
 
 		if (!web3Result) {
@@ -280,7 +280,9 @@ export const Main: React.FC = () => {
 
 				let buyerHistory = [];
 				if (localStorage.getItem(address)) {
-					const history = await implementationContractInstance.methods.getHistory('0', '100').call();
+					const history = await implementationContractInstance.methods
+						.getHistory('0', '100')
+						.call();
 					buyerHistory = history
 						.filter((h: any) => {
 							return h[6] === userAccount;
@@ -309,7 +311,7 @@ export const Main: React.FC = () => {
 
 			return null;
 		} catch (err) {
-			console.log("🚀 ~ err:", err)
+			console.log('🚀 ~ err:', err);
 			if (!usePrivateNode) {
 				return createContractAsync(address, true);
 			} else {
@@ -344,14 +346,14 @@ export const Main: React.FC = () => {
 			const addresses: string[] = contractId
 				? [contractId]
 				: await cloneFactoryContract?.methods
-					.getContractList()
-					.call()
-					.catch((error: any) => {
-						console.log(
-							'Error when trying get list of contract addresses from CloneFactory contract: ',
-							error
-						);
-					});
+						.getContractList()
+						.call()
+						.catch((error: any) => {
+							console.log(
+								'Error when trying get list of contract addresses from CloneFactory contract: ',
+								error
+							);
+						});
 			console.log('addresses: ', addresses, !!addresses);
 
 			if (addresses) {
@@ -404,7 +406,7 @@ export const Main: React.FC = () => {
 			setContractId('');
 			updateLumerinTokenBalanceAsync().catch((error) => {
 				const typedError = error as Error;
-				printError(typedError.message, typedError.stack as string)
+				printError(typedError.message, typedError.stack as string);
 			});
 		}
 	}, [
@@ -553,7 +555,7 @@ export const Main: React.FC = () => {
 				message={getAlertMessage()}
 				open={alertOpen}
 				setOpen={setAlertOpen}
-				onClick={isMetaMask ? changeNetworkAsync : () => { }}
+				onClick={isMetaMask ? changeNetworkAsync : () => {}}
 			/>
 			<ModalItem
 				open={buyModalOpen}
