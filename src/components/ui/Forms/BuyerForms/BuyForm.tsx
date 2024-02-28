@@ -162,13 +162,12 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			}
 
 			try {
-				const sendOptions: Partial<SendOptions> = {
-					from: userAccount,
-					...getGasConfig(),
-				};
-				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
-
 				if (web3 && formData) {
+					const gasPrice = await web3.eth.getGasPrice();
+					const sendOptions: Partial<SendOptions> = {
+						from: userAccount,
+						...getGasConfig(gasPrice),
+					};
 					// Check contract is available before increasing allowance
 					const implementationContract = new web3.eth.Contract(
 						ImplementationContract.abi as AbiItem[],
@@ -187,6 +186,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						LumerinContract.abi as AbiItem[],
 						lumerinTokenAddress
 					);
+					
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);

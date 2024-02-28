@@ -198,13 +198,13 @@ export const divideByDigits: (amount: number) => number = (amount) => {
 	return parseInt(String(amount / 10 ** 8));
 };
 
-export const getGasConfig = () => {
+export const getGasConfig = (gasPrice: string) => {
 	const chainId = process.env.REACT_APP_CHAIN_ID;
 	if (chainId === '421614' || chainId === '42161') {
 		// no priority fee on Arbitrum, maxFeePerGas is stable at 0.1 gwei
 		return {
 			maxPriorityFeePerGas: ethers.utils.parseUnits('0', 'gwei'),
-			maxFeePerGas: ethers.utils.parseUnits('0.1', 'gwei'),
+			maxFeePerGas: ethers.utils.parseUnits(gasPrice, 'wei'),
 		};
 	}
 	return {};
