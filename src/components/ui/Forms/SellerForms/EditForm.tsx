@@ -3,21 +3,18 @@ import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
 	AlertMessage,
-	CloseOutType,
 	ContentState,
 	HashRentalContract,
 	InputValuesCreateForm,
 	Text,
-	UpdateFormProps,
 } from '../../../../types';
 import { getButton, isNoEditSeller, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
-import { AbiItem } from 'web3-utils';
-import { ImplementationContract } from 'contracts-js';
 import { multiplyByDigits } from '../../../../web3/helpers';
+import { EthereumGateway } from '../../../../gateway/ethereum';
 
 // Form text setup
 const buttonText: Text = {
@@ -33,16 +30,25 @@ const getFormData: (contract: HashRentalContract) => InputValuesCreateForm = (co
 		walletAddress: contract.seller as string,
 		contractTime: parseInt(contract.length as string) / 3600,
 		speed: parseInt(contract.speed as string),
-		listPrice: contract.price as number,
+		listPrice: Number(contract.price),
 	};
 };
 
-export const EditForm: React.FC<UpdateFormProps> = ({
-	web3,
+export interface EditFormProps {
+	contracts: HashRentalContract[];
+	contractId: string;
+	userAccount: string;
+	web3Gateway?: EthereumGateway;
+	currentBlockTimestamp?: number;
+	closeForm: () => void;
+}
+
+export const EditForm: React.FC<EditFormProps> = ({
+	web3Gateway,
 	contracts,
 	contractId,
 	userAccount,
-	setOpen,
+	closeForm,
 }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 	[contentState, setContentState] = useState<string>(ContentState.Create);
@@ -73,43 +79,47 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		// Pending
 		if (isValid && contentState === ContentState.Pending) {
 			// Create contract
+			if (!web3Gateway) {
+				console.error('web3Gateway is not defined');
+				return;
+			}
 			try {
 				// TODO: convert usd to lmr (aggregate of exchanges?)
-				if (web3) {
-					const gasLimit = 1000000;
-					const implementationContract = new web3.eth.Contract(
-						ImplementationContract.abi as AbiItem[],
-						contract.id as string
-					);
-					const price = multiplyByDigits(formData.listPrice as number);
-					let speed;
-					if (formData && formData.speed) {
-						speed = formData.speed * 10 ** 12;
-					} else {
-						speed = 0;
-					}
-					const receipt = await implementationContract.methods
-						.setUpdatePurchaseInformation(
-							price,
-							0,
-							speed,
-							(formData.contractTime as number) * 3600,
-							CloseOutType.CloseNoClaimAtCompletion
-						)
-						.send({ from: userAccount, gas: gasLimit });
-					if (receipt?.status) {
-						setContentState(ContentState.Complete);
-					}
+				const gasLimit = 1000000;
+				const price = multiplyByDigits(formData.listPrice as number);
+				let speed;
+				if (formData && formData.speed) {
+					speed = formData.speed * 10 ** 12;
+				} else {
+					speed = 0;
 				}
+				if (!formData.contractTime){
+					console.error('missing contractTime');
+					return;
+				}
+				const receipt = await web3Gateway.editContractTerms({
+					contractAddress: contractId,
+					price: String(price),
+					speed: String(speed),
+					length: String(formData.contractTime * 3600),
+					profitTarget: '0',
+					from: userAccount,
+				});
+				if (receipt?.status) {
+					setContentState(ContentState.Complete);
+				}
+
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				setOpen(false);
+				closeForm();
 			}
 		}
 
 		// Completed
-		if (contentState === ContentState.Complete) setOpen(false);
+		if (contentState === ContentState.Complete) {
+			closeForm();
+		}
 	};
 
 	// Check if user is seller and contract is running
@@ -117,7 +127,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		let timeoutId: NodeJS.Timeout;
 		if (isNoEditSeller(contract, userAccount)) {
 			setAlertOpen(true);
-			timeoutId = setTimeout(() => setOpen(false), 3000);
+			timeoutId = setTimeout(() => closeForm(), 3000);
 		}
 
 		return () => clearTimeout(timeoutId);
@@ -146,7 +156,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 				break;
 			default:
 				buttonContent = buttonText.edit as string;
-				content = <ReviewContent web3={web3} register={register} errors={errors} data={formData} />;
+				content = <ReviewContent register={register} errors={errors} data={formData} />;
 		}
 	};
 	createContent();
@@ -178,7 +188,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 					<button
 						type='submit'
 						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-						onClick={() => setOpen(false)}
+						onClick={() => closeForm()}
 					>
 						Close
 					</button>

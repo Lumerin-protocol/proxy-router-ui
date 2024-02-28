@@ -1,10 +1,7 @@
 // Exported types here
 // Types local to a file will be in that file
 
-import { Dispatch, SetStateAction } from 'react';
 import { HttpProvider } from 'web3-core';
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
 
 // Enums
 export enum WalletText {
@@ -91,7 +88,7 @@ export enum CloseOutType {
 export interface Ethereum extends HttpProvider {
 	networkVersion: string;
 	on: <T>(method: string, callback: (input: T) => void) => void;
-	request: (options: {}) => void;
+	request: (options: {}) => Promise<void>;
 }
 
 export interface ConnectInfo {
@@ -110,9 +107,9 @@ export interface ContractHistory {
 }
 
 export interface HashRentalContract {
-	id?: JSX.Element | string;
+	id: string;
 	contractId?: string;
-	price?: JSX.Element | string | number;
+	price: string;
 	speed?: string | number;
 	length?: string | number;
 	trade?: JSX.Element | string;
@@ -124,9 +121,9 @@ export interface HashRentalContract {
 	timestamp?: string;
 	state?: string;
 	encryptedPoolData?: string;
-	version?: string;
 	history?: ContractHistory[];
-	// isDeleted: boolean;
+	version: string;
+	isDeleted: boolean;
 }
 
 // Making fields optional bc a user might not have filled out the input fields
@@ -198,19 +195,6 @@ export interface SendOptions {
 	from: string;
 	gas: number;
 	value?: string;
-}
-
-export interface UpdateFormProps {
-	contracts: HashRentalContract[];
-	contractId: string;
-	userAccount: string;
-	web3: Web3 | undefined;
-	setOpen: Dispatch<SetStateAction<boolean>>;
-	currentBlockTimestamp?: number;
-}
-
-export interface CancelFormProps extends UpdateFormProps {
-	cloneFactoryContract: Contract | undefined;
 }
 
 interface Networks {

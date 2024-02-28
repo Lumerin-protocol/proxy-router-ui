@@ -30,14 +30,12 @@ import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
 import { divideByDigits } from '../web3/helpers';
-import Web3 from 'web3';
 import _ from 'lodash';
 import { FinishedContracts, PurchasedContracts } from './ui/Cards/PurchasedContracts';
 import { TabSwitch } from './ui/TabSwitch.Styled';
 import { SortToolbar } from './ui/SortToolbar';
 
 interface MyOrdersProps {
-	web3: Web3 | undefined;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
@@ -109,6 +107,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
 			if (!_.isEmpty(contract)) {
+				// FIX IT!
 				updatedOrder.id = (
 					<TableIcon
 						icon={null}
@@ -118,7 +117,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						justify='start'
 					/>
 				);
-				updatedOrder.price = divideByDigits(updatedOrder.price as number);
+				updatedOrder.price = String(divideByDigits(Number(updatedOrder.price)));
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(
 					updatedOrder.state as string,

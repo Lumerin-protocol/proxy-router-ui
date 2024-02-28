@@ -7,13 +7,10 @@ import {
 	ContentState,
 	ContractInfo,
 	FormData,
+	HashRentalContract,
 	InputValuesBuyForm,
 	PathName,
-	Receipt,
-	UpdateFormProps,
 } from '../../../../types';
-import { AbiItem } from 'web3-utils';
-import { ImplementationContract } from 'contracts-js';
 import {
 	getPoolRfc2396,
 	getButton,
@@ -32,8 +29,8 @@ import { Alert } from '../../Alert';
 import { buttonText, paragraphText } from '../../../../shared';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { ContractLink } from '../../Modal.styled';
-import { getGasConfig } from '../../../../web3/helpers';
 import { useHistory } from 'react-router';
+import { EthereumGateway } from '../../../../gateway/ethereum';
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
@@ -44,12 +41,22 @@ const initialFormData: FormData = {
 	speed: '',
 	price: '',
 };
-export const EditForm: React.FC<UpdateFormProps> = ({
+
+interface EditFormProps {
+	contracts: HashRentalContract[];
+	contractId: string;
+	userAccount: string;
+	web3Gateway?: EthereumGateway;
+	currentBlockTimestamp?: number;
+	closeForm: () => void;
+}
+
+export const EditForm: React.FC<EditFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
-	web3,
-	setOpen,
+	web3Gateway,
+	closeForm,
 }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
@@ -105,55 +112,40 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		// Pending
 		if (isValid && contentState === ContentState.Pending) {
 			try {
-				if (web3) {
-					const implementationContract = new web3.eth.Contract(
-						ImplementationContract.abi as AbiItem[],
-						contract.id as string
-					);
-					const sendOptions = {
-						...getGasConfig(),
+				if (!web3Gateway) {
+					console.error('Web3 is not connected');
+					return;
+				}
+
+				const buyerDest: string = getPoolRfc2396(formData)!;
+				const validatorPublicKey = (await getValidatorPublicKey()) as string;
+				const encryptedBuyerInput = (
+					await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+				).toString('hex');
+
+				const validatorURL: string = `stratum+tcp://:@${getValidatorURL()}`;
+				const pubKey = await web3Gateway.getContractPublicKey(contractId);
+				const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString(
+					'hex'
+				);
+
+				const receipt = await web3Gateway.editContractDestination({
 						from: userAccount,
-					};
+						contractAddress: contractId,
+						encrValidatorURL: encrValidatorURL,
+						encrDestURL: encryptedBuyerInput,
+				});
 
-					const buyerDest: string = getPoolRfc2396(formData)!;
-
-					const validatorPublicKey = (await getValidatorPublicKey()) as string;
-
-					const encryptedBuyerInput = (
-						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
-					).toString('hex');
-
-					const validatorAddress: string = `stratum+tcp://:@${getValidatorURL()}`;
-
-					const pubKey = await implementationContract.methods.pubKey().call();
-
-					let validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
-						'hex'
+				if (receipt?.status) {
+					setContentState(ContentState.Complete);
+					localStorage.setItem(
+						contractId,
+						JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
 					);
-
-					const updateDestGas = await implementationContract?.methods
-						.setDestination(validatorEncr, encryptedBuyerInput)
-						.estimateGas({
-							...sendOptions,
-						});
-
-					const receipt: Receipt = await implementationContract.methods
-						.setDestination(validatorEncr, encryptedBuyerInput)
-						.send({
-							...sendOptions,
-							gas: updateDestGas,
-						});
-					if (receipt?.status) {
-						setContentState(ContentState.Complete);
-						localStorage.setItem(
-							contractId,
-							JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
-						);
-					} else {
-						setAlertMessage(AlertMessage.EditFailed);
-						setAlertOpen(true);
-						setContentState(ContentState.Cancel);
-					}
+				} else {
+					setAlertMessage(AlertMessage.EditFailed);
+					setAlertOpen(true);
+					setContentState(ContentState.Cancel);
 				}
 			} catch (error) {
 				const typedError = error as Error;
@@ -163,7 +155,9 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		}
 
 		// Completed
-		if (contentState === ContentState.Complete) setOpen(false);
+		if (contentState === ContentState.Complete) {
+			closeForm();
+		}
 	};
 
 	// Check if user is buyer and contract is running
@@ -172,7 +166,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 		if (isNoEditBuyer(contract, userAccount)) {
 			setAlertOpen(true);
 			setAlertMessage(AlertMessage.NoEditBuyer);
-			timeoutId = setTimeout(() => setOpen(false), 3000);
+			timeoutId = setTimeout(() => closeForm(), 3000);
 		}
 
 		return () => clearTimeout(timeoutId);
@@ -199,7 +193,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirmChanges as string;
-				content = <ConfirmContent web3={web3} data={formData} />;
+				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:
@@ -257,7 +251,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 			{content}
 			{display && <p className='subtext'>{paragraphContent}</p>}
 			<FormButtonsWrapper>
-				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+				<SecondaryButton type='submit' onClick={() => closeForm()}>
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
@@ -265,7 +259,7 @@ export const EditForm: React.FC<UpdateFormProps> = ({
 						contentState,
 						buttonContent,
 						() => {
-							setOpen(false);
+							closeForm();
 							history.push(PathName.MyOrders);
 						},
 						() => editContractAsync(formData),
