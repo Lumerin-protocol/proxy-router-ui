@@ -186,7 +186,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						LumerinContract.abi as AbiItem[],
 						lumerinTokenAddress
 					);
-					
+
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
 						.send(sendOptions);

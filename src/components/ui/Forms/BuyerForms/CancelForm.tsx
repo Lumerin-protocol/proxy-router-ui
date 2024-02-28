@@ -62,12 +62,13 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 
 			try {
 				if (web3) {
+					const gasPrice = await web3.eth.getGasPrice();
 					const implementationContract = new web3.eth.Contract(
 						ImplementationContract.abi as AbiItem[],
 						contract.id as string
 					);
 					const sendOptions = {
-						...getGasConfig(),
+						...getGasConfig(gasPrice),
 						from: userAccount,
 					};
 
