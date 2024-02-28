@@ -48,21 +48,8 @@ const getProviderAsync: (walletName: string) => Promise<any> = async (walletName
 	}
 };
 
-export const getAlchemyNodeUrl = () => {
-	const alchemyApiKey = process.env.REACT_APP_ALCHEMY_NODE_API_KEY;
-	if (!alchemyApiKey) {
-		return null;
-	}
-	const chainId = process.env.REACT_APP_CHAIN_ID;
-	let chainString = '';
-	if (chainId === '421614') {
-		chainString = 'sepolia';
-	} else if (chainId === '42161') {
-		chainString = 'mainnet';
-	} else {
-		return null;
-	}
-	return `https://arb-${chainString}.g.alchemy.com/v2/${alchemyApiKey}`;
+export const getReadonlyNodeURL = () => {
+	return process.env.REACT_APP_READ_ONLY_ETH_NODE_URL;
 };
 
 // Get accounts, web3 and contract instances
@@ -102,10 +89,10 @@ export const getWeb3ResultAsync = async (
 		const web3 = new Web3(provider as provider);
 		const accounts = await web3.eth.getAccounts();
 
-		const nodeUrl = getAlchemyNodeUrl();
+		const nodeUrl = getReadonlyNodeURL();
 		let web3ReadOnly;
 		if (nodeUrl) {
-			web3ReadOnly = new Web3(getAlchemyNodeUrl());
+			web3ReadOnly = new Web3(getReadonlyNodeURL());
 		}
 		const cloneFactoryInstance = new web3.eth.Contract(
 			CloneFactory.abi as AbiItem[],
