@@ -203,7 +203,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					})
 					
 					if (!receipt.status) {
-						setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
+						setAlertMessage(AlertMessage.PurchaseFailed);
 						setAlertOpen(true);
 						setContentState(ContentState.Cancel);
 						return;
