@@ -78,7 +78,7 @@ export class EthereumGateway {
       "0",
       "",
       props.pubKey,
-    ).estimateGas({ from: props.from, ...this.getGasConfig() });
+    ).estimateGas({ from: props.from, ...await this.getGasConfig() });
     
     const res = await this.cloneFactoryPub.methods.setCreateNewRentalContractV2(
       props.price,
@@ -88,7 +88,7 @@ export class EthereumGateway {
       "0",
       "",
       props.pubKey,
-    ).send({ from: props.from, gas: esimate, ...this.getGasConfig() });
+    ).send({ from: props.from, gas: esimate, ...await this.getGasConfig() });
 
     return { status: res.status, transactionHash: res.transactionHash };
   }
@@ -126,7 +126,7 @@ export class EthereumGateway {
       .estimateGas({
 			  from: props.from,
 			  value: props.fee,
-        ...this.getGasConfig(),
+        ...await this.getGasConfig(),
 		  });
 
 		const receipt = await impl.methods
@@ -135,7 +135,7 @@ export class EthereumGateway {
         from: props.from, 
         value: props.fee, 
         gas,
-        ...this.getGasConfig(), 
+        ...await this.getGasConfig(), 
       });
 
     return { status: receipt.status, transactionHash: receipt.transactionHash };
@@ -201,9 +201,12 @@ export class EthereumGateway {
   }
 
   async increaseAllowance(price: string, from: string): Promise<SendStatus>{
+    const gas = await this.getLumerin().methods
+      .increaseAllowance(this.cloneFactoryPub.address, price)
+      .estimateGas({ from, ...await this.getGasConfig() });
     const res = await this.getLumerin().methods
       .increaseAllowance(this.cloneFactoryPub.address, price)
-      .send({ from, ...this.getGasConfig() });
+      .send({ from, gas, ...await this.getGasConfig() });
 
     return { status: res.status, transactionHash: res.transactionHash };
   }
@@ -217,14 +220,14 @@ export class EthereumGateway {
 		const impl = Implementation(this.web3Pub, props.contractAddress);
 		const gas = await impl.methods
 			.setDestination(props.encrValidatorURL, props.encrDestURL)
-			.estimateGas({ from: props.from, ...this.getGasConfig() });
+			.estimateGas({ from: props.from, ...await this.getGasConfig() });
 
 		const receipt = await impl.methods
 			.setDestination(props.encrValidatorURL, props.encrDestURL)
 			.send({
 				from: props.from,
 				gas: gas,
-        ...this.getGasConfig(),
+        ...await this.getGasConfig(),
 			});
 
 		return { status: receipt.status, transactionHash: receipt.transactionHash};
@@ -250,13 +253,18 @@ export class EthereumGateway {
 		return { status: receipt.status, transactionHash: receipt.transactionHash };
 	}
 
-  getGasConfig(){
+  async getGasConfig(){
+    const gasPrice = await callProviders(
+      () => this.web3Pub.eth.getGasPrice(),
+      () => this.web3Prv.eth.getGasPrice()
+    )
+
     const chainId = process.env.REACT_APP_CHAIN_ID;
     if (chainId === '421614' || chainId === '42161') {
       // no priority fee on Arbitrum, maxFeePerGas is stable at 0.1 gwei
       return {
         maxPriorityFeePerGas: ethers.utils.parseUnits('0', 'gwei'),
-        maxFeePerGas: ethers.utils.parseUnits('0.1', 'gwei'),
+        maxFeePerGas: ethers.utils.parseUnits(gasPrice, 'gwei'),
       };
     }
     return {};
