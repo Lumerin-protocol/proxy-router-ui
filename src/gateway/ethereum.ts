@@ -10,26 +10,39 @@ interface SendStatus {
 }
 
 export class EthereumGateway {
-  private web3: Web3;
-  private web3ReadOnly: Web3;
-  private cloneFactory: CloneFactoryContext;
+  private web3Pub: Web3;  // public node
+  private web3Prv: Web3;  // private node readonly
+  private cloneFactoryPub: CloneFactoryContext; // public clonefactory instance
+  private cloneFactoryPrv: CloneFactoryContext; // private clonefactory instance
   private lumerin: LumerinContext | null = null;
   private fee: string | null = null;
 
-  constructor(web3: Web3, web3Readonly: Web3, cloneFactoryAddr: string) {
-    this.web3 = web3;
-    this.web3ReadOnly = web3Readonly;
-    this.cloneFactory = CloneFactory(web3, cloneFactoryAddr);
+  constructor(web3Public: Web3, web3Private: Web3, cloneFactoryAddr: string) {
+    this.web3Pub = web3Public;
+    this.web3Prv = web3Private;
+    this.cloneFactoryPub = CloneFactory(web3Public, cloneFactoryAddr);
+    this.cloneFactoryPrv = CloneFactory(web3Private, cloneFactoryAddr);
   }
 
   async init(){
     const lumerinAddr = await this.getLumerinAddr();
-    this.lumerin = Lumerin(this.web3, lumerinAddr);
+    this.lumerin = Lumerin(this.web3Pub, lumerinAddr);
+    this.fee = await this.getMarketplaceFeeAddr();
   }
 
 	async getLumerinAddr(): Promise<string> {
-		return this.cloneFactory.methods.lumerin().call();
+    return await callProviders(
+      () => this.cloneFactoryPub.methods.lumerin().call(),
+      () => this.cloneFactoryPrv.methods.lumerin().call()
+    );
 	}
+
+  async getMarketplaceFeeAddr(): Promise<string> {
+    return await callProviders(
+      () => this.cloneFactoryPub.methods.marketplaceFee().call(),
+      () => this.cloneFactoryPrv.methods.marketplaceFee().call()
+    );
+  }
 
   getLumerin() {
     if (!this.lumerin) {
@@ -46,7 +59,10 @@ export class EthereumGateway {
   }
 
   async getCurrentBlockTimestamp(): Promise<number> {
-    return this.web3.eth.getBlock('latest').then((block) => Number(block.timestamp));
+    return await callProviders(
+      () => this.web3Pub.eth.getBlock('latest').then((block) => Number(block.timestamp)),
+      () => this.web3Prv.eth.getBlock('latest').then((block) => Number(block.timestamp))
+    );
   }
 
   async getLumerinBalance(address: string): Promise<string> {
@@ -54,7 +70,7 @@ export class EthereumGateway {
   }
 
   async createContract(props: {price: string, speed: string, durationSeconds: number, pubKey: string, from: string}): Promise<SendStatus> {
-    const esimate = await this.cloneFactory.methods.setCreateNewRentalContractV2(
+    const esimate = await this.cloneFactoryPub.methods.setCreateNewRentalContractV2(
       props.price,
       '0',
       props.speed,
@@ -64,7 +80,7 @@ export class EthereumGateway {
       props.pubKey,
     ).estimateGas({ from: props.from, ...this.getGasConfig() });
     
-    const res = await this.cloneFactory.methods.setCreateNewRentalContractV2(
+    const res = await this.cloneFactoryPub.methods.setCreateNewRentalContractV2(
       props.price,
       '0',
       props.speed,
@@ -78,7 +94,7 @@ export class EthereumGateway {
   }
 
   async purchaseContract(props: { contractAddress: string, validatorAddress: string, encrValidatorURL: string, encrDestURL: string, termsVersion: string, buyer: string, feeETH: string }): Promise<SendStatus> {
-    const gas = await this.cloneFactory.methods
+    const gas = await this.cloneFactoryPub.methods
       .setPurchaseRentalContractV2(
         props.contractAddress,
         props.validatorAddress,
@@ -87,7 +103,7 @@ export class EthereumGateway {
         props.termsVersion,
       ).estimateGas({ from: props.buyer, value: props.feeETH });
 
-    const res = await this.cloneFactory.methods.setPurchaseRentalContractV2(
+    const res = await this.cloneFactoryPub.methods.setPurchaseRentalContractV2(
       props.contractAddress,
       props.validatorAddress,
       props.encrValidatorURL,
@@ -104,7 +120,7 @@ export class EthereumGateway {
 		fee: string;
 		closeoutType: CloseOutType;
 	}): Promise<SendStatus> {
-		const impl = Implementation(this.web3, props.contractAddress);
+		const impl = Implementation(this.web3Pub, props.contractAddress);
 		const gas = await impl.methods
       .setContractCloseOut(String(props.closeoutType))
       .estimateGas({
@@ -126,14 +142,18 @@ export class EthereumGateway {
   }
 
   async getContracts(){
-    return await this.cloneFactory.methods.getContractList().call();
+    return await callProviders(
+      () => this.cloneFactoryPub.methods.getContractList().call(), 
+      () => this.cloneFactoryPrv.methods.getContractList().call()
+    );
   }
 
 	async getContract(contractAddress: string) {
-		const data = await Implementation(this.web3, contractAddress)
-			.methods.getPublicVariables()
-			.call();
-
+    const data = await callProviders(
+      () => Implementation(this.web3Pub, contractAddress).methods.getPublicVariables().call(),
+      () => Implementation(this.web3Prv, contractAddress).methods.getPublicVariables().call()
+    )
+    
     return {
       id: contractAddress,
       price: data._price,
@@ -151,11 +171,17 @@ export class EthereumGateway {
 
 
   async getContractPublicKey(contractAddress: string): Promise<string> {
-    return Implementation(this.web3, contractAddress).methods.pubKey().call();
+    return callProviders(
+      () => Implementation(this.web3Pub, contractAddress).methods.pubKey().call(),
+      () => Implementation(this.web3Prv, contractAddress).methods.pubKey().call()
+    );
   }
 
   async getContractState(contractAddress: string): Promise<ContractState> {
-    const state = await Implementation(this.web3, contractAddress).methods.contractState().call()
+    const state = await callProviders(
+      () => Implementation(this.web3Pub, contractAddress).methods.contractState().call(),
+      () => Implementation(this.web3Prv, contractAddress).methods.contractState().call()
+    )
     switch (state) {
       case '0':
         return ContractState.Available;
@@ -167,16 +193,16 @@ export class EthereumGateway {
   }
 
   async getContractHistory(contractAddress: string, offset = 0, limit = 100): Promise<HistoryentryResponse[]> {
-    const history = await Implementation(this.web3, contractAddress)
-      .methods
-      .getHistory(String(offset), String(limit))
-      .call();
+    const history = await callProviders(
+      () => Implementation(this.web3Pub, contractAddress).methods.getHistory(String(offset), String(limit)).call(),
+      () => Implementation(this.web3Prv, contractAddress).methods.getHistory(String(offset), String(limit)).call()
+    );
     return history;
   }
 
   async increaseAllowance(price: string, from: string): Promise<SendStatus>{
     const res = await this.getLumerin().methods
-      .increaseAllowance(this.cloneFactory.address, price)
+      .increaseAllowance(this.cloneFactoryPub.address, price)
       .send({ from, ...this.getGasConfig() });
 
     return { status: res.status, transactionHash: res.transactionHash };
@@ -188,7 +214,7 @@ export class EthereumGateway {
 		encrValidatorURL: string;
 		encrDestURL: string;
 	}): Promise<SendStatus> {
-		const impl = Implementation(this.web3, props.contractAddress);
+		const impl = Implementation(this.web3Pub, props.contractAddress);
 		const gas = await impl.methods
 			.setDestination(props.encrValidatorURL, props.encrDestURL)
 			.estimateGas({ from: props.from, ...this.getGasConfig() });
@@ -212,7 +238,7 @@ export class EthereumGateway {
 		length: string;
 		profitTarget: string;
 	}): Promise<SendStatus> {
-		const impl = Implementation(this.web3, props.contractAddress);
+		const impl = Implementation(this.web3Pub, props.contractAddress);
 		const gas = await impl.methods
 			.setUpdatePurchaseInformation(props.price, '0', props.speed, props.length, props.profitTarget)
 			.estimateGas({ from: props.from });
@@ -234,5 +260,20 @@ export class EthereumGateway {
       };
     }
     return {};
+  }
+}
+
+// Used to wrap error handling and logging for calling public provider first and if it fails then private provider
+const callProviders = async <T>(publicFn: () => Promise<T>, privateFn: () => Promise<T>): Promise<T> => {
+  try {
+    return await publicFn();
+  } catch (e) {
+    console.error("Error calling public provider", e);
+    try{
+      return await privateFn();
+    } catch (e) {
+      console.error("Error calling private provider", e);
+      throw new Error("Error calling public and private providers", {cause: e});
+    }
   }
 }

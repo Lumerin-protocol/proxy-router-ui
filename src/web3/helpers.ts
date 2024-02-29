@@ -1,15 +1,11 @@
 import Web3 from 'web3';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { AbiItem } from 'web3-utils';
-import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { Dispatch, SetStateAction } from 'react';
-import { CloneFactoryContract as CloneFactory, LumerinContract } from 'contracts-js';
-
 import lumerin from '../images/lumerin_metamask.png';
 import { printError } from '../utils';
-import { ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
+import { ConnectInfo, Ethereum, WalletText } from '../types';
 import { EthereumGateway } from '../gateway/ethereum';
 
 interface Web3Result {
@@ -19,7 +15,6 @@ interface Web3Result {
 }
 
 const ethereum = window.ethereum as Ethereum;
-const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS; //gorli token
 
 // Web3 setup helpers
 const getProviderAsync: (walletName: string) => Promise<any> = async (walletName) => {
@@ -134,7 +129,7 @@ export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
 			params: {
 				type: 'ERC20',
 				options: {
-					address: lumerinTokenAddress,
+					address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
 					symbol: 'LMR',
 					decimals: 8,
 					image: lumerin,
