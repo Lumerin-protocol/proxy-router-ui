@@ -97,7 +97,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 						hasLink
 						justify='start'
 					/>
-				);
+				) as any;
 				updatedOrder.price = String(divideByDigits(Number(updatedOrder.price)));
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress =
@@ -149,10 +149,10 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	// TODO: if same as <MyOrders /> pull out into util function
 	const customSort: SortByFn<CustomTableOptions> = (
-		rowA: Row,
-		rowB: Row,
-		columnId: string,
-		desc?: boolean
+		rowA,
+		rowB,
+		columnId,
+		desc
 	) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;

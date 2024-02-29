@@ -329,7 +329,6 @@ export const sortContracts = <T,>(
 	}
 };
 
-interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}
 export const getButton: (
 	contentState: string,
 	buttonContent: string,
