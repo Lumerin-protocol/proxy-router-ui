@@ -187,9 +187,16 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						lumerinTokenAddress
 					);
 
+					const increaseAllowanceGas = await lumerinTokenContract.methods
+						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
+						.estimateGas(sendOptions);
+
 					const receipt: Receipt = await lumerinTokenContract.methods
 						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
-						.send(sendOptions);
+						.send({
+							...sendOptions,
+							gas: increaseAllowanceGas,
+						});
 
 					if (!receipt.status) {
 						setAlertMessage('Failed to approve LMR transfer');
