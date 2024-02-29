@@ -87,6 +87,7 @@ export const getWeb3ResultAsync = async (
 		const web3ReadOnly = new Web3(getReadonlyNodeURL());
 
 		const web3Gateway = new EthereumGateway(web3, web3ReadOnly, process.env.REACT_APP_CLONE_FACTORY!)
+		await web3Gateway.init();
 
 		return { accounts, web3, web3Gateway };
 	} catch (error) {

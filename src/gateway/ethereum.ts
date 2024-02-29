@@ -10,6 +10,7 @@ interface SendStatus {
 }
 
 export class EthereumGateway {
+  private cloneFactoryAddr: string;
   private web3Pub: Web3;  // public node
   private web3Prv: Web3;  // private node readonly
   private cloneFactoryPub: CloneFactoryContext; // public clonefactory instance
@@ -18,6 +19,7 @@ export class EthereumGateway {
   private fee: string | null = null;
 
   constructor(web3Public: Web3, web3Private: Web3, cloneFactoryAddr: string) {
+    this.cloneFactoryAddr = cloneFactoryAddr;
     this.web3Pub = web3Public;
     this.web3Prv = web3Private;
     this.cloneFactoryPub = CloneFactory(web3Public, cloneFactoryAddr);
@@ -28,6 +30,7 @@ export class EthereumGateway {
     const lumerinAddr = await this.getLumerinAddr();
     this.lumerin = Lumerin(this.web3Pub, lumerinAddr);
     this.fee = await this.getMarketplaceFeeAddr();
+    console.log('web3 gateway initialized')
   }
 
 	async getLumerinAddr(): Promise<string> {
@@ -202,10 +205,10 @@ export class EthereumGateway {
 
   async increaseAllowance(price: string, from: string): Promise<SendStatus>{
     const gas = await this.getLumerin().methods
-      .increaseAllowance(this.cloneFactoryPub.address, price)
+      .increaseAllowance(this.cloneFactoryAddr, price)
       .estimateGas({ from, ...await this.getGasConfig() });
     const res = await this.getLumerin().methods
-      .increaseAllowance(this.cloneFactoryPub.address, price)
+      .increaseAllowance(this.cloneFactoryAddr, price)
       .send({ from, gas, ...await this.getGasConfig() });
 
     return { status: res.status, transactionHash: res.transactionHash };
