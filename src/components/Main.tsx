@@ -30,10 +30,11 @@ import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 import { ImplementationContract } from 'contracts-js';
 import { useInterval } from './hooks/useInterval';
 import {
+	LMRDecimalToLMR,
 	addLumerinTokenToMetaMaskAsync,
 	disconnectWalletConnectAsync,
-	getLumerinTokenBalanceAsync,
 	getWeb3ResultAsync,
+	intToHex,
 	reconnectWalletAsync,
 } from '../web3/helpers';
 import { buttonClickHandler, truncateAddress, printError } from '../utils';
@@ -54,6 +55,8 @@ import BubbleGraphic2 from '../images/Bubble_2.png';
 import BubbleGraphic3 from '../images/Bubble_3.png';
 import BubbleGraphic4 from '../images/Bubble_4.png';
 import Bg from '../images/bg.png';
+import { EthereumGateway } from '../gateway/ethereum';
+import { HistoryentryResponse } from 'contracts-js/dist/generated-types/Implementation';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -61,10 +64,8 @@ export const Main: React.FC = () => {
 	// TODO: as webapp grows think of using context
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [isConnected, setIsConnected] = useState<boolean>(false);
-	const [web3, setWeb3] = useState<Web3>();
-	const [web3ReadOnly, setWeb3ReadOnly] = useState<Web3>();
+	const [web3Gateway, setWeb3Gateway] = useState<EthereumGateway>();
 	const [accounts, setAccounts] = useState<string[]>();
-	const [cloneFactoryContract, setCloneFactoryContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
@@ -171,7 +172,7 @@ export const Main: React.FC = () => {
 			return;
 		}
 
-		const { accounts, contractInstance, web3, web3ReadOnly } = web3Result;
+		const { accounts, web3, web3Gateway } = web3Result;
 
 		if (accounts.length === 0 || accounts[0] === '') {
 			setAlertOpen(true);
@@ -189,9 +190,7 @@ export const Main: React.FC = () => {
 			setAlertOpen(true);
 		}
 		setAccounts(accounts);
-		setCloneFactoryContract(contractInstance);
-		setWeb3(web3);
-		setWeb3ReadOnly(web3ReadOnly);
+		setWeb3Gateway(web3Gateway);
 		setIsConnected(true);
 		localStorage.setItem('walletName', walletName);
 		localStorage.setItem('isConnected', 'true');
@@ -230,12 +229,6 @@ export const Main: React.FC = () => {
 		connectWalletOnPageLoad();
 	}, []);
 
-	// Get timestamp of current block
-	const getCurrentBlockTimestampAsync: () => Promise<number> = async () => {
-		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
-		return currentBlockTimestamp as number;
-	};
-
 	useInterval(() => {
 		refreshContracts(false, undefined, true);
 	}, 60 * 1000);
@@ -245,7 +238,11 @@ export const Main: React.FC = () => {
 		contractId?: string,
 		updateByChunks = false
 	) => {
-		getCurrentBlockTimestampAsync().then((currentBlockTimestamp) => {
+		if (!web3Gateway) {
+			console.error('Missing web3 gateway instance');
+			return;
+		}
+		web3Gateway.getCurrentBlockTimestamp().then((currentBlockTimestamp) => {
 			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
 				setCurrentBlockTimestamp(currentBlockTimestamp as number);
 				createContractsAsync(contractId, updateByChunks);
@@ -254,70 +251,36 @@ export const Main: React.FC = () => {
 	};
 
 	// Contracts setup
-	const createContractAsync = async (
-		address: string,
-		usePrivateNode = false
-	): Promise<HashRentalContract | null> => {
-		try {
-			const w3 = usePrivateNode && !!web3ReadOnly ? web3ReadOnly : web3;
-			if (w3) {
-				const implementationContractInstance = new w3.eth.Contract(
-					ImplementationContract.abi as AbiItem[],
-					address
-				);
-				const {
-					_state: state,
-					_price: price,
-					_isDeleted: isDeleted,
-					_speed: speed,
-					_length: length,
-					_startingBlockTimestamp: timestamp,
-					_buyer: buyer,
-					_seller: seller,
-					_encryptedPoolData: encryptedPoolData,
-					_version: version,
-				} = await implementationContractInstance.methods.getPublicVariables().call();
-
-				let buyerHistory = [];
-				if (localStorage.getItem(address)) {
-					const history = await implementationContractInstance.methods
-						.getHistory('0', '100')
-						.call();
-					buyerHistory = history
-						.filter((h: any) => {
-							return h[6] === userAccount;
-						})
-						.map((h: any) => ({
-							...h,
-							id: address,
-						}));
-				}
-
-				return {
-					id: address,
-					price,
-					speed,
-					length,
-					buyer,
-					seller,
-					timestamp,
-					state,
-					encryptedPoolData,
-					version,
-					isDeleted,
-					history: buyerHistory,
-				} as HashRentalContract;
-			}
-
+	const createContractAsync = async (address: string): Promise<HashRentalContract | null> => {
+		if (!web3Gateway) {
+			console.error('Missing web3Gateway instance');
 			return null;
-		} catch (err) {
-			console.log('🚀 ~ err:', err);
-			if (!usePrivateNode) {
-				return createContractAsync(address, true);
-			} else {
-				throw err;
-			}
 		}
+
+		const data = await web3Gateway.getContract(address)
+		
+		let buyerHistory: (HistoryentryResponse & {id: string})[] = [];
+		if (localStorage.getItem(address)) {
+			const history = await web3Gateway.getContractHistory(address, 0, 100);
+			buyerHistory = history
+				.filter((entry) => entry._buyer === userAccount)
+				.map((entry) => ({...entry, id: address}));
+		}
+
+		return {
+			id: address,
+			price: data.price,
+			speed: data.speed,
+			length: data.length,
+			buyer: data.buyer,
+			seller: data.seller,
+			timestamp: data.timestamp,
+			state: data.state,
+			encryptedPoolData: data.encryptedPoolData,
+			version: data.version,
+			isDeleted: data.isDeleted,
+			history: buyerHistory,
+		};
 	};
 
 	const addContractsAsync = async (addresses: string[], updateByChunks = false) => {
@@ -341,25 +304,26 @@ export const Main: React.FC = () => {
 		try {
 			console.log('Fetching contract list...');
 
-			if (!cloneFactoryContract) return;
+			if (!web3Gateway) {
+				console.error('Missing web3 gateway instance');
+				return;
+			};
 
-			const addresses: string[] = contractId
-				? [contractId]
-				: await cloneFactoryContract?.methods
-						.getContractList()
-						.call()
-						.catch((error: any) => {
-							console.log(
-								'Error when trying get list of contract addresses from CloneFactory contract: ',
-								error
-							);
-						});
-			console.log('addresses: ', addresses, !!addresses);
+			let addresses: string[] = [];
 
-			if (addresses) {
-				console.log('adding contracts...');
-				addContractsAsync(addresses, updateByChunks);
+			if (contractId) {
+				addresses = [contractId];
+			} else {
+				try {
+					addresses = await web3Gateway.getContracts()
+				} catch (error) {
+					console.log('Error when trying get list of contracts', error);
+					return
+				}
 			}
+
+			console.log('addresses: ', addresses);
+			addContractsAsync(addresses, updateByChunks);
 		} catch (error) {
 			const typedError = error as Error;
 			printError(typedError.message, typedError.stack as string);
@@ -370,22 +334,21 @@ export const Main: React.FC = () => {
 
 	// Get Lumerin token balance
 	const updateLumerinTokenBalanceAsync = async (): Promise<void> => {
-		if (web3) {
-			const lumerinTokenBalance = await getLumerinTokenBalanceAsync(web3, userAccount);
-			if (lumerinTokenBalance) setLumerinBalance(lumerinTokenBalance);
+		if (!web3Gateway) {
+			console.error('Missing web3 instance');
+			return;
 		}
+
+		const balanceDecimal = await web3Gateway.getLumerinBalance(userAccount);
+		setLumerinBalance(LMRDecimalToLMR(balanceDecimal));
 	};
 
 	// Set contracts and orders once cloneFactoryContract exists
 	useEffect(() => {
-		if (cloneFactoryContract && accounts) {
-			console.log('cloneFactoryContract:', cloneFactoryContract);
-			console.log('accounts: ', accounts);
-			if (isCorrectNetwork) {
-				refreshContracts();
-			}
+		if (isCorrectNetwork) {
+			refreshContracts();
 		}
-	}, [cloneFactoryContract, accounts]);
+	}, [accounts, isCorrectNetwork]);
 
 	// Check if any modals or alerts are open
 	// TODO: Replace this with a better way to track all modal states
@@ -453,7 +416,6 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<MyOrders
 							{...props}
-							web3={web3}
 							userAccount={userAccount}
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
@@ -497,7 +459,6 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<Marketplace
 							{...props}
-							web3={web3}
 							userAccount={userAccount}
 							isMetaMask={isMetaMask}
 							lumerinBalance={lumerinBalance}
@@ -532,7 +493,7 @@ export const Main: React.FC = () => {
 	const changeNetworkAsync: () => void = async () => {
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
-			params: [{ chainId: web3?.utils.toHex(process.env.REACT_APP_CHAIN_ID!) }],
+			params: [{ chainId: intToHex(process.env.REACT_APP_CHAIN_ID!) }],
 		});
 		setAlertOpen(false);
 		connectWallet(WalletText.ConnectViaMetaMask);
@@ -565,8 +526,7 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						cloneFactoryContract={cloneFactoryContract}
-						web3={web3}
+						web3Gateway={web3Gateway}
 						lumerinbalance={lumerinBalance}
 						setOpen={setBuyModalOpen}
 					/>
@@ -578,8 +538,7 @@ export const Main: React.FC = () => {
 				content={
 					<CreateForm
 						userAccount={userAccount}
-						cloneFactoryContract={cloneFactoryContract}
-						web3={web3}
+						web3Gateway={web3Gateway}
 						setOpen={setCreateModalOpen}
 					/>
 				}
@@ -592,8 +551,8 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
-						setOpen={setSellerEditModalOpen}
+						web3Gateway={web3Gateway}
+						closeForm={() => setSellerEditModalOpen(false)}
 					/>
 				}
 			/>
@@ -605,8 +564,8 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
-						setOpen={setBuyerEditModalOpen}
+						web3Gateway={web3Gateway}
+						closeForm={() => setBuyerEditModalOpen(false)}
 					/>
 				}
 			/>
@@ -618,9 +577,8 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
-						cloneFactoryContract={cloneFactoryContract}
-						setOpen={setCancelModalOpen}
+						web3Gateway={web3Gateway}
+						closeForm={()=>setCancelModalOpen(false)}
 					/>
 				}
 			/>
@@ -632,9 +590,9 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
+						web3Gateway={web3Gateway}
 						currentBlockTimestamp={currentBlockTimestamp}
-						setOpen={setClaimLmrModalOpen}
+						closeForm={()=>setClaimLmrModalOpen(false)}
 					/>
 				}
 			/>

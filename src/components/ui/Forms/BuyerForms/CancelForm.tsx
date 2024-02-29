@@ -5,26 +5,31 @@ import {
 	CloseOutType,
 	ContentState,
 	ContractState,
-	Receipt,
-	CancelFormProps,
+	HashRentalContract,
 } from '../../../../types';
 import { getHandlerBlockchainError, isNoCancel, printError } from '../../../../utils';
 import { Alert } from '../../Alert';
 import { Spinner } from '../../Spinner.styled';
-import { ImplementationContract } from 'contracts-js';
-import { AbiItem } from 'web3-utils';
 import { ButtonGroup } from '../../ButtonGroup';
 import { CancelButton } from '../FormButtons/Buttons.styled';
 import { SecondaryButton } from '../FormButtons/Buttons.styled';
-import { getGasConfig } from '../../../../web3/helpers';
+import { EthereumGateway } from '../../../../gateway/ethereum';
+
+export interface CancelFormProps {
+	contracts: HashRentalContract[];
+	contractId: string;
+	userAccount: string;
+	web3Gateway?: EthereumGateway;
+	currentBlockTimestamp?: number;
+	closeForm: () => void;
+}
 
 export const CancelForm: React.FC<CancelFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
-	web3,
-	setOpen,
-	cloneFactoryContract,
+	web3Gateway,
+	closeForm,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
@@ -60,38 +65,25 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 		if (contentState === ContentState.Pending) {
 			if (isNoCancel(contract, userAccount)) return;
 
+			if (!web3Gateway) {
+				console.error('missing web3 gateway');
+				return;
+			}
 			try {
-				if (web3) {
-					const gasPrice = await web3.eth.getGasPrice();
-					const implementationContract = new web3.eth.Contract(
-						ImplementationContract.abi as AbiItem[],
-						contract.id as string
-					);
-					const sendOptions = {
-						...getGasConfig(gasPrice),
-						from: userAccount,
-					};
+				const fee = web3Gateway.getMarketplaceFee();
+				const receipt = await web3Gateway.closeContract({
+					contractAddress: contractId,
+					from: userAccount,
+					fee: fee,
+					closeoutType: CloseOutType.BuyerOrValidatorCancel,
+				})
 
-					const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
-
-					const gas = await implementationContract.methods
-						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
-						.estimateGas({
-							...sendOptions,
-							value: marketplaceFee,
-						});
-
-					const receipt: Receipt = await implementationContract.methods
-						.setContractCloseOut(CloseOutType.BuyerOrValidatorCancel)
-						.send({ ...sendOptions, gas });
-
-					if (receipt.status) {
-						setContentState(ContentState.Complete);
-					} else {
-						setAlertMessage(AlertMessage.CancelFailed);
-						setAlertOpen(true);
-						setContentState(ContentState.Cancel);
-					}
+				if (receipt.status) {
+					setContentState(ContentState.Complete);
+				} else {
+					setAlertMessage(AlertMessage.CancelFailed);
+					setAlertOpen(true);
+					setContentState(ContentState.Cancel);
 				}
 			} catch (error) {
 				const typedError = error as Error;
@@ -107,7 +99,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 		if (isNoCancel(contract, userAccount)) {
 			setAlertMessage(AlertMessage.NoCancelBuyer);
 			setAlertOpen(true);
-			timeoutId = setTimeout(() => setOpen(false), 3000);
+			timeoutId = setTimeout(() => closeForm(), 3000);
 		}
 
 		return () => clearTimeout(timeoutId);
@@ -134,7 +126,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 						</p>
 						<ButtonGroup
 							button1={
-								<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+								<SecondaryButton type='submit' onClick={() => closeForm()}>
 									Close
 								</SecondaryButton>
 							}
@@ -152,7 +144,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 						<p>The cancellation is permanent.</p>
 						<ButtonGroup
 							button1={
-								<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+								<SecondaryButton type='submit' onClick={() => closeForm()}>
 									Close
 								</SecondaryButton>
 							}

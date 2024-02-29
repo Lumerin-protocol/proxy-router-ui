@@ -19,9 +19,9 @@ export const BuyerOrdersWidget = (props: {
 		(contract: HashRentalContract) => contract.buyer === props.userAccount
 	);
 
-	const updatedOrders: Array<HashRentalContract> = buyerOrders.map(
+	const updatedOrders: HashRentalContract[] = buyerOrders.map(
 		(contract: HashRentalContract) => {
-			const updatedOrder = { ...contract } as ContractData;
+			const updatedOrder = { ...contract };
 			if (!isEmpty(contract)) {
 				updatedOrder.progressPercentage = getProgressPercentage(
 					updatedOrder.state as string,
@@ -29,9 +29,9 @@ export const BuyerOrdersWidget = (props: {
 					parseInt(updatedOrder.length as string),
 					props.currentBlockTimestamp
 				);
-				return updatedOrder as ContractData;
+				return updatedOrder;
 			}
-			return updatedOrders;
+			return updatedOrder;
 		}
 	);
 

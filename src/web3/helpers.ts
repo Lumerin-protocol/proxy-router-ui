@@ -1,28 +1,20 @@
 import Web3 from 'web3';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { ethers } from 'ethers';
-import { AbiItem } from 'web3-utils';
-import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core/types/index';
 import { Dispatch, SetStateAction } from 'react';
-import { CloneFactoryContract as CloneFactory, LumerinContract } from 'contracts-js';
-
 import lumerin from '../images/lumerin_metamask.png';
 import { printError } from '../utils';
-import { ConnectInfo, Ethereum, Receipt, WalletText } from '../types';
+import { ConnectInfo, Ethereum, WalletText } from '../types';
+import { EthereumGateway } from '../gateway/ethereum';
 
 interface Web3Result {
 	accounts: string[];
-	contractInstance: Contract;
 	web3: Web3;
-	web3ReadOnly?: Web3;
+	web3Gateway: EthereumGateway;
 }
 
 const ethereum = window.ethereum as Ethereum;
-//const lumerinTokenAddress = '0xC6a30Bc2e1D7D9e9FFa5b45a21b6bDCBc109aE1B'; Legacy as of 6/21 - MAY
-//const lumerinTokenAddress = '0xD40A8CA6a45994C03a1c134e846f27feeeBf0B5b'; Legacy to ropsten
-const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS; //gorli token
 
 // Web3 setup helpers
 const getProviderAsync: (walletName: string) => Promise<any> = async (walletName) => {
@@ -49,6 +41,9 @@ const getProviderAsync: (walletName: string) => Promise<any> = async (walletName
 };
 
 export const getReadonlyNodeURL = () => {
+	if (!process.env.REACT_APP_READ_ONLY_ETH_NODE_URL) {
+		throw new Error('REACT_APP_READ_ONLY_ETH_NODE_URL is not set');
+	};
 	return process.env.REACT_APP_READ_ONLY_ETH_NODE_URL;
 };
 
@@ -89,17 +84,12 @@ export const getWeb3ResultAsync = async (
 		const web3 = new Web3(provider as provider);
 		const accounts = await web3.eth.getAccounts();
 
-		const nodeUrl = getReadonlyNodeURL();
-		let web3ReadOnly;
-		if (nodeUrl) {
-			web3ReadOnly = new Web3(nodeUrl);
-		}
-		const cloneFactoryInstance = new web3.eth.Contract(
-			CloneFactory.abi as AbiItem[],
-			process.env.REACT_APP_CLONE_FACTORY
-		);
+		const web3ReadOnly = new Web3(getReadonlyNodeURL());
 
-		return { accounts, contractInstance: cloneFactoryInstance, web3, web3ReadOnly };
+		const web3Gateway = new EthereumGateway(web3, web3ReadOnly, process.env.REACT_APP_CLONE_FACTORY!)
+		await web3Gateway.init();
+
+		return { accounts, web3, web3Gateway };
 	} catch (error) {
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);
@@ -140,7 +130,7 @@ export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
 			params: {
 				type: 'ERC20',
 				options: {
-					address: lumerinTokenAddress,
+					address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
 					symbol: 'LMR',
 					decimals: 8,
 					image: lumerin,
@@ -153,59 +143,25 @@ export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
 	}
 };
 
-export const getLumerinTokenBalanceAsync = async (
-	web3: Web3,
-	userAccount: string
-): Promise<number | null> => {
-	const lumerinContractInstance = new web3.eth.Contract(
-		LumerinContract.abi as AbiItem[],
-		lumerinTokenAddress
-	);
-
-	try {
-		const lumerinBalance: string = await lumerinContractInstance.methods
-			.balanceOf(userAccount)
-			.call();
-		return divideByDigits(parseInt(lumerinBalance));
-	} catch (error) {
-		const typedError = error as Error;
-		printError(typedError.message, typedError.stack as string);
-		return null;
-	}
-};
-
-export const transferLumerinAsync: (
-	web3: Web3,
-	userAccount: string,
-	sellerAccount: string,
-	amount: number
-) => Promise<Receipt> = async (web3, userAccount, sellerAccount, amount) => {
-	const lumerinContractInstance = new web3.eth.Contract(
-		LumerinContract.abi as AbiItem[],
-		lumerinTokenAddress
-	);
-	return await lumerinContractInstance.methods
-		.transfer(sellerAccount, multiplyByDigits(amount))
-		.send({ from: userAccount, gas: 1000000 });
-};
-
 export const multiplyByDigits: (amount: number) => number = (amount) => {
 	return amount * 10 ** 8;
 };
 
 export const divideByDigits: (amount: number) => number = (amount) => {
-	if (amount < 1000) return amount;
 	return parseInt(String(amount / 10 ** 8));
 };
 
-export const getGasConfig = (gasPrice: string) => {
-	const chainId = process.env.REACT_APP_CHAIN_ID;
-	if (chainId === '421614' || chainId === '42161') {
-		// no priority fee on Arbitrum, maxFeePerGas is stable at 0.1 gwei
-		return {
-			maxPriorityFeePerGas: ethers.utils.parseUnits('0', 'gwei'),
-			maxFeePerGas: ethers.utils.parseUnits(gasPrice, 'wei'),
-		};
+const LMRDecimal = 8;
+
+export const LMRDecimalToLMR = (decimal: number|string): number => {
+	const big = BigInt(decimal) / BigInt(10 ** LMRDecimal);
+	return Number(big);
+} 
+
+// Convert integer provided as number, BigInt or decimal string to hex string with prefix '0x'
+export const intToHex = (value: number | BigInt | string) => {
+	if (typeof value === 'string') {
+		value = Number(value);
 	}
-	return {};
-};
+	return '0x' + value.toString(16);
+}

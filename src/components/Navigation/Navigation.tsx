@@ -72,24 +72,27 @@ export const ResponsiveNavigation = (prop: {
 					</Link>
 				))}
 			</nav>
-			<div className='resources'>
-				<h3>Resources</h3>
-				<a href={`${process.env.REACT_APP_GITBOOK_URL}`} target='_blank' rel='noreferrer'>
-					<HelpIcon style={{ fill: '#0E4353' }} />
-					<span className='item-name'>Help</span>
-				</a>
-				<a
-					href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
-					target='_blank'
-					rel='noreferrer'
-				>
-					<FlagCircleIcon style={{ fill: '#0E4353' }} />
-					<span className='item-name'>Report issue</span>
-				</a>
-				<a href='https://lumerin.io/privacy-policy' target='_blank' rel='noreferrer'>
-					<ShieldIcon style={{ fill: '#0E4353' }} />
-					<span className='item-name'>Privacy Policy</span>
-				</a>
+			<div className='bottom'>
+				<nav className='resources'>
+					<h3>Resources</h3>
+					<a href={`${process.env.REACT_APP_GITBOOK_URL}`} target='_blank' rel='noreferrer'>
+						<HelpIcon style={{ fill: '#0E4353' }} />
+						<span className='item-name'>Help</span>
+					</a>
+					<a
+						href='https://github.com/Lumerin-protocol/proxy-router-ui/issues'
+						target='_blank'
+						rel='noreferrer'
+					>
+						<FlagCircleIcon style={{ fill: '#0E4353' }} />
+						<span className='item-name'>Report issue</span>
+					</a>
+					<a href='https://lumerin.io/privacy-policy' target='_blank' rel='noreferrer'>
+						<ShieldIcon style={{ fill: '#0E4353' }} />
+						<span className='item-name'>Privacy Policy</span>
+					</a>
+				</nav>
+				<div className='version'>Version: {process.env.REACT_APP_VERSION}</div>
 			</div>
 		</DrawerContent>
 	);

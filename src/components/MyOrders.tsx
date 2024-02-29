@@ -30,14 +30,12 @@ import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
 import { divideByDigits } from '../web3/helpers';
-import Web3 from 'web3';
 import _ from 'lodash';
 import { FinishedContracts, PurchasedContracts } from './ui/Cards/PurchasedContracts';
 import { TabSwitch } from './ui/TabSwitch.Styled';
 import { SortToolbar } from './ui/SortToolbar';
 
 interface MyOrdersProps {
-	web3: Web3 | undefined;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
@@ -48,6 +46,24 @@ interface MyOrdersProps {
 	refreshContracts: any;
 	activeOrdersTab: string;
 	setActiveOrdersTab: Dispatch<SetStateAction<string>>;
+}
+
+// TODO: fix this disgusting interface
+export interface HistoryUglyMapped extends ContractHistoryData {
+	id: JSX.Element;
+	contractId: string;
+	editCancel: JSX.Element;
+	endDate: string;
+	length: string;
+	price: number;
+	progress: JSX.Element;
+	progressPercentage: number;
+	speed: string;
+	state: string;
+	status:	JSX.Element;
+	timestamp: string;
+	isDeleted?: boolean;
+	version?: string;
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
@@ -97,7 +113,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 	}, [mediaQueryListLarge?.matches, mediaQueryListMedium?.matches]);
 
-	const getTableData: () => ContractData[] = () => {
+	const getTableData: () => HistoryUglyMapped[] = () => {
 		const buyerOrders = contracts.filter(
 			(contract) => contract.buyer === userAccount && contract.state === ContractState.Running
 		);
@@ -107,18 +123,19 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 
 		const updatedOrders = buyerOrders.map((contract) => {
-			const updatedOrder = { ...contract } as ContractData;
+			const updatedOrder = { ...contract } as unknown as HistoryUglyMapped;
 			if (!_.isEmpty(contract)) {
+				// FIX IT!
 				updatedOrder.id = (
 					<TableIcon
 						icon={null}
 						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
-						text={updatedOrder.id as string}
+						text={contract.id as string}
 						hasLink
 						justify='start'
-					/>
+					/> as any
 				);
-				updatedOrder.price = divideByDigits(updatedOrder.price as number);
+				updatedOrder.price = divideByDigits(Number(updatedOrder.price));
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(
 					updatedOrder.state as string,
@@ -160,13 +177,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					/>
 				);
 			}
-			return updatedOrder as ContractData;
+			return updatedOrder;
 		});
 
 		return updatedOrders;
 	};
 
-	const getHistoryTableData: () => ContractHistoryData[] = () => {
+	const getHistoryTableData: () => HistoryUglyMapped[] = () => {
 		const buyerOrders = contracts
 			.filter((contract) => contract?.history?.length)
 			.map((c) => c.history)
@@ -177,13 +194,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 
 		const updatedOrders = buyerOrders.map((contract) => {
-			const updatedOrder = { ...contract } as any;
+			const updatedOrder = { ...contract } as HistoryUglyMapped;
 			if (!_.isEmpty(contract)) {
 				updatedOrder.id = (
 					<TableIcon
 						icon={null}
 						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
-						text={updatedOrder.id as string}
+						text={contract.id as string}
 						hasLink
 						justify='start'
 					/>
@@ -194,13 +211,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					ContractState.Running as string,
 					updatedOrder._purchaseTime as string,
 					parseInt(updatedOrder._length as string),
-					updatedOrder._endTime
+					Number(contract._endTime)
 				);
 				updatedOrder.progressPercentage = getProgressPercentage(
 					ContractState.Running as string,
 					updatedOrder._purchaseTime as string,
 					parseInt(updatedOrder._length as string),
-					updatedOrder._endTime
+					Number(updatedOrder._endTime)
 				);
 				updatedOrder.speed = String(Number(updatedOrder._speed) / 10 ** 12);
 				updatedOrder.length = String(parseInt(updatedOrder._length as string) / 3600);
@@ -212,7 +229,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					.toFormat('MM/dd/yyyy');
 				updatedOrder.contractId = contract.id as string;
 			}
-			return updatedOrder as ContractHistoryData;
+			return updatedOrder;
 		});
 
 		return updatedOrders;
@@ -240,10 +257,10 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 	});
 
-	const [runningContracts, setRunningContracts] = useState<HashRentalContract[]>([
+	const [runningContracts, setRunningContracts] = useState<HistoryUglyMapped[]>([
 		...data.filter((contract) => contract.progressPercentage! < 100),
 	]);
-	const [completedContracts, setCompletedContracts] = useState<ContractHistory[]>([...historyData]);
+	const [completedContracts, setCompletedContracts] = useState<HistoryUglyMapped[]>([...historyData]);
 	const [runningSortType, setRunningSortType] = useState('');
 	const [completedSortType, setCompletedSortType] = useState('');
 

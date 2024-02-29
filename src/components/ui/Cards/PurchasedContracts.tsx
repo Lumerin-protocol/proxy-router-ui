@@ -18,6 +18,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/CancelOutlined';
 
 import styled from '@emotion/styled';
+import { HistoryUglyMapped } from '../../MyOrders';
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 	height: 10,
@@ -42,7 +43,18 @@ const getIcon = (contract: any, isCompleted = false) => {
 	return <img src={PickaxeAnimated} alt='' />;
 };
 
-const getCard = (key: string, item: ContractData, poolInfo: any, isCompleted = false) => (
+interface CardProps{
+	progressPercentage: number
+	editCancel: JSX.Element
+	timestamp: string
+	endDate: string
+	contractId: string
+	speed: string
+	price: number
+	length: string
+}
+
+const getCard = (key: string, item: CardProps, poolInfo: any, isCompleted = false) => (
 	<div className='card' key={key}>
 		<div className='progress'>
 			<div className='pickaxe'>{getIcon(item, isCompleted)}</div>
@@ -131,7 +143,7 @@ const getCard = (key: string, item: ContractData, poolInfo: any, isCompleted = f
 );
 
 export const PurchasedContracts = (props: {
-	contracts: HashRentalContract[];
+	contracts: HistoryUglyMapped[];
 	sortType: string;
 }) => {
 	const progressAscending = [...props.contracts].sort(
@@ -146,14 +158,14 @@ export const PurchasedContracts = (props: {
 				const stored = localStorage.getItem(item.contractId!);
 				const poolInfo = stored ? JSON.parse(stored) : '';
 
-				return getCard(`${item.contractId}`, item as ContractData, poolInfo, false);
+				return getCard(`${item.contractId}`, item, poolInfo, false);
 			})}
 		</ContractCards>
 	);
 };
 
 export const FinishedContracts = (props: {
-	contracts: ContractHistoryData[];
+	contracts: HistoryUglyMapped[];
 	sortType: string;
 }) => {
 	const purchastTimeAscending = [...props.contracts].sort(
