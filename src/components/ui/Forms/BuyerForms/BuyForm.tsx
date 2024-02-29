@@ -166,7 +166,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				// Approve clone factory contract to transfer LMR on buyer's behalf
 				const receipt = await web3Gateway.increaseAllowance(formData.price, userAccount)
 				if (!receipt.status) {
-					setAlertMessage('Failed to approve LMR transfer');
+					setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
 					setAlertOpen(true);
 					setContentState(ContentState.Cancel);
 					return;
@@ -192,7 +192,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					);
 
 					const marketplaceFee = web3Gateway.getMarketplaceFee()
-
 					const receipt = await web3Gateway.purchaseContract({
 						contractAddress: contract.id,
 						validatorAddress: validatorAddr,
