@@ -586,7 +586,7 @@ export const getHandlerBlockchainError =
 			return;
 		}
 
-		if (error.message.includes('execution reverted')) {
+		if (error.message.includes('Internal JSON-RPC error')) {
 			let msg;
 			try {
 				/*
@@ -608,4 +608,8 @@ export const getHandlerBlockchainError =
 			setContentState(ContentState.Review);
 			return;
 		}
+
+		setAlertMessage(error.message);
+		setAlertOpen(true);
+		setContentState(ContentState.Review);
 	};
