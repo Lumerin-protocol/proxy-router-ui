@@ -93,7 +93,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 				} else {
 					speed = 0;
 				}
-				if (!formData.contractTime){
+				if (!formData.contractTime) {
 					console.error('missing contractTime');
 					return;
 				}
@@ -108,7 +108,6 @@ export const EditForm: React.FC<EditFormProps> = ({
 				if (receipt?.status) {
 					setContentState(ContentState.Complete);
 				}
-
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);

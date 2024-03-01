@@ -130,10 +130,10 @@ export const EditForm: React.FC<EditFormProps> = ({
 				);
 
 				const receipt = await web3Gateway.editContractDestination({
-						from: userAccount,
-						contractAddress: contractId,
-						encrValidatorURL: encrValidatorURL,
-						encrDestURL: encryptedBuyerInput,
+					from: userAccount,
+					contractAddress: contractId,
+					encrValidatorURL: encrValidatorURL,
+					encrDestURL: encryptedBuyerInput,
 				});
 
 				if (receipt?.status) {

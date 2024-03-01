@@ -43,15 +43,15 @@ const getIcon = (contract: any, isCompleted = false) => {
 	return <img src={PickaxeAnimated} alt='' />;
 };
 
-interface CardProps{
-	progressPercentage: number
-	editCancel: JSX.Element
-	timestamp: string
-	endDate: string
-	contractId: string
-	speed: string
-	price: number
-	length: string
+interface CardProps {
+	progressPercentage: number;
+	editCancel: JSX.Element;
+	timestamp: string;
+	endDate: string;
+	contractId: string;
+	speed: string;
+	price: number;
+	length: string;
 }
 
 const getCard = (key: string, item: CardProps, poolInfo: any, isCompleted = false) => (
@@ -142,10 +142,7 @@ const getCard = (key: string, item: CardProps, poolInfo: any, isCompleted = fals
 	</div>
 );
 
-export const PurchasedContracts = (props: {
-	contracts: HistoryUglyMapped[];
-	sortType: string;
-}) => {
+export const PurchasedContracts = (props: { contracts: HistoryUglyMapped[]; sortType: string }) => {
 	const progressAscending = [...props.contracts].sort(
 		(a, b) => a.progressPercentage! - b.progressPercentage!
 	);
@@ -164,10 +161,7 @@ export const PurchasedContracts = (props: {
 	);
 };
 
-export const FinishedContracts = (props: {
-	contracts: HistoryUglyMapped[];
-	sortType: string;
-}) => {
+export const FinishedContracts = (props: { contracts: HistoryUglyMapped[]; sortType: string }) => {
 	const purchastTimeAscending = [...props.contracts].sort(
 		(a, b) => +b._purchaseTime! - +a._purchaseTime!
 	);

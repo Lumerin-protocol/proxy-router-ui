@@ -148,12 +148,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	};
 
 	// TODO: if same as <MyOrders /> pull out into util function
-	const customSort: SortByFn<CustomTableOptions> = (
-		rowA,
-		rowB,
-		columnId,
-		desc
-	) => {
+	const customSort: SortByFn<CustomTableOptions> = (rowA, rowB, columnId, desc) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 

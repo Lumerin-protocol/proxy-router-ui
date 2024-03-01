@@ -111,7 +111,12 @@ interface TableProps<T extends object = {}> {
 	pagination?: boolean;
 }
 
-export const Table = <T extends object = {}>({ id, tableInstance, columnCount, pagination }: TableProps<T>): ReactElement | null => {
+export const Table = <T extends object = {}>({
+	id,
+	tableInstance,
+	columnCount,
+	pagination,
+}: TableProps<T>): ReactElement | null => {
 	const {
 		getTableProps,
 		getTableBodyProps,
