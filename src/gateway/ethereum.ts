@@ -207,8 +207,8 @@ export class EthereumGateway {
     const gas = await this.getLumerin().methods
       .increaseAllowance(this.cloneFactoryAddr, price)
       .estimateGas({ from, ...await this.getGasConfig() });
-    console.log("🚀 ~ EthereumGateway ~ increaseAllowance ~ gas:", gas)
-    const res = await this.getLumerin().methods
+
+      const res = await this.getLumerin().methods
       .increaseAllowance(this.cloneFactoryAddr, price)
       .send({ from, gas, ...await this.getGasConfig() });
 
