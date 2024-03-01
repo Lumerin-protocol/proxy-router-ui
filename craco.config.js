@@ -9,8 +9,6 @@ module.exports = {
 			options: { alias: configPaths('./tsconfig.paths.json') },
 		},
 	],
-	style: {
-	},
 	webpack: {
 		configure: (/** @type import("webpack").Configuration */ webpackConfig) => {
 			webpackConfig.plugins.push(
