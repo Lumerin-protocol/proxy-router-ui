@@ -76,7 +76,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 					from: userAccount,
 					fee: fee,
 					closeoutType: CloseOutType.BuyerOrValidatorCancel,
-				})
+				});
 
 				if (receipt.status) {
 					setContentState(ContentState.Complete);

@@ -60,7 +60,7 @@ export interface HistoryUglyMapped extends ContractHistoryData {
 	progressPercentage: number;
 	speed: string;
 	state: string;
-	status:	JSX.Element;
+	status: JSX.Element;
 	timestamp: string;
 	isDeleted?: boolean;
 	version?: string;
@@ -133,8 +133,8 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						text={contract.id as string}
 						hasLink
 						justify='start'
-					/> as any
-				);
+					/>
+				) as any;
 				updatedOrder.price = divideByDigits(Number(updatedOrder.price));
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress = getProgressDiv(
@@ -260,7 +260,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [runningContracts, setRunningContracts] = useState<HistoryUglyMapped[]>([
 		...data.filter((contract) => contract.progressPercentage! < 100),
 	]);
-	const [completedContracts, setCompletedContracts] = useState<HistoryUglyMapped[]>([...historyData]);
+	const [completedContracts, setCompletedContracts] = useState<HistoryUglyMapped[]>([
+		...historyData,
+	]);
 	const [runningSortType, setRunningSortType] = useState('');
 	const [completedSortType, setCompletedSortType] = useState('');
 

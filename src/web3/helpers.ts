@@ -43,7 +43,7 @@ const getProviderAsync: (walletName: string) => Promise<any> = async (walletName
 export const getReadonlyNodeURL = () => {
 	if (!process.env.REACT_APP_READ_ONLY_ETH_NODE_URL) {
 		throw new Error('REACT_APP_READ_ONLY_ETH_NODE_URL is not set');
-	};
+	}
 	return process.env.REACT_APP_READ_ONLY_ETH_NODE_URL;
 };
 
@@ -86,7 +86,11 @@ export const getWeb3ResultAsync = async (
 
 		const web3ReadOnly = new Web3(getReadonlyNodeURL());
 
-		const web3Gateway = new EthereumGateway(web3, web3ReadOnly, process.env.REACT_APP_CLONE_FACTORY!)
+		const web3Gateway = new EthereumGateway(
+			web3,
+			web3ReadOnly,
+			process.env.REACT_APP_CLONE_FACTORY!
+		);
 		await web3Gateway.init();
 
 		return { accounts, web3, web3Gateway };
@@ -153,10 +157,10 @@ export const divideByDigits: (amount: number) => number = (amount) => {
 
 const LMRDecimal = 8;
 
-export const LMRDecimalToLMR = (decimal: number|string): number => {
+export const LMRDecimalToLMR = (decimal: number | string): number => {
 	const big = BigInt(decimal) / BigInt(10 ** LMRDecimal);
 	return Number(big);
-} 
+};
 
 // Convert integer provided as number, BigInt or decimal string to hex string with prefix '0x'
 export const intToHex = (value: number | BigInt | string) => {
@@ -164,4 +168,4 @@ export const intToHex = (value: number | BigInt | string) => {
 		value = Number(value);
 	}
 	return '0x' + value.toString(16);
-}
+};

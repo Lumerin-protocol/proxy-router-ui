@@ -1,11 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
-import {
-	CloseOutType,
-	ContentState,
-	ContractState,
-	HashRentalContract,
-} from '../../../../types';
+import { CloseOutType, ContentState, ContractState, HashRentalContract } from '../../../../types';
 import { isNoClaim, printError } from '../../../../utils';
 import { Spinner } from '../../Spinner.styled';
 import { EthereumGateway } from '../../../../gateway/ethereum';
@@ -61,11 +56,11 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 
 		// Pending
 		if (contentState === ContentState.Pending) {
-			if (isNoClaim(userAccount, contract.seller as string)){
+			if (isNoClaim(userAccount, contract.seller as string)) {
 				return;
 			}
 			if (!web3Gateway) {
-				console.error("missing web3 gateway");
+				console.error('missing web3 gateway');
 				return;
 			}
 
@@ -74,7 +69,7 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 				const receipt = await web3Gateway.closeContract({
 					contractAddress: contractId,
 					from: userAccount,
-					fee: "0",
+					fee: '0',
 					closeoutType: closeOutType,
 				});
 				if (receipt.status) {

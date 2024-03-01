@@ -142,17 +142,17 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			try {
 				if (!web3Gateway) {
 					console.error('Web3 gateway is not available');
-					return
+					return;
 				}
 
 				if (!formData) {
 					console.error('Form data is not available');
-					return
+					return;
 				}
 
 				if (!formData.price) {
 					console.error('Price is not available');
-					return
+					return;
 				}
 
 				const contractState = await web3Gateway.getContractState(contract.id);
@@ -164,7 +164,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				}
 
 				// Approve clone factory contract to transfer LMR on buyer's behalf
-				const receipt = await web3Gateway.increaseAllowance(formData.price, userAccount)
+				const receipt = await web3Gateway.increaseAllowance(formData.price, userAccount);
 				if (!receipt.status) {
 					setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
 					setAlertOpen(true);
@@ -183,15 +183,17 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					}
 
 					const validatorAddr = ethers.utils.computeAddress(validatorPublicKey);
-					const encrDestURL = (await encryptMessage(validatorPublicKey.slice(2), buyerDest)).toString('hex');
+					const encrDestURL = (
+						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+					).toString('hex');
 					const validatorURL: string = `stratum+tcp://:@${getValidatorURL()}`;
 
-					const pubKey = await web3Gateway.getContractPublicKey(contract.id)
+					const pubKey = await web3Gateway.getContractPublicKey(contract.id);
 					const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString(
 						'hex'
 					);
 
-					const marketplaceFee = web3Gateway.getMarketplaceFee()
+					const marketplaceFee = web3Gateway.getMarketplaceFee();
 					const receipt = await web3Gateway.purchaseContract({
 						contractAddress: contract.id,
 						validatorAddress: validatorAddr,
@@ -200,8 +202,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						feeETH: marketplaceFee,
 						buyer: userAccount,
 						termsVersion: contract.version,
-					})
-					
+					});
+
 					if (!receipt.status) {
 						setAlertMessage(AlertMessage.PurchaseFailed);
 						setAlertOpen(true);

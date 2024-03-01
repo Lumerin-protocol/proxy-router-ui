@@ -12,9 +12,6 @@ import { bufferToHex } from 'ethereumjs-util';
 const elliptic_1 = require('elliptic');
 const ec = new elliptic_1.ec('secp256k1');
 
-// Mocks
-const setAlertOpen = jest.fn();
-
 // Use method from browser.js instead of node implementation
 const getPublic: (privateKey: Buffer) => Promise<Buffer> = (privateKey) => {
 	return new Promise(function (resolve, reject) {

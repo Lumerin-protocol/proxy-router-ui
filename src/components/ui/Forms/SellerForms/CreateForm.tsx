@@ -33,11 +33,7 @@ interface CreateFormProps {
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({
-	userAccount,
-	web3Gateway,
-	setOpen,
-}) => {
+export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway, setOpen }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
 

@@ -6,13 +6,10 @@ import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import { uniqBy } from 'lodash';
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
-import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core';
 
 import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
-import { MyContracts } from './MyContracts';
 import { Hero } from './Hero';
 import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Spinner } from './ui/Spinner.styled';
@@ -257,14 +254,14 @@ export const Main: React.FC = () => {
 			return null;
 		}
 
-		const data = await web3Gateway.getContract(address)
-		
-		let buyerHistory: (HistoryentryResponse & {id: string})[] = [];
+		const data = await web3Gateway.getContract(address);
+
+		let buyerHistory: (HistoryentryResponse & { id: string })[] = [];
 		if (localStorage.getItem(address)) {
 			const history = await web3Gateway.getContractHistory(address, 0, 100);
 			buyerHistory = history
 				.filter((entry) => entry._buyer === userAccount)
-				.map((entry) => ({...entry, id: address}));
+				.map((entry) => ({ ...entry, id: address }));
 		}
 
 		return {
@@ -307,7 +304,7 @@ export const Main: React.FC = () => {
 			if (!web3Gateway) {
 				console.error('Missing web3 gateway instance');
 				return;
-			};
+			}
 
 			let addresses: string[] = [];
 
@@ -315,10 +312,10 @@ export const Main: React.FC = () => {
 				addresses = [contractId];
 			} else {
 				try {
-					addresses = await web3Gateway.getContracts()
+					addresses = await web3Gateway.getContracts();
 				} catch (error) {
 					console.log('Error when trying get list of contracts', error);
-					return
+					return;
 				}
 			}
 
@@ -578,7 +575,7 @@ export const Main: React.FC = () => {
 						contractId={contractId}
 						userAccount={userAccount}
 						web3Gateway={web3Gateway}
-						closeForm={()=>setCancelModalOpen(false)}
+						closeForm={() => setCancelModalOpen(false)}
 					/>
 				}
 			/>
@@ -592,7 +589,7 @@ export const Main: React.FC = () => {
 						userAccount={userAccount}
 						web3Gateway={web3Gateway}
 						currentBlockTimestamp={currentBlockTimestamp}
-						closeForm={()=>setClaimLmrModalOpen(false)}
+						closeForm={() => setClaimLmrModalOpen(false)}
 					/>
 				}
 			/>
