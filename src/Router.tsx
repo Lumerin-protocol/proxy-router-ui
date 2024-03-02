@@ -16,7 +16,7 @@ interface RouterProps {
 	isMobile: boolean;
 	activeOrdersTab: string;
 	setActiveOrdersTab: React.Dispatch<CurrentTab>;
-	lumerinBalance: number;
+	lumerinBalance: number | null;
 }
 
 // Router component contains the routes for the application
@@ -29,9 +29,9 @@ export const Router: React.FC<RouterProps> = (p) => {
 					render={(props: RouteComponentProps) => (
 						<Marketplace
 							{...props}
+							lumerinBalance={p.lumerinBalance}
 							web3Gateway={p.web3Gateway}
 							userAccount={p.userAccount}
-							lumerinBalance={p.lumerinBalance}
 							contracts={p.contracts}
 							currentBlockTimestamp={p.currentBlockTimestamp}
 							isMobile={p.isMobile}

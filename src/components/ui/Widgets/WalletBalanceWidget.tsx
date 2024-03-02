@@ -3,7 +3,7 @@ import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
 import { MobileWidget, SmallWidget } from '../Cards/Cards.styled';
 
-export const WalletBalanceWidget = (props: { lumerinBalance: number; isMobile: boolean }) => {
+export const WalletBalanceWidget = (props: { lumerinBalance: number | null; isMobile: boolean }) => {
 	const WalletBalanceWrapper = styled(SmallWidget)`
 		flex: 20%;
 		.balance-wrapper {
@@ -50,7 +50,7 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; isMobile: b
 					<div className='flex items-center justify-center flex-1 balance-wrapper'>
 						<LumerinIcon />
 						<span className='balance'>
-							{Math.ceil(props.lumerinBalance).toLocaleString()} <span className='lmr'>LMR</span>
+							{formatBalance(props.lumerinBalance)} <span className='lmr'>LMR</span>
 						</span>
 					</div>
 					<div className='link'>
@@ -71,3 +71,11 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; isMobile: b
 		</>
 	);
 };
+
+const formatBalance = (balance: number | null): string => {
+	if (balance === null) {
+		return '.';
+	}
+
+	return Math.ceil(balance).toLocaleString();
+}

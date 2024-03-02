@@ -54,7 +54,7 @@ interface BuyFormProps {
 	contractId: string;
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
-	lumerinbalance: number;
+	lumerinbalance: number | null;
 	onClose: () => void;
 }
 
@@ -130,6 +130,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		}
 
 		if (contentState === ContentState.Pending) {
+			if (!lumerinbalance){
+				console.error('Lumerin balance is not available');
+				return;
+			}
 			if (contract.price && lumerinbalance < divideByDigits(Number(contract.price))) {
 				setAlertOpen(true);
 				setAlertMessage(AlertMessage.InsufficientBalance);
@@ -281,6 +285,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	// Set styles and button based on ContentState
 	const display =
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
+
+	if (!lumerinbalance){
+		return "Loading..."
+	}
 
 	return (
 		<Fragment>

@@ -157,9 +157,10 @@ export const divideByDigits: (amount: number) => number = (amount) => {
 
 const LMRDecimal = 8;
 
-export const LMRDecimalToLMR = (decimal: number | string): number => {
-	const big = BigInt(decimal) / BigInt(10 ** LMRDecimal);
-	return Number(big);
+export const LMRDecimalToLMR = (decimal: number | string | bigint): number => {
+	const big = typeof decimal === 'bigint' ? decimal : BigInt(decimal);
+	const resultBig = big / BigInt(10 ** LMRDecimal);
+	return Number(resultBig);
 };
 
 // Convert integer provided as number, BigInt or decimal string to hex string with prefix '0x'

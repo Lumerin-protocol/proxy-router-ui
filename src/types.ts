@@ -115,6 +115,7 @@ export interface HashRentalContract {
 	speed?: string | number;
 	length?: string | number;
 	trade?: JSX.Element | string;
+	profitTarget?: number;
 	progress?: JSX.Element | string;
 	progressPercentage?: number;
 	editCancel?: JSX.Element | string;
@@ -126,6 +127,8 @@ export interface HashRentalContract {
 	history?: ContractHistory[];
 	version: string;
 	isDeleted: boolean;
+	balance?: string;
+	hasFutureTerms?: boolean;
 }
 
 // Making fields optional bc a user might not have filled out the input fields

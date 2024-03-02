@@ -11,15 +11,18 @@ import { ResponsiveNavigation } from './components/navigation/Navigation';
 import { Header } from './components/ui/Header';
 import { truncateAddress } from './utils';
 import { Router } from './Router';
+import { useWeb3ModalState } from '@web3modal/wagmi/react';
+import { Connector, useAccount } from 'wagmi';
 
 interface MainProps {
+	connectorIconUrl?: string;
 	userAccount: string;
 	isConnected: boolean;
 	isMetamask: boolean;
 	isMobile: boolean;
 	currentBlockTimestamp: number;
 	contracts: HashRentalContract[];
-	lumerinBalance: number;
+	lumerinBalance: number | null;
 	getAlertMessage: () => string;
 	// actions with state
 	pathName: string;
@@ -61,41 +64,38 @@ const getTruncatedWalletAddress = (userAccount: string): string | null => {
 	return null;
 };
 
+const SidebarBox = (props: { children: any }) => (
+	<Box component='nav' sx={{ width: { md: sidebarDrawerWidth }, flexShrink: { sm: 0 } }}>
+		{props.children}
+	</Box>
+);
+
+const MainBox = (props: { children: any }) => (
+	<Box
+		sx={{
+			marginLeft: 'auto',
+			flexGrow: 1,
+			p: 3,
+			width: { xs: `100%`, sm: `100%`, md: `calc(100% - ${sidebarDrawerWidth}px)` },
+			minHeight: '100vh',
+		}}
+	>
+		{props.children}
+	</Box>
+);
+
 // Main UI component
 export const Main: React.FC<MainProps> = (props) => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+	const {isDisconnected } = useAccount();
 
-	if (!props.isConnected) {
-		return (
-			<Hero
-				actionButtons={
-					<ConnectButtonsWrapper>
-						<button
-							type='button'
-							onClick={() => props.connectWallet(WalletText.ConnectViaMetaMask)}
-						>
-							<span>{WalletText.ConnectViaMetaMask}</span>
-							<MetaMaskIcon />
-						</button>
-						{/* <button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
-				<span>{WalletText.ConnectViaWalletConnect}</span>
-				<WalletConnectIcon />
-			</button> */}
-					</ConnectButtonsWrapper>
-				}
-			/>
-		);
+	if (isDisconnected) {
+		return <Hero />;
 	}
 
 	return (
 		<BodyWrapper>
-			<SwitchNetworkAlert
-				message={props.getAlertMessage()}
-				open={props.alertOpen}
-				setOpen={() => props.setAlertOpen(false)}
-				onClick={() => props.changeNetworkAsync()}
-			/>
-			<Box component='nav' sx={{ width: { md: sidebarDrawerWidth }, flexShrink: { sm: 0 } }}>
+			<SidebarBox>
 				<ResponsiveNavigation
 					sidebarOpen={sidebarOpen}
 					setSidebarOpen={setSidebarOpen}
@@ -103,17 +103,10 @@ export const Main: React.FC<MainProps> = (props) => {
 					pathName={props.pathName}
 					drawerWidth={sidebarDrawerWidth}
 				/>
-			</Box>
-			<Box
-				sx={{
-					marginLeft: 'auto',
-					flexGrow: 1,
-					p: 3,
-					width: { xs: `100%`, sm: `100%`, md: `calc(100% - ${sidebarDrawerWidth}px)` },
-					minHeight: '100vh',
-				}}
-			>
+			</SidebarBox>
+			<MainBox>
 				<Header
+					connectorIconUrl={props.connectorIconUrl}
 					setSidebarOpen={setSidebarOpen}
 					pageTitle={getPageTitle(props.pathName)}
 					truncatedWalletAddress={getTruncatedWalletAddress(props.userAccount)}
@@ -136,7 +129,7 @@ export const Main: React.FC<MainProps> = (props) => {
 						/>
 					</main>
 				</Box>
-			</Box>
+			</MainBox>
 		</BodyWrapper>
 	);
 };

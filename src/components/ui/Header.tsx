@@ -1,9 +1,21 @@
 import { Bars3BottomLeftIcon } from '@heroicons/react/24/outline';
 import { Toolbar, Typography } from '@mui/material';
 import { LumerinIcon, MetaMaskIcon, WalletConnectIcon, LogoIcon } from '../../images';
-import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
 import { ConnectedWalletWidget } from './Widgets/ConnectedWalletWidget';
+
+const StyledToolbar = styled(Toolbar)`
+	display: flex;
+	justify-content: space-between;
+	padding: 0 !important;
+`;
+
+const PageTitle = styled(Typography)`
+	color: #004c5f;
+	font-weight: 600;
+	font-family: Raleway, sans-serif;
+	font-size: 2rem;
+`;
 
 export const Header = (prop: {
 	setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -13,19 +25,9 @@ export const Header = (prop: {
 	isMobile: boolean;
 	addTokenToMetamask: Function;
 	drawerWidth: number;
+	connectorIconUrl?: string;
 }) => {
-	const StyledToolbar = styled(Toolbar)`
-		display: flex;
-		justify-content: space-between;
-		padding: 0 !important;
-	`;
 
-	const PageTitle = styled(Typography)`
-		color: #004c5f;
-		font-weight: 600;
-		font-family: Raleway, sans-serif;
-		font-size: 2rem;
-	`;
 
 	return (
 		<StyledToolbar>
@@ -42,6 +44,7 @@ export const Header = (prop: {
 				<LumerinIcon />
 			) : (
 				<ConnectedWalletWidget
+					iconUrl={prop.connectorIconUrl}
 					addTokenToMetamask={prop.addTokenToMetamask}
 					truncatedWalletAddress={prop.truncatedWalletAddress}
 					isMetamask={prop.isMetamask}

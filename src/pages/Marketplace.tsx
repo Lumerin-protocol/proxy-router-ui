@@ -17,6 +17,7 @@ import { ModalItem } from '../components/ui/Modal';
 import { BuyForm } from '../components/ui/Forms/BuyerForms/BuyForm';
 import { EthereumGateway } from '../gateway/ethereum';
 import { Sort } from '@mui/icons-material';
+import { useReadContract } from 'wagmi';
 
 const WidgetsWrapper = styled.div`
 	display: flex;
@@ -46,10 +47,10 @@ const MobileWidgetsWrapper = styled.div`
 
 interface MarketplaceProps {
 	web3Gateway?: EthereumGateway;
-	contracts: HashRentalContract[];
+	contracts: HashRentalContract[] | null;
 	userAccount: string;
 	currentBlockTimestamp: number;
-	lumerinBalance: number;
+	lumerinBalance: number | null;
 	isMobile: boolean;
 }
 
@@ -57,13 +58,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	web3Gateway,
 	userAccount,
 	currentBlockTimestamp,
-	lumerinBalance,
 	contracts,
 	isMobile,
+	lumerinBalance,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
-	const [isLoading, setIsLoading] = useState<boolean>(true);
-
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 	const [buyModalContractId, setBuyModalContractId] = useState<string>('');
 
@@ -84,10 +83,10 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	}, [mediaQueryList?.matches]);
 
 	const getTableData: () => HashRentalContract[] = () => {
-		const filteredContracts = contracts.filter(
+		const filteredContracts = contracts ? contracts.filter(
 			(contract) =>
 				(contract.state as string) === ContractState.Available && contract.seller !== userAccount
-		);
+		) : [];
 		const updatedContracts = filteredContracts.map((contract: any) => {
 			const updatedContract = { ...contract };
 			if (!_.isEmpty(contract)) {
@@ -123,17 +122,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	const [sortType, setSortType] = useState(SortTypes.Default);
 	const availableContracts = sortContractsV2(sortType, data);
 
-	// Remove spinner if no contracts after 1 minute
-	useInterval(() => {
-		if (isLoading) setIsLoading(false);
-	}, 7000);
-
-	useEffect(() => {
-		if (data.length > 0) {
-			setIsLoading(false);
-		}
-	});
-
 	return (
 		<>
 			<ModalItem
@@ -141,7 +129,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 				onClose={() => setBuyModalOpen(false)}
 				content={
 					<BuyForm
-						contracts={contracts}
+						contracts={contracts || []}
 						contractId={buyModalContractId}
 						userAccount={userAccount}
 						web3Gateway={web3Gateway}
@@ -156,8 +144,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 					<WidgetsWrapper>
 						<MessageWidget isMobile={isMobile} />
 						<BuyerOrdersWidget
-							isLoading={isLoading}
-							contracts={contracts}
+							isLoading={!contracts}
+							contracts={contracts || []}
 							userAccount={userAccount}
 							currentBlockTimestamp={currentBlockTimestamp}
 						/>
@@ -171,7 +159,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 					/> */}
 					<AvailableContracts
 						contracts={availableContracts}
-						loading={isLoading}
+						loading={!contracts}
 						setSortType={setSortType}
 						sortType={sortType}
 					/>
@@ -193,7 +181,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 					/> */}
 					<AvailableContracts
 						contracts={availableContracts}
-						loading={isLoading}
+						loading={!contracts}
 						setSortType={setSortType}
 						sortType={sortType}
 					/>
