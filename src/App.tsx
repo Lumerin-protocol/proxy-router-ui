@@ -1,14 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useMemo } from 'react';
 import MetaMaskOnboarding from '@metamask/onboarding';
-import { Box } from '@mui/material';
 import { uniqBy } from 'lodash';
 import Web3 from 'web3';
 import { provider } from 'web3-core';
-import { Hero } from './pages/Hero';
-import { ResponsiveNavigation } from './components/navigation/Navigation';
-import { SwitchNetworkAlert } from './components/ui/SwitchNetworkAlert';
-import { Header } from './components/ui/Header';
 import { useInterval } from './hooks/useInterval';
 import {
 	LMRDecimalToLMR,
@@ -29,9 +24,9 @@ import {
 } from './types';
 
 import { EthereumGateway } from './gateway/ethereum';
-import { HistoryentryResponse } from 'contracts-js/dist/generated-types/Implementation';
 import { Main } from './Main';
 import ReactGA from 'react-ga4';
+import { fetchContract, fetchContracts } from './contracts';
 
 const trackingId = 'G-TN08K48RMS';
 ReactGA.initialize(trackingId);
@@ -193,8 +188,8 @@ export const App: React.FC = () => {
 		refreshContracts(false, undefined, true);
 	}, 60 * 1000);
 
-	const refreshContracts = (
-		ignoreCheck: boolean | any = false,
+	const refreshContracts = async (
+		ignoreCheck: boolean = false,
 		contractId?: string,
 		updateByChunks = false
 	) => {
@@ -202,90 +197,17 @@ export const App: React.FC = () => {
 			console.error('Missing web3 gateway instance');
 			return;
 		}
-		web3Gateway.getCurrentBlockTimestamp().then((currentBlockTimestamp) => {
-			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
-				setCurrentBlockTimestamp(currentBlockTimestamp as number);
-				fetchContracts(contractId, updateByChunks);
-			}
-		});
-	};
-
-	// Contracts setup
-	const loadContract = async (address: string): Promise<HashRentalContract | null> => {
-		if (!web3Gateway) {
-			console.error('Missing web3Gateway instance');
-			return null;
-		}
-
-		const data = await web3Gateway.getContract(address);
-
-		let buyerHistory: (HistoryentryResponse & { id: string })[] = [];
-		if (localStorage.getItem(address)) {
-			const history = await web3Gateway.getContractHistory(address, 0, 100);
-			buyerHistory = history
-				.filter((entry) => entry._buyer === userAccount)
-				.map((entry) => ({ ...entry, id: address }));
-		}
-
-		return {
-			id: address,
-			price: data.price,
-			speed: data.speed,
-			length: data.length,
-			buyer: data.buyer,
-			seller: data.seller,
-			timestamp: data.timestamp,
-			state: data.state,
-			encryptedPoolData: data.encryptedPoolData,
-			version: data.version,
-			isDeleted: data.isDeleted,
-			history: buyerHistory,
-		};
-	};
-
-	const loadContracts = async (addresses: string[], updateByChunks = false) => {
-		const chunkSize = updateByChunks ? 10 : addresses.length;
-		let newContracts = [];
-		for (let i = 0; i < addresses.length; i += chunkSize) {
-			const chunk = addresses.slice(i, i + chunkSize);
-			const hashRentalContracts = (
-				await Promise.all(chunk.map(async (address) => await loadContract(address)))
-			).filter((c: any) => !c?.isDeleted);
-			newContracts.push(...hashRentalContracts);
-		}
-		const result = uniqBy([...newContracts, ...contracts], 'id');
-		setContracts(result as HashRentalContract[]);
-	};
-
-	const fetchContracts = async (contractId?: string, updateByChunks = false): Promise<void> => {
-		try {
-			console.log('Fetching contract list...');
-
-			if (!web3Gateway) {
-				console.error('Missing web3 gateway instance');
-				return;
-			}
-
-			let addresses: string[] = [];
-
+		const ts = await web3Gateway.getCurrentBlockTimestamp();
+		if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
+			setCurrentBlockTimestamp(ts);
+			let newContracts: HashRentalContract[];
 			if (contractId) {
-				addresses = [contractId];
+				newContracts = await fetchContract(web3Gateway, userAccount, contractId);
 			} else {
-				try {
-					addresses = await web3Gateway.getContracts();
-				} catch (error) {
-					console.log('Error when trying get list of contracts', error);
-					return;
-				}
+				newContracts = await fetchContracts(web3Gateway, userAccount, updateByChunks);
 			}
-
-			console.log('contract addresses: ', addresses);
-			loadContracts(addresses, updateByChunks);
-		} catch (error) {
-			const typedError = error as Error;
-			printError(typedError.message, typedError.stack as string);
-			// crash app if can't communicate with webfacing contract
-			throw typedError;
+			const result = uniqBy([...newContracts, ...contracts], 'id');
+			setContracts(result);
 		}
 	};
 
