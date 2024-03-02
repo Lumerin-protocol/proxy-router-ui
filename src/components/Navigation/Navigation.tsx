@@ -24,8 +24,8 @@ interface Navigation {
 
 export const ResponsiveNavigation = (prop: {
 	sidebarOpen: boolean;
-	setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	setPathname: React.Dispatch<React.SetStateAction<string>>;
+	setSidebarOpen: React.Dispatch<boolean>;
+	setPathname: React.Dispatch<string>;
 	pathName: string;
 	drawerWidth: number;
 }) => {

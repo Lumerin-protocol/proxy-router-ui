@@ -1,16 +1,16 @@
-// @ts-nocheck
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
+	AlertMessage,
 	ContentState,
 	ContractState,
-	Ethereum,
 	FormData,
 	HashRentalContract,
 	// InputValuesBuyForm,
 	// InputValuesCreateForm,
 	PathName,
 	SortByType,
+	SortTypes,
 	StatusText,
 } from './types';
 import React, { Dispatch, SetStateAction } from 'react';
@@ -25,6 +25,7 @@ import { ethers } from 'ethers';
 import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+import { Sort } from '@mui/icons-material';
 
 const { abi, bytecode } = CloneFactoryContract;
 
@@ -67,11 +68,11 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (address, username, password) => string | undefined = (
-	address,
-	username,
-	password
-) => {
+export const toRfc2396: (
+	address: string,
+	username: string,
+	password: string
+) => string | undefined = (address, username, password) => {
 	const protocol = 'stratum+tcp';
 
 	const encodedUsername = encodeURIComponent(username);
@@ -79,11 +80,11 @@ export const toRfc2396: (address, username, password) => string | undefined = (
 };
 
 export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(formData.poolAddress, formData.username, formData.password);
+	return toRfc2396(formData.poolAddress!, formData.username!, formData.password!);
 };
 
 export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(formData.validatorAddress, formData.username, formData.password);
+	return toRfc2396(formData.validatorAddress!, formData.username!, formData.password!);
 };
 
 //encrypts a string passed into it
@@ -299,33 +300,31 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	return 0;
 };
 
-export const sortContracts = <T,>(
-	sortType: string,
-	contractData: T[],
-	setContractData: React.Dispatch<React.SetStateAction<T[]>>
+interface SortContractData {
+	price?: number | string;
+	length?: number | string;
+	speed?: number | string;
+}
+
+export const sortContractsV2 = <T extends SortContractData>(
+	sortType: SortTypes,
+	contractData: T[]
 ) => {
 	switch (sortType) {
-		case 'Price: Low to High':
-			setContractData([...contractData.sort((a, b) => (a.price! > b.price! ? 1 : -1))]);
-			break;
-		case 'Price: High to Low':
-			setContractData([...contractData.sort((a, b) => (a.price! < b.price! ? 1 : -1))]);
-			break;
-		case 'Duration: Short to Long':
-			setContractData([...contractData.sort((a, b) => (a.length! > b.length! ? 1 : -1))]);
-			break;
-		case 'Duration: Long to Short':
-			setContractData([...contractData.sort((a, b) => (a.length! < b.length! ? 1 : -1))]);
-			break;
-		case 'Speed: Slow to Fast':
-			setContractData([...contractData.sort((a, b) => (a.speed! > b.speed! ? 1 : -1))]);
-			break;
-		case 'Speed: Fast to Slow':
-			setContractData([...contractData.sort((a, b) => (a.speed! < b.speed! ? 1 : -1))]);
-			break;
+		case SortTypes.PriceLowToHigh:
+			return [...contractData.sort((a, b) => Number(a.price) - Number(b.price))];
+		case SortTypes.PriceHighToLow:
+			return [...contractData.sort((a, b) => Number(b.price) - Number(a.price))];
+		case SortTypes.DurationShortToLong:
+			return [...contractData.sort((a, b) => Number(a.length) - Number(b.length))];
+		case SortTypes.DurationLongToShort:
+			return [...contractData.sort((a, b) => Number(b.length) - Number(a.length))];
+		case SortTypes.SpeedSlowToFast:
+			return [...contractData.sort((a, b) => Number(a.speed) - Number(b.speed))];
+		case SortTypes.SpeedFastToSlow:
+			return [...contractData.sort((a, b) => Number(b.speed) - Number(a.speed))];
 		default:
-			setContractData([...contractData]);
-			break;
+			return [...contractData];
 	}
 };
 
@@ -333,8 +332,8 @@ export const getButton: (
 	contentState: string,
 	buttonContent: string,
 	onComplete: () => void,
-	onSubmit,
-	isDisabled
+	onSubmit: () => void,
+	isDisabled: boolean
 ) => JSX.Element = (contentState, buttonContent, onComplete, onSubmit, isDisabled) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
@@ -569,7 +568,12 @@ const getV: (v: string, chainId: number) => string = (v, chainId) => {
 // };
 
 export const getHandlerBlockchainError =
-	(setAlertMessage, setAlertOpen, setContentState) => (error: ErrorWithCode) => {
+	(
+		setAlertMessage: (msg: string) => void,
+		setAlertOpen: (a: boolean) => void,
+		setContentState: (st: ContentState) => void
+	) =>
+	(error: ErrorWithCode) => {
 		// If user rejects transaction
 		if (error.code === 4001) {
 			setAlertMessage(error.message);
@@ -612,3 +616,7 @@ export const getHandlerBlockchainError =
 		setAlertOpen(true);
 		setContentState(ContentState.Review);
 	};
+
+export interface ErrorWithCode extends Error {
+	code?: number;
+}

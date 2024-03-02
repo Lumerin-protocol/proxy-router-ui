@@ -40,7 +40,7 @@ export interface EditFormProps {
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
 	currentBlockTimestamp?: number;
-	closeForm: () => void;
+	onClose: () => void;
 }
 
 export const EditForm: React.FC<EditFormProps> = ({
@@ -48,7 +48,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
-	closeForm,
+	onClose,
 }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 	[contentState, setContentState] = useState<string>(ContentState.Create);
@@ -111,13 +111,13 @@ export const EditForm: React.FC<EditFormProps> = ({
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				closeForm();
+				onClose();
 			}
 		}
 
 		// Completed
 		if (contentState === ContentState.Complete) {
-			closeForm();
+			onClose();
 		}
 	};
 
@@ -126,7 +126,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 		let timeoutId: NodeJS.Timeout;
 		if (isNoEditSeller(contract, userAccount)) {
 			setAlertOpen(true);
-			timeoutId = setTimeout(() => closeForm(), 3000);
+			timeoutId = setTimeout(() => onClose(), 3000);
 		}
 
 		return () => clearTimeout(timeoutId);
@@ -187,12 +187,18 @@ export const EditForm: React.FC<EditFormProps> = ({
 					<button
 						type='submit'
 						className={`h-16 w-full py-2 px-4 btn-modal border-lumerin-aqua bg-white text-sm font-medium text-lumerin-aqua focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lumerin-aqua`}
-						onClick={() => closeForm()}
+						onClick={() => onClose()}
 					>
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, buttonContent, () => {}, handleSubmit, !isValid)
+						? getButton(
+								contentState,
+								buttonContent,
+								() => {},
+								() => handleSubmit(() => {}),
+								!isValid
+						  )
 						: null}
 				</div>
 			</div>

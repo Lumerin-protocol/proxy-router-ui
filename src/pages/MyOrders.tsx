@@ -1,51 +1,45 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {
-	Dispatch,
-	MouseEventHandler,
-	SetStateAction,
-	useEffect,
-	useMemo,
-	useState,
-} from 'react';
-import { TableIcon } from './ui/TableIcon';
+import React, { Dispatch, useEffect, useMemo, useState } from 'react';
+import { TableIcon } from '../components/ui/TableIcon';
 import {
 	getProgressDiv,
 	getProgressPercentage,
 	getStatusDiv,
 	setMediaQueryListOnChangeHandler,
-	sortContracts,
+	sortContractsV2,
 } from '../utils';
 import { DateTime } from 'luxon';
 import {
-	ContractData,
 	ContractState,
 	HashRentalContract,
 	CurrentTab,
-	ContractHistory,
 	ContractHistoryData,
+	SortTypes,
 } from '../types';
-import { Spinner } from './ui/Spinner.styled';
-import { useInterval } from './hooks/useInterval';
-import { ButtonGroup } from './ui/ButtonGroup';
-import { EditButton } from './ui/Forms/FormButtons/EditButton';
-import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
+import { Spinner } from '../components/ui/Spinner.styled';
+import { useInterval } from '../hooks/useInterval';
+import { ButtonGroup } from '../components/ui/ButtonGroup';
+import { EditButton } from '../components/ui/Forms/FormButtons/EditButton';
+import { CancelButton } from '../components/ui/Forms/FormButtons/CancelButton';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
-import { FinishedContracts, PurchasedContracts } from './ui/Cards/PurchasedContracts';
-import { TabSwitch } from './ui/TabSwitch.Styled';
-import { SortToolbar } from './ui/SortToolbar';
+import { FinishedContracts, PurchasedContracts } from '../components/ui/Cards/PurchasedContracts';
+import { TabSwitch } from '../components/ui/TabSwitch.Styled';
+import { SortToolbar } from '../components/ui/SortToolbar';
+import { EthereumGateway } from '../gateway/ethereum';
+import { ModalItem } from '../components/ui/Modal';
+import { EditForm as BuyerEditForm } from '../components/ui/Forms/BuyerForms/EditForm';
+import { CancelForm } from '../components/ui/Forms/BuyerForms/CancelForm';
 
 interface MyOrdersProps {
+	web3Gateway?: EthereumGateway;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
-	setContractId: Dispatch<SetStateAction<string>>;
-	editClickHandler: MouseEventHandler<HTMLButtonElement>;
-	cancelClickHandler: MouseEventHandler<HTMLButtonElement>;
 	isMobile: boolean;
 	refreshContracts: any;
 	activeOrdersTab: string;
-	setActiveOrdersTab: Dispatch<SetStateAction<string>>;
+	setActiveOrdersTab: Dispatch<CurrentTab>;
 }
 
 // TODO: fix this disgusting interface
@@ -67,12 +61,10 @@ export interface HistoryUglyMapped extends ContractHistoryData {
 }
 
 export const MyOrders: React.FC<MyOrdersProps> = ({
+	web3Gateway,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
-	setContractId,
-	editClickHandler,
-	cancelClickHandler,
 	isMobile,
 	activeOrdersTab,
 	setActiveOrdersTab,
@@ -81,8 +73,15 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
+	const [buyerEditModalOpen, setBuyerEditModalOpen] = useState<boolean>(false);
+	const [buyerEditContractId, setBuyerEditContractId] = useState<string>('');
+
+	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
+	const [cancelContractId, setCancelContractId] = useState<string>('');
+
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
 	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
+
 	setMediaQueryListOnChangeHandler(
 		mediaQueryListLarge,
 		isLargeBreakpointOrGreater,
@@ -93,11 +92,6 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		isMediumBreakpointOrBelow,
 		setIsMediumBreakpointOrBelow
 	);
-
-	useEffect(() => {
-		// console.log("refresh page data");
-		//refreshContracts();
-	}, []);
 
 	useEffect(() => {
 		if (!mediaQueryListLarge?.matches) {
@@ -163,15 +157,15 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						button1={
 							<EditButton
 								contractId={contract.id as string}
-								setContractId={setContractId}
-								editClickHandler={editClickHandler}
+								setContractId={setBuyerEditContractId}
+								editClickHandler={() => setBuyerEditModalOpen(true)}
 							/>
 						}
 						button2={
 							<CancelButton
 								contractId={contract.id as string}
-								setContractId={setContractId}
-								cancelClickHandler={cancelClickHandler}
+								setContractId={setCancelContractId}
+								cancelClickHandler={() => setCancelModalOpen(true)}
 							/>
 						}
 					/>
@@ -257,25 +251,46 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 	});
 
-	const [runningContracts, setRunningContracts] = useState<HistoryUglyMapped[]>([
-		...data.filter((contract) => contract.progressPercentage! < 100),
-	]);
-	const [completedContracts, setCompletedContracts] = useState<HistoryUglyMapped[]>([
-		...historyData,
-	]);
-	const [runningSortType, setRunningSortType] = useState('');
-	const [completedSortType, setCompletedSortType] = useState('');
+	const [runningSortType, setRunningSortType] = useState(SortTypes.Default);
+	const [completedSortType, setCompletedSortType] = useState(SortTypes.Default);
 
-	useEffect(() => {
-		sortContracts(runningSortType, runningContracts, setRunningContracts);
-	}, [runningSortType]);
+	const runningContracts = sortContractsV2(
+		runningSortType,
+		data.filter((contract) => contract.progressPercentage! < 100)
+	);
+	const completedContracts = sortContractsV2(completedSortType, historyData);
 
-	useEffect(() => {
-		sortContracts(completedSortType, completedContracts, setCompletedContracts);
-	}, [completedSortType]);
+	console.log('runningContracts', runningContracts);
+	console.log('completedContracts', completedContracts);
 
 	return (
 		<>
+			<ModalItem
+				open={buyerEditModalOpen}
+				onClose={() => setBuyerEditModalOpen(false)}
+				content={
+					<BuyerEditForm
+						contracts={contracts}
+						contractId={buyerEditContractId}
+						userAccount={userAccount}
+						web3Gateway={web3Gateway}
+						onClose={() => setBuyerEditModalOpen(false)}
+					/>
+				}
+			/>
+			<ModalItem
+				open={cancelModalOpen}
+				onClose={() => setCancelModalOpen(false)}
+				content={
+					<CancelForm
+						contracts={contracts}
+						contractId={cancelContractId}
+						userAccount={userAccount}
+						web3Gateway={web3Gateway}
+						onClose={() => setCancelModalOpen(false)}
+					/>
+				}
+			/>
 			<TabSwitch>
 				<button
 					id='running'

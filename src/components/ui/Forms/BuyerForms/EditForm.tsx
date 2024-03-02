@@ -48,7 +48,7 @@ interface EditFormProps {
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
 	currentBlockTimestamp?: number;
-	closeForm: () => void;
+	onClose: () => void;
 }
 
 export const EditForm: React.FC<EditFormProps> = ({
@@ -56,7 +56,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 	contractId,
 	userAccount,
 	web3Gateway,
-	closeForm,
+	onClose,
 }) => {
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
 
@@ -156,7 +156,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 
 		// Completed
 		if (contentState === ContentState.Complete) {
-			closeForm();
+			onClose();
 		}
 	};
 
@@ -166,7 +166,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 		if (isNoEditBuyer(contract, userAccount)) {
 			setAlertOpen(true);
 			setAlertMessage(AlertMessage.NoEditBuyer);
-			timeoutId = setTimeout(() => closeForm(), 3000);
+			timeoutId = setTimeout(() => onClose(), 3000);
 		}
 
 		return () => clearTimeout(timeoutId);
@@ -251,7 +251,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 			{content}
 			{display && <p className='subtext'>{paragraphContent}</p>}
 			<FormButtonsWrapper>
-				<SecondaryButton type='submit' onClick={() => closeForm()}>
+				<SecondaryButton type='submit' onClick={() => onClose()}>
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
@@ -259,7 +259,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 						contentState,
 						buttonContent,
 						() => {
-							closeForm();
+							onClose();
 							history.push(PathName.MyOrders);
 						},
 						() => editContractAsync(formData),

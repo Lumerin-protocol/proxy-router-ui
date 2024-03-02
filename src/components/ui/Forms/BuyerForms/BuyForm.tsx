@@ -13,6 +13,7 @@ import {
 	getPoolRfc2396,
 	getValidatorURL,
 	getHandlerBlockchainError,
+	ErrorWithCode,
 } from '../../../../utils';
 
 import { ethers } from 'ethers';
@@ -37,10 +38,6 @@ import { Alert as AlertMUI } from '@mui/material';
 import { useHistory } from 'react-router';
 import { EthereumGateway } from '../../../../gateway/ethereum';
 
-interface ErrorWithCode extends Error {
-	code?: number;
-}
-
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
 	poolAddress: '',
@@ -58,7 +55,7 @@ interface BuyFormProps {
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
 	lumerinbalance: number;
-	setOpen: Dispatch<SetStateAction<boolean>>;
+	onClose: () => void;
 }
 
 export const BuyForm: React.FC<BuyFormProps> = ({
@@ -67,7 +64,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	userAccount,
 	web3Gateway,
 	lumerinbalance,
-	setOpen,
+	onClose,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 
@@ -317,7 +314,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 			{/* {display && <p className='subtext'>{paragraphContent}</p>} */}
 			<FormButtonsWrapper>
-				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+				<SecondaryButton type='submit' onClick={onClose}>
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
@@ -325,7 +322,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						contentState,
 						buttonContent,
 						() => {
-							setOpen(false);
+							onClose();
 							history.push(PathName.MyOrders);
 						},
 						() => buyContractAsync(formData),

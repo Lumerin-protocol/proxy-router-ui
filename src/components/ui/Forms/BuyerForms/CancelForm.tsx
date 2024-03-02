@@ -21,7 +21,7 @@ export interface CancelFormProps {
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
 	currentBlockTimestamp?: number;
-	closeForm: () => void;
+	onClose: () => void;
 }
 
 export const CancelForm: React.FC<CancelFormProps> = ({
@@ -29,7 +29,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 	contractId,
 	userAccount,
 	web3Gateway,
-	closeForm,
+	onClose,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
@@ -99,7 +99,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 		if (isNoCancel(contract, userAccount)) {
 			setAlertMessage(AlertMessage.NoCancelBuyer);
 			setAlertOpen(true);
-			timeoutId = setTimeout(() => closeForm(), 3000);
+			timeoutId = setTimeout(() => onClose(), 3000);
 		}
 
 		return () => clearTimeout(timeoutId);
@@ -126,7 +126,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 						</p>
 						<ButtonGroup
 							button1={
-								<SecondaryButton type='submit' onClick={() => closeForm()}>
+								<SecondaryButton type='submit' onClick={() => onClose()}>
 									Close
 								</SecondaryButton>
 							}
@@ -144,7 +144,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 						<p>The cancellation is permanent.</p>
 						<ButtonGroup
 							button1={
-								<SecondaryButton type='submit' onClick={() => closeForm()}>
+								<SecondaryButton type='submit' onClick={() => onClose()}>
 									Close
 								</SecondaryButton>
 							}

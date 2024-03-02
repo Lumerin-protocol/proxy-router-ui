@@ -1,43 +1,71 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { TableIcon } from './ui/TableIcon';
-import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
-import { AvailableContracts } from './ui/Cards/AvailableContracts';
-import { setMediaQueryListOnChangeHandler } from '../utils';
-import { ContractState, HashRentalContract } from '../types';
-import { useInterval } from './hooks/useInterval';
+import React, { useEffect, useMemo, useState } from 'react';
+import { TableIcon } from '../components/ui/TableIcon';
+import { BuyButton } from '../components/ui/Forms/FormButtons/BuyButton';
+import { AvailableContracts } from '../components/ui/Cards/AvailableContracts';
+import { setMediaQueryListOnChangeHandler, sortContractsV2 } from '../utils';
+import { ContractState, HashRentalContract, SortTypes } from '../types';
+import { useInterval } from '../hooks/useInterval';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
 import styled from '@emotion/styled';
-import { BuyerOrdersWidget } from './ui/Widgets/BuyerOrdersWidget';
-import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
-import { sortContracts } from '../utils';
-import { MobileWalletInfo } from './ui/Widgets/MobileWalletInfo';
-import { MessageWidget } from './ui/Widgets/MessageWidget';
+import { BuyerOrdersWidget } from '../components/ui/Widgets/BuyerOrdersWidget';
+import { WalletBalanceWidget } from '../components/ui/Widgets/WalletBalanceWidget';
+import { MobileWalletInfo } from '../components/ui/Widgets/MobileWalletInfo';
+import { MessageWidget } from '../components/ui/Widgets/MessageWidget';
+import { ModalItem } from '../components/ui/Modal';
+import { BuyForm } from '../components/ui/Forms/BuyerForms/BuyForm';
+import { EthereumGateway } from '../gateway/ethereum';
+import { Sort } from '@mui/icons-material';
+
+const WidgetsWrapper = styled.div`
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 2rem;
+	margin-bottom: 2.5rem;
+	width: 100%;
+	column-gap: 1rem;
+	row-gap: 1rem;
+
+	.widget {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 0px;
+	}
+`;
+
+const MobileWidgetsWrapper = styled.div`
+	.widget-row {
+		display: flex;
+		flex-direction: row;
+		gap: 1rem;
+		margin-bottom: 1rem;
+		margin-top: 1rem;
+	}
+`;
 
 interface MarketplaceProps {
+	web3Gateway?: EthereumGateway;
 	contracts: HashRentalContract[];
-	setContractId: Dispatch<SetStateAction<string>>;
-	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 	userAccount: string;
-	isMetaMask: boolean;
 	currentBlockTimestamp: number;
 	lumerinBalance: number;
 	isMobile: boolean;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
+	web3Gateway,
 	userAccount,
-	isMetaMask,
 	currentBlockTimestamp,
 	lumerinBalance,
 	contracts,
-	setContractId,
-	buyClickHandler,
 	isMobile,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
+
+	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
+	const [buyModalContractId, setBuyModalContractId] = useState<string>('');
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
@@ -79,8 +107,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 				updatedContract.trade = (
 					<BuyButton
 						contractId={contract.id as string}
-						setContractId={setContractId}
-						buyClickHandler={buyClickHandler}
+						setContractId={setBuyModalContractId}
+						buyClickHandler={() => setBuyModalOpen(true)}
 					/>
 				);
 			}
@@ -92,12 +120,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 
-	const [availableContracts, setAvailableContracts] = useState<HashRentalContract[]>([...data]);
-	const [sortType, setSortType] = useState('');
-
-	useEffect(() => {
-		sortContracts(sortType, availableContracts, setAvailableContracts);
-	}, [sortType]);
+	const [sortType, setSortType] = useState(SortTypes.Default);
+	const availableContracts = sortContractsV2(sortType, data);
 
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
@@ -110,34 +134,23 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		}
 	});
 
-	const WidgetsWrapper = styled.div`
-		display: flex;
-		flex-wrap: wrap;
-		margin-top: 2rem;
-		margin-bottom: 2.5rem;
-		width: 100%;
-		column-gap: 1rem;
-		row-gap: 1rem;
-
-		.widget {
-			display: flex;
-			flex-direction: column;
-			flex: 1 1 0px;
-		}
-	`;
-
-	const MobileWidgetsWrapper = styled.div`
-		.widget-row {
-			display: flex;
-			flex-direction: row;
-			gap: 1rem;
-			margin-bottom: 1rem;
-			margin-top: 1rem;
-		}
-	`;
-
 	return (
 		<>
+			<ModalItem
+				open={buyModalOpen}
+				onClose={() => setBuyModalOpen(false)}
+				content={
+					<BuyForm
+						contracts={contracts}
+						contractId={buyModalContractId}
+						userAccount={userAccount}
+						web3Gateway={web3Gateway}
+						lumerinbalance={lumerinBalance}
+						onClose={() => setBuyModalOpen(false)}
+					/>
+				}
+			/>
+
 			{!isMobile ? (
 				<>
 					<WidgetsWrapper>
@@ -148,9 +161,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 							userAccount={userAccount}
 							currentBlockTimestamp={currentBlockTimestamp}
 						/>
-						{isMetaMask && (
-							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
-						)}
+						<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
 					</WidgetsWrapper>
 					{/* <SortToolbar
 						pageTitle='Hashrate For Sale'
@@ -170,9 +181,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 					<MobileWidgetsWrapper>
 						<div className='widget-row'>
 							<MobileWalletInfo walletAddress={userAccount} isMobile={isMobile} />
-							{isMetaMask && (
-								<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
-							)}
+							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
 						</div>
 					</MobileWidgetsWrapper>
 					<MessageWidget isMobile={isMobile} />

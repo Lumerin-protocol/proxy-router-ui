@@ -18,7 +18,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/CancelOutlined';
 
 import styled from '@emotion/styled';
-import { HistoryUglyMapped } from '../../MyOrders';
+import { HistoryUglyMapped } from '../../../pages/MyOrders';
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 	height: 10,

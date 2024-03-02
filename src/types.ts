@@ -41,7 +41,7 @@ export enum StatusText {
 }
 
 export enum PathName {
-	Marketplace = '/',
+	Marketplace = '/marketplace',
 	MyOrders = '/buyerhub',
 	MyContracts = '/sellerhub',
 }
@@ -75,6 +75,7 @@ export enum SortTypes {
 	DurationLongToShort = 'Duration: Long to Short',
 	SpeedSlowToFast = 'Speed: Slow to Fast',
 	SpeedFastToSlow = 'Speed: Fast to Slow',
+	Default = 'Default',
 }
 
 export enum CloseOutType {

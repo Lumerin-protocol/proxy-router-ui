@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Column, Row, SortByFn, useSortBy, useTable } from 'react-table';
+import { Column, SortByFn, useSortBy, useTable } from 'react-table';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import {
 	getProgressDiv,
@@ -9,47 +9,55 @@ import {
 	setMediaQueryListOnChangeHandler,
 	sortByNumber,
 } from '../utils';
-import { Table } from './ui/Table';
-import { TableIcon } from './ui/TableIcon';
+import { Table } from '../components/ui/Table';
+import { TableIcon } from '../components/ui/TableIcon';
 import { DateTime } from 'luxon';
-import { Spinner } from './ui/Spinner.styled';
-import { useInterval } from './hooks/useInterval';
-import { ButtonGroup } from './ui/ButtonGroup';
-import { EditButton } from './ui/Forms/FormButtons/EditButton';
-import { ClaimLmrButton } from './ui/Forms/FormButtons/ClaimLmrButton';
+import { Spinner } from '../components/ui/Spinner.styled';
+import { useInterval } from '../hooks/useInterval';
+import { ButtonGroup } from '../components/ui/ButtonGroup';
+import { EditButton } from '../components/ui/Forms/FormButtons/EditButton';
+import { ClaimLmrButton } from '../components/ui/Forms/FormButtons/ClaimLmrButton';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
-import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
+import { PrimaryButton } from '../components/ui/Forms/FormButtons/Buttons.styled';
 import { Toolbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import styled from '@emotion/styled';
+import { ModalItem } from '../components/ui/Modal';
+import { EditForm as SellerEditForm } from '../components/ui/Forms/SellerForms/EditForm';
+import { EthereumGateway } from '../gateway/ethereum';
+import { CreateForm } from '../components/ui/Forms/SellerForms/CreateForm';
+import { ClaimLmrForm } from '../components/ui/Forms/SellerForms/ClaimLmrForm';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
 
 interface MyContractsProps {
+	web3Gateway?: EthereumGateway;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
-	setContractId: Dispatch<SetStateAction<string>>;
-	editClickHandler: MouseEventHandler<HTMLButtonElement>;
-	claimLmrClickHandler: MouseEventHandler<HTMLButtonElement>;
 	setSidebarOpen: Dispatch<SetStateAction<boolean>>;
-	setCreateModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export const MyContracts: React.FC<MyContractsProps> = ({
+	web3Gateway,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
-	setContractId,
-	editClickHandler,
-	claimLmrClickHandler,
 	setSidebarOpen,
-	setCreateModalOpen,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
+
+	const [sellerEditModalOpen, setSellerEditModalOpen] = useState<boolean>(false);
+	const [sellerEditContractId, setSellerEditContractId] = useState<string>('');
+
+	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
+
+	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
+	const [claimLmrContractId, setClaimLmrContractId] = useState<string>('');
+
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
@@ -127,15 +135,15 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 						button1={
 							<EditButton
 								contractId={contract.id as string}
-								setContractId={setContractId}
-								editClickHandler={editClickHandler}
+								setContractId={setSellerEditContractId}
+								editClickHandler={() => setSellerEditModalOpen(true)}
 							/>
 						}
 						button2={
 							<ClaimLmrButton
 								contractId={contract.id as string}
-								setContractId={setContractId}
-								claimLmrClickHandler={claimLmrClickHandler}
+								setContractId={setClaimLmrContractId}
+								claimLmrClickHandler={() => setClaimLmrModalOpen(true)}
 							/>
 						}
 					/>
@@ -223,6 +231,44 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	return (
 		<>
+			<ModalItem
+				open={claimLmrModalOpen}
+				onClose={() => setClaimLmrModalOpen(false)}
+				content={
+					<ClaimLmrForm
+						contracts={contracts}
+						contractId={claimLmrContractId}
+						userAccount={userAccount}
+						web3Gateway={web3Gateway}
+						currentBlockTimestamp={currentBlockTimestamp}
+						onClose={() => setClaimLmrModalOpen(false)}
+					/>
+				}
+			/>
+			<ModalItem
+				open={createModalOpen}
+				onClose={() => setCreateModalOpen(false)}
+				content={
+					<CreateForm
+						userAccount={userAccount}
+						web3Gateway={web3Gateway}
+						onClose={() => setCreateModalOpen(false)}
+					/>
+				}
+			/>
+			<ModalItem
+				open={sellerEditModalOpen}
+				onClose={() => setSellerEditModalOpen(false)}
+				content={
+					<SellerEditForm
+						contracts={contracts}
+						contractId={sellerEditContractId}
+						userAccount={userAccount}
+						web3Gateway={web3Gateway}
+						onClose={() => setSellerEditModalOpen(false)}
+					/>
+				}
+			/>
 			<SellerToolbar>
 				<PrimaryButton
 					className='create-button'

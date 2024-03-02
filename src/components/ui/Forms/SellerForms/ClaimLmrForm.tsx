@@ -11,7 +11,7 @@ interface ClaimLmrFormProps {
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
 	currentBlockTimestamp?: number;
-	closeForm: () => void;
+	onClose: () => void;
 }
 
 export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
@@ -19,7 +19,7 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 	contractId,
 	userAccount,
 	web3Gateway,
-	closeForm,
+	onClose,
 	currentBlockTimestamp,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
@@ -80,7 +80,7 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				closeForm();
+				onClose();
 			}
 		}
 	};

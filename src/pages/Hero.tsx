@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { HeroWrapper, HeroHeadline, HeroSubheadline, Steps } from './Hero.styled';
 import EastIcon from '@mui/icons-material/East';
-import { ConnectWalletModal } from './ui/Forms/ConnectWalletModal';
-import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
-import { ModalItem } from './ui/Modal';
+import { ConnectWalletModal } from '../components/ui/Forms/ConnectWalletModal';
+import { PrimaryButton } from '../components/ui/Forms/FormButtons/Buttons.styled';
+import { ModalItem } from '../components/ui/Modal';
 
 export const Hero = (prop: { actionButtons: JSX.Element }) => {
 	const [connectWalletModalIsOpen, setConnectWalletModalIsOpen] = useState<boolean>(false);
@@ -35,7 +35,7 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 		<>
 			<ModalItem
 				open={connectWalletModalIsOpen}
-				setOpen={setConnectWalletModalIsOpen}
+				onClose={() => setConnectWalletModalIsOpen(false)}
 				content={<ConnectWalletModal actionButtons={prop.actionButtons} />}
 			/>
 			<HeroWrapper>
