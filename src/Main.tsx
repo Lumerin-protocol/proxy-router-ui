@@ -87,7 +87,7 @@ const MainBox = (props: { children: any }) => (
 // Main UI component
 export const Main: React.FC<MainProps> = (props) => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-	const {isDisconnected } = useAccount();
+	const { isDisconnected } = useAccount();
 
 	if (isDisconnected) {
 		return <Hero />;

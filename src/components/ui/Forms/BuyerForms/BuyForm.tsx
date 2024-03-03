@@ -130,7 +130,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		}
 
 		if (contentState === ContentState.Pending) {
-			if (!lumerinbalance){
+			if (!lumerinbalance) {
 				console.error('Lumerin balance is not available');
 				return;
 			}
@@ -286,8 +286,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const display =
 		contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 
-	if (!lumerinbalance){
-		return "Loading..."
+	if (!lumerinbalance) {
+		return 'Loading...';
 	}
 
 	return (

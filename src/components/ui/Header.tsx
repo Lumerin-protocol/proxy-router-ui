@@ -27,8 +27,6 @@ export const Header = (prop: {
 	drawerWidth: number;
 	connectorIconUrl?: string;
 }) => {
-
-
 	return (
 		<StyledToolbar>
 			<button

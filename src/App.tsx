@@ -1,20 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
-import {
-	LMRDecimalToLMR,
-	addLumerinTokenToMetaMaskAsync,
-} from './web3/helpers';
-import {
-	HashRentalContract,
-	CurrentTab,
-	ContractState,
-} from './types';
+import { LMRDecimalToLMR, addLumerinTokenToMetaMaskAsync } from './web3/helpers';
+import { HashRentalContract, CurrentTab, ContractState } from './types';
 
 import { Main } from './Main';
 import ReactGA from 'react-ga4';
 import { useWindowWidth } from './hooks/useWindowWidth';
 import { watchAccount } from '@wagmi/core';
-import { Config, useAccount, useInfiniteReadContracts, useReadContract } from 'wagmi';
+import { Config, useAccount, useReadContract } from 'wagmi';
 import { erc20Abi } from 'viem';
 import { useQueryClient } from '@tanstack/react-query';
 import { CloneFactoryAbi } from './contracts/clonefactory';
@@ -24,33 +17,35 @@ const trackingId = 'G-TN08K48RMS';
 ReactGA.initialize(trackingId);
 
 interface ContractEntry {
-	id: string
-	state: number,
-	price: bigint,
-	length: bigint,
-	profitTarget: number
-	speed: bigint
-	version: number
-	startingBlockTimestamp: bigint
-	buyer: string
-	seller: string
-	encryptedPoolData: string
-	isDeleted: boolean
-	balance: bigint
-	hasFutureTerms: boolean
+	id: string;
+	state: number;
+	price: bigint;
+	length: bigint;
+	profitTarget: number;
+	speed: bigint;
+	version: number;
+	startingBlockTimestamp: bigint;
+	buyer: string;
+	seller: string;
+	encryptedPoolData: string;
+	isDeleted: boolean;
+	balance: bigint;
+	hasFutureTerms: boolean;
 	history: readonly {
 		_goodCloseout: boolean;
-    _purchaseTime: bigint;
-    _endTime: bigint;
-    _price: bigint;
-    _speed: bigint;
-    _length: bigint;
-    _buyer: `0x${string}`;
-	}[]
+		_purchaseTime: bigint;
+		_endTime: bigint;
+		_price: bigint;
+		_speed: bigint;
+		_length: bigint;
+		_buyer: `0x${string}`;
+	}[];
 }
 
+const RefetchInterval = 30 * 1000;
+
 // Root contains the main state and logic for the app
-export const App = (props: {config: Config}) => {
+export const App = (props: { config: Config }) => {
 	const [contracts, setContracts] = useState<ContractEntry[]>([]);
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 
@@ -60,65 +55,59 @@ export const App = (props: {config: Config}) => {
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
 
-	const [page, setPage] = useState<number>(0);
+	const [page, setPage] = useState<number>(0); // contract pagination
+	const [isRefetching, setIsRefetching] = useState<boolean>(true); // background refetching contract list
 
 	const width = useWindowWidth();
 	const isMobile = width <= 768;
 
 	// watches account changes
 	useEffect(() => {
-		watchAccount(props.config,
-			{
-				onChange(account) {
-				}
-			}
-		)
-	}, [])
+		watchAccount(props.config, {
+			onChange(account) {},
+		});
+	}, []);
 
 	const queryClient = useQueryClient();
-	const { address: userAccount, isConnected, connector } = useAccount()
+	const { address: userAccount, isConnected, connector } = useAccount();
 
+	// TODO: replace with multicall lmrBalanceResult and getContractListResult
 	const lmrBalanceResult = useReadContract({
-		abi: erc20Abi, 
+		abi: erc20Abi,
 		address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS as `0x${string}`,
 		functionName: 'balanceOf',
 		args: [userAccount as `0x${string}`],
 		query: {
-			refetchInterval: 60*1000,
-		}
+			refetchInterval: RefetchInterval,
+			enabled: isRefetching,
+		},
 	});
-
 	const getContractListResult = useReadContract({
 		abi: CloneFactoryAbi,
 		address: process.env.REACT_APP_CLONE_FACTORY as `0x${string}`,
 		functionName: 'getContractList',
 		args: [],
 		query: {
-			refetchInterval: 60*1000,
-		}
+			refetchInterval: RefetchInterval,
+			enabled: isRefetching,
+		},
 	});
-	
-	const lumerinBalance = lmrBalanceResult.data !== undefined ? LMRDecimalToLMR(lmrBalanceResult.data) : null;
+
+	const lumerinBalance =
+		lmrBalanceResult.data !== undefined ? LMRDecimalToLMR(lmrBalanceResult.data) : null;
 	const contractIds = getContractListResult !== undefined ? getContractListResult.data : null;
-	const currentContractId = contractIds ? contractIds[page] : "0x0";
+	const currentContractId = contractIds ? contractIds[page] : '0x0';
 
 	const contractResult = useReadContract({
-			abi: ImplementationAbi,
-			address: currentContractId,
-			functionName: 'getPublicVariablesV2',
-			args: [],
-			scopeKey: currentContractId,
+		abi: ImplementationAbi,
+		address: currentContractId,
+		functionName: 'getPublicVariablesV2',
+		args: [],
+		scopeKey: currentContractId,
 		query: {
 			enabled: !!contractIds,
 		},
-	})
-
-	// TODO: implement with infinite read contracts
-	// useInfiniteReadContracts({
-	// 	cacheKey: 'contracts',
-	// 	contracts(pageParam){
-	// 	}
-	// })
+	});
 	const historyResult = useReadContract({
 		abi: ImplementationAbi,
 		address: currentContractId,
@@ -128,12 +117,13 @@ export const App = (props: {config: Config}) => {
 		query: {
 			enabled: !!contractIds,
 		},
-	})
+	});
 
+	// pagination, currently just loads the next contract
 	useEffect(() => {
 		if (contractResult.data && historyResult.data) {
-			console.log("loaded contract", currentContractId)
-			const data = contractResult.data;
+			const { data } = contractResult;
+
 			const contractEntry: ContractEntry = {
 				id: currentContractId,
 				state: data[0],
@@ -150,30 +140,32 @@ export const App = (props: {config: Config}) => {
 				balance: data[7],
 				hasFutureTerms: data[8],
 				history: historyResult.data,
+			};
+			if (!contractEntry.isDeleted) {
+				setContracts([...contracts, contractEntry]);
 			}
-
-			setContracts([...contracts, contractEntry])
 			setPage(page + 1);
 		}
 
 		return;
-	}, [contractResult.isLoading, historyResult.isLoading, page])
+	}, [contractResult.isLoading, historyResult.isLoading, page]);
 
-	const filteredContracts = contracts.filter((c) => !c.isDeleted);
-
+	// forcefully refetch all contracts
 	const refreshContracts = () => {
 		queryClient.invalidateQueries({
 			predicate: (query) => {
-				console.log(query)
-				return true
-			}
+				console.log(query);
+				return true;
+			},
 		});
 		setPage(0);
-	}
+	};
 
+	// enable / disable background refetching
 	const setRefreshContracts = (shouldRefresh: boolean) => {
-		// should enable or disable the interval refetching
-	}
+		console.log(`refetching contracts ${shouldRefresh}, was ${isRefetching}`);
+		setIsRefetching(shouldRefresh);
+	};
 
 	useEffect(() => {
 		setPathname(window.location.pathname);
@@ -193,18 +185,18 @@ export const App = (props: {config: Config}) => {
 			activeOrdersTab={activeOrdersTab}
 			setActiveOrdersTab={setActiveOrdersTab}
 			setAlertOpen={setAlertOpen}
-			getAlertMessage={() => ""}
+			getAlertMessage={() => ''}
 			pathName={pathName}
 			setPathName={setPathname}
-			connectWallet={()=>{}}
-			changeNetworkAsync={()=>{}}
+			connectWallet={() => {}}
+			changeNetworkAsync={() => {}}
 			addLumerinTokenToMetaMaskAsync={addLumerinTokenToMetaMaskAsync}
 			refreshContracts={refreshContracts}
 		/>
 	);
 };
 
-function mapContractEntry(contract: ContractEntry): HashRentalContract  {
+function mapContractEntry(contract: ContractEntry): HashRentalContract {
 	return {
 		id: contract.id,
 		state: contract.state === 0 ? ContractState.Available : ContractState.Running,
@@ -230,7 +222,7 @@ function mapContractEntry(contract: ContractEntry): HashRentalContract  {
 				_speed: String(h._speed),
 				_length: String(h._length),
 				_buyer: h._buyer,
-			}
-		})
-	}
+			};
+		}),
+	};
 }

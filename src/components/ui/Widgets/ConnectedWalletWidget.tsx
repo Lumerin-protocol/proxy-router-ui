@@ -14,7 +14,7 @@ export const ConnectedWalletWidget = (props: {
 		<div>
 			<div className='btn-connected cursor-default flex justify-between items-center px-8'>
 				<span className='pr-3'>{props.truncatedWalletAddress}</span>
-				<img className='w-7' src={props.iconUrl}/>
+				<img className='w-7' src={props.iconUrl} />
 			</div>
 			<button
 				className='link text-xs text-lumerin-blue-text'

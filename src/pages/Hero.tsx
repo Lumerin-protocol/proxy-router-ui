@@ -5,7 +5,7 @@ import { PrimaryButton } from '../components/ui/Forms/FormButtons/Buttons.styled
 import { useWeb3Modal } from '@web3modal/wagmi/react';
 
 export const Hero = () => {
-	const { open } = useWeb3Modal()
+	const { open } = useWeb3Modal();
 
 	const instructions = [
 		{
@@ -36,7 +36,7 @@ export const Hero = () => {
 						Marketplace
 					</HeroHeadline>
 					<HeroSubheadline>Buy, sell, and own hashpower through your Web3 wallet</HeroSubheadline>
-					<PrimaryButton type='button' onClick={()=>open()}>
+					<PrimaryButton type='button' onClick={() => open()}>
 						Connect Wallet
 					</PrimaryButton>
 					<h3>Easiest way to start mining Bitcoin, without hardware</h3>
