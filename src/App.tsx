@@ -1,17 +1,13 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
-import { LMRDecimalToLMR, addLumerinTokenToMetaMaskAsync } from './web3/helpers';
+import { addLumerinTokenToMetaMaskAsync } from './web3/helpers';
 import { HashRentalContract, CurrentTab, ContractState } from './types';
-
 import { Main } from './Main';
 import ReactGA from 'react-ga4';
 import { useWindowWidth } from './hooks/useWindowWidth';
 import { watchAccount } from '@wagmi/core';
-import { Config, useAccount, useReadContract } from 'wagmi';
-import { erc20Abi } from 'viem';
+import { Config, useAccount } from 'wagmi';
 import { useQueryClient } from '@tanstack/react-query';
-import { CloneFactoryAbi } from './contracts/clonefactory';
-import { ImplementationAbi } from './contracts/implementation';
+import { useContract, useContractHistory, useContractList, useLmrBalance } from './gateway/hooks';
 
 const trackingId = 'G-TN08K48RMS';
 ReactGA.initialize(trackingId);
@@ -32,13 +28,13 @@ interface ContractEntry {
 	balance: bigint;
 	hasFutureTerms: boolean;
 	history: readonly {
-		_goodCloseout: boolean;
-		_purchaseTime: bigint;
-		_endTime: bigint;
-		_price: bigint;
-		_speed: bigint;
-		_length: bigint;
-		_buyer: `0x${string}`;
+		goodCloseout: boolean;
+		purchaseTime: bigint;
+		endTime: bigint;
+		price: bigint;
+		speed: bigint;
+		length: bigint;
+		buyer: `0x${string}`;
 	}[];
 }
 
@@ -72,47 +68,34 @@ export const App = (props: { config: Config }) => {
 	const { address: userAccount, isConnected, connector } = useAccount();
 
 	// TODO: replace with multicall lmrBalanceResult and getContractListResult
-	const lmrBalanceResult = useReadContract({
-		abi: erc20Abi,
-		address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS as `0x${string}`,
-		functionName: 'balanceOf',
-		args: [userAccount as `0x${string}`],
+	const lmrBalanceResult = useLmrBalance({
+		address: userAccount as string,
 		query: {
 			refetchInterval: RefetchInterval,
 			enabled: isRefetching,
 		},
 	});
-	const getContractListResult = useReadContract({
-		abi: CloneFactoryAbi,
-		address: process.env.REACT_APP_CLONE_FACTORY as `0x${string}`,
-		functionName: 'getContractList',
-		args: [],
+	const getContractListResult = useContractList({
 		query: {
 			refetchInterval: RefetchInterval,
 			enabled: isRefetching,
 		},
 	});
 
-	const lumerinBalance =
-		lmrBalanceResult.data !== undefined ? LMRDecimalToLMR(lmrBalanceResult.data) : null;
 	const contractIds = getContractListResult !== undefined ? getContractListResult.data : null;
 	const currentContractId = contractIds ? contractIds[page] : '0x0';
 
-	const contractResult = useReadContract({
-		abi: ImplementationAbi,
+	const contractResult = useContract({
 		address: currentContractId,
-		functionName: 'getPublicVariablesV2',
-		args: [],
-		scopeKey: currentContractId,
 		query: {
 			enabled: !!contractIds,
 		},
 	});
-	const historyResult = useReadContract({
-		abi: ImplementationAbi,
+
+	const historyResult = useContractHistory({
 		address: currentContractId,
-		functionName: 'getHistory',
-		args: [BigInt(0), BigInt(100)],
+		offset: 0,
+		limit: 100,
 		scopeKey: `${currentContractId}-history`,
 		query: {
 			enabled: !!contractIds,
@@ -125,20 +108,7 @@ export const App = (props: { config: Config }) => {
 			const { data } = contractResult;
 
 			const contractEntry: ContractEntry = {
-				id: currentContractId,
-				state: data[0],
-				price: data[1]._price,
-				length: data[1]._length,
-				profitTarget: data[1]._profitTarget,
-				speed: data[1]._speed,
-				version: data[1]._version,
-				startingBlockTimestamp: data[2],
-				buyer: data[3],
-				seller: data[4],
-				encryptedPoolData: data[5],
-				isDeleted: data[6],
-				balance: data[7],
-				hasFutureTerms: data[8],
+				...data,
 				history: historyResult.data,
 			};
 			if (!contractEntry.isDeleted) {
@@ -146,7 +116,6 @@ export const App = (props: { config: Config }) => {
 			}
 			setPage(page + 1);
 		}
-
 		return;
 	}, [contractResult.isLoading, historyResult.isLoading, page]);
 
@@ -178,7 +147,7 @@ export const App = (props: { config: Config }) => {
 			userAccount={userAccount as string}
 			contracts={contracts.map(mapContractEntry)}
 			currentBlockTimestamp={currentBlockTimestamp}
-			lumerinBalance={lumerinBalance}
+			lumerinBalance={lmrBalanceResult.data ? lmrBalanceResult.data.balance : null}
 			connectorIconUrl={connector?.icon}
 			isMetamask={isMetaMask}
 			isMobile={isMobile}
@@ -196,6 +165,7 @@ export const App = (props: { config: Config }) => {
 	);
 };
 
+// temporary mapping function
 function mapContractEntry(contract: ContractEntry): HashRentalContract {
 	return {
 		id: contract.id,
@@ -215,13 +185,13 @@ function mapContractEntry(contract: ContractEntry): HashRentalContract {
 		history: contract.history.map((h) => {
 			return {
 				id: contract.id,
-				_goodCloseout: h._goodCloseout,
-				_purchaseTime: String(h._purchaseTime),
-				_endTime: String(h._endTime),
-				_price: String(h._price),
-				_speed: String(h._speed),
-				_length: String(h._length),
-				_buyer: h._buyer,
+				_goodCloseout: h.goodCloseout,
+				_purchaseTime: String(h.purchaseTime),
+				_endTime: String(h.endTime),
+				_price: String(h.price),
+				_speed: String(h.speed),
+				_length: String(h.length),
+				_buyer: h.buyer,
 			};
 		}),
 	};
