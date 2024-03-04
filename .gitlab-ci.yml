@@ -71,7 +71,7 @@ stages:
   jq . output.json 
   
   # Update the Image
-  jq '.taskDefinition.containerDefinitions[].image = "'$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$TGT_ENV-latest'" output.json > updated.json
+  jq '.taskDefinition.containerDefinitions[].image = "'$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$TGT_ENV-latest'"' output.json > updated.json
   
   # Extract JUST Task Definition from the output.json file
   jq '.taskDefinition' updated.json > extracted.json  
