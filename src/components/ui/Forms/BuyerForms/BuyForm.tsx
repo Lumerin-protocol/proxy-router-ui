@@ -3,25 +3,18 @@ import React, { Dispatch, Fragment, SetStateAction, useEffect, useState } from '
 import { useForm } from 'react-hook-form';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
-import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import {
 	getButton,
 	printError,
 	encryptMessage,
 	truncateAddress,
-	getCreationTxIDOfContract,
-	getPublicKey,
 	getValidatorPublicKey,
 	getPoolRfc2396,
-	getValidatorRfc2396,
 	getValidatorURL,
 	getHandlerBlockchainError,
 } from '../../../../utils';
 
-import { LumerinContract, ImplementationContract } from 'contracts-js';
-
-import { AbiItem } from 'web3-utils';
 import { ethers } from 'ethers';
 import {
 	AddressLength,
@@ -33,18 +26,16 @@ import {
 	HashRentalContract,
 	InputValuesBuyForm,
 	PathName,
-	Receipt,
-	SendOptions,
 } from '../../../../types';
 import { Alert } from '../../Alert';
-import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
-import { divideByDigits, getGasConfig } from '../../../../web3/helpers';
+import { divideByDigits } from '../../../../web3/helpers';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { purchasedHashrate } from '../../../../analytics';
 import { ContractLink } from '../../Modal.styled';
 import { Alert as AlertMUI } from '@mui/material';
 import { useHistory } from 'react-router';
+import { EthereumGateway } from '../../../../gateway/ethereum';
 
 interface ErrorWithCode extends Error {
 	code?: number;
@@ -65,8 +56,7 @@ interface BuyFormProps {
 	contracts: HashRentalContract[];
 	contractId: string;
 	userAccount: string;
-	cloneFactoryContract: Contract | undefined;
-	web3: Web3 | undefined;
+	web3Gateway?: EthereumGateway;
 	lumerinbalance: number;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
@@ -75,8 +65,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
-	cloneFactoryContract,
-	web3,
+	web3Gateway,
 	lumerinbalance,
 	setOpen,
 }) => {
@@ -127,9 +116,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 		setContentState
 	);
 
-	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
-		// Review
-		// if (isValid && contentState === ContentState.Review) {
+	const buyContractAsync = async (data: InputValuesBuyForm): Promise<void> => {
 		if (contentState === ContentState.Review) {
 			setContentState(ContentState.Confirm);
 			setFormData({
@@ -141,134 +128,99 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			});
 		}
 
-		// Confirm
-		// if (isValid && contentState === ContentState.Confirm) {
 		if (contentState === ContentState.Confirm) {
 			setContentState(ContentState.Pending);
 		}
 
-		// Pending
-		// if (isValid && contentState === ContentState.Pending) {
 		if (contentState === ContentState.Pending) {
-			// Order of events
-			// 1. Purchase hashrental contract
-			// 2. Transfer contract price (LMR) to escrow account
-			// 3. Call setFundContract to put contract in running state
-
-			if (contract.price && lumerinbalance < divideByDigits(contract.price as number)) {
+			if (contract.price && lumerinbalance < divideByDigits(Number(contract.price))) {
 				setAlertOpen(true);
 				setAlertMessage(AlertMessage.InsufficientBalance);
 				return;
 			}
 
 			try {
-				if (web3 && formData) {
-					const gasPrice = await web3.eth.getGasPrice();
-					const sendOptions: Partial<SendOptions> = {
-						from: userAccount,
-						...getGasConfig(gasPrice),
-					};
-					// Check contract is available before increasing allowance
-					const implementationContract = new web3.eth.Contract(
-						ImplementationContract.abi as AbiItem[],
-						contract.id as string
-					);
-					const contractState = await implementationContract.methods.contractState().call();
-					if (contractState !== ContractState.Available) {
-						setAlertMessage(AlertMessage.ContractIsPurchased);
-						setAlertOpen(true);
-						setContentState(ContentState.Review);
+				if (!web3Gateway) {
+					console.error('Web3 gateway is not available');
+					return;
+				}
+
+				if (!formData) {
+					console.error('Form data is not available');
+					return;
+				}
+
+				if (!formData.price) {
+					console.error('Price is not available');
+					return;
+				}
+
+				const contractState = await web3Gateway.getContractState(contract.id);
+				if (contractState !== ContractState.Available) {
+					setAlertMessage(AlertMessage.ContractIsPurchased);
+					setAlertOpen(true);
+					setContentState(ContentState.Review);
+					return;
+				}
+
+				// Approve clone factory contract to transfer LMR on buyer's behalf
+				const receipt = await web3Gateway.increaseAllowance(formData.price, userAccount);
+				if (!receipt.status) {
+					setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
+					setAlertOpen(true);
+					setContentState(ContentState.Cancel);
+					return;
+				}
+
+				// Purchase contract
+				try {
+					const buyerDest: string = getPoolRfc2396(formData)!;
+
+					const validatorPublicKey = getValidatorPublicKey();
+					if (!validatorPublicKey) {
+						console.error('Validator public key is not available');
 						return;
 					}
 
-					// Approve clone factory contract to transfer LMR on buyer's behalf
-					const lumerinTokenContract = new web3.eth.Contract(
-						LumerinContract.abi as AbiItem[],
-						lumerinTokenAddress
+					const validatorAddr = ethers.utils.computeAddress(validatorPublicKey);
+					const encrDestURL = (
+						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+					).toString('hex');
+					const validatorURL: string = `stratum+tcp://:@${getValidatorURL()}`;
+
+					const pubKey = await web3Gateway.getContractPublicKey(contract.id);
+					const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString(
+						'hex'
 					);
 
-					const increaseAllowanceGas = await lumerinTokenContract.methods
-						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
-						.estimateGas(sendOptions);
-
-					const receipt: Receipt = await lumerinTokenContract.methods
-						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
-						.send({
-							...sendOptions,
-							gas: increaseAllowanceGas,
-						});
+					const marketplaceFee = web3Gateway.getMarketplaceFee();
+					const receipt = await web3Gateway.purchaseContract({
+						contractAddress: contract.id,
+						validatorAddress: validatorAddr,
+						encrValidatorURL: encrValidatorURL,
+						encrDestURL: encrDestURL,
+						feeETH: marketplaceFee,
+						buyer: userAccount,
+						termsVersion: contract.version,
+					});
 
 					if (!receipt.status) {
-						setAlertMessage('Failed to approve LMR transfer');
+						setAlertMessage(AlertMessage.PurchaseFailed);
 						setAlertOpen(true);
 						setContentState(ContentState.Cancel);
 						return;
 					}
-					// Purchase contract
-					try {
-						const buyerDest: string = getPoolRfc2396(formData)!;
-
-						const validatorPublicKey = (await getValidatorPublicKey()) as string;
-						const ethAddress = ethers.utils.computeAddress(validatorPublicKey);
-						const encryptedBuyerInput = (
-							await encryptMessage(validatorPublicKey.slice(2), buyerDest)
-						).toString('hex');
-
-						const validatorAddress: string = `stratum+tcp://:@${getValidatorURL()}`;
-
-						const pubKey = await implementationContract.methods.pubKey().call();
-						const validatorEncr = (await encryptMessage(`04${pubKey}`, validatorAddress)).toString(
-							'hex'
-						);
-
-						const marketplaceFee = await cloneFactoryContract?.methods.marketplaceFee().call();
-
-						const purchaseGas = await cloneFactoryContract?.methods
-							.setPurchaseRentalContractV2(
-								contractId,
-								ethAddress,
-								validatorEncr,
-								encryptedBuyerInput,
-								contract.version
-							)
-							.estimateGas({
-								...sendOptions,
-								value: marketplaceFee,
-							});
-
-						console.log('submitting purchase for contract: ', contract);
-						const receipt: Receipt = await cloneFactoryContract?.methods
-							.setPurchaseRentalContractV2(
-								contractId,
-								ethAddress,
-								validatorEncr,
-								encryptedBuyerInput,
-								contract.version
-							)
-							.send({
-								...sendOptions,
-								gas: purchaseGas,
-								value: marketplaceFee,
-							});
-
-						if (!receipt.status) {
-							setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
-							setAlertOpen(true);
-							setContentState(ContentState.Cancel);
-							return;
-						}
-						setPurchasedTx(receipt.transactionHash);
-						purchasedHashrate(totalHashrate!);
-						setContentState(ContentState.Complete);
-						localStorage.setItem(
-							contractId,
-							JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
-						);
-					} catch (e) {
-						const typedError = e as ErrorWithCode;
-						printError(typedError.message, typedError.stack as string);
-						handlePurchaseError(typedError);
-					}
+					setPurchasedTx(receipt.transactionHash);
+					purchasedHashrate(totalHashrate!);
+					setContentState(ContentState.Complete);
+					localStorage.setItem(
+						contractId,
+						JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
+					);
+				} catch (e) {
+					const typedError = e as ErrorWithCode;
+					printError(typedError.message, typedError.stack as string);
+					handlePurchaseError(typedError);
 				}
 			} catch (error) {
 				const typedError = error as ErrorWithCode;
@@ -294,7 +246,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirm as string;
-				content = <ConfirmContent web3={web3} data={formData} />;
+				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:

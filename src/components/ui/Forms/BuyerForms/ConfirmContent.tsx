@@ -1,17 +1,13 @@
 import React from 'react';
-import Web3 from 'web3';
 import { FormData } from '../../../../types';
-import { divideByDigits } from '../../../../web3/helpers';
 import { ReviewItems } from '../Forms.styled';
 import { getValidatorURL } from '../../../../utils';
 
 interface ConfirmContentProps {
-	web3: Web3 | undefined;
 	data: FormData;
 }
 
 export const ConfirmContent: React.FC<ConfirmContentProps> = ({
-	web3,
 	data: { poolAddress, portNumber, username, speed, price, length },
 }) => {
 	return (

@@ -105,7 +105,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				isOpen={alertOpen}
 				onClose={() => setAlertOpen(false)}
 			/>
-			<InputWrapper>
+			<InputWrapper style={{ marginBottom: '0px'}}>
 				<label htmlFor='validatorAddress'>Validator Address</label>
 				<input
 					type='text'

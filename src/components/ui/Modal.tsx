@@ -8,27 +8,16 @@ interface ModalProps {
 	content: React.ReactElement<any>;
 }
 
-const StyledModal = styled(Modal)`
-	position: absolute;
-	top: 10%;
-	overflow: scroll;
-	min-height: 100%;
-	display: block;
-	@media (max-width: 600px) {
-		/* top: 5%; */
-	}
-`;
-
 export const ModalItem: React.FC<ModalProps> = ({ open, setOpen, content }) => {
 	return (
-		<StyledModal open={open} onClose={() => setOpen}>
+		<Modal open={open} onClose={() => setOpen}>
 			<ModalCard>
 				<IconButton className='close' onClick={() => setOpen(false)}>
 					<CloseIcon />
 				</IconButton>
 				{content}
 			</ModalCard>
-		</StyledModal>
+		</Modal>
 	);
 };
 

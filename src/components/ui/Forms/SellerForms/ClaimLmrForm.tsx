@@ -1,24 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
-import {
-	CloseOutType,
-	ContentState,
-	ContractState,
-	HashRentalContract,
-	Receipt,
-	UpdateFormProps,
-} from '../../../../types';
+import { CloseOutType, ContentState, ContractState, HashRentalContract } from '../../../../types';
 import { isNoClaim, printError } from '../../../../utils';
 import { Spinner } from '../../Spinner.styled';
-import { ImplementationContract } from 'contracts-js';
-import { AbiItem } from 'web3-utils';
+import { EthereumGateway } from '../../../../gateway/ethereum';
 
-export const ClaimLmrForm: React.FC<UpdateFormProps> = ({
+interface ClaimLmrFormProps {
+	contracts: HashRentalContract[];
+	contractId: string;
+	userAccount: string;
+	web3Gateway?: EthereumGateway;
+	currentBlockTimestamp?: number;
+	closeForm: () => void;
+}
+
+export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
-	web3,
-	setOpen,
+	web3Gateway,
+	closeForm,
 	currentBlockTimestamp,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
@@ -55,29 +56,31 @@ export const ClaimLmrForm: React.FC<UpdateFormProps> = ({
 
 		// Pending
 		if (contentState === ContentState.Pending) {
-			if (isNoClaim(userAccount, contract.seller as string)) return;
+			if (isNoClaim(userAccount, contract.seller as string)) {
+				return;
+			}
+			if (!web3Gateway) {
+				console.error('missing web3 gateway');
+				return;
+			}
 
-			if (web3) {
-				try {
-					const gasLimit = 1000000;
-					const implementationContract = new web3.eth.Contract(
-						ImplementationContract.abi as AbiItem[],
-						contract.id as string
-					);
-					const closeOutType = getCloseOutType(contract);
-					const receipt: Receipt = await implementationContract.methods
-						.setContractCloseOut(closeOutType)
-						.send({ from: userAccount, gas: gasLimit });
-					if (receipt.status) {
-						setContentState(ContentState.Complete);
-					} else {
-						setContentState(ContentState.Review);
-					}
-				} catch (error) {
-					const typedError = error as Error;
-					printError(typedError.message, typedError.stack as string);
-					setOpen(false);
+			try {
+				const closeOutType = getCloseOutType(contract);
+				const receipt = await web3Gateway.closeContract({
+					contractAddress: contractId,
+					from: userAccount,
+					fee: '0',
+					closeoutType: closeOutType,
+				});
+				if (receipt.status) {
+					setContentState(ContentState.Complete);
+				} else {
+					setContentState(ContentState.Review);
 				}
+			} catch (error) {
+				const typedError = error as Error;
+				printError(typedError.message, typedError.stack as string);
+				closeForm();
 			}
 		}
 	};

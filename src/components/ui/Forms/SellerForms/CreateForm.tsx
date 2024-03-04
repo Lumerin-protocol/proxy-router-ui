@@ -1,8 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
 import { getButton, printError } from '../../../../utils';
 import { multiplyByDigits } from '../../../../web3/helpers';
@@ -10,7 +8,7 @@ import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styl
 import { CompletedContent } from './CompletedContent';
 import { ConfirmContent } from './ConfirmContent';
 import { ReviewContent } from './ReviewContent';
-import { Alert as AlertMUI } from '@mui/material';
+import { EthereumGateway } from '../../../../gateway/ethereum';
 
 // Form text setup
 const buttonText: Text = {
@@ -31,17 +29,11 @@ const getFormData: (userAccount: string) => InputValuesCreateForm = (userAccount
 
 interface CreateFormProps {
 	userAccount: string;
-	cloneFactoryContract: Contract | undefined;
-	web3: Web3 | undefined;
+	web3Gateway?: EthereumGateway;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({
-	userAccount,
-	cloneFactoryContract,
-	web3,
-	setOpen,
-}) => {
+export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway, setOpen }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
 
@@ -52,7 +44,12 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 		formState: { errors, isValid },
 	} = useForm<InputValuesCreateForm>({ mode: 'onBlur' });
 
-	const createContractAsync: (data: InputValuesCreateForm) => void = async (data) => {
+	const createContractAsync = async (data: InputValuesCreateForm): Promise<void> => {
+		if (!web3Gateway) {
+			console.error('web3Gateway is not defined');
+			return;
+		}
+
 		// Create
 		if (isValid && contentState === ContentState.Create) {
 			setContentState(ContentState.Confirm);
@@ -68,33 +65,27 @@ export const CreateForm: React.FC<CreateFormProps> = ({
 		if (isValid && contentState === ContentState.Pending) {
 			// Create contract
 			try {
-				if (web3) {
-					const contractDuration =
-						(formData.contractTime as number) < 12
-							? (formData.contractTime as number) * 600
-							: (formData.contractTime as number) * 3600;
-					// TODO: update to actual validator address
-					const validatorAddress = '0x0000000000000000000000000000000000000000';
-					const price = multiplyByDigits(formData.listPrice as number);
-					let speed;
-					if (formData && formData.speed) {
-						speed = formData.speed * 10 ** 12;
-					} else {
-						speed = 0;
-					}
-					console.log({
-						price,
-						limit: 0,
-						speed,
-						contractDuration,
-						validatorAddress,
-					});
-					const receipt = await cloneFactoryContract?.methods
-						.setCreateNewRentalContract(price, 0, speed, contractDuration, validatorAddress, '')
-						.send({ from: userAccount });
-					if (receipt?.status) {
-						setContentState(ContentState.Complete);
-					}
+				const contractDuration =
+					(formData.contractTime as number) < 12
+						? (formData.contractTime as number) * 600
+						: (formData.contractTime as number) * 3600;
+				// TODO: update to actual validator address
+				const price = multiplyByDigits(formData.listPrice as number);
+				let speed;
+				if (formData && formData.speed) {
+					speed = formData.speed * 10 ** 12;
+				} else {
+					speed = 0;
+				}
+				const receipt = await web3Gateway.createContract({
+					price: String(price),
+					speed: String(speed),
+					durationSeconds: contractDuration,
+					pubKey: '', // TODO: update to actual public key retrieved from metamask
+					from: userAccount,
+				});
+				if (receipt?.status) {
+					setContentState(ContentState.Complete);
 				}
 			} catch (error) {
 				const typedError = error as Error;

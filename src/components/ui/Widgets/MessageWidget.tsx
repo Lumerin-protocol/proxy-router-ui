@@ -4,11 +4,10 @@ import { Card, MobileWidget } from '../Cards/Cards.styled';
 export const MessageWidget = (props: { isMobile: boolean }) => {
 	const MessageWrapper = styled(Card)`
 		min-width: 250px;
-		max-width: 45%;
 		padding: 1rem;
-		height: 8rem;
+		min-height: fit-content;
 		p {
-			font-size: 16px;
+			font-size: 14px;
 		}
 		a {
 			text-decoration: underline;

@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { createUseStyles } from 'react-jss';
 import { TableInstance } from 'react-table';
 import { classNames } from '../../utils';
@@ -104,14 +104,19 @@ const useStyles = createUseStyles({
 	},
 });
 
-interface TableProps {
+interface TableProps<T extends object = {}> {
 	id: string;
-	tableInstance: TableInstance;
+	tableInstance: TableInstance<T>;
 	columnCount: number;
 	pagination?: boolean;
 }
 
-export const Table: React.FC<TableProps> = ({ id, tableInstance, columnCount, pagination }) => {
+export const Table = <T extends object = {}>({
+	id,
+	tableInstance,
+	columnCount,
+	pagination,
+}: TableProps<T>): ReactElement | null => {
 	const {
 		getTableProps,
 		getTableBodyProps,

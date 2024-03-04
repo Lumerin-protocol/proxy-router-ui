@@ -17,7 +17,6 @@ import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
 import { EditButton } from './ui/Forms/FormButtons/EditButton';
 import { ClaimLmrButton } from './ui/Forms/FormButtons/ClaimLmrButton';
-import Web3 from 'web3';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
 import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
@@ -29,7 +28,6 @@ import styled from '@emotion/styled';
 interface CustomTableOptions extends ContractData, Header {}
 
 interface MyContractsProps {
-	web3: Web3 | undefined;
 	userAccount: string;
 	contracts: HashRentalContract[];
 	currentBlockTimestamp: number;
@@ -41,7 +39,6 @@ interface MyContractsProps {
 }
 
 export const MyContracts: React.FC<MyContractsProps> = ({
-	web3,
 	userAccount,
 	contracts,
 	currentBlockTimestamp,
@@ -100,8 +97,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 						hasLink
 						justify='start'
 					/>
-				);
-				updatedOrder.price = divideByDigits(updatedOrder.price as number);
+				) as any;
+				updatedOrder.price = String(divideByDigits(Number(updatedOrder.price)));
 				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
 				updatedOrder.progress =
 					updatedOrder.state === ContractState.Available
@@ -151,12 +148,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	};
 
 	// TODO: if same as <MyOrders /> pull out into util function
-	const customSort: SortByFn<CustomTableOptions> = (
-		rowA: Row,
-		rowB: Row,
-		columnId: string,
-		desc?: boolean
-	) => {
+	const customSort: SortByFn<CustomTableOptions> = (rowA, rowB, columnId, desc) => {
 		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
 		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
 
