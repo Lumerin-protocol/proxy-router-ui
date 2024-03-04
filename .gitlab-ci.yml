@@ -31,7 +31,7 @@ default:
         - echo "Combined Repo and Tag....."
         - echo "*****************************"
         - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
-        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG
         
         - echo "*****************************"
         - echo "Building image..."
@@ -46,18 +46,18 @@ default:
           --build-arg TITAN_LIGHTNING_POOL=$TITAN_LIGHTNING_POOL
           --build-arg TITAN_LIGHTNING_DASHBOARD=$TITAN_LIGHTNING_DASHBOARD
           --build-arg REACT_APP_VALIDATOR_PUBLIC_KEY=$REACT_APP_VALIDATOR_PUBLIC_KEY
-          -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG --no-cache .
+          -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG --no-cache .
         
         - echo "*****************************"
         - echo "Pushing image..."
         - echo "*****************************"
-        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG
+        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG
         
         - echo "*****************************"
-        - echo "Preparing deployment of $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG to $TGT_ACCOUNT, titanio-$TGT_ENV Environment..."
+        - echo "Preparing deployment of $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG to $TGT_ACCOUNT, titanio-$TGT_ENV Environment..."
         - echo "*****************************"
-        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition $CI_AWS_ECS_TASK_DEFINITION > input.json
-        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image='\"$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECR_REPO:$IMAGE_TAG\") > input.json
+        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition tsk-$CI_AWS_ECS_NAME > input.json
+        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image='\"$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG\") > input.json
         - echo $(cat input.json | jq '.taskDefinition') > input.json
         - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
         - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
@@ -68,13 +68,13 @@ default:
         - echo "Deploying new container definition..."
         - echo "*****************************"
         - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-        - REVISION=$(aws ecs describe-task-definition --task-definition $CI_AWS_ECS_TASK_DEFINITION --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
+        - REVISION=$(aws ecs describe-task-definition --task-definition tsk-$CI_AWS_ECS_NAME --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
         - echo $REVISION
         - echo "Review Cluster Definition...."
-        - echo $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION
+        - echo "ecs-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION"
         - echo "Review Service Definition...."
-        - echo $CI_AWS_ECS_SERVICE
-        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster $CI_AWS_ECS_CLUSTER_PREFIX-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service $CI_AWS_ECS_SERVICE_GLB --task-definition $CI_AWS_ECS_TASK_DEFINITION:$REVISION
+        - echo "svc-$CI_AWS_ECS_NAME" 
+        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster ecs-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service svc-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --task-definition tsk-$CI_AWS_ECS_NAME:$REVISION
 
 bedrock-02-dev:
     environment: dev
