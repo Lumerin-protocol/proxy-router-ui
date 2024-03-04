@@ -61,6 +61,15 @@ export const MarketplaceStatistics = (props: {
 				text-align: center;
 			}
 		}
+
+        .link {
+            width: 75%;
+            cursor: default;
+            
+            span {
+                opacity: 0;
+            }
+        }
 	`;
 
     return (
@@ -98,7 +107,7 @@ export const MarketplaceStatistics = (props: {
                     <p>EXPIRES SOON</p>
                 </div>
             </div>
-            <div className='link' style={{ width: '75%' }}>.</div>
+            <div className='link'><span>.</span></div>
         </MarketplaceStatisticsWrapper>
     );
 };
