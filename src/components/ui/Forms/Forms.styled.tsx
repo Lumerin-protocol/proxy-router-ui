@@ -1,7 +1,6 @@
 import styled from '@emotion/styled';
 
 export const InputWrapper = styled.div`
-	margin-top: 0.75rem;
 	margin-bottom: 0.75rem;
 	@media (max-width: 600px) {
 		margin-top: 0;
@@ -11,8 +10,8 @@ export const InputWrapper = styled.div`
 	}
 	input {
 		background: #eaf7fc;
-		border-radius: 15px;
-		padding: 1rem 1.5rem;
+		border-radius: 12px;
+		padding: 12px 1.5rem;
 		margin-top: 0.25rem;
 
 		::placeholder {
