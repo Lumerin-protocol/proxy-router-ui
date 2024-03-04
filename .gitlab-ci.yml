@@ -14,68 +14,93 @@ stages:
     - develop
     - review
     - deploy
-default:
-    before_script:
-        - echo "*****************************"
-        - echo "Updating lumerin.json"
-        - echo "*****************************"
-        - sed -i -e "s/LUMERIN_TOKEN_ADDRESS_VAR/${REACT_APP_LUMERIN_TOKEN_ADDRESS}/g" src/contracts/Lumerin.json
-        
-        - echo "*****************************"
-        - echo "Logging in to Titanio-NET ECR ..."
-        - echo "*****************************"
-        - docker system prune -af
-        - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $CI_AWS_TitanIO_NET_ECR
-        
-        - echo "*****************************"
-        - echo "Combined Repo and Tag....."
-        - echo "*****************************"
-        - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
-        - echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG
-        
-        - echo "*****************************"
-        - echo "Building image..."
-        - echo "*****************************"
-        - docker build 
-          --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL=$REACT_APP_READ_ONLY_ETH_NODE_URL
-          --build-arg REACT_APP_CHAIN_ID=$REACT_APP_CHAIN_ID
-          --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY
-          --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL
-          --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS
-          --build-arg REACT_APP_VALIDATOR_URL=$REACT_APP_VALIDATOR_URL
-          --build-arg TITAN_LIGHTNING_POOL=$TITAN_LIGHTNING_POOL
-          --build-arg TITAN_LIGHTNING_DASHBOARD=$TITAN_LIGHTNING_DASHBOARD
-          --build-arg REACT_APP_VALIDATOR_PUBLIC_KEY=$REACT_APP_VALIDATOR_PUBLIC_KEY
-          -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG --no-cache .
-        
-        - echo "*****************************"
-        - echo "Pushing image..."
-        - echo "*****************************"
-        - docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG
-        
-        - echo "*****************************"
-        - echo "Preparing deployment of $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG to $TGT_ACCOUNT, titanio-$TGT_ENV Environment..."
-        - echo "*****************************"
-        - aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition tsk-$CI_AWS_ECS_NAME > input.json
-        - echo $(cat input.json | jq '.taskDefinition.containerDefinitions[].image='\"$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG\") > input.json
-        - echo $(cat input.json | jq '.taskDefinition') > input.json
-        - echo $(cat input.json | jq  'del(.taskDefinitionArn)' | jq 'del(.revision)' | jq 'del(.status)' | jq 'del(.requiresAttributes)' | jq 'del(.compatibilities)' | jq 'del(.registeredBy)' | jq 'del(.registeredAt)') > input.json
-        - sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json
-        - echo "Review input.json file...."
-        - cat input.json | jq .
-        
-        - echo "*****************************"
-        - echo "Deploying new container definition..."
-        - echo "*****************************"
-        - aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
-        - REVISION=$(aws ecs describe-task-definition --task-definition tsk-$CI_AWS_ECS_NAME --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
-        - echo $REVISION
-        - echo "Review Cluster Definition...."
-        - echo "ecs-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION"
-        - echo "Review Service Definition...."
-        - echo "svc-$CI_AWS_ECS_NAME" 
-        - aws ecs update-service --region $AWS_DEFAULT_REGION --cluster ecs-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service svc-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --task-definition tsk-$CI_AWS_ECS_NAME:$REVISION
 
+.update_lumerin_json: &update_lumerin_json |
+  echo "**************************"
+  echo "*** Updating lumerin.json"
+  echo "**************************"
+  sed -i -e "s/LUMERIN_TOKEN_ADDRESS_VAR/${REACT_APP_LUMERIN_TOKEN_ADDRESS}/g" src/contracts/Lumerin.json
+
+.ecr_login_script: &ecr_login_script |
+  echo "**************************"
+  echo "*** ECR Login to Shared Titanio-NET Repo in USE-1"
+  echo "**************************"
+  docker system prune -af
+  aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $CI_AWS_TitanIO_NET_ECR
+
+.create_image_tag: &create_image_tag |
+  echo "**************************"
+  echo "*** Tag Image "
+  echo "**************************"
+  IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)-$TGT_ENV" 
+  echo $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG
+
+.build_image: &build_image |
+  echo "*****************************"
+  echo "Building & Pushing image..."
+  echo "*****************************"
+  docker build 
+    --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL=$REACT_APP_READ_ONLY_ETH_NODE_URL
+    --build-arg REACT_APP_CHAIN_ID=$REACT_APP_CHAIN_ID
+    --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY
+    --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL
+    --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=$REACT_APP_LUMERIN_TOKEN_ADDRESS
+    --build-arg REACT_APP_VALIDATOR_URL=$REACT_APP_VALIDATOR_URL
+    --build-arg TITAN_LIGHTNING_POOL=$TITAN_LIGHTNING_POOL
+    --build-arg TITAN_LIGHTNING_DASHBOARD=$TITAN_LIGHTNING_DASHBOARD
+    --build-arg REACT_APP_VALIDATOR_PUBLIC_KEY=$REACT_APP_VALIDATOR_PUBLIC_KEY
+    -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG --no-cache .
+  
+  echo "**************************"
+  echo "*** Tag Image with $TGT_ENV-latest"
+  echo "**************************"
+  docker tag $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$TGT_ENV-latest
+
+  echo "**************************"
+  echo "*** Push Images"
+  echo "**************************"
+  docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG
+  docker push $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$TGT_ENV-latest
+
+.update_raw_task_definition: &update_raw_task_definition |
+  echo "**************************"
+  aws ecs describe-task-definition --region $AWS_DEFAULT_REGION --task-definition tsk-$CI_AWS_ECS_NAME > output.json
+  echo "**************************"
+  echo "*** Original Task Definition"
+  echo "**************************"
+  jq . output.json 
+  
+  # Update the Image
+  jq '.taskDefinition.containerDefinitions[].image = "'$CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$TGT_ENV-latest'" output.json > updated.json
+  
+  # Extract JUST Task Definition from the output.json file
+  jq '.taskDefinition' updated.json > extracted.json  
+
+  # Remove sections that are not needed
+  jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredBy, .registeredAt)' extracted.json > input.json
+  sed -i 's/'$CI_AWS_ACCOUNT_SBX'/'$TGT_ACCOUNT'/g' input.json  
+  
+  echo "**************************"
+  echo "*** New Task Definition"
+  echo "**************************"
+  jq . input.json
+
+.deploy_new_task_definition: &deploy_new_task_definition |
+  aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://input.json
+  REVISION=$(aws ecs describe-task-definition --task-definition tsk-$CI_AWS_ECS_NAME --region $AWS_DEFAULT_REGION | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//' | cut -d "," -f 1)
+  echo "****************************************************"
+  echo "****************************************************"
+  echo "*** Update Task: "
+  echo "*** - AWS Account: Titanio-$TGT_ENV"
+  echo "*** - Cluster:    ecs-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION"
+  echo "*** - Service:    svc-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION"
+  echo "*** - Task:       tsk-$CI_AWS_ECS_NAME:$REVISION"
+  echo "*** - Image:      $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG"
+  echo "****************************************************"
+  echo "****************************************************"
+  aws ecs update-service --region $AWS_DEFAULT_REGION --cluster ecs-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --service svc-$CI_AWS_ECS_NAME-$TGT_ENV-$CI_AWS_ECS_CLUSTER_REGION --task-definition tsk-$CI_AWS_ECS_NAME:$REVISION
+
+    
 bedrock-02-dev:
     environment: dev
     stage: develop
@@ -90,7 +115,14 @@ bedrock-02-dev:
     variables:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_DEV
         TGT_ENV: dev
-    script: echo "$TGT_ENV Updated"
+    script: 
+      - *update_lumerin_json
+      - *ecr_login_script
+      - *create_image_tag
+      - *build_image
+      - *update_raw_task_definition
+      - *deploy_new_task_definition
+      - echo "$TGT_ENV Updated"
 
 titanio-03-stg:
     environment: stg
@@ -106,7 +138,14 @@ titanio-03-stg:
     variables:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_STG
         TGT_ENV: stg
-    script: echo "$TGT_ENV Updated"
+    script: 
+      - *update_lumerin_json
+      - *ecr_login_script
+      - *create_image_tag
+      - *build_image
+      - *update_raw_task_definition
+      - *deploy_new_task_definition
+      - echo "$TGT_ENV Updated"
 
 titanio-04-lmn-PROD:
     environment: lmn
@@ -123,4 +162,11 @@ titanio-04-lmn-PROD:
     variables:
         TGT_ACCOUNT: $CI_AWS_ACCOUNT_LMN
         TGT_ENV: lmn
-    script: echo "$TGT_ENV Updated"
+    script: 
+      - *update_lumerin_json
+      - *ecr_login_script
+      - *create_image_tag
+      - *build_image
+      - *update_raw_task_definition
+      - *deploy_new_task_definition
+      - echo "$TGT_ENV Updated"
