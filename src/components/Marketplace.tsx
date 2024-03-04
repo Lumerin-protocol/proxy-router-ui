@@ -14,6 +14,7 @@ import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
 import { sortContracts } from '../utils';
 import { MobileWalletInfo } from './ui/Widgets/MobileWalletInfo';
 import { MessageWidget } from './ui/Widgets/MessageWidget';
+import { MarketplaceStatistics } from './ui/Widgets/MarketplaceStatistics';
 
 interface MarketplaceProps {
 	contracts: HashRentalContract[];
@@ -142,22 +143,20 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 				<>
 					<WidgetsWrapper>
 						<MessageWidget isMobile={isMobile} />
+						{isMetaMask && (
+							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
+						)}
 						<BuyerOrdersWidget
 							isLoading={isLoading}
 							contracts={contracts}
 							userAccount={userAccount}
 							currentBlockTimestamp={currentBlockTimestamp}
 						/>
-						{isMetaMask && (
-							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
-						)}
+						<MarketplaceStatistics
+							isLoading={isLoading}
+							contracts={contracts}
+						/>
 					</WidgetsWrapper>
-					{/* <SortToolbar
-						pageTitle='Hashrate For Sale'
-						sortType={sortType}
-						setSortType={setSortType}
-						isMobile={isMobile}
-					/> */}
 					<AvailableContracts
 						contracts={availableContracts}
 						loading={isLoading}
