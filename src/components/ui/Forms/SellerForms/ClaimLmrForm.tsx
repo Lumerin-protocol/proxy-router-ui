@@ -1,7 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
 import { CloseOutType, ContentState, ContractState, HashRentalContract } from '../../../../types';
-import { isNoClaim, printError } from '../../../../utils';
+import { getSecondsEpoch, isNoClaim, printError } from '../../../../utils';
 import { Spinner } from '../../Spinner.styled';
 import { EthereumGateway } from '../../../../gateway/ethereum';
 
@@ -11,7 +10,7 @@ interface ClaimLmrFormProps {
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
 	currentBlockTimestamp?: number;
-	closeForm: () => void;
+	onClose: () => void;
 }
 
 export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
@@ -19,7 +18,7 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 	contractId,
 	userAccount,
 	web3Gateway,
-	closeForm,
+	onClose,
 	currentBlockTimestamp,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
@@ -34,16 +33,14 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 	};
 
 	const getCloseOutType: (contract: HashRentalContract) => CloseOutType = (contract) => {
-		if (currentBlockTimestamp) {
-			const contractDuration = currentBlockTimestamp - parseInt(contract.timestamp as string);
-			const isComplete = contractDuration >= parseInt(contract.length as string);
-			if (contract.state === ContractState.Available) return CloseOutType.SellerClaimNoClose;
-			if (contract.state === ContractState.Running && !isComplete)
-				return CloseOutType.SellerClaimNoClose;
-			if (contract.state === ContractState.Running && isComplete)
-				return CloseOutType.CloseAndClaimAtCompletion;
+		const now = getSecondsEpoch(new Date());
+		const contractDuration = now - parseInt(contract.timestamp as string);
+		const isComplete = contractDuration >= parseInt(contract.length as string);
+		if (contract.state === ContractState.Available) return CloseOutType.SellerClaimNoClose;
+		if (contract.state === ContractState.Running && !isComplete)
 			return CloseOutType.SellerClaimNoClose;
-		}
+		if (contract.state === ContractState.Running && isComplete)
+			return CloseOutType.CloseAndClaimAtCompletion;
 		return CloseOutType.SellerClaimNoClose;
 	};
 
@@ -69,7 +66,7 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 				const receipt = await web3Gateway.closeContract({
 					contractAddress: contractId,
 					from: userAccount,
-					fee: '0',
+					fee: BigInt('0'),
 					closeoutType: closeOutType,
 				});
 				if (receipt.status) {
@@ -80,7 +77,7 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				closeForm();
+				onClose();
 			}
 		}
 	};
@@ -153,6 +150,3 @@ export const ClaimLmrForm: React.FC<ClaimLmrFormProps> = ({
 		</Fragment>
 	);
 };
-
-ClaimLmrForm.displayName = 'ClaimLmrForm';
-ClaimLmrForm.whyDidYouRender = false;

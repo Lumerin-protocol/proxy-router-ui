@@ -15,6 +15,3 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ button, headerText, pa
 		</div>
 	);
 };
-
-ActionPanel.displayName = 'ActionPanel';
-ActionPanel.whyDidYouRender = false;

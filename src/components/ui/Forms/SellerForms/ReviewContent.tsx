@@ -152,6 +152,3 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 		</React.Fragment>
 	);
 };
-
-ReviewContent.displayName = 'ReviewContent';
-ReviewContent.whyDidYouRender = false;

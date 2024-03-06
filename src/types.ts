@@ -1,8 +1,3 @@
-// Exported types here
-// Types local to a file will be in that file
-
-import { HttpProvider } from 'web3-core';
-
 // Enums
 export enum WalletText {
 	ConnectViaMetaMask = 'MetaMask',
@@ -16,8 +11,8 @@ export enum ContractState {
 }
 
 export enum CurrentTab {
-	Running = 'RUNNING',
-	Completed = 'COMPLETED',
+	Running = 'running',
+	Completed = 'completed',
 }
 
 export enum ContentState {
@@ -41,7 +36,8 @@ export enum StatusText {
 }
 
 export enum PathName {
-	Marketplace = '/',
+	Home = '/',
+	Marketplace = '/marketplace',
 	MyOrders = '/buyerhub',
 	MyContracts = '/sellerhub',
 }
@@ -61,6 +57,7 @@ export enum AlertMessage {
 	PurchaseFailed = 'Purchase failed',
 	CancelFailed = 'Failed to close contract',
 	EditFailed = 'Failed to edit contract',
+	Hide = '',
 }
 
 export enum SortByType {
@@ -75,6 +72,7 @@ export enum SortTypes {
 	DurationLongToShort = 'Duration: Long to Short',
 	SpeedSlowToFast = 'Speed: Slow to Fast',
 	SpeedFastToSlow = 'Speed: Fast to Slow',
+	Default = 'Default',
 }
 
 export enum CloseOutType {
@@ -83,13 +81,6 @@ export enum CloseOutType {
 	CloseNoClaimAtCompletion = 2,
 	CloseAndClaimAtCompletion = 3,
 	Revert = 4,
-}
-
-// Interfaces
-export interface Ethereum extends HttpProvider {
-	networkVersion: string;
-	on: <T>(method: string, callback: (input: T) => void) => void;
-	request: (options: {}) => Promise<void>;
 }
 
 export interface ConnectInfo {
@@ -114,6 +105,7 @@ export interface HashRentalContract {
 	speed?: string | number;
 	length?: string | number;
 	trade?: JSX.Element | string;
+	profitTarget?: number;
 	progress?: JSX.Element | string;
 	progressPercentage?: number;
 	editCancel?: JSX.Element | string;
@@ -125,6 +117,8 @@ export interface HashRentalContract {
 	history?: ContractHistory[];
 	version: string;
 	isDeleted: boolean;
+	balance?: string;
+	hasFutureTerms?: boolean;
 }
 
 // Making fields optional bc a user might not have filled out the input fields

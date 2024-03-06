@@ -29,6 +29,3 @@ export const EditButton: React.FC<EditButtonProps> = ({
 		</ActionButtonWrapper>
 	);
 };
-
-EditButton.displayName = 'EditButton';
-EditButton.whyDidYouRender = false;

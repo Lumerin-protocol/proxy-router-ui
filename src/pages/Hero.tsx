@@ -1,16 +1,10 @@
-import { useState } from 'react';
 import { HeroWrapper, HeroHeadline, HeroSubheadline, Steps } from './Hero.styled';
 import EastIcon from '@mui/icons-material/East';
-import { ConnectWalletModal } from './ui/Forms/ConnectWalletModal';
-import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
-import { ModalItem } from './ui/Modal';
+import { PrimaryButton } from '../components/ui/Forms/FormButtons/Buttons.styled';
+import { useWeb3Modal } from '@web3modal/wagmi/react';
 
-export const Hero = (prop: { actionButtons: JSX.Element }) => {
-	const [connectWalletModalIsOpen, setConnectWalletModalIsOpen] = useState<boolean>(false);
-
-	const openConnectWalletModal = () => {
-		setConnectWalletModalIsOpen(true);
-	};
+export const Hero = () => {
+	const { open } = useWeb3Modal();
 
 	const instructions = [
 		{
@@ -33,11 +27,6 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 
 	return (
 		<>
-			<ModalItem
-				open={connectWalletModalIsOpen}
-				setOpen={setConnectWalletModalIsOpen}
-				content={<ConnectWalletModal actionButtons={prop.actionButtons} />}
-			/>
 			<HeroWrapper>
 				<div className='content-wrapper'>
 					<HeroHeadline>
@@ -46,7 +35,7 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 						Marketplace
 					</HeroHeadline>
 					<HeroSubheadline>Buy, sell, and own hashpower through your Web3 wallet</HeroSubheadline>
-					<PrimaryButton type='button' onClick={openConnectWalletModal}>
+					<PrimaryButton type='button' onClick={() => open()}>
 						Connect Wallet
 					</PrimaryButton>
 					<h3>Easiest way to start mining Bitcoin, without hardware</h3>

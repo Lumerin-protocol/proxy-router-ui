@@ -29,6 +29,3 @@ export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({
 		</ActionButtonWrapper>
 	);
 };
-
-ClaimLmrButton.displayName = 'ClaimLmrButton';
-ClaimLmrButton.whyDidYouRender = false;

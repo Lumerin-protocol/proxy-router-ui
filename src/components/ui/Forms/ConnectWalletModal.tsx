@@ -13,6 +13,3 @@ export const ConnectWalletModal = (prop: { actionButtons: JSX.Element }): JSX.El
 		</>
 	);
 };
-
-ConnectWalletModal.displayName = 'ConnectWalletModal';
-ConnectWalletModal.whyDidYouRender = false;

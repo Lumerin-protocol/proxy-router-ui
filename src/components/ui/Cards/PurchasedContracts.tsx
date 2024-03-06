@@ -1,9 +1,4 @@
-import {
-	AddressLength,
-	ContractData,
-	ContractHistoryData,
-	HashRentalContract,
-} from '../../../types';
+import { AddressLength } from '../../../types';
 import { getReadableDate, truncateAddress } from '../../../utils';
 import 'react-circular-progressbar/dist/styles.css';
 import PickaxeAnimated from '../../../images/icons/pickaxe-animated.gif';
@@ -18,7 +13,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/CancelOutlined';
 
 import styled from '@emotion/styled';
-import { HistoryUglyMapped } from '../../MyOrders';
+import { HistoryUglyMapped } from '../../../pages/MyOrders';
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 	height: 10,

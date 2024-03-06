@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
 import { getButton, printError } from '../../../../utils';
@@ -30,10 +29,10 @@ const getFormData: (userAccount: string) => InputValuesCreateForm = (userAccount
 interface CreateFormProps {
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
-	setOpen: Dispatch<SetStateAction<boolean>>;
+	onClose: () => void;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway, setOpen }) => {
+export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway, onClose }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Create);
 	const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
 
@@ -90,7 +89,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway
 			} catch (error) {
 				const typedError = error as Error;
 				printError(typedError.message, typedError.stack as string);
-				setOpen(false);
+				onClose();
 			}
 		}
 	};
@@ -150,15 +149,18 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway
 			</AlertMUI> */}
 			{content}
 			<FormButtonsWrapper>
-				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
+				<SecondaryButton type='submit' onClick={onClose}>
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, () => {}, handleSubmit, !isValid)}
+					getButton(
+						contentState,
+						buttonContent,
+						() => {},
+						() => handleSubmit(() => {}),
+						!isValid
+					)}
 			</FormButtonsWrapper>
 		</form>
 	);
 };
-
-CreateForm.displayName = 'CreateForm';
-CreateForm.whyDidYouRender = false;

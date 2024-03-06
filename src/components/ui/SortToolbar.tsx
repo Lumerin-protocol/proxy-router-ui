@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { Box, FormControl, InputLabel, MenuItem, Select, Toolbar } from '@mui/material';
-import React, { SetStateAction } from 'react';
+import React from 'react';
 import { SortTypes } from '../../types';
 
 const StyledToolbar = styled(Toolbar)`
@@ -18,7 +18,7 @@ const StyledToolbar = styled(Toolbar)`
 export const SortToolbar = (props: {
 	pageTitle: string;
 	sortType: string;
-	setSortType: React.Dispatch<SetStateAction<string>>;
+	setSortType: React.Dispatch<SortTypes>;
 	isMobile: boolean;
 }) => {
 	return (
@@ -35,7 +35,7 @@ export const SortToolbar = (props: {
 						id='sort'
 						value={props.sortType}
 						label='Sort By'
-						onChange={(e) => props.setSortType(e.target.value)}
+						onChange={(e) => props.setSortType(e.target.value as SortTypes)}
 					>
 						{Object.values(SortTypes).map((value, key) => (
 							<MenuItem value={value} key={key}>

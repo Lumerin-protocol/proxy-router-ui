@@ -3,13 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
 import {
-	getHostName,
-	getWorkerName,
-	getPortString,
-	getSchemeName,
-	getPassword,
 	isValidPoolAddress,
-	isValidPortNumber,
 	isValidUsername,
 	getValidatorURL,
 	getTitanLightningPoolUrl,
@@ -43,7 +37,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	register,
 	errors,
 	setValue,
-	buyerString,
 	isEdit,
 	setFormData,
 	inputData,
@@ -105,7 +98,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				isOpen={alertOpen}
 				onClose={() => setAlertOpen(false)}
 			/>
-			<InputWrapper style={{ marginBottom: '0px'}}>
+			<InputWrapper style={{ marginBottom: '0px' }}>
 				<label htmlFor='validatorAddress'>Validator Address</label>
 				<input
 					type='text'
@@ -176,11 +169,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 								? 'bg-red-100 btn-modal placeholder-red-400 review-input'
 								: 'review-no-errors review-input'
 						}
-						defaultValue={
-							isEdit && buyerString
-								? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
-								: ''
-						}
+						// defaultValue={
+						// 	isEdit && buyerString
+						// 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
+						// 		: ''
+						// }
 						onChange={(e) => {
 							poolAddressController.onChange(e);
 							setFormData({
@@ -207,7 +200,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
 							: 'review-no-errors review-input'
 					}
-					defaultValue={isEdit && buyerString ? getWorkerName(buyerString) : ''}
+					// defaultValue={isEdit && buyerString ? getWorkerName(buyerString) : ''}
 					value={username}
 					onChange={(e) => {
 						usernameController.onChange(e);
@@ -227,6 +220,3 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 		</React.Fragment>
 	);
 };
-
-ReviewContent.displayName = 'ReviewContent';
-ReviewContent.whyDidYouRender = false;

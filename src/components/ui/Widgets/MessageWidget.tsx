@@ -1,31 +1,31 @@
 import styled from '@emotion/styled';
 import { Card, MobileWidget } from '../Cards/Cards.styled';
 
+const MessageWrapper = styled(Card)`
+	min-width: 250px;
+	padding: 1rem;
+	min-height: fit-content;
+	p {
+		font-size: 14px;
+	}
+	a {
+		text-decoration: underline;
+	}
+`;
+
+const MobileMessageWrapper = styled(MobileWidget)`
+	width: 100%;
+	padding: 18px;
+	margin-bottom: 1rem;
+	p {
+		font-size: 14px;
+	}
+	a {
+		text-decoration: underline;
+	}
+`;
+
 export const MessageWidget = (props: { isMobile: boolean }) => {
-	const MessageWrapper = styled(Card)`
-		min-width: 250px;
-		padding: 1rem;
-		min-height: fit-content;
-		p {
-			font-size: 14px;
-		}
-		a {
-			text-decoration: underline;
-		}
-	`;
-
-	const MobileMessageWrapper = styled(MobileWidget)`
-		width: 100%;
-		padding: 18px;
-		margin-bottom: 1rem;
-		p {
-			font-size: 14px;
-		}
-		a {
-			text-decoration: underline;
-		}
-	`;
-
 	const Content = () => {
 		return (
 			<p>

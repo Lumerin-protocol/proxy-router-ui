@@ -25,6 +25,3 @@ export const Alert: React.FC<AlertProps> = ({ message, isOpen, onClose, onClick 
 		</Dialog>
 	);
 };
-
-Alert.displayName = 'Alert';
-Alert.whyDidYouRender = false;

@@ -3,45 +3,49 @@ import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
 import { MobileWidget, SmallWidget } from '../Cards/Cards.styled';
 
-export const WalletBalanceWidget = (props: { lumerinBalance: number; isMobile: boolean }) => {
-	const WalletBalanceWrapper = styled(SmallWidget)`
-		flex: 20%;
-		.balance-wrapper {
-			display: flex;
-			justify-content: center;
-			align-items: center;
+const WalletBalanceWrapper = styled(SmallWidget)`
+	flex: 20%;
+	.balance-wrapper {
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
-			.balance {
-				font-size: 1.5rem;
-				margin-left: 0.65rem;
-				color: rgba(14, 67, 83);
-
-				.lmr {
-					font-size: 1.125rem;
-					line-height: 1.75rem;
-				}
-			}
-		}
-	`;
-
-	const MobileWalletBalanceWrapper = styled(MobileWidget)`
-		flex-direction: column;
-		flex: 40%;
-		h3 {
-			color: #696969;
-			font-size: 10px;
-		}
-		p {
-			font-size: 16px;
+		.balance {
+			font-size: 1.5rem;
+			margin-left: 0.65rem;
 			color: rgba(14, 67, 83);
-			font-weight: 500;
 
 			.lmr {
-				font-size: 10px;
+				font-size: 1.125rem;
 				line-height: 1.75rem;
 			}
 		}
-	`;
+	}
+`;
+
+const MobileWalletBalanceWrapper = styled(MobileWidget)`
+	flex-direction: column;
+	flex: 40%;
+	h3 {
+		color: #696969;
+		font-size: 10px;
+	}
+	p {
+		font-size: 16px;
+		color: rgba(14, 67, 83);
+		font-weight: 500;
+
+		.lmr {
+			font-size: 10px;
+			line-height: 1.75rem;
+		}
+	}
+`;
+
+export const WalletBalanceWidget = (props: {
+	lumerinBalance: number | null;
+	isMobile: boolean;
+}) => {
 	return (
 		<>
 			{!props.isMobile ? (
@@ -50,7 +54,7 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; isMobile: b
 					<div className='flex items-center justify-center flex-1 balance-wrapper'>
 						<LumerinIcon />
 						<span className='balance'>
-							{Math.ceil(props.lumerinBalance).toLocaleString()} <span className='lmr'>LMR</span>
+							{formatBalance(props.lumerinBalance)} <span className='lmr'>LMR</span>
 						</span>
 					</div>
 					<div className='link'>
@@ -63,11 +67,18 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; isMobile: b
 				<MobileWalletBalanceWrapper>
 					<h3>Your Balance</h3>
 					<p>
-						{props.lumerinBalance}
-						<span className='lmr'> LMR</span>
+						{formatBalance(props.lumerinBalance)} <span className='lmr'> LMR</span>
 					</p>
 				</MobileWalletBalanceWrapper>
 			)}
 		</>
 	);
+};
+
+const formatBalance = (balance: number | null): string => {
+	if (balance === null) {
+		return '…';
+	}
+
+	return Math.ceil(balance).toLocaleString();
 };

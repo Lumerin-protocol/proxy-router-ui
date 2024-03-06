@@ -1,47 +1,24 @@
-// @ts-nocheck
+/* eslint-disable no-useless-escape */
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
+	AlertMessage,
 	ContentState,
 	ContractState,
-	Ethereum,
 	FormData,
 	HashRentalContract,
-	InputValuesBuyForm,
-	InputValuesCreateForm,
 	PathName,
 	SortByType,
+	SortTypes,
 	StatusText,
 } from './types';
 import React, { Dispatch, SetStateAction } from 'react';
-import { UseFormHandleSubmit } from 'react-hook-form';
-import _ from 'lodash';
-import * as ethJsUtil from 'ethereumjs-util';
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
-import { Transaction as Web3Transaction } from 'web3-eth';
-import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
-import { ethers } from 'ethers';
-import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+import { pubToAddress, hexToBytes, bytesToHex } from '@ethereumjs/util';
+import capitalize from 'lodash/capitalize';
 
-const { abi, bytecode } = CloneFactoryContract;
-
-declare module 'web3-core' {
-	interface Transaction {
-		// @ts-ignore
-		r: string;
-		// @ts-ignore
-		s: string;
-		// @ts-ignore
-		v: string;
-		// @ts-ignore
-		chainId: string;
-	}
-}
-
-// STRING HELPERS
 // Get address based on desired length
 export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (
 	address,
@@ -67,11 +44,11 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (address, username, password) => string | undefined = (
-	address,
-	username,
-	password
-) => {
+export const toRfc2396: (
+	address: string,
+	username: string,
+	password: string
+) => string | undefined = (address, username, password) => {
 	const protocol = 'stratum+tcp';
 
 	const encodedUsername = encodeURIComponent(username);
@@ -79,11 +56,11 @@ export const toRfc2396: (address, username, password) => string | undefined = (
 };
 
 export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(formData.poolAddress, formData.username, formData.password);
+	return toRfc2396(formData.poolAddress!, formData.username!, formData.password!);
 };
 
 export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	return toRfc2396(formData.validatorAddress, formData.username, formData.password);
+	return toRfc2396(formData.validatorAddress!, formData.username!, formData.password!);
 };
 
 //encrypts a string passed into it
@@ -105,53 +82,26 @@ export const getValidatorURL = () => {
 	return url.replace(/(^(\w|\+)+:|^)\/\//, ''); // removes protocol from url if present
 };
 
-export const getPublicKey = async (txId: string) => {
-	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
-	let tx = await provider.getTransaction(txId)!;
-	let transaction = FeeMarketEIP1559Transaction.fromTxData({
-		chainId: tx.chainId,
-		nonce: tx.nonce,
-		maxPriorityFeePerGas: Number(tx.maxPriorityFeePerGas),
-		maxFeePerGas: Number(tx.maxFeePerGas),
-		gasLimit: Number(tx.gasLimit),
-		to: tx.to,
-		value: Number(tx.value),
-		data: tx.data,
-		accessList: tx.accessList,
-		v: tx.v,
-		r: tx.r,
-		s: tx.s,
-	});
-	let pubKey = transaction.getSenderPublicKey();
-	return `04${pubKey.toString('hex')}`; //04 is necessary to tell the EVM which public key encoding to use
-};
-
-export const getCreationTxIDOfContract = async (contractAddress: string) => {
-	//import the JSON of CloneFactory.json
-	let cf = new ethers.ContractFactory(abi, bytecode);
-	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL as string);
-
-	//the clonefactory contract address should become a variable that is configurable
-	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
-
-	let cloneFactory = await cf.attach(cloneFactoryAddress); //this is the main ropsten clone
-	cloneFactory = await cloneFactory.connect(provider);
-
-	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
-	let events = await cloneFactory.queryFilter(contractCreated);
-	let event;
-	for (let i of events) {
-		if (i.args!._address === contractAddress) {
-			event = i;
-		}
-	}
-
-	let tx = '';
-	if (event) {
-		tx = event.transactionHash;
-	}
-	return tx;
-};
+// export const getPublicKey = async (txId: string) => {
+// 	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
+// 	let tx = await provider.getTransaction(txId)!;
+// 	let transaction = FeeMarketEIP1559Transaction.fromTxData({
+// 		chainId: tx.chainId,
+// 		nonce: tx.nonce,
+// 		maxPriorityFeePerGas: Number(tx.maxPriorityFeePerGas),
+// 		maxFeePerGas: Number(tx.maxFeePerGas),
+// 		gasLimit: Number(tx.gasLimit),
+// 		to: tx.to,
+// 		value: Number(tx.value),
+// 		data: tx.data,
+// 		accessList: tx.accessList,
+// 		v: tx.v,
+// 		r: tx.r,
+// 		s: tx.s,
+// 	});
+// 	let pubKey = transaction.getSenderPublicKey();
+// 	return `04${pubKey.toString('hex')}`; //04 is necessary to tell the EVM which public key encoding to use
+// };
 
 export const isValidPoolAddress = (address: string): boolean => {
 	const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
@@ -299,33 +249,31 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	return 0;
 };
 
-export const sortContracts = <T,>(
-	sortType: string,
-	contractData: T[],
-	setContractData: React.Dispatch<React.SetStateAction<T[]>>
+interface SortContractData {
+	price?: number | string;
+	length?: number | string;
+	speed?: number | string;
+}
+
+export const sortContractsV2 = <T extends SortContractData>(
+	sortType: SortTypes,
+	contractData: T[]
 ) => {
 	switch (sortType) {
-		case 'Price: Low to High':
-			setContractData([...contractData.sort((a, b) => (a.price! > b.price! ? 1 : -1))]);
-			break;
-		case 'Price: High to Low':
-			setContractData([...contractData.sort((a, b) => (a.price! < b.price! ? 1 : -1))]);
-			break;
-		case 'Duration: Short to Long':
-			setContractData([...contractData.sort((a, b) => (a.length! > b.length! ? 1 : -1))]);
-			break;
-		case 'Duration: Long to Short':
-			setContractData([...contractData.sort((a, b) => (a.length! < b.length! ? 1 : -1))]);
-			break;
-		case 'Speed: Slow to Fast':
-			setContractData([...contractData.sort((a, b) => (a.speed! > b.speed! ? 1 : -1))]);
-			break;
-		case 'Speed: Fast to Slow':
-			setContractData([...contractData.sort((a, b) => (a.speed! < b.speed! ? 1 : -1))]);
-			break;
+		case SortTypes.PriceLowToHigh:
+			return [...contractData.sort((a, b) => Number(a.price) - Number(b.price))];
+		case SortTypes.PriceHighToLow:
+			return [...contractData.sort((a, b) => Number(b.price) - Number(a.price))];
+		case SortTypes.DurationShortToLong:
+			return [...contractData.sort((a, b) => Number(a.length) - Number(b.length))];
+		case SortTypes.DurationLongToShort:
+			return [...contractData.sort((a, b) => Number(b.length) - Number(a.length))];
+		case SortTypes.SpeedSlowToFast:
+			return [...contractData.sort((a, b) => Number(a.speed) - Number(b.speed))];
+		case SortTypes.SpeedFastToSlow:
+			return [...contractData.sort((a, b) => Number(b.speed) - Number(a.speed))];
 		default:
-			setContractData([...contractData]);
-			break;
+			return [...contractData];
 	}
 };
 
@@ -333,8 +281,8 @@ export const getButton: (
 	contentState: string,
 	buttonContent: string,
 	onComplete: () => void,
-	onSubmit,
-	isDisabled
+	onSubmit: () => void,
+	isDisabled: boolean
 ) => JSX.Element = (contentState, buttonContent, onComplete, onSubmit, isDisabled) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
@@ -484,7 +432,7 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 				'flex justify-center items-center px-4 py-0.5 rounded-15 text-xs'
 			)}
 		>
-			<p>{_.capitalize(getStatusText(state))}</p>
+			<p>{capitalize(getStatusText(state))}</p>
 		</div>
 	);
 };
@@ -495,81 +443,57 @@ export const printError: (message: string, stacktrace: string) => void = (messag
 	console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
 };
 
-// Encryption helpers
-// https://gist.github.com/lancecarlson/6003283
-export const hexToBytes: (hex: string) => number[] = (hex) => {
-	const bytes = [];
-	for (let c = 0; c < hex.length; c += 2) bytes.push(parseInt(hex.substring(c, c + 2), 16));
-	return bytes;
-};
+// export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
+// 	transaction
+// ) => {
+// 	const chainId = process.env.REACT_APP_CHAIN_ID;
 
-// https://gist.github.com/lancecarlson/6003283
-export const bytesToHex: (bytes: number[]) => string = (bytes) => {
-	const hex = [];
-	for (let i = 0; i < bytes.length; i++) {
-		let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
-		hex.push((current >>> 4).toString(16)); // upper nibble to string
-		hex.push((current & 0xf).toString(16)); // lower nibble to string
-	}
-	return hex.join('');
-};
+// 	const ethTx = new EthJsTx(
+// 		{
+// 			nonce: transaction.nonce,
+// 			gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
+// 			gasLimit: transaction.gas,
+// 			to: transaction.to as string,
+// 			value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
+// 			data: transaction.input,
+// 			r: transaction.r,
+// 			s: transaction.s,
+// 			v: getV(transaction.v, chainId),
+// 		},
+// 		{
+// 			chain: chainId,
+// 		}
+// 	);
+// 	const publicKey = ethTx.getSenderPublicKey();
+// 	return publicKey;
+// };
 
-const getV: (v: string, chainId: number) => string = (v, chainId) => {
-	switch (v) {
-		case '0x0':
-		case '0x1':
-			return `0x${(parseInt(v, 16) + chainId * 2 + 35).toString(16)}`;
-		default:
-			return v;
-	}
-};
-
-export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
-	transaction
-) => {
-	const chainId = process.env.REACT_APP_CHAIN_ID;
-
-	const ethTx = new EthJsTx(
-		{
-			nonce: transaction.nonce,
-			gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
-			gasLimit: transaction.gas,
-			to: transaction.to as string,
-			value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
-			data: transaction.input,
-			r: transaction.r,
-			s: transaction.s,
-			v: getV(transaction.v, chainId),
-		},
-		{
-			chain: chainId,
-		}
-	);
-	const publicKey = ethTx.getSenderPublicKey();
-	return publicKey;
-};
-
-export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = async (from) => {
-	const ethereum = window.ethereum as Ethereum;
-	const message =
-		'Sign to generate your public key which will be used by the buyer to encrypt their destination details. No sensitive data is exposed by signing.';
-	try {
-		const msg = `0x${Buffer.from(message, 'utf8').toString('hex')}`;
-		const sign = await ethereum.request({
-			method: 'personal_sign',
-			params: [msg, from, 'password'],
-		});
-		const msgHash = ethJsUtil.hashPersonalMessage(ethJsUtil.toBuffer(msg));
-		const sigParams = ethJsUtil.fromRpcSig(sign as unknown as string);
-		return ethJsUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
-	} catch (error) {
-		const typedError = error as Error;
-		printError(typedError.message, typedError.stack as string);
-	}
-};
+// export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = async (from) => {
+// 	const ethereum = window.ethereum as Ethereum;
+// 	const message =
+// 		'Sign to generate your public key which will be used by the buyer to encrypt their destination details. No sensitive data is exposed by signing.';
+// 	try {
+// 		const msg = `0x${Buffer.from(message, 'utf8').toString('hex')}`;
+// 		const sign = await ethereum.request({
+// 			method: 'personal_sign',
+// 			params: [msg, from, 'password'],
+// 		});
+// 		const msgHash = ethJsUtil.hashPersonalMessage(ethJsUtil.toBuffer(msg));
+// 		const sigParams = ethJsUtil.fromRpcSig(sign as unknown as string);
+// 		return ethJsUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
+// 	} catch (error) {
+// 		const typedError = error as Error;
+// 		printError(typedError.message, typedError.stack as string);
+// 	}
+// };
 
 export const getHandlerBlockchainError =
-	(setAlertMessage, setAlertOpen, setContentState) => (error: ErrorWithCode) => {
+	(
+		setAlertMessage: (msg: string) => void,
+		setAlertOpen: (a: boolean) => void,
+		setContentState: (st: ContentState) => void
+	) =>
+	(error: ErrorWithCode) => {
 		// If user rejects transaction
 		if (error.code === 4001) {
 			setAlertMessage(error.message);
@@ -612,3 +536,23 @@ export const getHandlerBlockchainError =
 		setAlertOpen(true);
 		setContentState(ContentState.Review);
 	};
+
+export interface ErrorWithCode extends Error {
+	code?: number;
+}
+
+export const getSecondsEpoch = (date: Date) => {
+	return Math.floor(date.getTime() / 1000);
+};
+
+export const pubKeyToAddress = (pubKey: string) => {
+	try {
+		const bytes = hexToBytes(pubKey);
+		const bytesTrimmed = bytes.slice(-64);
+		const addr = pubToAddress(bytesTrimmed);
+		return bytesToHex(addr);
+	} catch (err) {
+		console.error(err);
+		throw new Error('Cannot convert pubkey to address', { cause: err });
+	}
+};

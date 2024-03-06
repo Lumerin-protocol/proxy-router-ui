@@ -34,7 +34,7 @@ const HeaderItem = styled.div`
 export const AvailableContracts = (prop: {
 	contracts: Array<HashRentalContract>;
 	loading: boolean;
-	setSortType: (sortType: string) => void;
+	setSortType: (sortType: SortTypes) => void;
 	sortType?: string;
 }) => {
 	const [width, setWidth] = useState<number>(window.innerWidth);
@@ -67,7 +67,7 @@ export const AvailableContracts = (prop: {
 	const updateSortType = () => {
 		if (activeSort === 'speed') {
 			if (sortState === 0) {
-				prop.setSortType('');
+				prop.setSortType(SortTypes.Default);
 			} else if (sortState === 1) {
 				prop.setSortType(SortTypes.SpeedFastToSlow);
 			} else if (sortState === 2) {
@@ -76,7 +76,7 @@ export const AvailableContracts = (prop: {
 		}
 		if (activeSort === 'length') {
 			if (sortState === 0) {
-				prop.setSortType('');
+				prop.setSortType(SortTypes.Default);
 			} else if (sortState === 1) {
 				prop.setSortType(SortTypes.DurationLongToShort);
 			} else if (sortState === 2) {
@@ -85,7 +85,7 @@ export const AvailableContracts = (prop: {
 		}
 		if (activeSort === 'price') {
 			if (sortState === 0) {
-				prop.setSortType('');
+				prop.setSortType(SortTypes.Default);
 			} else if (sortState === 1) {
 				prop.setSortType(SortTypes.PriceHighToLow);
 			} else if (sortState === 2) {
