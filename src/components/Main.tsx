@@ -11,7 +11,7 @@ import { provider } from 'web3-core';
 import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
 import { Hero } from './Hero';
-import { ResponsiveNavigation } from './Navigation/Navigation';
+import { ResponsiveNavigation } from './navigation/Navigation';
 import { Spinner } from './ui/Spinner.styled';
 import { SwitchNetworkAlert } from './ui/SwitchNetworkAlert';
 import { ModalItem } from './ui/Modal';
