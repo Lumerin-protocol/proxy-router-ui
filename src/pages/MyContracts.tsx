@@ -18,7 +18,6 @@ import { ButtonGroup } from '../components/ui/ButtonGroup';
 import { EditButton } from '../components/ui/Forms/FormButtons/EditButton';
 import { ClaimLmrButton } from '../components/ui/Forms/FormButtons/ClaimLmrButton';
 import { divideByDigits } from '../web3/helpers';
-import _ from 'lodash';
 import { PrimaryButton } from '../components/ui/Forms/FormButtons/Buttons.styled';
 import { Toolbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -28,6 +27,7 @@ import { EditForm as SellerEditForm } from '../components/ui/Forms/SellerForms/E
 import { EthereumGateway } from '../gateway/ethereum';
 import { CreateForm } from '../components/ui/Forms/SellerForms/CreateForm';
 import { ClaimLmrForm } from '../components/ui/Forms/SellerForms/ClaimLmrForm';
+import isEmpty from 'lodash/isEmpty';
 
 // This interface needs to have all the properties for both data and columns based on index.d.ts
 interface CustomTableOptions extends ContractData, Header {}
@@ -95,7 +95,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		const updatedOrders = sellerContracts.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
 			const now = new Date();
-			if (!_.isEmpty(contract)) {
+			if (!isEmpty(contract)) {
 				updatedOrder.id = (
 					<TableIcon
 						icon={null}
@@ -156,8 +156,8 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 
 	// TODO: if same as <MyOrders /> pull out into util function
 	const customSort: SortByFn<CustomTableOptions> = (rowA, rowB, columnId, desc) => {
-		if (_.isEmpty(rowA.original)) return desc ? 1 : -1;
-		if (_.isEmpty(rowB.original)) return desc ? -1 : 1;
+		if (isEmpty(rowA.original)) return desc ? 1 : -1;
+		if (isEmpty(rowB.original)) return desc ? -1 : 1;
 
 		switch (columnId) {
 			case 'status':

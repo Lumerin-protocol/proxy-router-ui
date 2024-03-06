@@ -13,11 +13,11 @@ import {
 	StatusText,
 } from './types';
 import React, { Dispatch, SetStateAction } from 'react';
-import _ from 'lodash';
 import { encrypt } from 'ecies-geth';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
 import { pubToAddress, hexToBytes, bytesToHex } from '@ethereumjs/util';
+import capitalize from 'lodash/capitalize';
 
 // Get address based on desired length
 export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (
@@ -432,7 +432,7 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 				'flex justify-center items-center px-4 py-0.5 rounded-15 text-xs'
 			)}
 		>
-			<p>{_.capitalize(getStatusText(state))}</p>
+			<p>{capitalize(getStatusText(state))}</p>
 		</div>
 	);
 };

@@ -5,7 +5,7 @@ import { AvailableContracts } from '../components/ui/Cards/AvailableContracts';
 import { sortContractsV2 } from '../utils';
 import { ContractState, HashRentalContract, SortTypes } from '../types';
 import { divideByDigits } from '../web3/helpers';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import styled from '@emotion/styled';
 import { BuyerOrdersWidget } from '../components/ui/Widgets/BuyerOrdersWidget';
 import { WalletBalanceWidget } from '../components/ui/Widgets/WalletBalanceWidget';

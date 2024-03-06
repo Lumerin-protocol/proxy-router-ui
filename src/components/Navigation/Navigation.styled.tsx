@@ -29,6 +29,7 @@ export const DrawerContent = styled.div`
 
 	.menu-icon {
 		margin-bottom: 2.5rem;
+		width: 136px;
 	}
 
 	img {

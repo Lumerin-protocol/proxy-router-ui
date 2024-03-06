@@ -1,6 +1,7 @@
 const { CracoAliasPlugin, configPaths } = require('react-app-rewire-alias');
 const webpack = require('webpack');
 const version = require('./package.json').version;
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer")
 
 module.exports = {
 	plugins: [
@@ -11,6 +12,11 @@ module.exports = {
 	],
 	webpack: {
 		configure: (/** @type import("webpack").Configuration */ webpackConfig) => {
+			// uncomment to enable bundle analyzer and restart project
+			//
+			// webpackConfig.plugins.push(
+			// 	new BundleAnalyzerPlugin({ analyzerMode: "server" })
+			// )
 			webpackConfig.plugins.push(
 				new webpack.DefinePlugin({
 					"process.env.REACT_APP_VERSION": JSON.stringify(version)

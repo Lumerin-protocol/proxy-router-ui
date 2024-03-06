@@ -1,6 +1,5 @@
 import { Drawer } from '@mui/material';
 import { DrawerContent } from './Navigation.styled';
-import { LogoIcon } from '../../images/index';
 import { PathName } from '../../types';
 import MarketplaceIconActive from '../../images/icons/store-blue.png';
 import MarketplaceIconInactive from '../../images/icons/store-grey.png';
@@ -10,6 +9,7 @@ import { Link, useLocation } from 'react-router-dom';
 import HelpIcon from '@mui/icons-material/Help';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 import ShieldIcon from '@mui/icons-material/Shield';
+import LumerinLogoText from '../../images/lumerin-logo-text.webp';
 
 // Navigation setup
 interface Navigation {
@@ -54,7 +54,7 @@ export const ResponsiveNavigation = (prop: {
 	const drawer = (
 		<DrawerContent>
 			<nav>
-				<LogoIcon className='menu-icon' />
+				<img className='menu-icon' src={LumerinLogoText} />
 				{navigation.map((item) => (
 					<Link
 						key={item.name}

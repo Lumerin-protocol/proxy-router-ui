@@ -30,7 +30,7 @@ import { EditForm as BuyerEditForm } from '../components/ui/Forms/BuyerForms/Edi
 import { CancelForm } from '../components/ui/Forms/BuyerForms/CancelForm';
 import { useHistory, useLocation } from 'react-router';
 import { useMediaQuery } from '@mui/material';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 
 interface MyOrdersProps {
 	web3Gateway?: EthereumGateway;

@@ -1,7 +1,7 @@
 import { HashRentalContract, PathName } from '../../../types';
 import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { getProgressPercentage, getSecondsEpoch } from '../../../utils';
 import { SmallWidget } from '../Cards/Cards.styled';
 import { Skeleton } from '@mui/material';
