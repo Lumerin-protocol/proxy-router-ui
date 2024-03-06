@@ -72,7 +72,7 @@ export const BuyerOrdersWidget = (props: {
 
 	return (
 		<BuyerOrdersWrapper>
-			<h3>Purchased Contracts</h3>
+			<h3>Your Contracts</h3>
 			<div className='stats'>
 				<div className='stat active'>
 					<h4>

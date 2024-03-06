@@ -33,6 +33,8 @@ export const ModalCard = styled.div`
 	margin-top: 3rem;
 	margin-bottom: 3rem;
 	max-width: 600px;
+	max-height: calc(100vh - 6rem);
+	overflow-y: auto;
 	padding: 4rem;
 	padding-top: 2rem;
 

@@ -14,6 +14,7 @@ import { MessageWidget } from '../components/ui/Widgets/MessageWidget';
 import { ModalItem } from '../components/ui/Modal';
 import { BuyForm } from '../components/ui/Forms/BuyerForms/BuyForm';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { MarketplaceStatistics } from '../components/ui/Widgets/MarketplaceStatistics';
 
 const WidgetsWrapper = styled.div`
 	display: flex;
@@ -128,12 +129,13 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 				<>
 					<WidgetsWrapper>
 						<MessageWidget isMobile={isMobile} />
+						<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
 						<BuyerOrdersWidget
 							isLoading={!contracts}
 							contracts={contracts || []}
 							userAccount={userAccount}
 						/>
-						<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
+						<MarketplaceStatistics isLoading={!contracts} contracts={contracts || []} />
 					</WidgetsWrapper>
 					<AvailableContracts
 						contracts={availableContracts}
