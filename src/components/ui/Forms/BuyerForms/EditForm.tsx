@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -72,10 +71,8 @@ export const EditForm: React.FC<EditFormProps> = ({
 	// Input validation setup
 	const {
 		register,
-		handleSubmit,
 		clearErrors,
 		formState: { errors, isValid },
-		setValue,
 		trigger,
 	} = useForm<InputValuesBuyForm>({ mode: 'onBlur', reValidateMode: 'onBlur' });
 
@@ -269,6 +266,3 @@ export const EditForm: React.FC<EditFormProps> = ({
 		</Fragment>
 	);
 };
-
-EditForm.displayName = 'EditForm';
-EditForm.whyDidYouRender = false;

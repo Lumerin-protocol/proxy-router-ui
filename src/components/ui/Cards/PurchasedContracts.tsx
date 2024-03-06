@@ -1,9 +1,4 @@
-import {
-	AddressLength,
-	ContractData,
-	ContractHistoryData,
-	HashRentalContract,
-} from '../../../types';
+import { AddressLength } from '../../../types';
 import { getReadableDate, truncateAddress } from '../../../utils';
 import 'react-circular-progressbar/dist/styles.css';
 import PickaxeAnimated from '../../../images/icons/pickaxe-animated.gif';

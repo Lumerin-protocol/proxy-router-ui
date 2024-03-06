@@ -3,48 +3,49 @@ import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
 import { MobileWidget, SmallWidget } from '../Cards/Cards.styled';
 
+const WalletBalanceWrapper = styled(SmallWidget)`
+	flex: 20%;
+	.balance-wrapper {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		.balance {
+			font-size: 1.5rem;
+			margin-left: 0.65rem;
+			color: rgba(14, 67, 83);
+
+			.lmr {
+				font-size: 1.125rem;
+				line-height: 1.75rem;
+			}
+		}
+	}
+`;
+
+const MobileWalletBalanceWrapper = styled(MobileWidget)`
+	flex-direction: column;
+	flex: 40%;
+	h3 {
+		color: #696969;
+		font-size: 10px;
+	}
+	p {
+		font-size: 16px;
+		color: rgba(14, 67, 83);
+		font-weight: 500;
+
+		.lmr {
+			font-size: 10px;
+			line-height: 1.75rem;
+		}
+	}
+`;
+
 export const WalletBalanceWidget = (props: {
 	lumerinBalance: number | null;
 	isMobile: boolean;
 }) => {
-	const WalletBalanceWrapper = styled(SmallWidget)`
-		flex: 20%;
-		.balance-wrapper {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-
-			.balance {
-				font-size: 1.5rem;
-				margin-left: 0.65rem;
-				color: rgba(14, 67, 83);
-
-				.lmr {
-					font-size: 1.125rem;
-					line-height: 1.75rem;
-				}
-			}
-		}
-	`;
-
-	const MobileWalletBalanceWrapper = styled(MobileWidget)`
-		flex-direction: column;
-		flex: 40%;
-		h3 {
-			color: #696969;
-			font-size: 10px;
-		}
-		p {
-			font-size: 16px;
-			color: rgba(14, 67, 83);
-			font-weight: 500;
-
-			.lmr {
-				font-size: 10px;
-				line-height: 1.75rem;
-			}
-		}
-	`;
 	return (
 		<>
 			{!props.isMobile ? (
@@ -66,8 +67,7 @@ export const WalletBalanceWidget = (props: {
 				<MobileWalletBalanceWrapper>
 					<h3>Your Balance</h3>
 					<p>
-						{props.lumerinBalance}
-						<span className='lmr'> LMR</span>
+						{formatBalance(props.lumerinBalance)} <span className='lmr'> LMR</span>
 					</p>
 				</MobileWalletBalanceWrapper>
 			)}
@@ -77,7 +77,7 @@ export const WalletBalanceWidget = (props: {
 
 const formatBalance = (balance: number | null): string => {
 	if (balance === null) {
-		return '.';
+		return '…';
 	}
 
 	return Math.ceil(balance).toLocaleString();

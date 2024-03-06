@@ -37,7 +37,7 @@ export const HeroWrapper = styled.div`
 		padding-bottom: 5rem;
 	}
 	p {
-		font-family: Montserrat;
+		font-family: Raleway;
 	}
 
 	h3 {

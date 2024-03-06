@@ -1,13 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TableIcon } from '../components/ui/TableIcon';
 import { BuyButton } from '../components/ui/Forms/FormButtons/BuyButton';
 import { AvailableContracts } from '../components/ui/Cards/AvailableContracts';
-import { setMediaQueryListOnChangeHandler, sortContractsV2 } from '../utils';
+import { sortContractsV2 } from '../utils';
 import { ContractState, HashRentalContract, SortTypes } from '../types';
-import { useInterval } from '../hooks/useInterval';
 import { divideByDigits } from '../web3/helpers';
-import _ from 'lodash';
+import { isEmpty } from 'lodash';
 import styled from '@emotion/styled';
 import { BuyerOrdersWidget } from '../components/ui/Widgets/BuyerOrdersWidget';
 import { WalletBalanceWidget } from '../components/ui/Widgets/WalletBalanceWidget';
@@ -15,9 +13,7 @@ import { MobileWalletInfo } from '../components/ui/Widgets/MobileWalletInfo';
 import { MessageWidget } from '../components/ui/Widgets/MessageWidget';
 import { ModalItem } from '../components/ui/Modal';
 import { BuyForm } from '../components/ui/Forms/BuyerForms/BuyForm';
-import { EthereumGateway } from '../gateway/ethereum';
-import { Sort } from '@mui/icons-material';
-import { useReadContract } from 'wagmi';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 const WidgetsWrapper = styled.div`
 	display: flex;
@@ -46,41 +42,25 @@ const MobileWidgetsWrapper = styled.div`
 `;
 
 interface MarketplaceProps {
-	web3Gateway?: EthereumGateway;
 	contracts: HashRentalContract[] | null;
 	userAccount: string;
-	currentBlockTimestamp: number;
 	lumerinBalance: number | null;
 	isMobile: boolean;
+	refreshContracts: () => void;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
-	web3Gateway,
 	userAccount,
-	currentBlockTimestamp,
 	contracts,
 	isMobile,
 	lumerinBalance,
+	refreshContracts,
 }) => {
-	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 	const [buyModalContractId, setBuyModalContractId] = useState<string>('');
 
 	// Adjust contract address length when breakpoint > lg
-	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
-	setMediaQueryListOnChangeHandler(
-		mediaQueryList,
-		isLargeBreakpointOrGreater,
-		setIsLargeBreakpointOrGreater
-	);
-
-	useEffect(() => {
-		if (!mediaQueryList?.matches) {
-			setIsLargeBreakpointOrGreater(false);
-		} else {
-			setIsLargeBreakpointOrGreater(true);
-		}
-	}, [mediaQueryList?.matches]);
+	const isLargeBreakpointOrGreater = useMediaQuery('(min-width: 1200px)');
 
 	const getTableData: () => HashRentalContract[] = () => {
 		const filteredContracts = contracts
@@ -92,7 +72,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 			: [];
 		const updatedContracts = filteredContracts.map((contract: any) => {
 			const updatedContract = { ...contract };
-			if (!_.isEmpty(contract)) {
+			if (!isEmpty(contract)) {
 				updatedContract.id = (
 					<TableIcon
 						icon={null}
@@ -125,20 +105,22 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	const [sortType, setSortType] = useState(SortTypes.Default);
 	const availableContracts = sortContractsV2(sortType, data);
 
+	const contract = contracts?.find((contract) => contract.id === buyModalContractId) || null;
 	return (
 		<>
 			<ModalItem
 				open={buyModalOpen}
 				onClose={() => setBuyModalOpen(false)}
 				content={
-					<BuyForm
-						contracts={contracts || []}
-						contractId={buyModalContractId}
-						userAccount={userAccount}
-						web3Gateway={web3Gateway}
-						lumerinbalance={lumerinBalance}
-						onClose={() => setBuyModalOpen(false)}
-					/>
+					contract && (
+						<BuyForm
+							contract={contract}
+							userAccount={userAccount}
+							lumerinbalance={lumerinBalance}
+							onClose={() => setBuyModalOpen(false)}
+							onPurchase={() => refreshContracts()}
+						/>
+					)
 				}
 			/>
 
@@ -150,16 +132,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 							isLoading={!contracts}
 							contracts={contracts || []}
 							userAccount={userAccount}
-							currentBlockTimestamp={currentBlockTimestamp}
 						/>
 						<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
 					</WidgetsWrapper>
-					{/* <SortToolbar
-						pageTitle='Hashrate For Sale'
-						sortType={sortType}
-						setSortType={setSortType}
-						isMobile={isMobile}
-					/> */}
 					<AvailableContracts
 						contracts={availableContracts}
 						loading={!contracts}
@@ -176,12 +151,6 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						</div>
 					</MobileWidgetsWrapper>
 					<MessageWidget isMobile={isMobile} />
-					{/* <SortToolbar
-						pageTitle='Hashrate For Sale'
-						sortType={sortType}
-						setSortType={setSortType}
-						isMobile={isMobile}
-					/> */}
 					<AvailableContracts
 						contracts={availableContracts}
 						loading={!contracts}
@@ -193,6 +162,3 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		</>
 	);
 };
-
-Marketplace.displayName = 'Marketplace';
-Marketplace.whyDidYouRender = false;

@@ -12,6 +12,3 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({ button1, button2 }) =>
 		</FormButtonsWrapper>
 	);
 };
-
-ButtonGroup.displayName = 'ButtonGroup';
-ButtonGroup.whyDidYouRender = false;

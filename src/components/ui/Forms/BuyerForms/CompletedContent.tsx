@@ -62,14 +62,11 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({
 					)}
 					{useLightningPayouts && (
 						<a
-							onClick={() => {
-								window.open(
-									process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || 'https://lightning.titan.io',
-									'_blank'
-								);
-							}}
+							href={process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || 'https://lightning.titan.io'}
+							target='_blank'
 							style={{ cursor: 'pointer' }}
 							className='font-light underline'
+							rel='noreferrer'
 						>
 							Dashboard for Lightning users
 						</a>
@@ -79,6 +76,3 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({
 		</div>
 	);
 };
-
-CompletedContent.displayName = 'BuyCompletedContent';
-CompletedContent.whyDidYouRender = false;

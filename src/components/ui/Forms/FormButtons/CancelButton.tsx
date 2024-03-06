@@ -29,6 +29,3 @@ export const CancelButton: React.FC<CancelButtonProps> = ({
 		</ActionButtonWrapper>
 	);
 };
-
-CancelButton.displayName = 'CancelButton';
-CancelButton.whyDidYouRender = false;

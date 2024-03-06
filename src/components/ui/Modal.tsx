@@ -6,7 +6,7 @@ import styled from '@emotion/styled';
 interface ModalProps {
 	open: boolean;
 	onClose: () => void;
-	content: React.ReactElement<any>;
+	content: React.ReactElement<any> | null;
 }
 
 const StyledModal = styled(Modal)`
@@ -32,6 +32,3 @@ export const ModalItem: React.FC<ModalProps> = ({ open, onClose, content }) => {
 		</StyledModal>
 	);
 };
-
-ModalItem.displayName = 'Modal';
-ModalItem.whyDidYouRender = false;

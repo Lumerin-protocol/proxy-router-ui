@@ -10,9 +10,7 @@ import './index.css';
 import './fonts.css';
 
 import { createWeb3Modal } from '@web3modal/wagmi/react';
-import { reconnect } from '@wagmi/core';
-
-import { arbitrum, hardhat } from 'viem/chains';
+import { arbitrum, arbitrumSepolia, hardhat } from 'viem/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Config, WagmiProvider } from 'wagmi';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
@@ -36,9 +34,24 @@ const metadata = {
 	icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 
-const chains = [arbitrum, hardhat] as const;
+const getChainById = () => {
+	const chainId = process.env.REACT_APP_CHAIN_ID;
+	switch (Number(chainId)) {
+		case hardhat.id:
+			return hardhat;
+		case arbitrumSepolia.id:
+			return arbitrumSepolia;
+		case arbitrum.id:
+			return arbitrum;
+		default:
+			throw new Error(
+				`invalid chain id provided in REACT_APP_CHAIN_ID "${chainId}". Only arbitrum, arbitrumSepolia and hardhat chains are supported`
+			);
+	}
+};
+
 const config: Config = defaultWagmiConfig({
-	chains, // required
+	chains: [getChainById()], // required
 	projectId, // required
 	metadata, // required
 	enableWalletConnect: true, // Optional - true by default
@@ -48,10 +61,11 @@ const config: Config = defaultWagmiConfig({
 	// ...wagmiOptions // Optional - Override createConfig parameters
 });
 
-reconnect(config);
-
 // 3. Create modal
-const m = createWeb3Modal({
+createWeb3Modal({
+	tokens: {
+		[Number(hardhat.id)]: { address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS! },
+	},
 	wagmiConfig: config,
 	projectId,
 	enableAnalytics: true, // Optional - defaults to your Cloud configuration
@@ -63,7 +77,7 @@ createRoot(root).render(
 			<ErrorBoundary fallbackRender={ErrorPage}>
 				<WagmiProvider config={config}>
 					<QueryClientProvider client={queryClient}>
-						<App config={config} />
+						<App />
 					</QueryClientProvider>
 				</WagmiProvider>
 			</ErrorBoundary>

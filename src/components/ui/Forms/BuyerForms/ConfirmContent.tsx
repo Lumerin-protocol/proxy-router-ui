@@ -47,6 +47,3 @@ export const ConfirmContent: React.FC<ConfirmContentProps> = ({
 		</ReviewItems>
 	);
 };
-
-ConfirmContent.displayName = 'ConfirmContent';
-ConfirmContent.whyDidYouRender = false;

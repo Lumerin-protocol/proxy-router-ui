@@ -1,10 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { Column, SortByFn, useSortBy, useTable } from 'react-table';
 import { ContractData, ContractState, HashRentalContract, Header, SortByType } from '../types';
 import {
 	getProgressDiv,
 	getProgressPercentage,
+	getSecondsEpoch,
 	getStatusDiv,
 	setMediaQueryListOnChangeHandler,
 	sortByNumber,
@@ -36,7 +36,6 @@ interface MyContractsProps {
 	web3Gateway?: EthereumGateway;
 	userAccount: string;
 	contracts: HashRentalContract[];
-	currentBlockTimestamp: number;
 	setSidebarOpen: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -44,7 +43,6 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 	web3Gateway,
 	userAccount,
 	contracts,
-	currentBlockTimestamp,
 	setSidebarOpen,
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
@@ -96,6 +94,7 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		const sellerContracts = contracts.filter((contract) => contract.seller === userAccount);
 		const updatedOrders = sellerContracts.map((contract) => {
 			const updatedOrder = { ...contract } as ContractData;
+			const now = new Date();
 			if (!_.isEmpty(contract)) {
 				updatedOrder.id = (
 					<TableIcon
@@ -115,13 +114,13 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 								updatedOrder.state as string,
 								updatedOrder.timestamp as string,
 								parseInt(updatedOrder.length as string),
-								currentBlockTimestamp
+								getSecondsEpoch(now)
 						  );
 				updatedOrder.progressPercentage = getProgressPercentage(
 					updatedOrder.state as string,
 					updatedOrder.timestamp as string,
 					parseInt(updatedOrder.length as string),
-					currentBlockTimestamp
+					getSecondsEpoch(now)
 				);
 				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
 				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
@@ -240,7 +239,6 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 						contractId={claimLmrContractId}
 						userAccount={userAccount}
 						web3Gateway={web3Gateway}
-						currentBlockTimestamp={currentBlockTimestamp}
 						onClose={() => setClaimLmrModalOpen(false)}
 					/>
 				}
@@ -296,6 +294,3 @@ export const MyContracts: React.FC<MyContractsProps> = ({
 		</>
 	);
 };
-
-MyContracts.displayName = 'MyContracts';
-MyContracts.whyDidYouRender = false;

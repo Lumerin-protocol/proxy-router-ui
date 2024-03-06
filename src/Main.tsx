@@ -1,42 +1,16 @@
 import styled from '@emotion/styled';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Bg from './images/bg.png';
 import { Hero } from './pages/Hero';
-import { ConnectButtonsWrapper } from './components/ui/Forms/FormButtons/Buttons.styled';
-import { AddressLength, CurrentTab, HashRentalContract, PathName, WalletText } from './types';
-import { MetaMaskIcon } from './images';
-import { SwitchNetworkAlert } from './components/ui/SwitchNetworkAlert';
+import { AddressLength, PathName } from './types';
 import Box from '@mui/material/Box';
 import { ResponsiveNavigation } from './components/navigation/Navigation';
 import { Header } from './components/ui/Header';
 import { truncateAddress } from './utils';
-import { Router } from './Router';
-import { useWeb3ModalState } from '@web3modal/wagmi/react';
-import { Connector, useAccount } from 'wagmi';
-
-interface MainProps {
-	connectorIconUrl?: string;
-	userAccount: string;
-	isConnected: boolean;
-	isMetamask: boolean;
-	isMobile: boolean;
-	currentBlockTimestamp: number;
-	contracts: HashRentalContract[];
-	lumerinBalance: number | null;
-	getAlertMessage: () => string;
-	// actions with state
-	pathName: string;
-	setPathName: (path: string) => void;
-	alertOpen: boolean;
-	setAlertOpen: (open: boolean) => void;
-	activeOrdersTab: CurrentTab;
-	setActiveOrdersTab: (tab: CurrentTab) => void;
-	// actions
-	connectWallet: (walletType: WalletText) => void;
-	changeNetworkAsync: () => void;
-	addLumerinTokenToMetaMaskAsync: () => void;
-	refreshContracts: () => void;
-}
+import { useAccount, useAccountEffect } from 'wagmi';
+import { useHistory, useLocation } from 'react-router';
+import { MarketplaceState } from './MarketplaceState';
+import { addLumerinTokenToMetaMaskAsync } from './web3/helpers';
 
 const BodyWrapper = styled.div`
 	display: flex;
@@ -49,14 +23,20 @@ const BodyWrapper = styled.div`
 
 const sidebarDrawerWidth = 240;
 
-const getPageTitle = (pathName: string): string => {
-	if (pathName === PathName.Marketplace) return 'Marketplace';
-	if (pathName === PathName.MyOrders) return 'Buyer Hub';
-	if (pathName === PathName.MyContracts) return 'Seller Hub';
-	return '';
+const getPageTitle = (pathname: string): string => {
+	switch (pathname) {
+		case PathName.Marketplace:
+			return 'Marketplace';
+		case PathName.MyOrders:
+			return 'Buyer Hub';
+		case PathName.MyContracts:
+			return 'Seller Hub';
+		default:
+			return 'Home';
+	}
 };
 
-const getTruncatedWalletAddress = (userAccount: string): string | null => {
+const getTruncatedWalletAddress = (userAccount?: string): string | null => {
 	if (userAccount) {
 		return truncateAddress(userAccount, AddressLength.MEDIUM);
 	}
@@ -85,11 +65,29 @@ const MainBox = (props: { children: any }) => (
 );
 
 // Main UI component
-export const Main: React.FC<MainProps> = (props) => {
+export const Main: React.FC = () => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-	const { isDisconnected } = useAccount();
+	const location = useLocation();
+	const history = useHistory();
 
-	if (isDisconnected) {
+	const { isDisconnected, connector, address } = useAccount();
+
+	useEffect(() => {
+		if (isDisconnected && location.pathname !== PathName.Home) {
+			console.log('DISCONNECTED', location);
+			history.push(PathName.Home);
+		}
+	}, [isDisconnected]);
+
+	useAccountEffect({
+		onConnect: ({ chainId }) => {
+			if (chainId === Number(process.env.REACT_APP_CHAIN_ID!)) {
+				history.push(PathName.Marketplace);
+			}
+		},
+	});
+
+	if (location.pathname === PathName.Home) {
 		return <Hero />;
 	}
 
@@ -99,34 +97,22 @@ export const Main: React.FC<MainProps> = (props) => {
 				<ResponsiveNavigation
 					sidebarOpen={sidebarOpen}
 					setSidebarOpen={setSidebarOpen}
-					setPathname={props.setPathName}
-					pathName={props.pathName}
 					drawerWidth={sidebarDrawerWidth}
 				/>
 			</SidebarBox>
 			<MainBox>
 				<Header
-					connectorIconUrl={props.connectorIconUrl}
+					connectorIconUrl={connector?.icon}
 					setSidebarOpen={setSidebarOpen}
-					pageTitle={getPageTitle(props.pathName)}
-					truncatedWalletAddress={getTruncatedWalletAddress(props.userAccount)}
-					addTokenToMetamask={props.addLumerinTokenToMetaMaskAsync}
-					isMetamask={props.isMetamask}
-					isMobile={props.isMobile}
+					pageTitle={getPageTitle(location.pathname)}
+					truncatedWalletAddress={getTruncatedWalletAddress(address)}
+					addTokenToMetamask={addLumerinTokenToMetaMaskAsync}
+					isMetamask={true}
 					drawerWidth={sidebarDrawerWidth}
 				/>
 				<Box component='main'>
 					<main>
-						<Router
-							userAccount={props.userAccount}
-							lumerinBalance={props.lumerinBalance}
-							contracts={props.contracts}
-							currentBlockTimestamp={props.currentBlockTimestamp}
-							isMobile={props.isMobile}
-							refreshContracts={props.refreshContracts}
-							activeOrdersTab={props.activeOrdersTab}
-							setActiveOrdersTab={props.setActiveOrdersTab}
-						/>
+						<MarketplaceState />
 					</main>
 				</Box>
 			</MainBox>

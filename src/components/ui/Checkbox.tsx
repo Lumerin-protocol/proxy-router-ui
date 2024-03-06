@@ -39,6 +39,3 @@ export const Checkbox: React.FC<CheckboxProps> = ({ legend, label, description, 
 		</fieldset>
 	);
 };
-
-Checkbox.displayName = 'Checkbox';
-Checkbox.whyDidYouRender = false;

@@ -15,6 +15,3 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ width }) => {
 		</div>
 	);
 };
-
-ProgressBar.displayName = 'ProgressBar';
-ProgressBar.whyDidYouRender = false;

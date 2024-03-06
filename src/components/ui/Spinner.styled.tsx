@@ -86,6 +86,3 @@ export const Spinner = styled.div`
 		}
 	}
 `;
-
-Spinner.displayName = 'Spinner';
-Spinner.whyDidYouRender = false;

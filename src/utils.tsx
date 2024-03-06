@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
@@ -6,43 +7,18 @@ import {
 	ContractState,
 	FormData,
 	HashRentalContract,
-	// InputValuesBuyForm,
-	// InputValuesCreateForm,
 	PathName,
 	SortByType,
 	SortTypes,
 	StatusText,
 } from './types';
 import React, { Dispatch, SetStateAction } from 'react';
-import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
-// import * as ethJsUtil from 'ethereumjs-util';
-// import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
-// import { Transaction as Web3Transaction } from 'web3-eth';
-// import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
-import { ethers } from 'ethers';
-import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
-import { Sort } from '@mui/icons-material';
+import { pubToAddress, hexToBytes, bytesToHex } from '@ethereumjs/util';
 
-const { abi, bytecode } = CloneFactoryContract;
-
-declare module 'web3-core' {
-	interface Transaction {
-		// @ts-ignore
-		r: string;
-		// @ts-ignore
-		s: string;
-		// @ts-ignore
-		v: string;
-		// @ts-ignore
-		chainId: string;
-	}
-}
-
-// STRING HELPERS
 // Get address based on desired length
 export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (
 	address,
@@ -126,33 +102,6 @@ export const getValidatorURL = () => {
 // 	let pubKey = transaction.getSenderPublicKey();
 // 	return `04${pubKey.toString('hex')}`; //04 is necessary to tell the EVM which public key encoding to use
 // };
-
-export const getCreationTxIDOfContract = async (contractAddress: string) => {
-	//import the JSON of CloneFactory.json
-	let cf = new ethers.ContractFactory(abi, bytecode);
-	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL as string);
-
-	//the clonefactory contract address should become a variable that is configurable
-	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
-
-	let cloneFactory = await cf.attach(cloneFactoryAddress); //this is the main ropsten clone
-	cloneFactory = await cloneFactory.connect(provider);
-
-	let contractCreated = cloneFactory.filters.contractCreated(); //used to get the event
-	let events = await cloneFactory.queryFilter(contractCreated);
-	let event;
-	for (let i of events) {
-		if (i.args!._address === contractAddress) {
-			event = i;
-		}
-	}
-
-	let tx = '';
-	if (event) {
-		tx = event.transactionHash;
-	}
-	return tx;
-};
 
 export const isValidPoolAddress = (address: string): boolean => {
 	const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
@@ -494,35 +443,6 @@ export const printError: (message: string, stacktrace: string) => void = (messag
 	console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
 };
 
-// Encryption helpers
-// https://gist.github.com/lancecarlson/6003283
-export const hexToBytes: (hex: string) => number[] = (hex) => {
-	const bytes = [];
-	for (let c = 0; c < hex.length; c += 2) bytes.push(parseInt(hex.substring(c, c + 2), 16));
-	return bytes;
-};
-
-// https://gist.github.com/lancecarlson/6003283
-export const bytesToHex: (bytes: number[]) => string = (bytes) => {
-	const hex = [];
-	for (let i = 0; i < bytes.length; i++) {
-		let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
-		hex.push((current >>> 4).toString(16)); // upper nibble to string
-		hex.push((current & 0xf).toString(16)); // lower nibble to string
-	}
-	return hex.join('');
-};
-
-const getV: (v: string, chainId: number) => string = (v, chainId) => {
-	switch (v) {
-		case '0x0':
-		case '0x1':
-			return `0x${(parseInt(v, 16) + chainId * 2 + 35).toString(16)}`;
-		default:
-			return v;
-	}
-};
-
 // export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
 // 	transaction
 // ) => {
@@ -620,3 +540,19 @@ export const getHandlerBlockchainError =
 export interface ErrorWithCode extends Error {
 	code?: number;
 }
+
+export const getSecondsEpoch = (date: Date) => {
+	return Math.floor(date.getTime() / 1000);
+};
+
+export const pubKeyToAddress = (pubKey: string) => {
+	try {
+		const bytes = hexToBytes(pubKey);
+		const bytesTrimmed = bytes.slice(-64);
+		const addr = pubToAddress(bytesTrimmed);
+		return bytesToHex(addr);
+	} catch (err) {
+		console.error(err);
+		throw new Error('Cannot convert pubkey to address', { cause: err });
+	}
+};

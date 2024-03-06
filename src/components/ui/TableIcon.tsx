@@ -41,6 +41,3 @@ export const TableIcon: React.FC<TableIconProps> = ({
 		</div>
 	);
 };
-
-TableIcon.displayName = 'Icon';
-TableIcon.whyDidYouRender = false;

@@ -44,6 +44,3 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({ contentState
 		</div>
 	);
 };
-
-CompletedContent.displayName = 'CreateCompletedContent';
-CompletedContent.whyDidYouRender = false;

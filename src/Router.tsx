@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Switch, Route, RouteComponentProps } from 'react-router';
 import { Marketplace } from './pages/Marketplace';
 import { MyOrders } from './pages/MyOrders';
-import { CurrentTab, HashRentalContract, PathName } from './types';
+import { HashRentalContract, PathName } from './types';
 import { Spinner } from './components/ui/Spinner.styled';
 import { MyContracts } from './pages/MyContracts';
 import { EthereumGateway } from './gateway/ethereum';
@@ -11,11 +11,8 @@ interface RouterProps {
 	web3Gateway?: EthereumGateway;
 	userAccount: string;
 	contracts: HashRentalContract[];
-	currentBlockTimestamp: number;
 	refreshContracts: () => void;
 	isMobile: boolean;
-	activeOrdersTab: string;
-	setActiveOrdersTab: React.Dispatch<CurrentTab>;
 	lumerinBalance: number | null;
 }
 
@@ -30,11 +27,10 @@ export const Router: React.FC<RouterProps> = (p) => {
 						<Marketplace
 							{...props}
 							lumerinBalance={p.lumerinBalance}
-							web3Gateway={p.web3Gateway}
 							userAccount={p.userAccount}
 							contracts={p.contracts}
-							currentBlockTimestamp={p.currentBlockTimestamp}
 							isMobile={p.isMobile}
+							refreshContracts={p.refreshContracts}
 						/>
 					)}
 				/>
@@ -47,11 +43,8 @@ export const Router: React.FC<RouterProps> = (p) => {
 							web3Gateway={p.web3Gateway}
 							userAccount={p.userAccount}
 							contracts={p.contracts}
-							currentBlockTimestamp={p.currentBlockTimestamp}
 							refreshContracts={p.refreshContracts}
 							isMobile={p.isMobile}
-							activeOrdersTab={p.activeOrdersTab}
-							setActiveOrdersTab={p.setActiveOrdersTab}
 						/>
 					)}
 				/>
@@ -63,7 +56,6 @@ export const Router: React.FC<RouterProps> = (p) => {
 							web3Gateway={p.web3Gateway}
 							userAccount={p.userAccount}
 							contracts={p.contracts}
-							currentBlockTimestamp={p.currentBlockTimestamp}
 							setSidebarOpen={() => {}}
 						/>
 					)}

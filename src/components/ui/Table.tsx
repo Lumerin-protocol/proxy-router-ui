@@ -1,108 +1,14 @@
+import { ReactElement } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { ReactElement } from 'react';
-import { createUseStyles } from 'react-jss';
 import { TableInstance } from 'react-table';
-import { classNames } from '../../utils';
 import {
 	faAngleLeft,
 	faAngleRight,
 	faAngleDoubleLeft,
 	faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons';
-const { colors } = require('styles/styles.config.js');
-
-// The use of `!important` is bc not dynamically checking the number of cells per row
-const useStyles = createUseStyles({
-	table: {
-		'&': {
-			borderSpacing: 0,
-			color: colors['lumerin-table-text-color'],
-		},
-		'& > thead > tr > th::selection': {
-			display: 'none',
-		},
-		'& > thead > tr > th:hover': {
-			backgroundColor: colors['lumerin-aqua'],
-			color: 'white',
-		},
-		'& > thead > tr > th:first-child:hover': {
-			backgroundColor: colors['lumerin-dark-gray'],
-			color: 'inherit',
-		},
-		'& > thead > tr > th:last-child:hover': {
-			backgroundColor: colors['lumerin-dark-gray'],
-			color: 'inherit',
-		},
-		'& > thead > tr > th:first-child': {
-			border: '0px solid transparent',
-			borderRadius: '5px 0 0 5px',
-		},
-		'& > thead > tr > th:last-child': {
-			borderRadius: '0 5px 5px 0',
-		},
-		'& > tbody > tr:first-child': {
-			pointerEvents: 'none',
-		},
-		'& > tbody > tr:first-child > td': {
-			border: 'none',
-		},
-		'& > tbody > tr:first-child > td:last-child': {
-			borderRight: 'none !important',
-		},
-		'& > tbody > tr > td': {
-			backgroundColor: 'white',
-			border: `1px solid ${colors['lumerin-gray']}`,
-			borderBottom: 'none',
-		},
-		'& > tbody > tr > td:first-child': {
-			borderRight: 'none',
-		},
-		'& > tbody > tr > td:first-child:hover': {
-			backgroundColor: colors['lumerin-aqua'],
-			color: 'white',
-		},
-		'& > tbody > tr > td:last-child': {
-			borderLeft: 'none',
-			borderRight: `1px solid ${colors['lumerin-gray']} !important`,
-		},
-		'& > tbody > tr > td:nth-child(2)': {
-			borderLeft: 'none',
-			borderRight: 'none',
-		},
-		'& > tbody > tr:nth-child(2) > td:first-child': {
-			borderTopLeftRadius: '5px',
-		},
-		'& > tbody > tr:nth-child(2) > td:last-child': {
-			borderTopRightRadius: '5px',
-		},
-		'& > tbody > tr > td:nth-child(3)': {
-			borderLeft: 'none',
-			borderRight: 'none',
-		},
-		'& > tbody > tr > td:nth-child(4)': {
-			borderLeft: 'none',
-			borderRight: 'none',
-		},
-		'& > tbody > tr > td:nth-child(5)': {
-			borderLeft: 'none',
-			borderRight: 'none',
-		},
-		'& > tbody > tr > td:nth-child(6)': {
-			borderLeft: 'none',
-			borderRight: 'none',
-		},
-		'& > tbody > tr:last-child > td': {
-			borderBottom: `1px solid ${colors['lumerin-gray']}`,
-		},
-		'& > tbody > tr:last-child > td:first-child': {
-			borderBottomLeftRadius: '5px',
-		},
-		'& > tbody > tr:last-child > td:last-child': {
-			borderBottomRightRadius: '5px',
-			paddingRight: '0.5rem',
-		},
-	},
-});
+import { colors } from '../../../styles/styles.config';
+import { StyledTable } from './Table.styled';
 
 interface TableProps<T extends object = {}> {
 	id: string;
@@ -134,15 +40,10 @@ export const Table = <T extends object = {}>({
 		setPageSize,
 		state: { pageIndex, pageSize },
 	} = tableInstance;
-	const classes = useStyles();
 
 	return (
 		<div className='w-95 md:w-99'>
-			<table
-				id={id}
-				{...getTableProps()}
-				className={classNames(classes.table, 'relative border-separate w-full')}
-			>
+			<StyledTable id={id} {...getTableProps()} className='relative border-separate w-full'>
 				<thead className='bg-lumerin-dark-gray h-500 sm:h-16 text-xxs sm:text-xs'>
 					{headerGroups.map((headerGroup) => (
 						<tr {...headerGroup.getHeaderGroupProps()}>
@@ -183,7 +84,7 @@ export const Table = <T extends object = {}>({
 						);
 					})}
 				</tbody>
-			</table>
+			</StyledTable>
 			{pagination ? (
 				<div>
 					<button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
@@ -235,6 +136,3 @@ export const Table = <T extends object = {}>({
 		</div>
 	);
 };
-
-Table.displayName = 'Table';
-Table.whyDidYouRender = false;

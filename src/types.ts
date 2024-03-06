@@ -1,8 +1,3 @@
-// Exported types here
-// Types local to a file will be in that file
-
-import { HttpProvider } from 'web3-core';
-
 // Enums
 export enum WalletText {
 	ConnectViaMetaMask = 'MetaMask',
@@ -16,8 +11,8 @@ export enum ContractState {
 }
 
 export enum CurrentTab {
-	Running = 'RUNNING',
-	Completed = 'COMPLETED',
+	Running = 'running',
+	Completed = 'completed',
 }
 
 export enum ContentState {
@@ -41,6 +36,7 @@ export enum StatusText {
 }
 
 export enum PathName {
+	Home = '/',
 	Marketplace = '/marketplace',
 	MyOrders = '/buyerhub',
 	MyContracts = '/sellerhub',
@@ -61,6 +57,7 @@ export enum AlertMessage {
 	PurchaseFailed = 'Purchase failed',
 	CancelFailed = 'Failed to close contract',
 	EditFailed = 'Failed to edit contract',
+	Hide = '',
 }
 
 export enum SortByType {
@@ -84,13 +81,6 @@ export enum CloseOutType {
 	CloseNoClaimAtCompletion = 2,
 	CloseAndClaimAtCompletion = 3,
 	Revert = 4,
-}
-
-// Interfaces
-export interface Ethereum extends HttpProvider {
-	networkVersion: string;
-	on: <T>(method: string, callback: (input: T) => void) => void;
-	request: (options: {}) => Promise<void>;
 }
 
 export interface ConnectInfo {

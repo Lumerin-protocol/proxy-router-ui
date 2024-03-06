@@ -21,6 +21,3 @@ export const BuyButton: React.FC<BuyButtonProps> = ({
 
 	return <PrimaryButton onClick={(event) => clickHandler(event)}>Purchase</PrimaryButton>;
 };
-
-BuyButton.displayName = 'BuyButton';
-BuyButton.whyDidYouRender = false;

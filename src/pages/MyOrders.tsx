@@ -1,11 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { Dispatch, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TableIcon } from '../components/ui/TableIcon';
 import {
 	getProgressDiv,
 	getProgressPercentage,
+	getSecondsEpoch,
 	getStatusDiv,
-	setMediaQueryListOnChangeHandler,
 	sortContractsV2,
 } from '../utils';
 import { DateTime } from 'luxon';
@@ -22,7 +21,6 @@ import { ButtonGroup } from '../components/ui/ButtonGroup';
 import { EditButton } from '../components/ui/Forms/FormButtons/EditButton';
 import { CancelButton } from '../components/ui/Forms/FormButtons/CancelButton';
 import { divideByDigits } from '../web3/helpers';
-import _ from 'lodash';
 import { FinishedContracts, PurchasedContracts } from '../components/ui/Cards/PurchasedContracts';
 import { TabSwitch } from '../components/ui/TabSwitch.Styled';
 import { SortToolbar } from '../components/ui/SortToolbar';
@@ -30,16 +28,16 @@ import { EthereumGateway } from '../gateway/ethereum';
 import { ModalItem } from '../components/ui/Modal';
 import { EditForm as BuyerEditForm } from '../components/ui/Forms/BuyerForms/EditForm';
 import { CancelForm } from '../components/ui/Forms/BuyerForms/CancelForm';
+import { useHistory, useLocation } from 'react-router';
+import { useMediaQuery } from '@mui/material';
+import { isEmpty } from 'lodash';
 
 interface MyOrdersProps {
 	web3Gateway?: EthereumGateway;
 	userAccount: string;
 	contracts: HashRentalContract[];
-	currentBlockTimestamp: number;
 	isMobile: boolean;
-	refreshContracts: any;
-	activeOrdersTab: string;
-	setActiveOrdersTab: Dispatch<CurrentTab>;
+	refreshContracts: () => void;
 }
 
 // TODO: fix this disgusting interface
@@ -64,13 +62,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	web3Gateway,
 	userAccount,
 	contracts,
-	currentBlockTimestamp,
 	isMobile,
-	activeOrdersTab,
-	setActiveOrdersTab,
+	refreshContracts,
 }) => {
-	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
-	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
 
 	const [buyerEditModalOpen, setBuyerEditModalOpen] = useState<boolean>(false);
@@ -79,33 +73,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [cancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 	const [cancelContractId, setCancelContractId] = useState<string>('');
 
-	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
-	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
+	const isLargeBreakpointOrGreater = useMediaQuery('(min-width: 1280px)');
 
-	setMediaQueryListOnChangeHandler(
-		mediaQueryListLarge,
-		isLargeBreakpointOrGreater,
-		setIsLargeBreakpointOrGreater
-	);
-	setMediaQueryListOnChangeHandler(
-		mediaQueryListMedium,
-		isMediumBreakpointOrBelow,
-		setIsMediumBreakpointOrBelow
-	);
-
-	useEffect(() => {
-		if (!mediaQueryListLarge?.matches) {
-			setIsLargeBreakpointOrGreater(false);
-		} else {
-			setIsLargeBreakpointOrGreater(true);
-		}
-
-		if (mediaQueryListMedium?.matches) {
-			setIsMediumBreakpointOrBelow(true);
-		} else {
-			setIsMediumBreakpointOrBelow(false);
-		}
-	}, [mediaQueryListLarge?.matches, mediaQueryListMedium?.matches]);
+	const location = useLocation();
+	const history = useHistory();
+	const tabParam = new URLSearchParams(location.search).get('tab');
+	const activeOrdersTab =
+		tabParam === CurrentTab.Completed ? CurrentTab.Completed : CurrentTab.Running;
 
 	const getTableData: () => HistoryUglyMapped[] = () => {
 		const buyerOrders = contracts.filter(
@@ -118,7 +92,8 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as unknown as HistoryUglyMapped;
-			if (!_.isEmpty(contract)) {
+			const now = new Date();
+			if (!isEmpty(contract)) {
 				// FIX IT!
 				updatedOrder.id = (
 					<TableIcon
@@ -135,13 +110,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					updatedOrder.state as string,
 					updatedOrder.timestamp as string,
 					parseInt(updatedOrder.length as string),
-					currentBlockTimestamp
+					getSecondsEpoch(now)
 				);
 				updatedOrder.progressPercentage = getProgressPercentage(
 					updatedOrder.state as string,
 					updatedOrder.timestamp as string,
 					parseInt(updatedOrder.length as string),
-					currentBlockTimestamp
+					getSecondsEpoch(now)
 				);
 				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
 				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
@@ -189,7 +164,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 
 		const updatedOrders = buyerOrders.map((contract) => {
 			const updatedOrder = { ...contract } as HistoryUglyMapped;
-			if (!_.isEmpty(contract)) {
+			if (!isEmpty(contract)) {
 				updatedOrder.id = (
 					<TableIcon
 						icon={null}
@@ -229,15 +204,15 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		return updatedOrders;
 	};
 
-	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
-	const historyData = useMemo(() => getHistoryTableData(), [contracts, isLargeBreakpointOrGreater]);
+	const data = useMemo(() => getTableData(), [contracts, web3Gateway]);
+	const historyData = useMemo(() => getHistoryTableData(), [contracts, web3Gateway]);
 
 	const handleRunningTab = () => {
-		setActiveOrdersTab(CurrentTab.Running);
+		history.push(`?tab=${CurrentTab.Running}`);
 	};
 
 	const handleCompletedTab = () => {
-		setActiveOrdersTab(CurrentTab.Completed);
+		history.push(`?tab=${CurrentTab.Completed}`);
 	};
 
 	// Remove spinner if no orders after 1 minute
@@ -254,14 +229,8 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [runningSortType, setRunningSortType] = useState(SortTypes.Default);
 	const [completedSortType, setCompletedSortType] = useState(SortTypes.Default);
 
-	const runningContracts = sortContractsV2(
-		runningSortType,
-		data.filter((contract) => contract.progressPercentage! < 100)
-	);
+	const runningContracts = sortContractsV2(runningSortType, data);
 	const completedContracts = sortContractsV2(completedSortType, historyData);
-
-	console.log('runningContracts', runningContracts);
-	console.log('completedContracts', completedContracts);
 
 	return (
 		<>
@@ -288,6 +257,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 						userAccount={userAccount}
 						web3Gateway={web3Gateway}
 						onClose={() => setCancelModalOpen(false)}
+						onCancel={() => refreshContracts()}
 					/>
 				}
 			/>
@@ -352,6 +322,3 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		</>
 	);
 };
-
-MyOrders.displayName = 'MyOrders';
-MyOrders.whyDidYouRender = false;

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -85,7 +84,6 @@ export const EditForm: React.FC<EditFormProps> = ({
 			}
 			try {
 				// TODO: convert usd to lmr (aggregate of exchanges?)
-				const gasLimit = 1000000;
 				const price = multiplyByDigits(formData.listPrice as number);
 				let speed;
 				if (formData && formData.speed) {
@@ -205,6 +203,3 @@ export const EditForm: React.FC<EditFormProps> = ({
 		</Fragment>
 	);
 };
-
-EditForm.displayName = 'EditForm';
-EditForm.whyDidYouRender = false;

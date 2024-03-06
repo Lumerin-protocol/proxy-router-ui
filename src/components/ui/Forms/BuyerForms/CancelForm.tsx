@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, MouseEventHandler, useEffect, useState } from 'react';
 import {
 	AlertMessage,
@@ -22,6 +21,7 @@ export interface CancelFormProps {
 	web3Gateway?: EthereumGateway;
 	currentBlockTimestamp?: number;
 	onClose: () => void;
+	onCancel: () => void;
 }
 
 export const CancelForm: React.FC<CancelFormProps> = ({
@@ -30,6 +30,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 	userAccount,
 	web3Gateway,
 	onClose,
+	onCancel,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
 	const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
@@ -80,6 +81,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 
 				if (receipt.status) {
 					setContentState(ContentState.Complete);
+					onCancel();
 				} else {
 					setAlertMessage(AlertMessage.CancelFailed);
 					setAlertOpen(true);
@@ -177,6 +179,3 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 		</Fragment>
 	);
 };
-
-CancelForm.displayName = 'CancelForm';
-CancelForm.whyDidYouRender = false;

@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ContentState, InputValuesCreateForm, Text } from '../../../../types';
 import { getButton, printError } from '../../../../utils';
@@ -165,6 +164,3 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway
 		</form>
 	);
 };
-
-CreateForm.displayName = 'CreateForm';
-CreateForm.whyDidYouRender = false;

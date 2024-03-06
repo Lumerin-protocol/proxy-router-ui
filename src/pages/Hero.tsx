@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { HeroWrapper, HeroHeadline, HeroSubheadline, Steps } from './Hero.styled';
 import EastIcon from '@mui/icons-material/East';
 import { PrimaryButton } from '../components/ui/Forms/FormButtons/Buttons.styled';

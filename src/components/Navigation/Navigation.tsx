@@ -6,9 +6,7 @@ import MarketplaceIconActive from '../../images/icons/store-blue.png';
 import MarketplaceIconInactive from '../../images/icons/store-grey.png';
 import BuyerIconActive from '../../images/icons/buyer-blue.png';
 import BuyerIconInactive from '../../images/icons/buyer-grey.png';
-import SellerIconActive from '../../images/icons/seller-blue.png';
-import SellerIconInactive from '../../images/icons/seller-grey.png';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import HelpIcon from '@mui/icons-material/Help';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 import ShieldIcon from '@mui/icons-material/Shield';
@@ -25,31 +23,31 @@ interface Navigation {
 export const ResponsiveNavigation = (prop: {
 	sidebarOpen: boolean;
 	setSidebarOpen: React.Dispatch<boolean>;
-	setPathname: React.Dispatch<string>;
-	pathName: string;
 	drawerWidth: number;
 }) => {
+	const { pathname } = useLocation();
+
 	const navigation: Navigation[] = [
 		{
 			name: 'Marketplace',
 			to: PathName.Marketplace,
 			activeIcon: MarketplaceIconActive,
 			inactiveIcon: MarketplaceIconInactive,
-			current: prop.pathName === PathName.Marketplace,
+			current: pathname === PathName.Marketplace,
 		},
 		{
 			name: 'Buyer Hub',
 			to: PathName.MyOrders,
 			activeIcon: BuyerIconActive,
 			inactiveIcon: BuyerIconInactive,
-			current: prop.pathName === PathName.MyOrders,
+			current: pathname === PathName.MyOrders,
 		},
 		// {
 		// 	name: 'Seller Hub',
 		// 	to: PathName.MyContracts,
 		// 	activeIcon: SellerIconActive,
 		// 	inactiveIcon: SellerIconInactive,
-		// 	current: prop.pathName === PathName.MyContracts,
+		// 	current: pathname === PathName.MyContracts,
 		// },
 	];
 
@@ -64,7 +62,6 @@ export const ResponsiveNavigation = (prop: {
 						className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
 						onClick={() => {
 							prop.setSidebarOpen(false);
-							prop.setPathname(item.to);
 						}}
 					>
 						<img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' />

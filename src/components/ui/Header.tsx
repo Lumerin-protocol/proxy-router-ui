@@ -1,8 +1,9 @@
 import { Bars3BottomLeftIcon } from '@heroicons/react/24/outline';
 import { Toolbar, Typography } from '@mui/material';
-import { LumerinIcon, MetaMaskIcon, WalletConnectIcon, LogoIcon } from '../../images';
+import { LumerinIcon } from '../../images';
 import styled from '@emotion/styled';
 import { ConnectedWalletWidget } from './Widgets/ConnectedWalletWidget';
+import { useWindowWidth } from '../../hooks/useWindowWidth';
 
 const StyledToolbar = styled(Toolbar)`
 	display: flex;
@@ -22,11 +23,13 @@ export const Header = (prop: {
 	pageTitle: string;
 	truncatedWalletAddress: string | null;
 	isMetamask: boolean;
-	isMobile: boolean;
 	addTokenToMetamask: Function;
 	drawerWidth: number;
 	connectorIconUrl?: string;
 }) => {
+	const width = useWindowWidth();
+	const isMobile = width <= 768;
+
 	return (
 		<StyledToolbar>
 			<button
@@ -38,15 +41,14 @@ export const Header = (prop: {
 				<Bars3BottomLeftIcon className='h-8 w-8' aria-hidden='true' />
 			</button>
 			<PageTitle>{prop.pageTitle}</PageTitle>
-			{prop.isMobile ? (
+			{isMobile ? (
 				<LumerinIcon />
 			) : (
 				<ConnectedWalletWidget
 					iconUrl={prop.connectorIconUrl}
 					addTokenToMetamask={prop.addTokenToMetamask}
 					truncatedWalletAddress={prop.truncatedWalletAddress}
-					isMetamask={prop.isMetamask}
-					isMobile={prop.isMobile}
+					isMobile={isMobile}
 				/>
 			)}
 		</StyledToolbar>

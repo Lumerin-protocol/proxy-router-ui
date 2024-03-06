@@ -27,6 +27,3 @@ export const ErrorPage = ({ error }: ErrorPageProps) => {
 		</div>
 	);
 };
-
-ErrorPage.displayName = 'ErrorPage';
-ErrorPage.whyDidYouRender = false;
