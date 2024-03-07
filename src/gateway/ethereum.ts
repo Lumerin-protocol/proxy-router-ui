@@ -7,8 +7,8 @@ import {
 	LumerinContext,
 } from 'contracts-js';
 import { CloseOutType, ContractState } from '../types';
-import { HistoryentryResponse } from 'contracts-js/dist/generated-types/Implementation';
 import { ethers } from 'ethers';
+import { IndexerContractEntry } from './interfaces';
 
 interface SendStatus {
 	status: boolean;
@@ -23,9 +23,16 @@ export class EthereumGateway {
 	private cloneFactoryPrv: CloneFactoryContext; // private clonefactory instance
 	private lumerin: LumerinContext | null = null;
 	private fee: string | null = null;
+	private contractIndexerUrl: string;
 
-	constructor(web3Public: Web3, web3Private: Web3, cloneFactoryAddr: string) {
+	constructor(
+		web3Public: Web3,
+		web3Private: Web3,
+		cloneFactoryAddr: string,
+		contractIndexerUrl: string
+	) {
 		this.cloneFactoryAddr = cloneFactoryAddr;
+		this.contractIndexerUrl = contractIndexerUrl;
 		this.web3Pub = web3Public;
 		this.web3Prv = web3Private;
 		this.cloneFactoryPub = CloneFactory(web3Public, cloneFactoryAddr);
@@ -169,11 +176,19 @@ export class EthereumGateway {
 		return { status: receipt.status, transactionHash: receipt.transactionHash };
 	}
 
-	async getContracts() {
-		return await callProviders(
-			() => this.cloneFactoryPub.methods.getContractList().call(),
-			() => this.cloneFactoryPrv.methods.getContractList().call()
-		);
+	async getContractsV2(walletAddr: string): Promise<IndexerContractEntry[]> {
+		try {
+			const url = new URL('/api/contracts', this.contractIndexerUrl);
+			url.searchParams.append('walletAddr', walletAddr);
+			const data = await fetch(url);
+			return (await data.json()) as IndexerContractEntry[];
+		} catch (e) {
+			const err = new Error(`Error calling contract indexer: ${(e as Error)?.message}`, {
+				cause: e,
+			});
+			console.error(err);
+			throw err;
+		}
 	}
 
 	async getContract(contractAddress: string) {
@@ -217,24 +232,6 @@ export class EthereumGateway {
 			default:
 				throw new Error('Invalid state');
 		}
-	}
-
-	async getContractHistory(
-		contractAddress: string,
-		offset = 0,
-		limit = 100
-	): Promise<HistoryentryResponse[]> {
-		const history = await callProviders(
-			() =>
-				Implementation(this.web3Pub, contractAddress)
-					.methods.getHistory(String(offset), String(limit))
-					.call(),
-			() =>
-				Implementation(this.web3Prv, contractAddress)
-					.methods.getHistory(String(offset), String(limit))
-					.call()
-		);
-		return history;
 	}
 
 	async increaseAllowance(price: string, from: string): Promise<SendStatus> {
