@@ -286,7 +286,9 @@ export const Main: React.FC = () => {
 	const createContractsAsync = async (): Promise<void> => {
 		try {
 			const contracts = await fetchContractsAsync();
-			setContracts(contracts as HashRentalContract[]);
+			if (contracts) {
+				setContracts(contracts.filter((c) => !c.isDeleted));
+			}
 		} catch (error) {
 			console.error('Error fetching contracts', error);
 		}
