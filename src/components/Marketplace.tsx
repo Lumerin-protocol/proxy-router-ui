@@ -152,10 +152,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 							userAccount={userAccount}
 							currentBlockTimestamp={currentBlockTimestamp}
 						/>
-						<MarketplaceStatistics
-							isLoading={isLoading}
-							contracts={contracts}
-						/>
+						<MarketplaceStatistics isLoading={isLoading} contracts={contracts} />
 					</WidgetsWrapper>
 					<AvailableContracts
 						contracts={availableContracts}

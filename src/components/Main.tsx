@@ -228,7 +228,7 @@ export const Main: React.FC = () => {
 
 	useInterval(() => {
 		refreshContracts(false, undefined, true);
-	}, 60 * 1000);
+	}, 30 * 1000);
 
 	const refreshContracts = (
 		ignoreCheck: boolean | any = false,
@@ -239,93 +239,56 @@ export const Main: React.FC = () => {
 			console.error('Missing web3 gateway instance');
 			return;
 		}
-		web3Gateway.getCurrentBlockTimestamp().then((currentBlockTimestamp) => {
-			if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
-				setCurrentBlockTimestamp(currentBlockTimestamp as number);
-				createContractsAsync(contractId, updateByChunks);
-			}
-		});
+		if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
+			setCurrentBlockTimestamp(Math.floor(new Date().getTime() / 1000));
+			createContractsAsync();
+		}
 	};
 
 	// Contracts setup
-	const createContractAsync = async (address: string): Promise<HashRentalContract | null> => {
+	const fetchContractsAsync = async (): Promise<HashRentalContract[] | null> => {
 		if (!web3Gateway) {
 			console.error('Missing web3Gateway instance');
 			return null;
 		}
 
-		const data = await web3Gateway.getContract(address);
+		const data = await web3Gateway.getContractsV2(userAccount);
 
-		let buyerHistory: (HistoryentryResponse & { id: string })[] = [];
-		if (localStorage.getItem(address)) {
-			const history = await web3Gateway.getContractHistory(address, 0, 100);
-			buyerHistory = history
-				.filter((entry) => entry._buyer === userAccount)
-				.map((entry) => ({ ...entry, id: address }));
-		}
-
-		return {
-			id: address,
-			price: data.price,
-			speed: data.speed,
-			length: data.length,
-			buyer: data.buyer,
-			seller: data.seller,
-			timestamp: data.timestamp,
-			state: data.state,
-			encryptedPoolData: data.encryptedPoolData,
-			version: data.version,
-			isDeleted: data.isDeleted,
-			history: buyerHistory,
-		};
+		return data.map((e) => {
+			return {
+				id: e.id,
+				price: e.price,
+				speed: e.speed,
+				length: e.length,
+				buyer: e.buyer,
+				seller: e.seller,
+				timestamp: e.startingBlockTimestamp,
+				state: e.state,
+				encryptedPoolData: e.encrValidatorUrl,
+				version: e.version,
+				isDeleted: e.isDeleted,
+				history: e.history.map((h) => {
+					return {
+						id: e.id,
+						_goodCloseout: h.isGoodCloseout,
+						_buyer: h.buyer,
+						_endTime: h.endTime,
+						_purchaseTime: h.purchaseTime,
+						_price: h.price,
+						_speed: h.speed,
+						_length: h.length,
+					};
+				}),
+			};
+		});
 	};
 
-	const addContractsAsync = async (addresses: string[], updateByChunks = false) => {
-		const chunkSize = updateByChunks ? 10 : addresses.length;
-		let newContracts = [];
-		for (let i = 0; i < addresses.length; i += chunkSize) {
-			const chunk = addresses.slice(i, i + chunkSize);
-			const hashRentalContracts = (
-				await Promise.all(chunk.map(async (address) => await createContractAsync(address)))
-			).filter((c: any) => !c?.isDeleted);
-			newContracts.push(...hashRentalContracts);
-		}
-		const result = uniqBy([...newContracts, ...contracts], 'id');
-		setContracts(result as HashRentalContract[]);
-	};
-
-	const createContractsAsync = async (
-		contractId?: string,
-		updateByChunks = false
-	): Promise<void> => {
+	const createContractsAsync = async (): Promise<void> => {
 		try {
-			console.log('Fetching contract list...');
-
-			if (!web3Gateway) {
-				console.error('Missing web3 gateway instance');
-				return;
-			}
-
-			let addresses: string[] = [];
-
-			if (contractId) {
-				addresses = [contractId];
-			} else {
-				try {
-					addresses = await web3Gateway.getContracts();
-				} catch (error) {
-					console.log('Error when trying get list of contracts', error);
-					return;
-				}
-			}
-
-			console.log('addresses: ', addresses);
-			addContractsAsync(addresses, updateByChunks);
+			const contracts = await fetchContractsAsync();
+			setContracts(contracts as HashRentalContract[]);
 		} catch (error) {
-			const typedError = error as Error;
-			printError(typedError.message, typedError.stack as string);
-			// crash app if can't communicate with webfacing contract
-			throw typedError;
+			console.error('Error fetching contracts', error);
 		}
 	};
 
