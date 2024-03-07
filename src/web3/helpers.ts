@@ -90,7 +90,7 @@ export const getWeb3ResultAsync = async (
 			web3,
 			web3ReadOnly,
 			process.env.REACT_APP_CLONE_FACTORY!,
-			process.env.REACT_APP_CONTRACT_INDEXER_URL!
+			process.env.REACT_APP_INDEXER_URL!
 		);
 		await web3Gateway.init();
 
