@@ -9,7 +9,7 @@ import { useContracts, useLmrBalance } from './gateway/hooks';
 import { EthereumGateway } from './gateway/ethereum';
 import { IndexerContractEntry } from './gateway/interfaces';
 
-const RefetchInterval = 5 * 1000;
+const RefetchInterval = 30 * 1000;
 
 // State contains the main state and logic for the app
 export const MarketplaceState: React.FC = () => {
