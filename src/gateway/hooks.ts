@@ -11,8 +11,10 @@ import { LMRDecimalToLMR } from '../web3/helpers';
 import { ImplementationAbi } from '../contracts/implementation';
 import { encryptMessage, pubKeyToAddress } from '../utils';
 import { readContract, waitForTransactionReceipt, writeContract } from 'viem/actions';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { UseQueryResult, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { IndexerContractEntry } from './interfaces';
+import { UseQueryParameters } from 'wagmi/dist/types/utils/query';
 
 interface Params extends QueryParameter {
 	scopeKey?: string;
@@ -39,6 +41,26 @@ export const useLmrBalance = (props: { address: string | `0x${string}` } & Param
 		...rest,
 		data: d,
 	};
+};
+
+export const useContracts = (props: {
+	walletAddr: string;
+	query: UseQueryParameters;
+}): UseQueryResult<IndexerContractEntry[]> => {
+	return useQuery({
+		...(props.query as any),
+		queryFn: async () => {
+			console.log('refetching contracts');
+			const url = new URL('/api/contracts', process.env.REACT_APP_CONTRACT_INDEXER_URL);
+			url.searchParams.append('walletAddr', props.walletAddr);
+			const data = await fetch(url);
+			const json = (await data.json()) as IndexerContractEntry[];
+
+			return json.sort((a, b) => {
+				return Number(a.stats.successCount) - Number(b.stats.successCount);
+			});
+		},
+	});
 };
 
 export const useContractList = (props: Params) => {

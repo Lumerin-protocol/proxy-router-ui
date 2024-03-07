@@ -5,36 +5,11 @@ import { Router } from './Router';
 import { useWindowWidth } from './hooks/useWindowWidth';
 import { useAccount, useClient } from 'wagmi';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useContractList, useInfiniteContracts, useLmrBalance } from './gateway/hooks';
+import { useContracts, useLmrBalance } from './gateway/hooks';
 import { EthereumGateway } from './gateway/ethereum';
+import { IndexerContractEntry } from './gateway/interfaces';
 
-interface ContractEntry {
-	id: string;
-	state: number;
-	price: bigint;
-	length: bigint;
-	profitTarget: number;
-	speed: bigint;
-	version: number;
-	startingBlockTimestamp: bigint;
-	buyer: string;
-	seller: string;
-	encryptedPoolData: string;
-	isDeleted: boolean;
-	balance: bigint;
-	hasFutureTerms: boolean;
-	history: readonly {
-		goodCloseout: boolean;
-		purchaseTime: bigint;
-		endTime: bigint;
-		price: bigint;
-		speed: bigint;
-		length: bigint;
-		buyer: `0x${string}`;
-	}[];
-}
-
-const RefetchInterval = 30 * 1000;
+const RefetchInterval = 5 * 1000;
 
 // State contains the main state and logic for the app
 export const MarketplaceState: React.FC = () => {
@@ -77,28 +52,17 @@ export const MarketplaceState: React.FC = () => {
 			enabled: isRefetching && isConnected,
 		},
 	});
-	const getContractListResult = useContractList({
+	const contractResult = useContracts({
+		walletAddr: userAccount as string,
 		query: {
+			queryKey: ['get-contracts'],
 			refetchInterval: RefetchInterval,
-			enabled: isRefetching && isConnected,
+			enabled: isRefetching,
 		},
 	});
 
-	const contractIds = getContractListResult.isSuccess ? getContractListResult.data : null;
-	const contractResult = useInfiniteContracts(client!, (contractIds as string[]) || [], {
-		refetchInterval: RefetchInterval,
-		enabled: isRefetching && isConnected,
-	});
-
-	// pagination, currently just loads the next contract
-	useEffect(() => {
-		if (contractResult.hasNextPage && contractResult.isFetched) {
-			contractResult.fetchNextPage();
-		}
-	}, [contractResult.data?.pages.length]);
-
 	// filter out deleted contracts
-	const contracts = contractResult.data?.pages.filter((p) => !p.isDeleted);
+	const contracts = contractResult.data?.filter((p) => !p.isDeleted);
 
 	// forcefully refetch all contracts
 	const refreshContracts = () => {
@@ -130,31 +94,31 @@ export const MarketplaceState: React.FC = () => {
 };
 
 // temporary mapping function
-function mapContractEntry(contract: ContractEntry): HashRentalContract {
+function mapContractEntry(contract: IndexerContractEntry): HashRentalContract {
 	return {
 		id: contract.id,
-		state: contract.state === 0 ? ContractState.Available : ContractState.Running,
-		price: contract.price.toString(10),
-		length: contract.length.toString(10),
-		profitTarget: contract.profitTarget,
-		speed: contract.speed.toString(10),
-		version: String(contract.version),
-		timestamp: String(contract.startingBlockTimestamp),
+		state: contract.state === '0' ? ContractState.Available : ContractState.Running,
+		price: contract.price,
+		length: contract.length,
+		profitTarget: Number(contract.profitTarget),
+		speed: contract.speed,
+		version: contract.version,
+		timestamp: contract.startingBlockTimestamp,
 		buyer: contract.buyer,
 		seller: contract.seller,
-		encryptedPoolData: contract.encryptedPoolData,
+		encryptedPoolData: contract.encrValidatorUrl,
 		isDeleted: contract.isDeleted,
-		balance: String(contract.balance),
+		balance: contract.balance,
 		hasFutureTerms: contract.hasFutureTerms,
 		history: contract.history.map((h) => {
 			return {
 				id: contract.id,
-				_goodCloseout: h.goodCloseout,
-				_purchaseTime: String(h.purchaseTime),
-				_endTime: String(h.endTime),
-				_price: String(h.price),
-				_speed: String(h.speed),
-				_length: String(h.length),
+				_goodCloseout: h.isGoodCloseout,
+				_purchaseTime: h.purchaseTime,
+				_endTime: h.endTime,
+				_price: h.price,
+				_speed: h.speed,
+				_length: h.length,
 				_buyer: h.buyer,
 			};
 		}),
