@@ -284,8 +284,12 @@ export const Main: React.FC = () => {
 	};
 
 	const createContractsAsync = async (): Promise<void> => {
-		const contracts = await fetchContractsAsync();
-		setContracts(contracts as HashRentalContract[]);
+		try {
+			const contracts = await fetchContractsAsync();
+			setContracts(contracts as HashRentalContract[]);
+		} catch (error) {
+			console.error('Error fetching contracts', error);
+		}
 	};
 
 	// Get Lumerin token balance
