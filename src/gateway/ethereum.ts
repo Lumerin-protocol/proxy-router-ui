@@ -181,7 +181,10 @@ export class EthereumGateway {
 			const url = new URL('/api/contracts', this.contractIndexerUrl);
 			url.searchParams.append('walletAddr', walletAddr);
 			const data = await fetch(url);
-			return (await data.json()) as IndexerContractEntry[];
+			const json = (await data.json()) as IndexerContractEntry[];
+			return json.sort((a, b) => {
+				return Number(a.stats.successCount) - Number(b.stats.successCount);
+			});
 		} catch (e) {
 			const err = new Error(`Error calling contract indexer: ${(e as Error)?.message}`, {
 				cause: e,
