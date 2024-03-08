@@ -29,13 +29,14 @@ module.exports = {
 			);
 			webpackConfig.resolve.fallback = {
 				...webpackConfig.resolve.fallback,
-				"stream": require.resolve("stream-browserify"),
-				"buffer": require.resolve("buffer/"),
-				"http": require.resolve("stream-http"),
-				"https": require.resolve("https-browserify"),
-				"os": require.resolve("os-browserify/browser"),
-				"assert": require.resolve("assert/"),
-				"url": require.resolve("url/"),
+				// "crypto": require.resolve("crypto-browserify"),
+				// "stream": require.resolve("stream-browserify"),
+				// "buffer": require.resolve("buffer/"),
+				// "http": require.resolve("stream-http"),
+				// "https": require.resolve("https-browserify"),
+				// "os": require.resolve("os-browserify/browser"),
+				// "assert": require.resolve("assert/"),
+				// "url": require.resolve("url/"),
 			}
 
 			return webpackConfig

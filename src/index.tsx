@@ -27,12 +27,6 @@ const queryClient = new QueryClient();
 const projectId = 'd446f07d76ee165409a0e1d967488a51';
 
 // 2. Create wagmiConfig
-const metadata = {
-	name: 'Web3Modal',
-	description: 'Web3Modal Example',
-	url: 'https://web3modal.com', // origin must match your domain & subdomain
-	icons: ['https://avatars.githubusercontent.com/u/37784886'],
-};
 
 const getChainById = () => {
 	const chainId = process.env.REACT_APP_CHAIN_ID;
@@ -52,12 +46,18 @@ const getChainById = () => {
 
 const config: Config = defaultWagmiConfig({
 	chains: [getChainById()], // required
-	projectId, // required
-	metadata, // required
+	projectId:"d446f07d76ee165409a0e1d967488a51",
+	metadata:{
+		name: 'Web3Modal',
+		description: 'Web3Modal Example',
+		url: window.location.origin, // origin must match your domain & subdomain
+		icons: ['https://avatars.githubusercontent.com/u/37784886'],
+	},
 	enableWalletConnect: true, // Optional - true by default
 	enableInjected: true, // Optional - true by default
 	enableEIP6963: true, // Optional - true by default
 	enableCoinbase: true, // Optional - true by default
+	// connectors
 	// ...wagmiOptions // Optional - Override createConfig parameters
 });
 

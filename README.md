@@ -23,6 +23,6 @@ Run the application locally:
 
 `npm run start`
 
-Run tests before pushing changes:
+To run dev application on mobile broser (iOS) the connection should be https. Crypto Subtle api that we use is not enabled on unsecure connections on iOS.
 
-`npm run test`
+`npm run start:https`

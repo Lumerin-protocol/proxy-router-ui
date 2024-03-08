@@ -4,6 +4,7 @@ import { LumerinIcon } from '../../images';
 import styled from '@emotion/styled';
 import { ConnectedWalletWidget } from './Widgets/ConnectedWalletWidget';
 import { useWindowWidth } from '../../hooks/useWindowWidth';
+import { useDisconnect } from 'wagmi';
 
 const StyledToolbar = styled(Toolbar)`
 	display: flex;
@@ -28,6 +29,7 @@ export const Header = (prop: {
 	connectorIconUrl?: string;
 }) => {
 	const width = useWindowWidth();
+	const {disconnect} = useDisconnect();
 	const isMobile = width <= 768;
 
 	return (
@@ -42,7 +44,7 @@ export const Header = (prop: {
 			</button>
 			<PageTitle>{prop.pageTitle}</PageTitle>
 			{isMobile ? (
-				<LumerinIcon />
+				<LumerinIcon onClick={()=>{disconnect()}}/>
 			) : (
 				<ConnectedWalletWidget
 					iconUrl={prop.connectorIconUrl}
