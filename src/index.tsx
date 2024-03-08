@@ -1,4 +1,4 @@
-import './wdyr.ts';
+// import './wdyr.ts';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -14,6 +14,7 @@ import { arbitrum, arbitrumSepolia, hardhat } from 'viem/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Config, WagmiProvider } from 'wagmi';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
+import lumerinIcon from './images/lumerin.svg'
 
 const root = document.getElementById('root');
 if (!root) {
@@ -44,14 +45,16 @@ const getChainById = () => {
 	}
 };
 
+console.log('origin', window.location.origin);
+
 const config: Config = defaultWagmiConfig({
 	chains: [getChainById()], // required
 	projectId:"d446f07d76ee165409a0e1d967488a51",
 	metadata:{
-		name: 'Web3Modal',
-		description: 'Web3Modal Example',
-		url: window.location.origin, // origin must match your domain & subdomain
-		icons: ['https://avatars.githubusercontent.com/u/37784886'],
+		name: 'Lumerin Hashrate Marketplace',
+		description: 'Connect your wallet to start trading hashrate on Lumerin.',
+		url: window.location.origin, // origin must match your domain & subdomain for web3modal QR code to work
+		icons: [lumerinIcon],
 	},
 	enableWalletConnect: true, // Optional - true by default
 	enableInjected: true, // Optional - true by default
@@ -72,7 +75,7 @@ createWeb3Modal({
 });
 
 createRoot(root).render(
-	<React.StrictMode>
+	// <React.StrictMode>
 		<BrowserRouter>
 			<ErrorBoundary fallbackRender={ErrorPage}>
 				<WagmiProvider config={config}>
@@ -82,7 +85,7 @@ createRoot(root).render(
 				</WagmiProvider>
 			</ErrorBoundary>
 		</BrowserRouter>
-	</React.StrictMode>
+	// </React.StrictMode>
 );
 
 reportWebVitals();

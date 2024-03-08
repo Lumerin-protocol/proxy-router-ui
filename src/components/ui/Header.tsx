@@ -29,7 +29,7 @@ export const Header = (prop: {
 	connectorIconUrl?: string;
 }) => {
 	const width = useWindowWidth();
-	const {disconnect} = useDisconnect();
+	const { disconnect } = useDisconnect();
 	const isMobile = width <= 768;
 
 	return (
@@ -44,7 +44,11 @@ export const Header = (prop: {
 			</button>
 			<PageTitle>{prop.pageTitle}</PageTitle>
 			{isMobile ? (
-				<LumerinIcon onClick={()=>{disconnect()}}/>
+				<LumerinIcon
+					onClick={() => {
+						disconnect();
+					}}
+				/>
 			) : (
 				<ConnectedWalletWidget
 					iconUrl={prop.connectorIconUrl}

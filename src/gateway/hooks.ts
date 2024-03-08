@@ -55,9 +55,8 @@ export const useContracts = (props: {
 			url.searchParams.append('walletAddr', props.walletAddr);
 			const data = await fetch(url);
 			const json = (await data.json()) as IndexerContractEntry[];
-
 			return json.sort((a, b) => {
-				return Number(a.stats.successCount) - Number(b.stats.successCount);
+				return b.id.localeCompare(a.id);
 			});
 		},
 	});

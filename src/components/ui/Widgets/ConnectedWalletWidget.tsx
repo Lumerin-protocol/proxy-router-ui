@@ -1,5 +1,6 @@
 import EastIcon from '@mui/icons-material/East';
 import { LumerinIcon } from '../../../images';
+import { useDisconnect } from 'wagmi';
 
 export const ConnectedWalletWidget = (props: {
 	iconUrl?: string;
@@ -7,9 +8,11 @@ export const ConnectedWalletWidget = (props: {
 	addTokenToMetamask: Function;
 	isMobile: boolean;
 }) => {
+	const { disconnect } = useDisconnect();
+
 	return (
 		<div>
-			<div className='btn-connected cursor-default flex justify-between items-center px-8'>
+			<div className='btn-connected cursor-default flex justify-between items-center px-8' onClick={()=>disconnect()}>
 				<span className='pr-3'>{props.truncatedWalletAddress}</span>
 				{props.iconUrl ? (
 					<img className='w-7' alt='provider icon' src={props.iconUrl} />
