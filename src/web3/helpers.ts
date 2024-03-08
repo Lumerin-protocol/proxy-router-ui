@@ -89,7 +89,8 @@ export const getWeb3ResultAsync = async (
 		const web3Gateway = new EthereumGateway(
 			web3,
 			web3ReadOnly,
-			process.env.REACT_APP_CLONE_FACTORY!
+			process.env.REACT_APP_CLONE_FACTORY!,
+			process.env.REACT_APP_INDEXER_URL!
 		);
 		await web3Gateway.init();
 
