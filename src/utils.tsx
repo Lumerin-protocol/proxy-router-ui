@@ -1,4 +1,4 @@
-// @ts-nocheck
+//@ts-nocheck
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
@@ -299,33 +299,33 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	return 0;
 };
 
-export const sortContracts = <T,>(
+export const sortContracts = (
 	sortType: string,
-	contractData: T[],
-	setContractData: React.Dispatch<React.SetStateAction<T[]>>
+	contractData: HashRentalContract[],
+	setContractData: React.Dispatch<React.SetStateAction<HashRentalContract[]>>
 ) => {
 	switch (sortType) {
 		case 'Price: Low to High':
-			setContractData([...contractData.sort((a, b) => (a.price! > b.price! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.price), 'asc'));
+			return;
 		case 'Price: High to Low':
-			setContractData([...contractData.sort((a, b) => (a.price! < b.price! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.price), 'desc'));
+			return;
 		case 'Duration: Short to Long':
-			setContractData([...contractData.sort((a, b) => (a.length! > b.length! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.length), 'asc'));
+			return;
 		case 'Duration: Long to Short':
-			setContractData([...contractData.sort((a, b) => (a.length! < b.length! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.length), 'desc'));
+			return;
 		case 'Speed: Slow to Fast':
-			setContractData([...contractData.sort((a, b) => (a.speed! > b.speed! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.speed), 'asc'));
+			return;
 		case 'Speed: Fast to Slow':
-			setContractData([...contractData.sort((a, b) => (a.speed! < b.speed! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.speed), 'desc'));
+			return;
 		default:
 			setContractData([...contractData]);
-			break;
+			return;
 	}
 };
 
@@ -612,3 +612,23 @@ export const getHandlerBlockchainError =
 		setAlertOpen(true);
 		setContentState(ContentState.Review);
 	};
+
+export const sortContractsList = <T extends { id: string }, K extends string | number>(
+	data: T[],
+	getter: (k: T) => number,
+	direction: 'asc' | 'desc'
+) => {
+	return data.sort((a, b) => {
+		let delta = numberCompareFn(getter(a), getter(b));
+		if (delta === 0) {
+			delta = stringCompareFn(a.id, b.id);
+		}
+		return direction === 'asc' ? delta : -delta;
+	});
+};
+
+type StringOrNumber = string | number | bigint;
+
+const numberCompareFn = (a: StringOrNumber, b: StringOrNumber) => Number(a) - Number(b);
+const stringCompareFn = (a: StringOrNumber, b: StringOrNumber) =>
+	String(a).localeCompare(String(b));
