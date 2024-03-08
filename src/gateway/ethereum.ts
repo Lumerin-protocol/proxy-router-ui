@@ -136,7 +136,7 @@ export class EthereumGateway {
 				props.encrDestURL,
 				props.termsVersion
 			)
-			.estimateGas({ from: props.buyer, value: props.feeETH });
+			.estimateGas({ from: props.buyer, value: props.feeETH, ...(await this.getGasConfig()) });
 
 		const res = await this.cloneFactoryPub.methods
 			.setPurchaseRentalContractV2(
@@ -146,7 +146,7 @@ export class EthereumGateway {
 				props.encrDestURL,
 				props.termsVersion
 			)
-			.send({ from: props.buyer, value: props.feeETH, gas });
+			.send({ from: props.buyer, value: props.feeETH, gas, ...(await this.getGasConfig()) });
 
 		return { status: res.status, transactionHash: res.transactionHash };
 	}
@@ -282,11 +282,11 @@ export class EthereumGateway {
 		const impl = Implementation(this.web3Pub, props.contractAddress);
 		const gas = await impl.methods
 			.setUpdatePurchaseInformation(props.price, '0', props.speed, props.length, props.profitTarget)
-			.estimateGas({ from: props.from });
+			.estimateGas({ from: props.from, ...(await this.getGasConfig()) });
 
 		const receipt = await impl.methods
 			.setUpdatePurchaseInformation(props.price, '0', props.speed, props.length, props.profitTarget)
-			.send({ from: props.from, gas });
+			.send({ from: props.from, gas, ...(await this.getGasConfig()) });
 
 		return { status: receipt.status, transactionHash: receipt.transactionHash };
 	}
