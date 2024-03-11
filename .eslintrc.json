@@ -33,10 +33,10 @@
 	"rules": {
 		"react-hooks/rules-of-hooks": "error",
 		"react-hooks/exhaustive-deps": "warn",
-		"@typescript-eslint/explicit-module-boundary-types": "off",
 		"testing-library/no-unnecessary-act": "warn",
 		"testing-library/no-node-access": "warn",
-		"@typescript-eslint/no-unused-vars": "warn"
+		"@typescript-eslint/no-unused-vars": "warn",
+		"@typescript-eslint/explicit-module-boundary-types": "off"
 	},
 	"ignorePatterns": [
 		"node_modules",

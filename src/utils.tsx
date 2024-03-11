@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
@@ -16,7 +15,7 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { encrypt } from 'ecies-geth';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
-import { pubToAddress, hexToBytes, bytesToHex } from '@ethereumjs/util';
+import { bytesToHex, hexToBytes, pubToAddress } from '@ethereumjs/util';
 import capitalize from 'lodash/capitalize';
 
 // Get address based on desired length
@@ -81,27 +80,6 @@ export const getValidatorURL = () => {
 	const url = process.env.REACT_APP_VALIDATOR_URL || '';
 	return url.replace(/(^(\w|\+)+:|^)\/\//, ''); // removes protocol from url if present
 };
-
-// export const getPublicKey = async (txId: string) => {
-// 	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
-// 	let tx = await provider.getTransaction(txId)!;
-// 	let transaction = FeeMarketEIP1559Transaction.fromTxData({
-// 		chainId: tx.chainId,
-// 		nonce: tx.nonce,
-// 		maxPriorityFeePerGas: Number(tx.maxPriorityFeePerGas),
-// 		maxFeePerGas: Number(tx.maxFeePerGas),
-// 		gasLimit: Number(tx.gasLimit),
-// 		to: tx.to,
-// 		value: Number(tx.value),
-// 		data: tx.data,
-// 		accessList: tx.accessList,
-// 		v: tx.v,
-// 		r: tx.r,
-// 		s: tx.s,
-// 	});
-// 	let pubKey = transaction.getSenderPublicKey();
-// 	return `04${pubKey.toString('hex')}`; //04 is necessary to tell the EVM which public key encoding to use
-// };
 
 export const isValidPoolAddress = (address: string): boolean => {
 	const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
@@ -250,6 +228,7 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 };
 
 interface SortContractData {
+	id: string;
 	price?: number | string;
 	length?: number | string;
 	speed?: number | string;
@@ -261,17 +240,17 @@ export const sortContractsV2 = <T extends SortContractData>(
 ) => {
 	switch (sortType) {
 		case SortTypes.PriceLowToHigh:
-			return [...contractData.sort((a, b) => Number(a.price) - Number(b.price))];
+			return sortContractsList(contractData, (k) => Number(k.price), 'asc');
 		case SortTypes.PriceHighToLow:
-			return [...contractData.sort((a, b) => Number(b.price) - Number(a.price))];
+			return sortContractsList(contractData, (k) => Number(k.price), 'desc');
 		case SortTypes.DurationShortToLong:
-			return [...contractData.sort((a, b) => Number(a.length) - Number(b.length))];
+			return sortContractsList(contractData, (k) => Number(k.length), 'asc');
 		case SortTypes.DurationLongToShort:
-			return [...contractData.sort((a, b) => Number(b.length) - Number(a.length))];
+			return sortContractsList(contractData, (k) => Number(k.length), 'desc');
 		case SortTypes.SpeedSlowToFast:
-			return [...contractData.sort((a, b) => Number(a.speed) - Number(b.speed))];
+			return sortContractsList(contractData, (k) => Number(k.speed), 'asc');
 		case SortTypes.SpeedFastToSlow:
-			return [...contractData.sort((a, b) => Number(b.speed) - Number(a.speed))];
+			return sortContractsList(contractData, (k) => Number(k.speed), 'desc');
 		default:
 			return [...contractData];
 	}
@@ -443,50 +422,6 @@ export const printError: (message: string, stacktrace: string) => void = (messag
 	console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
 };
 
-// export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
-// 	transaction
-// ) => {
-// 	const chainId = process.env.REACT_APP_CHAIN_ID;
-
-// 	const ethTx = new EthJsTx(
-// 		{
-// 			nonce: transaction.nonce,
-// 			gasPrice: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.gasPrice) as any),
-// 			gasLimit: transaction.gas,
-// 			to: transaction.to as string,
-// 			value: ethJsUtil.bufferToHex(new ethJsUtil.BN(transaction.value) as any),
-// 			data: transaction.input,
-// 			r: transaction.r,
-// 			s: transaction.s,
-// 			v: getV(transaction.v, chainId),
-// 		},
-// 		{
-// 			chain: chainId,
-// 		}
-// 	);
-// 	const publicKey = ethTx.getSenderPublicKey();
-// 	return publicKey;
-// };
-
-// export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = async (from) => {
-// 	const ethereum = window.ethereum as Ethereum;
-// 	const message =
-// 		'Sign to generate your public key which will be used by the buyer to encrypt their destination details. No sensitive data is exposed by signing.';
-// 	try {
-// 		const msg = `0x${Buffer.from(message, 'utf8').toString('hex')}`;
-// 		const sign = await ethereum.request({
-// 			method: 'personal_sign',
-// 			params: [msg, from, 'password'],
-// 		});
-// 		const msgHash = ethJsUtil.hashPersonalMessage(ethJsUtil.toBuffer(msg));
-// 		const sigParams = ethJsUtil.fromRpcSig(sign as unknown as string);
-// 		return ethJsUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
-// 	} catch (error) {
-// 		const typedError = error as Error;
-// 		printError(typedError.message, typedError.stack as string);
-// 	}
-// };
-
 export const getHandlerBlockchainError =
 	(
 		setAlertMessage: (msg: string) => void,
@@ -556,3 +491,23 @@ export const pubKeyToAddress = (pubKey: string) => {
 		throw new Error('Cannot convert pubkey to address', { cause: err });
 	}
 };
+
+export const sortContractsList = <T extends { id: string }, K extends string | number>(
+	data: T[],
+	getter: (k: T) => number,
+	direction: 'asc' | 'desc'
+) => {
+	return [...data].sort((a, b) => {
+		let delta = numberCompareFn(getter(a), getter(b));
+		if (delta === 0) {
+			delta = stringCompareFn(a.id, b.id);
+		}
+		return direction === 'asc' ? delta : -delta;
+	});
+};
+
+type StringOrNumber = string | number | bigint;
+
+const numberCompareFn = (a: StringOrNumber, b: StringOrNumber) => Number(a) - Number(b);
+const stringCompareFn = (a: StringOrNumber, b: StringOrNumber) =>
+	String(a).localeCompare(String(b));

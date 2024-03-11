@@ -14,7 +14,7 @@ import { arbitrum, arbitrumSepolia, hardhat } from 'viem/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Config, WagmiProvider } from 'wagmi';
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
-import lumerinIcon from './images/lumerin.svg'
+import lumerinIcon from './images/lumerin.svg';
 
 const root = document.getElementById('root');
 if (!root) {
@@ -49,8 +49,8 @@ console.log('origin', window.location.origin);
 
 const config: Config = defaultWagmiConfig({
 	chains: [getChainById()], // required
-	projectId:"d446f07d76ee165409a0e1d967488a51",
-	metadata:{
+	projectId: 'd446f07d76ee165409a0e1d967488a51',
+	metadata: {
 		name: 'Lumerin Hashrate Marketplace',
 		description: 'Connect your wallet to start trading hashrate on Lumerin.',
 		url: window.location.origin, // origin must match your domain & subdomain for web3modal QR code to work
@@ -76,15 +76,15 @@ createWeb3Modal({
 
 createRoot(root).render(
 	// <React.StrictMode>
-		<BrowserRouter>
-			<ErrorBoundary fallbackRender={ErrorPage}>
-				<WagmiProvider config={config}>
-					<QueryClientProvider client={queryClient}>
-						<App />
-					</QueryClientProvider>
-				</WagmiProvider>
-			</ErrorBoundary>
-		</BrowserRouter>
+	<BrowserRouter>
+		<ErrorBoundary fallbackRender={ErrorPage}>
+			<WagmiProvider config={config}>
+				<QueryClientProvider client={queryClient}>
+					<App />
+				</QueryClientProvider>
+			</WagmiProvider>
+		</ErrorBoundary>
+	</BrowserRouter>
 	// </React.StrictMode>
 );
 

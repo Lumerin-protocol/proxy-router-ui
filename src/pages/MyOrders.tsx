@@ -229,8 +229,8 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [runningSortType, setRunningSortType] = useState(SortTypes.Default);
 	const [completedSortType, setCompletedSortType] = useState(SortTypes.Default);
 
-	const runningContracts = sortContractsV2(runningSortType, data);
-	const completedContracts = sortContractsV2(completedSortType, historyData);
+	const runningContracts = sortContractsV2(runningSortType, data as any);
+	const completedContracts = sortContractsV2(completedSortType, historyData as any);
 
 	return (
 		<>
@@ -289,7 +289,10 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									setSortType={setRunningSortType}
 									isMobile={isMobile}
 								/>
-								<PurchasedContracts sortType={runningSortType} contracts={runningContracts} />
+								<PurchasedContracts
+									sortType={runningSortType}
+									contracts={runningContracts as any}
+								/>
 							</>
 						) : (
 							!showSpinner && <p className='text-2xl'>You have no running contracts.</p>
@@ -306,7 +309,10 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									setSortType={setCompletedSortType}
 									isMobile={isMobile}
 								/>
-								<FinishedContracts contracts={completedContracts} sortType={completedSortType} />
+								<FinishedContracts
+									contracts={completedContracts as any}
+									sortType={completedSortType}
+								/>
 							</>
 						) : (
 							!showSpinner && <p className='text-2xl'>You have no finished contracts.</p>

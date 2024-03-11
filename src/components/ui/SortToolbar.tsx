@@ -28,10 +28,15 @@ export const SortToolbar = (props: {
 			</h2>
 
 			<Box sx={{ minWidth: 120 }}>
-				<FormControl fullWidth sx={{border: 'none'}}>
+				<FormControl fullWidth sx={{ border: 'none' }}>
 					<InputLabel id='sort-label'>Sort By</InputLabel>
 					<Select
-						sx={{ border: 'none', backgroundColor: '#fff', borderRadius: '0.5rem', borderWidth: '0'}}
+						sx={{
+							border: 'none',
+							backgroundColor: '#fff',
+							borderRadius: '0.5rem',
+							borderWidth: '0',
+						}}
 						labelId='sort-label'
 						id='sort'
 						value={props.sortType}
@@ -40,7 +45,7 @@ export const SortToolbar = (props: {
 						onChange={(e) => props.setSortType(e.target.value as SortTypes)}
 					>
 						{Object.values(SortTypes).map((value, key) => (
-							<MenuItem value={value} key={key} sx={{border: 'none'}}>
+							<MenuItem value={value} key={key} sx={{ border: 'none' }}>
 								{value}
 							</MenuItem>
 						))}

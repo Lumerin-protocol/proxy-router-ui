@@ -12,7 +12,10 @@ export const ConnectedWalletWidget = (props: {
 
 	return (
 		<div>
-			<div className='btn-connected cursor-default flex justify-between items-center px-8' onClick={()=>disconnect()}>
+			<div
+				className='btn-connected cursor-default flex justify-between items-center px-8'
+				onClick={() => disconnect()}
+			>
 				<span className='pr-3'>{props.truncatedWalletAddress}</span>
 				{props.iconUrl ? (
 					<img className='w-7' alt='provider icon' src={props.iconUrl} />
