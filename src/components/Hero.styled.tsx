@@ -1,34 +1,25 @@
 import styled from '@emotion/styled';
-import HeroBubble from '../images/hero-bubble-round.png';
-import HeroVase from '../images/hero-bubble-vase.png';
-import HeroBubbleLines from '../images/hero-bubble-lines.png';
+// import HeroBubble from '../images/hero-bubble-round.png';
+// import HeroVase from '../images/hero-bubble-vase.png';
+// import HeroBubbleLines from '../images/hero-bubble-lines.png';
+import Background from '../images/connect-wallet-page.png';
 
 export const HeroWrapper = styled.div`
 	min-height: 100vh;
 	padding-top: 5rem;
 	width: 100%;
-	background-image: url(${HeroBubble}), url(${HeroBubbleLines}), url(${HeroVase}),
-		radial-gradient(
-			circle at 60% -100%,
-			#c5e9f7,
-			#ceecf8,
-			#d6eff9,
-			#def2fa,
-			#e7f6fc,
-			#eff9fd,
-			#f7fcfe,
-			#ffffff
-		);
-	background-position: top 375px right 200px, top 500px right 200px, top right, bottom right, top;
-	background-size: 80% 80% 80% 80% 100%;
-	background-repeat: no-repeat;
+	background-image: url(${Background});
+	/* background-position: top 375px right 200px, top 500px right 200px, top right, bottom right, top; */
+	/* background-size: 80% 80% 80% 80% 100%; */
+	/* background-repeat: repeat-x; */
+	background-size: cover;
 
-	@media (max-width: 650px) {
+	/* @media (max-width: 650px) {
 		background-position: top 414px right 2px, top 500px right 200px, top right -75px, bottom right,
 			top;
 		background-size: 34%, 50%, 72%, 100%, 100%;
 		background-repeat: no-repeat;
-	}
+	} */
 
 	.content-wrapper {
 		max-width: 1150px;
@@ -93,6 +84,7 @@ export const Steps = styled.ul`
 		justify-content: center;
 		.step {
 			margin-right: 1rem;
+			margin-bottom: 0rem;
 		}
 		li {
 			display: flex;
@@ -112,6 +104,7 @@ export const Steps = styled.ul`
 		font-family: Raleway;
 		font-weight: 700;
 		font-size: 1.5rem;
+		margin-bottom: 1rem;
 	}
 
 	p {
