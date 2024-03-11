@@ -9,6 +9,7 @@ import {
 import { CloseOutType, ContractState } from '../types';
 import { ethers } from 'ethers';
 import { IndexerContractEntry } from './interfaces';
+import { sortContractsList } from '../utils';
 
 interface SendStatus {
 	status: boolean;
@@ -182,9 +183,7 @@ export class EthereumGateway {
 			url.searchParams.append('walletAddr', walletAddr);
 			const data = await fetch(url);
 			const json = (await data.json()) as IndexerContractEntry[];
-			return json.sort((a, b) => {
-				return Number(a.stats.successCount) - Number(b.stats.successCount);
-			});
+			return sortContractsList(json, (c) => Number(c.stats.successCount), 'asc');
 		} catch (e) {
 			const err = new Error(`Error calling contract indexer: ${(e as Error)?.message}`, {
 				cause: e,

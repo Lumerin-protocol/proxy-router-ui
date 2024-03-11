@@ -267,11 +267,11 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [completedSortType, setCompletedSortType] = useState('');
 
 	useEffect(() => {
-		sortContracts(runningSortType, runningContracts, setRunningContracts);
+		sortContracts(runningSortType, runningContracts as any, setRunningContracts as any);
 	}, [runningSortType]);
 
 	useEffect(() => {
-		sortContracts(completedSortType, completedContracts, setCompletedContracts);
+		sortContracts(completedSortType, completedContracts as any, setCompletedContracts as any);
 	}, [completedSortType]);
 
 	return (
