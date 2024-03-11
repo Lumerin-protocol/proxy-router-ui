@@ -461,6 +461,15 @@ export const Main: React.FC = () => {
 		connectWallet(WalletText.ConnectViaMetaMask);
 	};
 
+	const disconnectWallet = () => {
+		if (isMetaMask) {
+			reconnectWalletAsync();
+			return;
+		}
+		setIsConnected(false);
+		web3Gateway?.disconnect();
+	}
+
 	const BodyWrapper = styled.div`
 		display: flex;
 		min-height: 100vh;
@@ -584,6 +593,7 @@ export const Main: React.FC = () => {
 					isMetamask={isMetaMask}
 					isMobile={isMobile}
 					drawerWidth={drawerWidth}
+					handleDisconnect={disconnectWallet}
 				/>
 				<Box component='main'>
 					<main>{getContent()}</main>

@@ -13,6 +13,7 @@ export const Header = (prop: {
 	isMobile: boolean;
 	addTokenToMetamask: Function;
 	drawerWidth: number;
+	handleDisconnect: () => void;
 }) => {
 	const StyledToolbar = styled(Toolbar)`
 		display: flex;
@@ -46,6 +47,7 @@ export const Header = (prop: {
 					truncatedWalletAddress={prop.truncatedWalletAddress}
 					isMetamask={prop.isMetamask}
 					isMobile={prop.isMobile}
+					handleDisconnect={prop.handleDisconnect}
 				/>
 			)}
 		</StyledToolbar>
