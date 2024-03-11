@@ -306,6 +306,16 @@ export class EthereumGateway {
 		}
 		return {};
 	}
+
+	async disconnect() {
+		const wrap = async (web3: Web3) => {
+			(web3.eth.currentProvider as any)?.disconnect()
+		}
+
+		await callProviders(
+			() => wrap(this.web3Pub), 
+			() => wrap(this.web3Prv));
+	}
 }
 
 // Used to wrap error handling and logging for calling public provider first and if it fails then private provider

@@ -60,7 +60,7 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 					</Steps>
 					<a
 						className='instructions-link'
-						href='https://app.gitbook.com/o/LyHwPIWryy8bgL99GNF6/s/LOJKfuh83H9XvKG0vaoH/'
+						href={process.env.REACT_APP_GITBOOK_URL}
 						target='_blank'
 						rel='noreferrer'
 					>

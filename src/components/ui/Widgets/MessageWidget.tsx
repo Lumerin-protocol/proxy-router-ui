@@ -32,7 +32,7 @@ export const MessageWidget = (props: { isMobile: boolean }) => {
 				Welcome to the Lumerin Marketplace Open Beta (Arbitrum)! Please find detailed instructions
 				click here:{' '}
 				<a
-					href={`${process.env.REACT_APP_GITBOOK_URL}/buyer-web-marketplace/overview-web-marketplace`}
+					href={`${process.env.REACT_APP_GITBOOK_URL}`}
 					target='_blank'
 					rel='noreferrer'
 				>
