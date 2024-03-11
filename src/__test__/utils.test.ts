@@ -4,16 +4,13 @@ import {
 	classNames,
 	getLengthDisplay,
 	isValidPoolAddress,
-	toRfc2396,
+	getPoolRfc2396,
 	hexToBytes,
 	getPublicKeyFromTransaction,
 } from '../utils';
 import { bufferToHex } from 'ethereumjs-util';
 const elliptic_1 = require('elliptic');
 const ec = new elliptic_1.ec('secp256k1');
-
-// Mocks
-const setAlertOpen = jest.fn();
 
 // Use method from browser.js instead of node implementation
 const getPublic: (privateKey: Buffer) => Promise<Buffer> = (privateKey) => {
@@ -90,7 +87,7 @@ describe('utils', () => {
 		});
 	});
 
-	describe('toRfc2396', () => {
+	describe('getPoolRfc2396', () => {
 		it('converts to correct format', () => {
 			// Arrange
 			const formData: FormData = {
@@ -101,7 +98,7 @@ describe('utils', () => {
 			};
 
 			// Act
-			const result = toRfc2396(formData);
+			const result = getPoolRfc2396(formData);
 
 			// Assert
 			const expectedResult = 'stratum+tcp://test.worker:test1234@mining.dev.pool.titan.io:4242';
@@ -115,7 +112,7 @@ describe('utils', () => {
 			const validPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io';
 
 			// Act
-			const result = isValidPoolAddress(validPoolAddress, setAlertOpen);
+			const result = isValidPoolAddress(validPoolAddress);
 
 			// Assert
 			expect(result).toBeTruthy();
@@ -126,7 +123,7 @@ describe('utils', () => {
 			const invalidPoolAddress = 'stratum+tcp://mining.dev.pool.titan.io:4242';
 
 			// Act
-			const result = isValidPoolAddress(invalidPoolAddress, setAlertOpen);
+			const result = isValidPoolAddress(invalidPoolAddress);
 
 			// Assert
 			expect(result).toBeFalsy();

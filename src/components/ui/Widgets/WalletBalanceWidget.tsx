@@ -54,7 +54,7 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; isMobile: b
 						</span>
 					</div>
 					<div className='link'>
-						<a href='/buyerhub'>
+						<a href='https://app.uniswap.org/tokens/ethereum/0x4b1d0b9f081468d780ca1d5d79132b64301085d1' target="_blank" rel="noreferrer">
 							Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
 						</a>
 					</div>

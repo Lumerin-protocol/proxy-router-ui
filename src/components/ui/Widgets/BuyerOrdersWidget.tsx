@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import { getProgressPercentage } from '../../../utils';
 import { SmallWidget } from '../Cards/Cards.styled';
 import { Skeleton } from '@mui/material';
+import { useHistory } from 'react-router-dom';
 
 export const BuyerOrdersWidget = (props: {
 	contracts: Array<HashRentalContract>;
@@ -12,32 +13,32 @@ export const BuyerOrdersWidget = (props: {
 	currentBlockTimestamp: number;
 	isLoading: boolean;
 }) => {
+	const history = useHistory();
+
 	const buyerOrders = props.contracts.filter(
 		(contract: HashRentalContract) => contract.buyer === props.userAccount
 	);
 
-	const updatedOrders: Array<HashRentalContract> = buyerOrders.map(
-		(contract: HashRentalContract) => {
-			const updatedOrder = { ...contract } as ContractData;
-			if (!isEmpty(contract)) {
-				updatedOrder.progressPercentage = getProgressPercentage(
-					updatedOrder.state as string,
-					updatedOrder.timestamp as string,
-					parseInt(updatedOrder.length as string),
-					props.currentBlockTimestamp
-				);
-				return updatedOrder as ContractData;
-			}
-			return updatedOrders;
+	const updatedOrders: HashRentalContract[] = buyerOrders.map((contract: HashRentalContract) => {
+		const updatedOrder = { ...contract };
+		if (!isEmpty(contract)) {
+			updatedOrder.progressPercentage = getProgressPercentage(
+				updatedOrder.state as string,
+				updatedOrder.timestamp as string,
+				parseInt(updatedOrder.length as string),
+				props.currentBlockTimestamp
+			);
+			return updatedOrder;
 		}
-	);
+		return updatedOrder;
+	});
 
 	const runningContracts = [
 		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage! < 100),
 	];
-	const completedContracts = [
-		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage === 100),
-	];
+	const completedContractsAmount = [
+		...props.contracts.map((contract: HashRentalContract) => contract.history),
+	].flat().length;
 
 	const BuyerOrdersWrapper = styled(SmallWidget)`
 		.stats {
@@ -73,7 +74,7 @@ export const BuyerOrdersWidget = (props: {
 
 	return (
 		<BuyerOrdersWrapper>
-			<h3>Purchased Contracts</h3>
+			<h3>Your Contracts</h3>
 			<div className='stats'>
 				<div className='stat active'>
 					<h4>
@@ -90,14 +91,14 @@ export const BuyerOrdersWidget = (props: {
 						{props.isLoading ? (
 							<Skeleton variant='rectangular' width={40} height={28} />
 						) : (
-							completedContracts.length
+							completedContractsAmount
 						)}
 					</h4>
-					<p>COMPLETED</p>
+					<p>FINISHED</p>
 				</div>
 			</div>
 			<div className='link'>
-				<a href='/buyerhub'>
+				<a onClick={() => history.push('buyerhub')}>
 					View all purchased contracts <EastIcon style={{ fontSize: '0.75rem' }} />
 				</a>
 			</div>

@@ -10,12 +10,18 @@ interface AlertProps {
 }
 
 export const SwitchNetworkAlert: React.FC<AlertProps> = ({ message, open, setOpen, onClick }) => {
+	const showNetwork = () => {
+		return process.env.REACT_APP_CHAIN_ID == '421614'
+			? 'Sepolia Arbitrum testnet'
+			: 'Arbitrum network';
+	};
+
 	return (
 		<Dialog open={open} onClose={setOpen} PaperProps={{ style: { borderRadius: 20 } }}>
 			<NetworkBox>
 				<h3>Switch Network</h3>
 				<p>
-					Your wallet must be connected to the Goerli testnet to use the Marketplace. Please change
+					Your wallet must be connected to the {showNetwork()} to use the Marketplace. Please change
 					the network in your wallet, or click the button below.
 				</p>
 				<PrimaryButton

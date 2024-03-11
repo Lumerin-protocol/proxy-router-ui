@@ -3,20 +3,19 @@ import React, { Dispatch, Fragment, SetStateAction, useEffect, useState } from '
 import { useForm } from 'react-hook-form';
 import { ReviewContent } from './ReviewContent';
 import { ConfirmContent } from './ConfirmContent';
-import { Contract } from 'web3-eth-contract';
 import { CompletedContent } from './CompletedContent';
 import {
 	getButton,
 	printError,
-	toRfc2396,
 	encryptMessage,
 	truncateAddress,
-	getCreationTxIDOfContract,
-	getPublicKey,
+	getValidatorPublicKey,
+	getPoolRfc2396,
+	getValidatorURL,
+	getHandlerBlockchainError,
 } from '../../../../utils';
-import LumerinContract from '../../../../contracts/Lumerin.json';
-import ImplementationContract from '../../../../contracts/Implementation.json';
-import { AbiItem } from 'web3-utils';
+
+import { ethers } from 'ethers';
 import {
 	AddressLength,
 	AlertMessage,
@@ -26,22 +25,26 @@ import {
 	FormData,
 	HashRentalContract,
 	InputValuesBuyForm,
-	Receipt,
-	SendOptions,
+	PathName,
 } from '../../../../types';
 import { Alert } from '../../Alert';
-import Web3 from 'web3';
 import { buttonText, paragraphText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { purchasedHashrate } from '../../../../analytics';
 import { ContractLink } from '../../Modal.styled';
 import { Alert as AlertMUI } from '@mui/material';
+import { useHistory } from 'react-router';
+import { EthereumGateway } from '../../../../gateway/ethereum';
+
+interface ErrorWithCode extends Error {
+	code?: number;
+}
 
 // Used to set initial state for contentData to prevent undefined error
 const initialFormData: FormData = {
-	withValidator: false,
 	poolAddress: '',
+	validatorAddress: '',
 	portNumber: '',
 	username: '',
 	password: '',
@@ -53,8 +56,7 @@ interface BuyFormProps {
 	contracts: HashRentalContract[];
 	contractId: string;
 	userAccount: string;
-	cloneFactoryContract: Contract | undefined;
-	web3: Web3 | undefined;
+	web3Gateway?: EthereumGateway;
 	lumerinbalance: number;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
@@ -63,16 +65,19 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	contracts,
 	contractId,
 	userAccount,
-	cloneFactoryContract,
-	web3,
+	web3Gateway,
 	lumerinbalance,
 	setOpen,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
-	const [isAvailable, setIsAvailable] = useState<boolean>(true);
+
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
+	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [totalHashrate, setTotalHashrate] = useState<number>();
+	const [purchasedTx, setPurchasedTx] = useState<string>('');
+	const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
+	const history = useHistory();
 
 	/*
 	 * This will need to be changed to the mainnet token
@@ -86,9 +91,11 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const {
 		register,
 		handleSubmit,
+		clearErrors,
 		formState: { errors, isValid },
 		setValue,
-	} = useForm<InputValuesBuyForm>({ mode: 'onBlur' });
+		trigger,
+	} = useForm<InputValuesBuyForm>({ mode: 'onBlur', reValidateMode: 'onBlur' });
 
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
@@ -98,100 +105,127 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			speed: contract.speed as string,
 			price: contract.price as string,
 			length: contract.length as string,
+			//TODO: test validity of this field in this context
+			version: contract.version as string,
 		};
 	};
 
-	const buyContractAsync: (data: InputValuesBuyForm) => void = async (data) => {
-		// Review
-		if (isValid && contentState === ContentState.Review) {
+	const handlePurchaseError = getHandlerBlockchainError(
+		setAlertMessage,
+		setAlertOpen,
+		setContentState
+	);
+
+	const buyContractAsync = async (data: InputValuesBuyForm): Promise<void> => {
+		if (contentState === ContentState.Review) {
 			setContentState(ContentState.Confirm);
 			setFormData({
 				poolAddress: data.poolAddress,
 				portNumber: data.portNumber,
 				username: data.username,
 				password: data.password,
-				withValidator: data.withValidator,
 				...getContractInfo(),
 			});
 		}
 
-		// Confirm
-		if (isValid && contentState === ContentState.Confirm) {
+		if (contentState === ContentState.Confirm) {
 			setContentState(ContentState.Pending);
 		}
 
-		// Pending
-		if (isValid && contentState === ContentState.Pending) {
-			// Order of events
-			// 1. Purchase hashrental contract
-			// 2. Transfer contract price (LMR) to escrow account
-			// 3. Call setFundContract to put contract in running state
-
-			if (contract.price && lumerinbalance < divideByDigits(contract.price as number)) {
+		if (contentState === ContentState.Pending) {
+			if (contract.price && lumerinbalance < divideByDigits(Number(contract.price))) {
 				setAlertOpen(true);
-				setIsAvailable(true);
+				setAlertMessage(AlertMessage.InsufficientBalance);
 				return;
 			}
 
 			try {
-				// const validatorFee = '100';
-				const gasLimit = 1000000;
-				let sendOptions: Partial<SendOptions> = { from: userAccount, gas: gasLimit };
-				// if (formData.withValidator && web3) sendOptions.value = web3.utils.toWei(validatorFee, 'wei');
+				if (!web3Gateway) {
+					console.error('Web3 gateway is not available');
+					return;
+				}
 
-				if (web3 && formData) {
-					// Check contract is available before increasing allowance
-					const implementationContract = new web3.eth.Contract(
-						ImplementationContract.abi as AbiItem[],
-						contract.id as string
-					);
-					const contractState = await implementationContract.methods.contractState().call();
-					if (contractState !== ContractState.Available) {
-						setIsAvailable(false);
-						setAlertOpen(true);
+				if (!formData) {
+					console.error('Form data is not available');
+					return;
+				}
+
+				if (!formData.price) {
+					console.error('Price is not available');
+					return;
+				}
+
+				const contractState = await web3Gateway.getContractState(contract.id);
+				if (contractState !== ContractState.Available) {
+					setAlertMessage(AlertMessage.ContractIsPurchased);
+					setAlertOpen(true);
+					setContentState(ContentState.Review);
+					return;
+				}
+
+				// Approve clone factory contract to transfer LMR on buyer's behalf
+				const receipt = await web3Gateway.increaseAllowance(formData.price, userAccount);
+				if (!receipt.status) {
+					setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
+					setAlertOpen(true);
+					setContentState(ContentState.Cancel);
+					return;
+				}
+
+				// Purchase contract
+				try {
+					const buyerDest: string = getPoolRfc2396(formData)!;
+
+					const validatorPublicKey = getValidatorPublicKey();
+					if (!validatorPublicKey) {
+						console.error('Validator public key is not available');
 						return;
 					}
 
-					// Approve clone factory contract to transfer LMR on buyer's behalf
-					const lumerinTokenContract = new web3.eth.Contract(
-						LumerinContract.abi as AbiItem[],
-						lumerinTokenAddress
+					const validatorAddr = ethers.utils.computeAddress(validatorPublicKey);
+					const encrDestURL = (
+						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
+					).toString('hex');
+					const validatorURL: string = `stratum+tcp://:@${getValidatorURL()}`;
+
+					const pubKey = await web3Gateway.getContractPublicKey(contract.id);
+					const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString(
+						'hex'
 					);
-					const receipt: Receipt = await lumerinTokenContract.methods
-						.increaseAllowance(cloneFactoryContract?.options.address, formData.price)
-						.send(sendOptions);
-					if (receipt?.status) {
-						// Purchase contract
-						const buyerInput: string = toRfc2396(formData)!;
-						try {
-							let contractAddress = contract.id!;
-							const contractCreationTx = await getCreationTxIDOfContract(
-								contractAddress.toString()
-							);
-							const pubKey = await getPublicKey(contractCreationTx);
-							const encryptedBuyerInput = await encryptMessage(pubKey, buyerInput);
-							console.log(`encryptedBuyerInput: ${encryptedBuyerInput}`);
-						} catch (e) {
-							console.log(e);
-						}
-						const receipt: Receipt = await cloneFactoryContract?.methods
-							//.setPurchaseRentalContract(contract.id, encryptedBuyerInput) //commented out for testing
-							.setPurchaseRentalContract(contract.id, buyerInput) //commented out for testing
-							.send(sendOptions);
-						if (!receipt.status) {
-							// TODO: purchasing contract has failed, surface to user
-							console.log(receipt);
-						}
-					} else {
-						// TODO: call to increaseAllowance() has failed, surface to user
+
+					const marketplaceFee = web3Gateway.getMarketplaceFee();
+					const receipt = await web3Gateway.purchaseContract({
+						contractAddress: contract.id,
+						validatorAddress: validatorAddr,
+						encrValidatorURL: encrValidatorURL,
+						encrDestURL: encrDestURL,
+						feeETH: marketplaceFee,
+						buyer: userAccount,
+						termsVersion: contract.version,
+					});
+
+					if (!receipt.status) {
+						setAlertMessage(AlertMessage.PurchaseFailed);
+						setAlertOpen(true);
+						setContentState(ContentState.Cancel);
+						return;
 					}
+					setPurchasedTx(receipt.transactionHash);
+					purchasedHashrate(totalHashrate!);
+					setContentState(ContentState.Complete);
+					localStorage.setItem(
+						contractId,
+						JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
+					);
+				} catch (e) {
+					const typedError = e as ErrorWithCode;
+					printError(typedError.message, typedError.stack as string);
+					handlePurchaseError(typedError);
 				}
-				purchasedHashrate(totalHashrate!);
-				setContentState(ContentState.Complete);
 			} catch (error) {
-				const typedError = error as Error;
+				const typedError = error as ErrorWithCode;
 				printError(typedError.message, typedError.stack as string);
-				setOpen(false);
+				handlePurchaseError(typedError);
 			}
 		}
 	};
@@ -212,17 +246,37 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirm as string;
-				content = <ConfirmContent web3={web3} data={formData} />;
+				content = <ConfirmContent data={formData} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:
 				buttonContent = buttonText.completed as string;
-				content = <CompletedContent contentState={contentState} />;
+				content = (
+					<CompletedContent
+						contentState={contentState}
+						tx={purchasedTx}
+						useLightningPayouts={usedLightningPayoutsFlow}
+					/>
+				);
 				break;
 			default:
 				paragraphContent = paragraphText.review as string;
 				buttonContent = buttonText.review as string;
-				content = <ReviewContent register={register} errors={errors} setValue={setValue} />;
+				content = (
+					<ReviewContent
+						register={register}
+						errors={errors}
+						setValue={setValue}
+						setFormData={setFormData}
+						inputData={formData}
+						onUseLightningPayoutsFlow={(e) => {
+							setUsedLightningPayoutsFlow(e);
+							trigger('poolAddress');
+							clearErrors();
+						}}
+						clearErrors={clearErrors}
+					/>
+				);
 		}
 	};
 	createContent();
@@ -233,11 +287,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 	return (
 		<Fragment>
-			<Alert
-				message={!isAvailable ? AlertMessage.ContractIsPurchased : AlertMessage.InsufficientBalance}
-				isOpen={alertOpen}
-				onClose={() => setAlertOpen(false)}
-			/>
+			<Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
 			{display && (
 				<>
 					<h2>Purchase Hashpower</h2>
@@ -254,19 +304,15 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					</ContractLink>
 				</>
 			)}
-			<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
-				Thank you for choosing the Lumerin Hashpower Marketplace. To purchase hashpower, please
-				download the{' '}
-				<a
-					href='https://lumerin.io/wallet'
-					target='_blank'
-					rel='noreferrer'
-					className='text-lumerin-dark-blue underline'
-				>
-					Lumerin wallet desktop application
-				</a>{' '}
-				to ensure a smooth and secure transaction.
-			</AlertMUI>
+			{contentState === ContentState.Confirm && (
+				<AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
+					Thank you for choosing the Lumerin Hashpower Marketplace. Click "Confirm Order" below. You
+					will be prompted to approve a transaction through your wallet. Stand by for a second
+					transaction. Once both transactions are confirmed, you will be redirected to view your
+					orders.
+				</AlertMUI>
+			)}
+
 			{content}
 
 			{/* {display && <p className='subtext'>{paragraphContent}</p>} */}
@@ -275,7 +321,16 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, setOpen, handleSubmit, buyContractAsync)}
+					getButton(
+						contentState,
+						buttonContent,
+						() => {
+							setOpen(false);
+							history.push(PathName.MyOrders);
+						},
+						() => buyContractAsync(formData),
+						!isValid
+					)}
 			</FormButtonsWrapper>
 		</Fragment>
 	);

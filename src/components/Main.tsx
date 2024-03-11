@@ -1,17 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
-import _ from 'lodash';
+import { uniqBy } from 'lodash';
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
-import { Contract } from 'web3-eth-contract';
+import { provider } from 'web3-core';
 
 import { Marketplace } from './Marketplace';
 import { MyOrders } from './MyOrders';
-import { MyContracts } from './MyContracts';
 import { Hero } from './Hero';
 import { ResponsiveNavigation } from './Navigation/Navigation';
 import { Spinner } from './ui/Spinner.styled';
@@ -26,13 +24,15 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 
-import ImplementationContract from '../contracts/Implementation.json';
+import { ImplementationContract } from 'contracts-js';
 import { useInterval } from './hooks/useInterval';
 import {
+	LMRDecimalToLMR,
 	addLumerinTokenToMetaMaskAsync,
 	disconnectWalletConnectAsync,
-	getLumerinTokenBalanceAsync,
 	getWeb3ResultAsync,
+	intToHex,
+	reconnectWalletAsync,
 } from '../web3/helpers';
 import { buttonClickHandler, truncateAddress, printError } from '../utils';
 import {
@@ -42,6 +42,8 @@ import {
 	HashRentalContract,
 	PathName,
 	WalletText,
+	ConnectInfo,
+	CurrentTab,
 } from '../types';
 
 import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
@@ -49,6 +51,9 @@ import BubbleGraphic1 from '../images/Bubble_1.png';
 import BubbleGraphic2 from '../images/Bubble_2.png';
 import BubbleGraphic3 from '../images/Bubble_3.png';
 import BubbleGraphic4 from '../images/Bubble_4.png';
+import Bg from '../images/bg.png';
+import { EthereumGateway } from '../gateway/ethereum';
+import { HistoryentryResponse } from 'contracts-js/dist/generated-types/Implementation';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -56,13 +61,13 @@ export const Main: React.FC = () => {
 	// TODO: as webapp grows think of using context
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [isConnected, setIsConnected] = useState<boolean>(false);
-	const [web3, setWeb3] = useState<Web3>();
+	const [web3Gateway, setWeb3Gateway] = useState<EthereumGateway>();
 	const [accounts, setAccounts] = useState<string[]>();
-	const [cloneFactoryContract, setCloneFactoryContract] = useState<Contract>();
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
+
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
 	const [sellerEditModalOpen, setSellerEditModalOpen] = useState<boolean>(false);
@@ -71,19 +76,25 @@ export const Main: React.FC = () => {
 	const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
 	const [anyModalOpen, setAnyModalOpen] = useState<boolean>(false);
+	const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
+
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
 
-	const userAccount = accounts && accounts[0] ? accounts[0] : '';
+	const userAccount = useMemo(() => {
+		console.log('updating user account value: ', accounts && accounts[0] ? accounts[0] : '');
+		return accounts && accounts[0] ? accounts[0] : '';
+	}, [accounts]);
 	const ethereum = window.ethereum as Ethereum;
-	const isCorrectNetwork = chainId === 5;
+	const isCorrectNetwork = chainId === parseInt(process.env.REACT_APP_CHAIN_ID!);
 
 	const [width, setWidth] = useState<number>(window.innerWidth);
 
 	function handleWindowSizeChange() {
 		setWidth(window.innerWidth);
 	}
+
 	useEffect(() => {
 		window.addEventListener('resize', handleWindowSizeChange);
 		return () => {
@@ -103,35 +114,88 @@ export const Main: React.FC = () => {
 			onboarding.stopOnboarding();
 		}
 	};
+
 	const connectWallet: (walletName: string) => void = async (walletName) => {
 		if (walletName === WalletText.ConnectViaMetaMask) onboardMetaMask();
 
+		const handleOnConnect = (connectInfo: ConnectInfo): void => {
+			console.log(`on connect, chain ID: ${connectInfo.chainId}`);
+			setIsConnected(false);
+		};
+
+		const handleOnDisconnect: (error: Error) => void = (error) => {
+			console.log(`on disconnect: ${error.message}`);
+			setIsConnected(false);
+			if (walletName === WalletText.ConnectViaMetaMask) {
+				reconnectWalletAsync();
+			}
+		};
+
+		// chainChanged
+		const handleChainChanged = (chainId: string, pr: provider): void => {
+			console.log(`on chain changed: ${chainId}`);
+			if (walletName === WalletText.ConnectViaWalletConnect) {
+				new Web3(pr).eth.net.getId().then((chainID) => {
+					if (chainID !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+						disconnectWalletConnectAsync(false, web3, setIsConnected);
+						setAlertOpen(true);
+						return;
+					}
+				});
+			}
+			window.location.reload();
+		};
+
+		// accountsChanged
+		const handleAccountsChanged: (accounts: string[]) => void = (accounts) => {
+			console.log('on accounts changed');
+			if (accounts.length === 0 || accounts[0] === '') {
+				console.log('missed accounts');
+			} else {
+				setAccounts(accounts);
+			}
+		};
+
 		const web3Result = await getWeb3ResultAsync(
-			setAlertOpen,
-			setIsConnected,
-			setAccounts,
+			handleOnConnect,
+			handleOnDisconnect,
+			handleChainChanged,
+			handleAccountsChanged,
 			walletName
 		);
-		if (web3Result) {
-			const { accounts, contractInstance, web3 } = web3Result;
-			const chainId = await web3.eth.net.getId();
-			if (chainId !== 5) {
-				disconnectWalletConnectAsync(
-					walletName === WalletText.ConnectViaMetaMask,
-					web3,
-					setIsConnected
-				);
-				setAlertOpen(true);
-			}
-			setAccounts(accounts);
-			setCloneFactoryContract(contractInstance);
-			setWeb3(web3);
-			setIsConnected(true);
-			localStorage.setItem('walletName', walletName);
-			localStorage.setItem('isConnected', 'true');
-			setChainId(chainId);
-			localStorage.setItem('walletName', walletName);
-			if (walletName === WalletText.ConnectViaMetaMask) setIsMetaMask(true);
+
+		if (!web3Result) {
+			console.error('Missing web3 instance');
+			return;
+		}
+
+		const { accounts, web3, web3Gateway } = web3Result;
+
+		if (accounts.length === 0 || accounts[0] === '') {
+			setAlertOpen(true);
+		}
+
+		const chainId = await web3.eth.net.getId();
+		console.log('CHAIN ID', chainId);
+
+		if (chainId !== parseInt(process.env.REACT_APP_CHAIN_ID!)) {
+			disconnectWalletConnectAsync(
+				walletName === WalletText.ConnectViaMetaMask,
+				web3,
+				setIsConnected
+			);
+			setAlertOpen(true);
+		}
+		setAccounts(accounts);
+		setWeb3Gateway(web3Gateway);
+		setIsConnected(true);
+		localStorage.setItem('walletName', walletName);
+		localStorage.setItem('isConnected', 'true');
+		setChainId(chainId);
+		localStorage.setItem('walletName', walletName);
+		refreshContracts();
+		if (walletName === WalletText.ConnectViaMetaMask) {
+			setIsMetaMask(true);
 		}
 	};
 
@@ -162,88 +226,91 @@ export const Main: React.FC = () => {
 		connectWalletOnPageLoad();
 	}, []);
 
-	// Get timestamp of current block
-	const getCurrentBlockTimestampAsync: () => void = async () => {
-		const currentBlockTimestamp = (await web3?.eth.getBlock('latest'))?.timestamp;
-		setCurrentBlockTimestamp(currentBlockTimestamp as number);
-	};
+	useInterval(() => {
+		refreshContracts(false, undefined, true);
+	}, 30 * 1000);
 
-	useEffect(() => getCurrentBlockTimestampAsync(), [web3]);
+	const refreshContracts = (
+		ignoreCheck: boolean | any = false,
+		contractId?: string,
+		updateByChunks = false
+	) => {
+		if (!web3Gateway) {
+			console.error('Missing web3 gateway instance');
+			return;
+		}
+		if ((isCorrectNetwork && !anyModalOpen) || ignoreCheck) {
+			setCurrentBlockTimestamp(Math.floor(new Date().getTime() / 1000));
+			createContractsAsync();
+		}
+	};
 
 	// Contracts setup
-	const createContractAsync: (address: string) => Promise<HashRentalContract | null> = async (
-		address
-	) => {
-		if (web3) {
-			const implementationContractInstance = new web3.eth.Contract(
-				ImplementationContract.abi as AbiItem[],
-				address
-			);
-			const {
-				0: state,
-				1: price,
-				// eslint-disable-next-line
-				2: limit,
-				3: speed,
-				4: length,
-				5: timestamp,
-				6: buyer,
-				7: seller,
-				8: encryptedPoolData,
-			} = await implementationContractInstance.methods.getPublicVariables().call();
-
-			return {
-				id: address,
-				price,
-				speed,
-				length,
-				buyer,
-				seller,
-				timestamp,
-				state,
-				encryptedPoolData,
-			} as HashRentalContract;
+	const fetchContractsAsync = async (): Promise<HashRentalContract[] | null> => {
+		if (!web3Gateway) {
+			console.error('Missing web3Gateway instance');
+			return null;
 		}
 
-		return null;
+		const data = await web3Gateway.getContractsV2(userAccount);
+
+		return data.map((e) => {
+			return {
+				id: e.id,
+				price: e.price,
+				speed: e.speed,
+				length: e.length,
+				buyer: e.buyer,
+				seller: e.seller,
+				timestamp: e.startingBlockTimestamp,
+				state: e.state,
+				encryptedPoolData: e.encrValidatorUrl,
+				version: e.version,
+				isDeleted: e.isDeleted,
+				history: e.history.map((h) => {
+					return {
+						id: e.id,
+						_goodCloseout: h.isGoodCloseout,
+						_buyer: h.buyer,
+						_endTime: h.endTime,
+						_purchaseTime: h.purchaseTime,
+						_price: h.price,
+						_speed: h.speed,
+						_length: h.length,
+					};
+				}),
+			};
+		});
 	};
 
-	const addContractsAsync: (addresses: string[]) => void = async (addresses) => {
-		const hashRentalContracts = await Promise.all(
-			addresses.map(async (address) => await createContractAsync(address))
-		);
-
-		// Update contracts if deep equality is false
-		if (!_.isEqual(contracts, hashRentalContracts))
-			setContracts(hashRentalContracts as HashRentalContract[]);
-	};
-
-	const createContractsAsync: () => void = async () => {
+	const createContractsAsync = async (): Promise<void> => {
 		try {
-			const addresses: string[] = await cloneFactoryContract?.methods.getContractList().call();
-			if (addresses) {
-				addContractsAsync(addresses);
+			const contracts = await fetchContractsAsync();
+			if (contracts) {
+				setContracts(contracts.filter((c) => !c.isDeleted));
 			}
 		} catch (error) {
-			const typedError = error as Error;
-			printError(typedError.message, typedError.stack as string);
-			// crash app if can't communicate with webfacing contract
-			throw typedError;
+			console.error('Error fetching contracts', error);
 		}
 	};
 
 	// Get Lumerin token balance
-	const updateLumerinTokenBalanceAsync: () => void = async () => {
-		if (web3) {
-			const lumerinTokenBalance = await getLumerinTokenBalanceAsync(web3, userAccount);
-			if (lumerinTokenBalance) setLumerinBalance(lumerinTokenBalance);
+	const updateLumerinTokenBalanceAsync = async (): Promise<void> => {
+		if (!web3Gateway) {
+			console.error('Missing web3 instance');
+			return;
 		}
+
+		const balanceDecimal = await web3Gateway.getLumerinBalance(userAccount);
+		setLumerinBalance(LMRDecimalToLMR(balanceDecimal));
 	};
 
 	// Set contracts and orders once cloneFactoryContract exists
 	useEffect(() => {
-		if (isCorrectNetwork) createContractsAsync();
-	}, [cloneFactoryContract, accounts, web3]);
+		if (isCorrectNetwork) {
+			refreshContracts();
+		}
+	}, [accounts, isCorrectNetwork]);
 
 	// Check if any modals or alerts are open
 	// TODO: Replace this with a better way to track all modal states
@@ -260,6 +327,12 @@ export const Main: React.FC = () => {
 			setAnyModalOpen(true);
 		} else {
 			setAnyModalOpen(false);
+			refreshContracts(true, contractId);
+			setContractId('');
+			updateLumerinTokenBalanceAsync().catch((error) => {
+				const typedError = error as Error;
+				printError(typedError.message, typedError.stack as string);
+			});
 		}
 	}, [
 		alertOpen,
@@ -271,15 +344,12 @@ export const Main: React.FC = () => {
 		claimLmrModalOpen,
 	]);
 
-	// Get contracts at interval of 5 seconds
-	// TODO: Replace this with something like web sockets
-	useInterval(() => {
-		if (isCorrectNetwork && !anyModalOpen) createContractsAsync();
-	}, 5000);
-
 	useEffect(() => {
-		if (isCorrectNetwork) updateLumerinTokenBalanceAsync();
-	}, [web3, accounts, chainId]);
+		if (isCorrectNetwork) {
+			refreshContracts();
+			updateLumerinTokenBalanceAsync();
+		}
+	}, [accounts, chainId]);
 
 	useEffect(() => {
 		setPathname(window.location.pathname);
@@ -292,10 +362,10 @@ export const Main: React.FC = () => {
 				<span>{WalletText.ConnectViaMetaMask}</span>
 				<MetaMaskIcon />
 			</button>
-			<button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
+			{/* <button type='button' onClick={() => connectWallet(WalletText.ConnectViaWalletConnect)}>
 				<span>{WalletText.ConnectViaWalletConnect}</span>
 				<WalletConnectIcon />
-			</button>
+			</button> */}
 		</ConnectButtonsWrapper>
 	);
 
@@ -308,11 +378,11 @@ export const Main: React.FC = () => {
 					render={(props: RouteComponentProps) => (
 						<MyOrders
 							{...props}
-							web3={web3}
 							userAccount={userAccount}
 							contracts={contracts}
 							currentBlockTimestamp={currentBlockTimestamp}
 							setContractId={setContractId}
+							refreshContracts={refreshContracts}
 							editClickHandler={(event) =>
 								buttonClickHandler(event, buyerEditModalOpen, setBuyerEditModalOpen)
 							}
@@ -320,10 +390,12 @@ export const Main: React.FC = () => {
 								buttonClickHandler(event, cancelModalOpen, setCancelModalOpen)
 							}
 							isMobile={isMobile}
+							activeOrdersTab={activeOrdersTab}
+							setActiveOrdersTab={setActiveOrdersTab}
 						/>
 					)}
 				/>
-				<Route
+				{/* <Route
 					path={PathName.MyContracts}
 					render={(props: RouteComponentProps) => (
 						<MyContracts
@@ -343,13 +415,12 @@ export const Main: React.FC = () => {
 							setSidebarOpen={setSidebarOpen}
 						/>
 					)}
-				/>
+				/> */}
 				<Route
 					path={PathName.Marketplace}
 					render={(props: RouteComponentProps) => (
 						<Marketplace
 							{...props}
-							web3={web3}
 							userAccount={userAccount}
 							isMetaMask={isMetaMask}
 							lumerinBalance={lumerinBalance}
@@ -384,21 +455,28 @@ export const Main: React.FC = () => {
 	const changeNetworkAsync: () => void = async () => {
 		await ethereum.request({
 			method: 'wallet_switchEthereumChain',
-			params: [{ chainId: web3?.utils.toHex(5) }],
+			params: [{ chainId: intToHex(process.env.REACT_APP_CHAIN_ID!) }],
 		});
 		setAlertOpen(false);
 		connectWallet(WalletText.ConnectViaMetaMask);
 	};
 
+	const disconnectWallet = () => {
+		if (isMetaMask) {
+			reconnectWalletAsync();
+			return;
+		}
+		setIsConnected(false);
+		web3Gateway?.disconnect();
+	}
+
 	const BodyWrapper = styled.div`
 		display: flex;
 		min-height: 100vh;
 		background: #eaf7fc;
-		background-image: url(${BubbleGraphic1}), url(${BubbleGraphic2}), url(${BubbleGraphic3}),
-			url(${BubbleGraphic4});
-		background-position: bottom right, right top, left top, left bottom;
-		background-repeat: no-repeat;
-		background-size: 25% 15% 15% 10%;
+		background-image: url(${Bg});
+		background-size: 100% 100%;
+		background-attachment: fixed;
 	`;
 
 	const drawerWidth = 240;
@@ -419,8 +497,7 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						cloneFactoryContract={cloneFactoryContract}
-						web3={web3}
+						web3Gateway={web3Gateway}
 						lumerinbalance={lumerinBalance}
 						setOpen={setBuyModalOpen}
 					/>
@@ -432,8 +509,7 @@ export const Main: React.FC = () => {
 				content={
 					<CreateForm
 						userAccount={userAccount}
-						cloneFactoryContract={cloneFactoryContract}
-						web3={web3}
+						web3Gateway={web3Gateway}
 						setOpen={setCreateModalOpen}
 					/>
 				}
@@ -446,8 +522,8 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
-						setOpen={setSellerEditModalOpen}
+						web3Gateway={web3Gateway}
+						closeForm={() => setSellerEditModalOpen(false)}
 					/>
 				}
 			/>
@@ -459,8 +535,8 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
-						setOpen={setBuyerEditModalOpen}
+						web3Gateway={web3Gateway}
+						closeForm={() => setBuyerEditModalOpen(false)}
 					/>
 				}
 			/>
@@ -472,8 +548,8 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
-						setOpen={setCancelModalOpen}
+						web3Gateway={web3Gateway}
+						closeForm={() => setCancelModalOpen(false)}
 					/>
 				}
 			/>
@@ -485,9 +561,9 @@ export const Main: React.FC = () => {
 						contracts={contracts}
 						contractId={contractId}
 						userAccount={userAccount}
-						web3={web3}
+						web3Gateway={web3Gateway}
 						currentBlockTimestamp={currentBlockTimestamp}
-						setOpen={setClaimLmrModalOpen}
+						closeForm={() => setClaimLmrModalOpen(false)}
 					/>
 				}
 			/>
@@ -517,6 +593,7 @@ export const Main: React.FC = () => {
 					isMetamask={isMetaMask}
 					isMobile={isMobile}
 					drawerWidth={drawerWidth}
+					handleDisconnect={disconnectWallet}
 				/>
 				<Box component='main'>
 					<main>{getContent()}</main>

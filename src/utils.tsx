@@ -1,4 +1,4 @@
-// @ts-nocheck
+//@ts-nocheck
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
@@ -13,7 +13,6 @@ import {
 	SortByType,
 	StatusText,
 } from './types';
-import { Link } from 'react-router-dom';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
@@ -23,9 +22,11 @@ import { Transaction as Web3Transaction } from 'web3-eth';
 import { Transaction as EthJsTx } from 'ethereumjs-tx';
 import { encrypt } from 'ecies-geth';
 import { ethers } from 'ethers';
-import { abi, bytecode } from './contracts/CloneFactory.json';
+import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
+
+const { abi, bytecode } = CloneFactoryContract;
 
 declare module 'web3-core' {
 	interface Transaction {
@@ -66,30 +67,47 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (formData: FormData) => string | undefined = (formData) => {
-	const regex = /(^.*):\/\/(.*$)/;
-	const poolAddressGroups = formData.poolAddress?.match(regex) as RegExpMatchArray;
-	if (!poolAddressGroups) return;
-	const protocol = poolAddressGroups[1];
-	const host = poolAddressGroups[2];
+export const toRfc2396: (address, username, password) => string | undefined = (
+	address,
+	username,
+	password
+) => {
+	const protocol = 'stratum+tcp';
 
-	return `${protocol}://${formData.username}:${formData.password}@${host}:${formData.portNumber}`;
+	const encodedUsername = encodeURIComponent(username);
+	return `${protocol}://${encodedUsername}:${password}@${address}`;
+};
+
+export const getPoolRfc2396: (formData: FormData) => string | undefined = (formData) => {
+	return toRfc2396(formData.poolAddress, formData.username, formData.password);
+};
+
+export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
+	return toRfc2396(formData.validatorAddress, formData.username, formData.password);
 };
 
 //encrypts a string passed into it
 export const encryptMessage = async (pubKey: string, msg: string) => {
-	let ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
-	await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg)).then(console.log);
-	return ciphertext.toString('hex');
+	const ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
+	return ciphertext;
+};
+
+export const getValidatorPublicKey = () => {
+	return process.env.REACT_APP_VALIDATOR_PUBLIC_KEY;
+};
+
+export const getTitanLightningPoolUrl = () => {
+	return process.env.REACT_APP_TITAN_LIGHTNING_POOL || 'pplp.titan.io:4141';
+};
+
+export const getValidatorURL = () => {
+	const url = process.env.REACT_APP_VALIDATOR_URL || '';
+	return url.replace(/(^(\w|\+)+:|^)\/\//, ''); // removes protocol from url if present
 };
 
 export const getPublicKey = async (txId: string) => {
-	let provider = ethers.getDefaultProvider(
-		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
-	);
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL);
 	let tx = await provider.getTransaction(txId)!;
-	console.log(txId);
-	console.log(tx);
 	let transaction = FeeMarketEIP1559Transaction.fromTxData({
 		chainId: tx.chainId,
 		nonce: tx.nonce,
@@ -111,9 +129,7 @@ export const getPublicKey = async (txId: string) => {
 export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	//import the JSON of CloneFactory.json
 	let cf = new ethers.ContractFactory(abi, bytecode);
-	let provider = ethers.getDefaultProvider(
-		'https://eth-goerli.g.alchemy.com/v2/fVZAxRtdmyD4gcw-EyHhpSbBwFPZBw3A'
-	);
+	let provider = ethers.getDefaultProvider(process.env.REACT_APP_NODE_URL as string);
 
 	//the clonefactory contract address should become a variable that is configurable
 	let cloneFactoryAddress = process.env.REACT_APP_CLONE_FACTORY as string;
@@ -137,15 +153,18 @@ export const getCreationTxIDOfContract = async (contractAddress: string) => {
 	return tx;
 };
 
-export const isValidPoolAddress: (
-	poolAddress: string,
-	setAlertOpen: React.Dispatch<React.SetStateAction<boolean>>
-) => boolean = (poolAddress, setAlertOpen) => {
+export const isValidPoolAddress = (address: string): boolean => {
+	const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
+	if (!regexP.test(address)) return false;
+
 	const regexPortNumber = /:\d+/;
-	const hasPortNumber = (poolAddress.match(regexPortNumber) as RegExpMatchArray) !== null;
-	if (hasPortNumber) setAlertOpen(true);
-	const regexAddress = /(^.*):\/\/(.*$)/;
-	return !hasPortNumber && (poolAddress.match(regexAddress) as RegExpMatchArray) !== null;
+	const portMatch = address.match(regexPortNumber);
+	if (!portMatch) return false;
+
+	const port = portMatch[0].replace(':', '');
+	if (Number(port) < 0 || Number(port) > 65536) return false;
+
+	return true;
 };
 
 // Parse connectionString as URI to get worker and host name
@@ -182,7 +201,15 @@ export const getSchemeName = (connectionString: string): string | undefined =>
 
 // Make sure username contains no spaces
 export const isValidUsername: (username: string) => boolean = (username) =>
-	!!username.match(/^\S*$/);
+	/^[a-zA-Z0-9.@-]+$/.test(username);
+
+const EMAIL_REGEX =
+	/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+// Make sure username contains no spaces
+export const isValidLightningUsername: (username: string) => boolean = (username) => {
+	return EMAIL_REGEX.test(username);
+};
 
 // Make sure port number is a number between 1 and 65535
 export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>
@@ -274,42 +301,41 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 
 export const sortContracts = (
 	sortType: string,
-	contractData: Array<HashRentalContract>,
-	setContractData: React.Dispatch<React.SetStateAction<Array<HashRentalContract>>>
+	contractData: HashRentalContract[],
+	setContractData: React.Dispatch<React.SetStateAction<HashRentalContract[]>>
 ) => {
 	switch (sortType) {
 		case 'Price: Low to High':
-			setContractData([...contractData.sort((a, b) => (a.price! > b.price! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.price), 'asc'));
+			return;
 		case 'Price: High to Low':
-			setContractData([...contractData.sort((a, b) => (a.price! < b.price! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.price), 'desc'));
+			return;
 		case 'Duration: Short to Long':
-			setContractData([...contractData.sort((a, b) => (a.length! > b.length! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.length), 'asc'));
+			return;
 		case 'Duration: Long to Short':
-			setContractData([...contractData.sort((a, b) => (a.length! < b.length! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.length), 'desc'));
+			return;
 		case 'Speed: Slow to Fast':
-			setContractData([...contractData.sort((a, b) => (a.speed! > b.speed! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.speed), 'asc'));
+			return;
 		case 'Speed: Fast to Slow':
-			setContractData([...contractData.sort((a, b) => (a.speed! < b.speed! ? 1 : -1))]);
-			break;
+			setContractData(sortContractsList(contractData, (k) => Number(k.speed), 'desc'));
+			return;
 		default:
 			setContractData([...contractData]);
-			break;
+			return;
 	}
 };
 
-interface InputValues extends InputValuesBuyForm, InputValuesCreateForm {}
 export const getButton: (
 	contentState: string,
 	buttonContent: string,
-	setOpen: Dispatch<SetStateAction<boolean>>,
-	handleSubmit: UseFormHandleSubmit<InputValues>,
-	createTransactionAsync: (data: InputValues) => void
-) => JSX.Element = (contentState, buttonContent, setOpen, handleSubmit, createTransactionAsync) => {
+	onComplete: () => void,
+	onSubmit,
+	isDisabled
+) => JSX.Element = (contentState, buttonContent, onComplete, onSubmit, isDisabled) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -326,15 +352,15 @@ export const getButton: (
 	}
 
 	return contentState === ContentState.Complete ? (
-		<PrimaryButton>
-			<Link to={pathName} onClick={() => setOpen(false)}>
-				<span>{`View ${viewText}`}</span>
-			</Link>
+		<PrimaryButton onClick={onComplete}>
+			<span>{`View ${viewText}`}</span>
 		</PrimaryButton>
+	) : isDisabled ? (
+		<DisabledButton type='button'>{buttonContent}</DisabledButton>
 	) : (
-		<DisabledButton type='submit' disabled>
+		<PrimaryButton type='button' onClick={onSubmit}>
 			{buttonContent}
-		</DisabledButton>
+		</PrimaryButton>
 	);
 };
 
@@ -501,7 +527,8 @@ const getV: (v: string, chainId: number) => string = (v, chainId) => {
 export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buffer = (
 	transaction
 ) => {
-	const chainId = 3; // Ropsten
+	const chainId = process.env.REACT_APP_CHAIN_ID;
+
 	const ethTx = new EthJsTx(
 		{
 			nonce: transaction.nonce,
@@ -540,3 +567,68 @@ export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = 
 		printError(typedError.message, typedError.stack as string);
 	}
 };
+
+export const getHandlerBlockchainError =
+	(setAlertMessage, setAlertOpen, setContentState) => (error: ErrorWithCode) => {
+		// If user rejects transaction
+		if (error.code === 4001) {
+			setAlertMessage(error.message);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('execution reverted: contract is not in an available state')) {
+			setAlertMessage(`Execution reverted: ${AlertMessage.ContractIsPurchased}`);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		if (error.message.includes('Internal JSON-RPC error')) {
+			let msg;
+			try {
+				/*
+			When transaction is reverted, the error message is a such JSON string:
+				`Internal JSON-RPC error.
+				{
+					"code": 3,
+					"message": "execution reverted: contract is not in an available state",
+					"data": "0x08c379a",
+					"cause": null
+				}`
+		*/
+				msg = JSON.parse(error.message.replace('Internal JSON-RPC error.', '')).message;
+			} catch (e) {
+				msg = 'Failed to send transaction. Execution reverted.';
+			}
+			setAlertMessage(msg);
+			setAlertOpen(true);
+			setContentState(ContentState.Review);
+			return;
+		}
+
+		setAlertMessage(error.message);
+		setAlertOpen(true);
+		setContentState(ContentState.Review);
+	};
+
+export const sortContractsList = <T extends { id: string }, K extends string | number>(
+	data: T[],
+	getter: (k: T) => number,
+	direction: 'asc' | 'desc'
+) => {
+	return data.sort((a, b) => {
+		let delta = numberCompareFn(getter(a), getter(b));
+		if (delta === 0) {
+			delta = stringCompareFn(a.id, b.id);
+		}
+		return direction === 'asc' ? delta : -delta;
+	});
+};
+
+type StringOrNumber = string | number | bigint;
+
+const numberCompareFn = (a: StringOrNumber, b: StringOrNumber) => Number(a) - Number(b);
+const stringCompareFn = (a: StringOrNumber, b: StringOrNumber) =>
+	String(a).localeCompare(String(b));

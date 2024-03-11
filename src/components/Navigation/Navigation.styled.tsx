@@ -22,6 +22,11 @@ export const DrawerContent = styled.div`
 		font-weight: 500;
 	}
 
+	.version {
+		font-size: 0.5rem;
+		padding: 0.5rem;
+	}
+
 	.menu-icon {
 		margin-bottom: 2.5rem;
 	}
@@ -32,8 +37,7 @@ export const DrawerContent = styled.div`
 	}
 
 	.resources {
-		padding-top: 2rem;
-		padding-bottom: 2rem;
+		padding: 1rem 0;
 		border-top: 2px solid #f4f4f4;
 
 		h3 {

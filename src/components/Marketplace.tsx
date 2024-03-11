@@ -6,19 +6,17 @@ import { AvailableContracts } from './ui/Cards/AvailableContracts';
 import { setMediaQueryListOnChangeHandler } from '../utils';
 import { ContractState, HashRentalContract } from '../types';
 import { useInterval } from './hooks/useInterval';
-import Web3 from 'web3';
 import { divideByDigits } from '../web3/helpers';
 import _ from 'lodash';
 import styled from '@emotion/styled';
-import { SortToolbar } from './ui/SortToolbar';
 import { BuyerOrdersWidget } from './ui/Widgets/BuyerOrdersWidget';
 import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
 import { sortContracts } from '../utils';
 import { MobileWalletInfo } from './ui/Widgets/MobileWalletInfo';
 import { MessageWidget } from './ui/Widgets/MessageWidget';
+import { MarketplaceStatistics } from './ui/Widgets/MarketplaceStatistics';
 
 interface MarketplaceProps {
-	web3: Web3 | undefined;
 	contracts: HashRentalContract[];
 	setContractId: Dispatch<SetStateAction<string>>;
 	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
@@ -30,7 +28,6 @@ interface MarketplaceProps {
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
-	web3,
 	userAccount,
 	isMetaMask,
 	currentBlockTimestamp,
@@ -61,7 +58,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const getTableData: () => HashRentalContract[] = () => {
 		const filteredContracts = contracts.filter(
-			(contract) => (contract.state as string) === ContractState.Available
+			(contract) =>
+				(contract.state as string) === ContractState.Available && contract.seller !== userAccount
 		);
 		const updatedContracts = filteredContracts.map((contract: any) => {
 			const updatedContract = { ...contract };
@@ -95,7 +93,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
 	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
 
-	const [availableContracts, setAvailableContracts] = useState<Array<object>>([...data]);
+	const [availableContracts, setAvailableContracts] = useState<HashRentalContract[]>([...data]);
 	const [sortType, setSortType] = useState('');
 
 	useEffect(() => {
@@ -145,23 +143,23 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 				<>
 					<WidgetsWrapper>
 						<MessageWidget isMobile={isMobile} />
+						{isMetaMask && (
+							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
+						)}
 						<BuyerOrdersWidget
 							isLoading={isLoading}
 							contracts={contracts}
 							userAccount={userAccount}
 							currentBlockTimestamp={currentBlockTimestamp}
 						/>
-						{isMetaMask && (
-							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
-						)}
+						<MarketplaceStatistics isLoading={isLoading} contracts={contracts} />
 					</WidgetsWrapper>
-					<SortToolbar
-						pageTitle='Hashrate For Sale'
-						sortType={sortType}
+					<AvailableContracts
+						contracts={availableContracts}
+						loading={isLoading}
 						setSortType={setSortType}
-						isMobile={isMobile}
+						sortType={sortType}
 					/>
-					<AvailableContracts contracts={availableContracts} loading={isLoading} />
 				</>
 			) : (
 				<>
@@ -174,13 +172,18 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						</div>
 					</MobileWidgetsWrapper>
 					<MessageWidget isMobile={isMobile} />
-					<SortToolbar
+					{/* <SortToolbar
 						pageTitle='Hashrate For Sale'
 						sortType={sortType}
 						setSortType={setSortType}
 						isMobile={isMobile}
+					/> */}
+					<AvailableContracts
+						contracts={availableContracts}
+						loading={isLoading}
+						setSortType={setSortType}
+						sortType={sortType}
 					/>
-					<AvailableContracts contracts={availableContracts} loading={isLoading} />
 				</>
 			)}
 		</>

@@ -1,12 +1,10 @@
 import React from 'react';
 import { DeepMap, FieldError, UseFormRegister } from 'react-hook-form';
 import { InputValuesCreateForm } from '../../../../types';
-import Web3 from 'web3';
 import { divideByDigits } from '../../../../web3/helpers';
 import { InputWrapper } from '../Forms.styled';
 
 interface ReviewContentProps {
-	web3?: Web3 | undefined;
 	register: UseFormRegister<InputValuesCreateForm>;
 	errors: DeepMap<InputValuesCreateForm, FieldError | undefined>; // undefined bc error for specific input might not exist
 	data?: InputValuesCreateForm;
@@ -14,7 +12,6 @@ interface ReviewContentProps {
 }
 
 export const ReviewContent: React.FC<ReviewContentProps> = ({
-	web3,
 	register,
 	errors,
 	data,
