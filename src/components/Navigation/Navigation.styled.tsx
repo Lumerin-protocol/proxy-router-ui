@@ -52,3 +52,9 @@ export const DrawerContent = styled.div`
 		}
 	}
 `;
+
+export const Socials = styled.div`
+	display: flex;
+	justify-content: space-between;
+	margin-top: 2rem;
+`;

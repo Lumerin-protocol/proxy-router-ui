@@ -157,10 +157,14 @@ export const divideByDigits: (amount: number) => number = (amount) => {
 };
 
 const LMRDecimal = 8;
+const ETHDecimal = 18;
 
-export const LMRDecimalToLMR = (decimal: number | string): number => {
-	const big = BigInt(decimal) / BigInt(10 ** LMRDecimal);
-	return Number(big);
+export const LMRDecimalToLMR = (decimal: number): number => {
+	return decimal / 10 ** LMRDecimal;
+};
+
+export const ETHDecimalToETH = (decimal: number): number => {
+	return decimal / 10 ** ETHDecimal;
 };
 
 // Convert integer provided as number, BigInt or decimal string to hex string with prefix '0x'
@@ -169,4 +173,42 @@ export const intToHex = (value: number | BigInt | string) => {
 		value = Number(value);
 	}
 	return '0x' + value.toString(16);
+};
+
+export const formatCurrency: (param: {
+	value: number;
+	currency: string | undefined;
+	maxSignificantFractionDigits: number;
+}) => string = ({ value, currency, maxSignificantFractionDigits }) => {
+	let style = 'currency';
+
+	if (!currency) {
+		currency = undefined;
+		style = 'decimal';
+	}
+
+	if (maxSignificantFractionDigits == 0) {
+		return Math.floor(value).toString();
+	}
+
+	if (value < 1) {
+		return new Intl.NumberFormat(navigator.language, {
+			style: style,
+			currency: currency,
+			maximumSignificantDigits: 4,
+		}).format(value);
+	}
+
+	const integerDigits = value.toFixed(0).toString().length;
+	let fractionDigits = maxSignificantFractionDigits - integerDigits;
+	if (fractionDigits < 0) {
+		fractionDigits = 0;
+	}
+
+	return new Intl.NumberFormat(navigator.language, {
+		style: style,
+		currency: currency,
+		minimumFractionDigits: fractionDigits,
+		maximumFractionDigits: fractionDigits,
+	}).format(value);
 };

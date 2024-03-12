@@ -31,11 +31,7 @@ export const MessageWidget = (props: { isMobile: boolean }) => {
 			<p>
 				Welcome to the Lumerin Marketplace Open Beta (Arbitrum)! Please find detailed instructions
 				click here:{' '}
-				<a
-					href={`${process.env.REACT_APP_GITBOOK_URL}`}
-					target='_blank'
-					rel='noreferrer'
-				>
+				<a href={`${process.env.REACT_APP_GITBOOK_URL}`} target='_blank' rel='noreferrer'>
 					Gitbook
 				</a>
 				{'. '}
