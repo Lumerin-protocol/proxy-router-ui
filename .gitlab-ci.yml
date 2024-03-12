@@ -1,4 +1,5 @@
 variables:
+    REACT_APP_BUY_LMR_URL: $BUY_LMR_URL
     REACT_APP_CHAIN_ID: $CHAIN_ID
     REACT_APP_CLONE_FACTORY: $CLONE_FACTORY_ADDRESS
     REACT_APP_ETHERSCAN_URL: $ETHERSCAN_URL
@@ -41,6 +42,7 @@ stages:
   echo "Building & Pushing image..."
   echo "*****************************"
   docker build \
+    --build-arg REACT_APP_BUY_LMR_URL=$REACT_APP_BUY_LMR_URL \
     --build-arg REACT_APP_CHAIN_ID=$REACT_APP_CHAIN_ID \
     --build-arg REACT_APP_CLONE_FACTORY=$REACT_APP_CLONE_FACTORY \
     --build-arg REACT_APP_ETHERSCAN_URL=$REACT_APP_ETHERSCAN_URL \

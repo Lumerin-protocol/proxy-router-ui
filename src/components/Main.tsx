@@ -4,7 +4,6 @@ import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
-import { uniqBy } from 'lodash';
 import Web3 from 'web3';
 import { provider } from 'web3-core';
 
@@ -24,10 +23,10 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 
-import { ImplementationContract } from 'contracts-js';
 import { useInterval } from './hooks/useInterval';
 import {
 	LMRDecimalToLMR,
+	ETHDecimalToETH,
 	addLumerinTokenToMetaMaskAsync,
 	disconnectWalletConnectAsync,
 	getWeb3ResultAsync,
@@ -54,6 +53,8 @@ import BubbleGraphic4 from '../images/Bubble_4.png';
 import Bg from '../images/bg.png';
 import { EthereumGateway } from '../gateway/ethereum';
 import { HistoryentryResponse } from 'contracts-js/dist/generated-types/Implementation';
+import { getRate } from '../rates/rate';
+import { Rates } from '../rates/interfaces';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -67,6 +68,8 @@ export const Main: React.FC = () => {
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
+	const [ethBalance, setEthBalance] = useState<number>(0);
+	const [rates, setRates] = useState<Rates | undefined>();
 
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [buyModalOpen, setBuyModalOpen] = useState<boolean>(false);
@@ -302,7 +305,15 @@ export const Main: React.FC = () => {
 		}
 
 		const balanceDecimal = await web3Gateway.getLumerinBalance(userAccount);
-		setLumerinBalance(LMRDecimalToLMR(balanceDecimal));
+		const ethBalanceDecimal = await web3Gateway.getEthBalance(userAccount);
+
+		setLumerinBalance(LMRDecimalToLMR(+balanceDecimal));
+		setEthBalance(ETHDecimalToETH(+ethBalanceDecimal));
+
+		const rates = await getRate();
+		if (rates) {
+			setRates(rates);
+		}
 	};
 
 	// Set contracts and orders once cloneFactoryContract exists
@@ -424,6 +435,8 @@ export const Main: React.FC = () => {
 							userAccount={userAccount}
 							isMetaMask={isMetaMask}
 							lumerinBalance={lumerinBalance}
+							ethBalance={ethBalance}
+							rates={rates}
 							contracts={contracts}
 							setContractId={setContractId}
 							currentBlockTimestamp={currentBlockTimestamp}
@@ -468,7 +481,7 @@ export const Main: React.FC = () => {
 		}
 		setIsConnected(false);
 		web3Gateway?.disconnect();
-	}
+	};
 
 	const BodyWrapper = styled.div`
 		display: flex;

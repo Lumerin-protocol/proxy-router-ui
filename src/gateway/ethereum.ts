@@ -307,14 +307,23 @@ export class EthereumGateway {
 		return {};
 	}
 
+	async getEthBalance(address: string): Promise<string> {
+		const balance = await callProviders(
+			() => this.web3Pub.eth.getBalance(address),
+			() => this.web3Prv.eth.getBalance(address)
+		);
+		return balance;
+	}
+
 	async disconnect() {
 		const wrap = async (web3: Web3) => {
-			(web3.eth.currentProvider as any)?.disconnect()
-		}
+			(web3.eth.currentProvider as any)?.disconnect();
+		};
 
 		await callProviders(
-			() => wrap(this.web3Pub), 
-			() => wrap(this.web3Prv));
+			() => wrap(this.web3Pub),
+			() => wrap(this.web3Prv)
+		);
 	}
 }
 
