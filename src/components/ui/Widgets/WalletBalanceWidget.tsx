@@ -1,28 +1,9 @@
-import { LumerinIcon } from '../../../images';
+import { ArbitrumLogo, EtherIcon, LumerinIcon } from '../../../images';
 import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
 import { MobileWidget, SmallWidget } from '../Cards/Cards.styled';
 import { formatCurrency } from '../../../web3/helpers';
 import { Rates } from '../../../rates/interfaces';
-
-export const EtherIcon = ({ size = '4rem', ...props }) => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		xmlSpace="preserve"
-		viewBox="0 0 1920 1920"
-		{...props}
-		width={size}
-	>
-		<path fill="#8A92B2" d="M959.8 80.7 420.1 976.3 959.8 731z" />
-		<path
-			fill="#62688F"
-			d="M959.8 731 420.1 976.3l539.7 319.1zm539.8 245.3L959.8 80.7V731z"
-		/>
-		<path fill="#454A75" d="m959.8 1295.4 539.8-319.1L959.8 731z" />
-		<path fill="#8A92B2" d="m420.1 1078.7 539.7 760.6v-441.7z" />
-		<path fill="#62688F" d="M959.8 1397.6v441.7l540.1-760.6z" />
-	</svg>
-);
 
 export const WalletBalanceWidget = (props: { lumerinBalance: number; ethBalance: number; isMobile: boolean, rates: Rates | undefined }) => {
 	const WalletBalanceWrapper = styled(SmallWidget)`
@@ -77,7 +58,7 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; ethBalance:
 		<>
 			{!props.isMobile ? (
 				<WalletBalanceWrapper>
-					<h3>Wallet Balance</h3>
+					<h3><ArbitrumLogo style={{width: '15px', display: 'inline', marginTop: '-3px'}} /> Wallet Balance</h3>
 					<div className='flex items-center justify-evenly flex-1 balance-wrapper w-100'>
 						<div className='flex items-center justify-center flex-col'>
 							<div className='flex items-center justify-center'>
@@ -91,7 +72,7 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; ethBalance:
 
 						<div className='flex items-center justify-center flex-col'>
 							<div className='flex items-center justify-center'>
-								<EtherIcon size="28px" />
+								<EtherIcon style={{width: '28px'}} />
 								<span className='balance' style={{ marginLeft: '0.2rem' }}>
 									{formattedEth} <span className='lmr'>ETH</span>
 								</span>
