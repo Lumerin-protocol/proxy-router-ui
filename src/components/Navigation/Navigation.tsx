@@ -1,17 +1,25 @@
 import { Drawer } from '@mui/material';
-import { DrawerContent } from './Navigation.styled';
+import { DrawerContent, Socials } from './Navigation.styled';
 import { LogoIcon } from '../../images/index';
 import { PathName } from '../../types';
 import MarketplaceIconActive from '../../images/icons/store-blue.png';
 import MarketplaceIconInactive from '../../images/icons/store-grey.png';
 import BuyerIconActive from '../../images/icons/buyer-blue.png';
 import BuyerIconInactive from '../../images/icons/buyer-grey.png';
-import SellerIconActive from '../../images/icons/seller-blue.png';
-import SellerIconInactive from '../../images/icons/seller-grey.png';
+// import SellerIconActive from '../../images/icons/seller-blue.png';
+// import SellerIconInactive from '../../images/icons/seller-grey.png';
 import { Link } from 'react-router-dom';
 import HelpIcon from '@mui/icons-material/Help';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 import ShieldIcon from '@mui/icons-material/Shield';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	faTiktok,
+	faMedium,
+	faDiscord,
+	faTelegram,
+	faXTwitter,
+} from '@fortawesome/free-brands-svg-icons';
 
 // Navigation setup
 interface Navigation {
@@ -93,6 +101,19 @@ export const ResponsiveNavigation = (prop: {
 					</a>
 				</nav>
 				<div className='version'>Version: {process.env.REACT_APP_VERSION}</div>
+				<Socials>
+					{[
+						{ link: 'https://discord.gg/ncBTzhZPP6', icon: faDiscord },
+						{ link: 'https://medium.com/titan-mining-blog', icon: faMedium },
+						{ link: 'https://t.me/LumerinOfficial', icon: faTelegram },
+						{ link: 'http://twitter.com/hellolumerin', icon: faXTwitter },
+						{ link: 'https://www.tiktok.com/@hellolumerin_', icon: faTiktok },
+					].map((item) => (
+						<a href={item.link} target='_blank' rel='noreferrer'>
+							<FontAwesomeIcon icon={item.icon} color='#0E4353' />
+						</a>
+					))}
+				</Socials>
 			</div>
 		</DrawerContent>
 	);

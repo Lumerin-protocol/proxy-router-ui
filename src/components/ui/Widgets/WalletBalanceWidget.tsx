@@ -73,7 +73,7 @@ export const WalletBalanceWidget = (props: {
 				<WalletBalanceWrapper>
 					<h3>
 						<ArbitrumLogo style={{ width: '15px', display: 'inline', marginTop: '-3px' }} /> Wallet
-						Balance
+						Balance (Arbitrum)
 					</h3>
 					<div className='flex items-center justify-evenly flex-1 balance-wrapper w-100'>
 						<div className='flex items-center justify-center flex-col'>
@@ -106,7 +106,7 @@ export const WalletBalanceWidget = (props: {
 				</WalletBalanceWrapper>
 			) : (
 				<MobileWalletBalanceWrapper style={{ width: '100%' }}>
-					<h3>Your Balance</h3>
+					<h3>Your Balance (Arbitrum)</h3>
 					<div className='flex items-center justify-evenly' style={{ width: '100%' }}>
 						<p>
 							{formattedLmr}
