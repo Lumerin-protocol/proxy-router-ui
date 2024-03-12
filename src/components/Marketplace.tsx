@@ -27,7 +27,7 @@ interface MarketplaceProps {
 	lumerinBalance: number;
 	ethBalance: number;
 	isMobile: boolean;
-	rates: Rates | undefined
+	rates: Rates | undefined;
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
@@ -153,7 +153,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 								lumerinBalance={lumerinBalance}
 								rates={rates}
 								isMobile={isMobile}
-								ethBalance={ethBalance} />
+								ethBalance={ethBalance}
+							/>
 						)}
 						<BuyerOrdersWidget
 							isLoading={isLoading}
@@ -176,7 +177,12 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						<div className='widget-row'>
 							<MobileWalletInfo walletAddress={userAccount} isMobile={isMobile} />
 							{isMetaMask && (
-								<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} ethBalance={ethBalance} rates={rates} />
+								<WalletBalanceWidget
+									lumerinBalance={lumerinBalance}
+									isMobile={isMobile}
+									ethBalance={ethBalance}
+									rates={rates}
+								/>
 							)}
 						</div>
 					</MobileWidgetsWrapper>

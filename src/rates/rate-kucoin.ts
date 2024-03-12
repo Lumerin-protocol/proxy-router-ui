@@ -6,25 +6,23 @@ import axios from 'axios';
  * @returns {Promise<{ LMR: number, ETH: number, BTC: number}>}
  */
 export const getRateKucoin = async () => {
-  const baseUrl = 'https://api.kucoin.com/api'
+	const baseUrl = 'https://api.kucoin.com/api';
 
-  const [LMR, ETH, BTC] = await Promise.all(
-    ['LMR-USDT', 'ETH-USDT', 'BTC-USDC'].map(async (pair) => {
-      const res = await axios.get(`${baseUrl}/v1/market/orderbook/level1`, {
-        params: {
-          symbol: pair,
-        },
-      })
+	const [LMR, ETH, BTC] = await Promise.all(
+		['LMR-USDT', 'ETH-USDT', 'BTC-USDC'].map(async (pair) => {
+			const res = await axios.get(`${baseUrl}/v1/market/orderbook/level1`, {
+				params: {
+					symbol: pair,
+				},
+			});
 
-      const price = Number(res?.data?.data?.price)
-      if (!price) {
-        throw new Error(
-          `invalid price response for ${pair} from kucoin: ${res.data}`
-        )
-      }
-      return price
-    })
-  )
+			const price = Number(res?.data?.data?.price);
+			if (!price) {
+				throw new Error(`invalid price response for ${pair} from kucoin: ${res.data}`);
+			}
+			return price;
+		})
+	);
 
-  return { LMR, ETH, BTC }
-}
+	return { LMR, ETH, BTC };
+};

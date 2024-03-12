@@ -308,10 +308,10 @@ export const Main: React.FC = () => {
 
 		const balanceDecimal = await web3Gateway.getLumerinBalance(userAccount);
 		const ethBalanceDecimal = await web3Gateway.getEthBalance(userAccount);
-		
+
 		setLumerinBalance(LMRDecimalToLMR(+balanceDecimal));
 		setEthBalance(ETHDecimalToETH(+ethBalanceDecimal));
-		
+
 		const rates = await getRate();
 		setRates(rates);
 	};
@@ -481,7 +481,7 @@ export const Main: React.FC = () => {
 		}
 		setIsConnected(false);
 		web3Gateway?.disconnect();
-	}
+	};
 
 	const BodyWrapper = styled.div`
 		display: flex;

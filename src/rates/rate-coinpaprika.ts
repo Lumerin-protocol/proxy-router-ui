@@ -6,20 +6,18 @@ import axios from 'axios';
  * @returns {Promise<{ LMR: number, ETH: number, BTC: number}>}
  */
 export const getRateCoinpaprika = async () => {
-  const baseUrl = 'https://api.coinpaprika.com'
+	const baseUrl = 'https://api.coinpaprika.com';
 
-  const [LMR, ETH, BTC] = await Promise.all(
-    ['lmr-lumerin', 'eth-ethereum', 'btc-bitcoin'].map(async (coin) => {
-      const res = await axios.get(`${baseUrl}/v1/tickers/${coin}`)
-      const price = res?.data?.quotes?.USD?.price
-      if (!price) {
-        throw new Error(
-          `invalid price response for ${coin} from coinpaprika: ${res.data}`
-        )
-      }
-      return price
-    })
-  )
+	const [LMR, ETH, BTC] = await Promise.all(
+		['lmr-lumerin', 'eth-ethereum', 'btc-bitcoin'].map(async (coin) => {
+			const res = await axios.get(`${baseUrl}/v1/tickers/${coin}`);
+			const price = res?.data?.quotes?.USD?.price;
+			if (!price) {
+				throw new Error(`invalid price response for ${coin} from coinpaprika: ${res.data}`);
+			}
+			return price;
+		})
+	);
 
-  return { LMR, ETH, BTC }
-}
+	return { LMR, ETH, BTC };
+};

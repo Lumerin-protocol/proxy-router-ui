@@ -5,7 +5,12 @@ import { MobileWidget, SmallWidget } from '../Cards/Cards.styled';
 import { formatCurrency } from '../../../web3/helpers';
 import { Rates } from '../../../rates/interfaces';
 
-export const WalletBalanceWidget = (props: { lumerinBalance: number; ethBalance: number; isMobile: boolean, rates: Rates | undefined }) => {
+export const WalletBalanceWidget = (props: {
+	lumerinBalance: number;
+	ethBalance: number;
+	isMobile: boolean;
+	rates: Rates | undefined;
+}) => {
 	const WalletBalanceWrapper = styled(SmallWidget)`
 		.balance-wrapper {
 			width: 100%;
@@ -49,16 +54,27 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; ethBalance:
 		font-size: 0.625rem;
 		text-align: center;
 		color: #a7a9b6;
-	`
+	`;
 
-	const formattedLmr = formatCurrency({ value: props.lumerinBalance, maxSignificantFractionDigits: 0, currency: undefined });
-	const formattedEth = formatCurrency({ value: props.ethBalance, maxSignificantFractionDigits: 4, currency: undefined });
+	const formattedLmr = formatCurrency({
+		value: props.lumerinBalance,
+		maxSignificantFractionDigits: 0,
+		currency: undefined,
+	});
+	const formattedEth = formatCurrency({
+		value: props.ethBalance,
+		maxSignificantFractionDigits: 4,
+		currency: undefined,
+	});
 
 	return (
 		<>
 			{!props.isMobile ? (
 				<WalletBalanceWrapper>
-					<h3><ArbitrumLogo style={{width: '15px', display: 'inline', marginTop: '-3px'}} /> Wallet Balance</h3>
+					<h3>
+						<ArbitrumLogo style={{ width: '15px', display: 'inline', marginTop: '-3px' }} /> Wallet
+						Balance
+					</h3>
 					<div className='flex items-center justify-evenly flex-1 balance-wrapper w-100'>
 						<div className='flex items-center justify-center flex-col'>
 							<div className='flex items-center justify-center'>
@@ -67,12 +83,14 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; ethBalance:
 									{formattedLmr} <span className='lmr'>LMR</span>
 								</span>
 							</div>
-							{props.rates && <Rate>≈ ${(props.rates?.LMR * props.lumerinBalance).toFixed(2)}</Rate>}
+							{props.rates && (
+								<Rate>≈ ${(props.rates?.LMR * props.lumerinBalance).toFixed(2)}</Rate>
+							)}
 						</div>
 
 						<div className='flex items-center justify-center flex-col'>
 							<div className='flex items-center justify-center'>
-								<EtherIcon style={{width: '28px'}} />
+								<EtherIcon style={{ width: '28px' }} />
 								<span className='balance' style={{ marginLeft: '0.2rem' }}>
 									{formattedEth} <span className='lmr'>ETH</span>
 								</span>
@@ -81,15 +99,19 @@ export const WalletBalanceWidget = (props: { lumerinBalance: number; ethBalance:
 						</div>
 					</div>
 					<div className='link'>
-						<a href='https://app.uniswap.org/tokens/ethereum/0x4b1d0b9f081468d780ca1d5d79132b64301085d1' target="_blank" rel="noreferrer">
+						<a
+							href='https://app.uniswap.org/tokens/ethereum/0x4b1d0b9f081468d780ca1d5d79132b64301085d1'
+							target='_blank'
+							rel='noreferrer'
+						>
 							Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
 						</a>
 					</div>
 				</WalletBalanceWrapper>
 			) : (
-				<MobileWalletBalanceWrapper style={{ width: '100%'}}>
+				<MobileWalletBalanceWrapper style={{ width: '100%' }}>
 					<h3>Your Balance</h3>
-					<div className='flex items-center justify-evenly' style={{ width: '100%'}}>
+					<div className='flex items-center justify-evenly' style={{ width: '100%' }}>
 						<p>
 							{formattedLmr}
 							<span className='lmr'> LMR</span>

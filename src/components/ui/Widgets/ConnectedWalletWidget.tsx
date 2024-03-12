@@ -12,18 +12,17 @@ export const ConnectedWalletWidget = (props: {
 	handleDisconnect: () => void;
 }) => {
 	const [isHovering, setIsHovering] = useState(false);
-	const label = props.isMetamask ? "Change Account" : "Disconnect";
-	
+	const label = props.isMetamask ? 'Change Account' : 'Disconnect';
+
 	return (
 		<div style={{ minWidth: '225px' }}>
-			<div 
+			<div
 				onClick={props.handleDisconnect}
 				onMouseOver={() => setIsHovering(true)}
 				onMouseOut={() => setIsHovering(false)}
-				className='btn-connected cursor-pointer flex justify-evenly items-center px-8'>
-				<span className='pr-3'>
-					{ isHovering ? label : props.truncatedWalletAddress}
-				</span>
+				className='btn-connected cursor-pointer flex justify-evenly items-center px-8'
+			>
+				<span className='pr-3'>{isHovering ? label : props.truncatedWalletAddress}</span>
 				{props.isMetamask ? <MetaMaskIcon /> : <WalletConnectIcon />}
 			</div>
 			<button
