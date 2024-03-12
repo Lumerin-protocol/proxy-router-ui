@@ -100,7 +100,7 @@ export const WalletBalanceWidget = (props: {
 					</div>
 					<div className='link'>
 						<a
-							href='https://app.uniswap.org/tokens/ethereum/0x4b1d0b9f081468d780ca1d5d79132b64301085d1'
+							href={process.env.REACT_APP_BUY_LMR_URL}
 							target='_blank'
 							rel='noreferrer'
 						>
