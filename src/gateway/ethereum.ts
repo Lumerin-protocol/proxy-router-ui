@@ -317,12 +317,13 @@ export class EthereumGateway {
 
 	async disconnect() {
 		const wrap = async (web3: Web3) => {
-			(web3.eth.currentProvider as any)?.disconnect()
-		}
+			(web3.eth.currentProvider as any)?.disconnect();
+		};
 
 		await callProviders(
-			() => wrap(this.web3Pub), 
-			() => wrap(this.web3Prv));
+			() => wrap(this.web3Pub),
+			() => wrap(this.web3Prv)
+		);
 	}
 }
 

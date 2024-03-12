@@ -4,7 +4,6 @@ import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import styled from '@emotion/styled';
 import { Box } from '@mui/material';
-import { uniqBy } from 'lodash';
 import Web3 from 'web3';
 import { provider } from 'web3-core';
 
@@ -24,7 +23,6 @@ import { CancelForm } from './ui/Forms/BuyerForms/CancelForm';
 import { ClaimLmrForm } from './ui/Forms/SellerForms/ClaimLmrForm';
 import { ConnectButtonsWrapper } from './ui/Forms/FormButtons/Buttons.styled';
 
-import { ImplementationContract } from 'contracts-js';
 import { useInterval } from './hooks/useInterval';
 import {
 	LMRDecimalToLMR,
@@ -308,12 +306,14 @@ export const Main: React.FC = () => {
 
 		const balanceDecimal = await web3Gateway.getLumerinBalance(userAccount);
 		const ethBalanceDecimal = await web3Gateway.getEthBalance(userAccount);
-		
+
 		setLumerinBalance(LMRDecimalToLMR(+balanceDecimal));
 		setEthBalance(ETHDecimalToETH(+ethBalanceDecimal));
-		
+
 		const rates = await getRate();
-		setRates(rates);
+		if (rates) {
+			setRates(rates);
+		}
 	};
 
 	// Set contracts and orders once cloneFactoryContract exists
@@ -481,7 +481,7 @@ export const Main: React.FC = () => {
 		}
 		setIsConnected(false);
 		web3Gateway?.disconnect();
-	}
+	};
 
 	const BodyWrapper = styled.div`
 		display: flex;
