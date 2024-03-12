@@ -15,6 +15,7 @@ import { sortContracts } from '../utils';
 import { MobileWalletInfo } from './ui/Widgets/MobileWalletInfo';
 import { MessageWidget } from './ui/Widgets/MessageWidget';
 import { MarketplaceStatistics } from './ui/Widgets/MarketplaceStatistics';
+import { Rates } from '../rates/interfaces';
 
 interface MarketplaceProps {
 	contracts: HashRentalContract[];
@@ -24,7 +25,9 @@ interface MarketplaceProps {
 	isMetaMask: boolean;
 	currentBlockTimestamp: number;
 	lumerinBalance: number;
+	ethBalance: number;
 	isMobile: boolean;
+	rates: Rates | undefined
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({
@@ -32,7 +35,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	isMetaMask,
 	currentBlockTimestamp,
 	lumerinBalance,
+	ethBalance,
 	contracts,
+	rates,
 	setContractId,
 	buyClickHandler,
 	isMobile,
@@ -144,7 +149,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 					<WidgetsWrapper>
 						<MessageWidget isMobile={isMobile} />
 						{isMetaMask && (
-							<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
+							<WalletBalanceWidget
+								lumerinBalance={lumerinBalance}
+								rates={rates}
+								isMobile={isMobile}
+								ethBalance={ethBalance} />
 						)}
 						<BuyerOrdersWidget
 							isLoading={isLoading}
@@ -167,7 +176,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						<div className='widget-row'>
 							<MobileWalletInfo walletAddress={userAccount} isMobile={isMobile} />
 							{isMetaMask && (
-								<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} />
+								<WalletBalanceWidget lumerinBalance={lumerinBalance} isMobile={isMobile} ethBalance={ethBalance} rates={rates} />
 							)}
 						</div>
 					</MobileWidgetsWrapper>
