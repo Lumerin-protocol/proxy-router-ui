@@ -1,12 +1,12 @@
+import { Rates } from './interfaces';
 import { getRateCoingecko } from './rate-coingecko';
 import { getRateCoinpaprika } from './rate-coinpaprika';
 import { getRateKucoin } from './rate-kucoin';
 
 /**
  * Returns ETH and LMR prices in USD from exchanges api
- * @returns {Promise<{ LMR: number, ETH: number}>}
  */
-export const getRate = async () => {
+export const getRate = async (): Promise<Rates | void> => {
 	const servicePriority = [getRateCoingecko, getRateCoinpaprika, getRateKucoin];
 
 	for (const service of servicePriority) {

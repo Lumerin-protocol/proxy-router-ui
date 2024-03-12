@@ -1,25 +1,24 @@
-//@ts-check
-import axios from 'axios';
+// import axios from 'axios';
+import { Rates } from './interfaces';
 
 /**
  * Returns ETH and LMR prices in USD from coingecko api
- * @returns {Promise<{ LMR: number, ETH: number, BTC: number}>}
  */
-export const getRateCoingecko = async () => {
+export const getRateCoingecko = async (): Promise<Rates> => {
 	const baseUrl = 'https://api.coingecko.com/api';
-	const res = await axios.get(`${baseUrl}/v3/simple/price`, {
-		params: {
-			ids: 'ethereum,lumerin,bitcoin',
-			vs_currencies: 'usd',
-		},
-	});
+	const searchParams = new URLSearchParams();
+	searchParams.append('ids', 'ethereum,lumerin,bitcoin');
+	searchParams.append('vs_currencies', 'usd');
 
-	const LMR = res?.data?.lumerin?.usd;
-	const ETH = res?.data?.ethereum?.usd;
-	const BTC = res?.data?.bitcoin?.usd;
+	const res = await fetch(`${baseUrl}/v3/simple/price?${searchParams.toString()}`);
+	const data = await res.json();
+
+	const LMR = data?.lumerin?.usd;
+	const ETH = data?.ethereum?.usd;
+	const BTC = data?.bitcoin?.usd;
 
 	if (!LMR || !ETH || !BTC) {
-		throw new Error(`invalid price response from coingecko: ${res.data}`);
+		throw new Error(`invalid price response from coingecko: ${data}`);
 	}
 	return { LMR, ETH, BTC };
 };
