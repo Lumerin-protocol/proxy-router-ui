@@ -99,11 +99,7 @@ export const WalletBalanceWidget = (props: {
 						</div>
 					</div>
 					<div className='link'>
-						<a
-							href={process.env.REACT_APP_BUY_LMR_URL}
-							target='_blank'
-							rel='noreferrer'
-						>
+						<a href={process.env.REACT_APP_BUY_LMR_URL} target='_blank' rel='noreferrer'>
 							Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: '0.75rem' }} />
 						</a>
 					</div>
