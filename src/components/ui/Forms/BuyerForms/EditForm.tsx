@@ -21,6 +21,7 @@ import {
 	encryptMessage,
 	getValidatorURL,
 	getHandlerBlockchainError,
+	validateLightningUrl
 } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
@@ -65,6 +66,9 @@ export const EditForm: React.FC<EditFormProps> = ({
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [alertMessage, setAlertMessage] = useState<string>('');
 	const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
+	const [validatingUrl, setValidatingUrl] = useState(false);
+	const [showValidationError, setShowValidationError] = useState(false);
+
 	const history = useHistory();
 
 	const handleEditError = getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState);
@@ -222,12 +226,32 @@ export const EditForm: React.FC<EditFormProps> = ({
 							setUsedLightningPayoutsFlow(e);
 							trigger('poolAddress');
 							clearErrors();
+							setShowValidationError(false);
 						}}
+						showValidationError={showValidationError}
 					/>
 				);
 		}
 	};
 	createContent();
+
+	const onSubmit = () => {
+		setShowValidationError(false);
+		if(usedLightningPayoutsFlow) {
+			setValidatingUrl(true);
+			validateLightningUrl(formData?.username).then((isValid) => {
+				setValidatingUrl(false);
+				if(isValid) {
+					editContractAsync(formData)
+				}
+				else {
+					setShowValidationError(true);
+				}
+			});
+			return;
+		}
+		editContractAsync(formData)
+	}
 
 	// Set styles and button based on ContentState
 	const display =
@@ -262,8 +286,9 @@ export const EditForm: React.FC<EditFormProps> = ({
 							closeForm();
 							history.push(PathName.MyOrders);
 						},
-						() => editContractAsync(formData),
-						!isValid
+						() => onSubmit(),
+						!isValid,
+						validatingUrl
 					)}
 			</FormButtonsWrapper>
 		</Fragment>
