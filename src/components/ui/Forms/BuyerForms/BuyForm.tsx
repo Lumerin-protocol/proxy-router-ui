@@ -13,6 +13,7 @@ import {
 	getPoolRfc2396,
 	getValidatorURL,
 	getHandlerBlockchainError,
+	validateLightningUrl
 } from '../../../../utils';
 
 import { ethers } from 'ethers';
@@ -78,6 +79,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [purchasedTx, setPurchasedTx] = useState<string>('');
 	const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
 	const history = useHistory();
+	const [validatingUrl, setValidatingUrl] = useState(false);
+	const [showValidationError, setShowValidationError] = useState(false);
 
 	/*
 	 * This will need to be changed to the mainnet token
@@ -271,15 +274,35 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						inputData={formData}
 						onUseLightningPayoutsFlow={(e) => {
 							setUsedLightningPayoutsFlow(e);
+							setShowValidationError(false);
 							trigger('poolAddress');
 							clearErrors();
 						}}
 						clearErrors={clearErrors}
+						showValidationError={showValidationError}
 					/>
 				);
 		}
 	};
 	createContent();
+
+	const onSubmit = () => {
+		setShowValidationError(false);
+		if(usedLightningPayoutsFlow) {
+			setValidatingUrl(true);
+			validateLightningUrl(formData?.username).then((isValid) => {
+				setValidatingUrl(false);
+				if(isValid) {
+					buyContractAsync(formData)
+				}
+				else {
+					setShowValidationError(true);
+				}
+			});
+			return;
+		}
+		buyContractAsync(formData)
+	}
 
 	// Set styles and button based on ContentState
 	const display =
@@ -328,8 +351,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 							setOpen(false);
 							history.push(PathName.MyOrders);
 						},
-						() => buyContractAsync(formData),
-						!isValid
+						() => onSubmit(),
+						!isValid,
+						validatingUrl
 					)}
 			</FormButtonsWrapper>
 		</Fragment>
