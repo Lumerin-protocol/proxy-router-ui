@@ -4,6 +4,15 @@ import EastIcon from '@mui/icons-material/East';
 import { ConnectWalletModal } from './ui/Forms/ConnectWalletModal';
 import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
 import { ModalItem } from './ui/Modal';
+import styled from '@emotion/styled';
+
+const ConnectBtn = styled(PrimaryButton)`
+	backgroundColor: rgb(255,184,0);
+	background: linear-gradient(0deg, rgba(255,184,0,1) 0%, rgba(230,139,3,1) 100%);
+	boxShadow: 0px 4px 10px 0px rgba(0,0,0,0.2);
+	color: black;
+	font-weight: 600;
+`
 
 export const Hero = (prop: { actionButtons: JSX.Element }) => {
 	const [connectWalletModalIsOpen, setConnectWalletModalIsOpen] = useState<boolean>(false);
@@ -31,6 +40,8 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 		},
 	];
 
+
+
 	return (
 		<>
 			<ModalItem
@@ -46,9 +57,9 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 						Marketplace
 					</HeroHeadline>
 					<HeroSubheadline>Buy, sell, and own hashpower through your Web3 wallet</HeroSubheadline>
-					<PrimaryButton type='button' onClick={openConnectWalletModal}>
+					<ConnectBtn type='button' onClick={openConnectWalletModal}>
 						Connect Wallet
-					</PrimaryButton>
+					</ConnectBtn>
 					<h3>Easiest way to start mining Bitcoin, without hardware</h3>
 					<Steps>
 						{instructions.map((item) => (
