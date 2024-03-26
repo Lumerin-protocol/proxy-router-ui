@@ -1,4 +1,4 @@
-import { ContractData, HashRentalContract } from '../../../types';
+import { ContractState, HashRentalContract } from '../../../types';
 import EastIcon from '@mui/icons-material/East';
 import styled from '@emotion/styled';
 import { isEmpty } from 'lodash';
@@ -34,7 +34,7 @@ export const BuyerOrdersWidget = (props: {
 	});
 
 	const runningContracts = [
-		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage! < 100),
+		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage! < 100 && contract.state === ContractState.Running),
 	];
 	const completedContractsAmount = [
 		...props.contracts.map((contract: HashRentalContract) => contract.history),
