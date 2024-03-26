@@ -301,7 +301,7 @@ export class EthereumGateway {
 			const maxPriorityFeePerGas = ethers.utils.parseUnits('0', 'gwei');
 			const maxFeePerGas = ethers.utils.parseUnits(gasPrice, 'wei');
 
-			const extraGasBuffer = ethers.utils.parseUnits("0.01", "gwei");
+			const extraGasBuffer = ethers.utils.parseUnits('0.01', 'gwei');
 			return {
 				maxPriorityFeePerGas,
 				maxFeePerGas: maxFeePerGas.add(extraGasBuffer),
