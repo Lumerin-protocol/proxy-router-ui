@@ -298,10 +298,13 @@ export class EthereumGateway {
 
 		const chainId = process.env.REACT_APP_CHAIN_ID;
 		if (chainId === '421614' || chainId === '42161') {
-			// no priority fee on Arbitrum, maxFeePerGas is stable at 0.1 gwei
+			const maxPriorityFeePerGas = ethers.utils.parseUnits('0', 'gwei');
+			const maxFeePerGas = ethers.utils.parseUnits(gasPrice, 'wei');
+
+			const extraGasBuffer = ethers.utils.parseUnits("0.01", "gwei");
 			return {
-				maxPriorityFeePerGas: ethers.utils.parseUnits('0', 'gwei'),
-				maxFeePerGas: ethers.utils.parseUnits(gasPrice, 'wei'),
+				maxPriorityFeePerGas,
+				maxFeePerGas: maxFeePerGas.add(extraGasBuffer),
 			};
 		}
 		return {};
