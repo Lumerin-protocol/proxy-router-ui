@@ -34,7 +34,10 @@ export const BuyerOrdersWidget = (props: {
 	});
 
 	const runningContracts = [
-		...updatedOrders.filter((contract: HashRentalContract) => contract.progressPercentage! < 100 && contract.state === ContractState.Running),
+		...updatedOrders.filter(
+			(contract: HashRentalContract) =>
+				contract.progressPercentage! < 100 && contract.state === ContractState.Running
+		),
 	];
 	const completedContractsAmount = [
 		...props.contracts.map((contract: HashRentalContract) => contract.history),

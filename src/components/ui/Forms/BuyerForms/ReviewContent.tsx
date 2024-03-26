@@ -50,7 +50,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	inputData,
 	onUseLightningPayoutsFlow,
 	clearErrors,
-	showValidationError
+	showValidationError,
 }) => {
 	const { poolAddress, username } = inputData;
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -219,11 +219,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 						});
 					}}
 				/>
-				{
-					showValidationError && (
-						<div className='text-xs text-red-500'>Username not recognized as valid Lightning Address</div>
-					)
-				}
+				{showValidationError && (
+					<div className='text-xs text-red-500'>
+						Username not recognized as valid Lightning Address
+					</div>
+				)}
 				{errors.username?.type === 'required' && (
 					<div className='text-xs text-red-500'>{errors.username.message}</div>
 				)}

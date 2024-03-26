@@ -25,7 +25,7 @@ import { ethers } from 'ethers';
 import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
-import { CircularProgress } from '@mui/material'
+import { CircularProgress } from '@mui/material';
 
 const { abi, bytecode } = CloneFactoryContract;
 
@@ -337,7 +337,14 @@ export const getButton: (
 	onSubmit,
 	isDisabled,
 	isSpinning?: boolean
-) => JSX.Element = (contentState, buttonContent, onComplete, onSubmit, isDisabled, isSpinning = false) => {
+) => JSX.Element = (
+	contentState,
+	buttonContent,
+	onComplete,
+	onSubmit,
+	isDisabled,
+	isSpinning = false
+) => {
 	let pathName = window.location.pathname;
 	let viewText = '';
 	switch (pathName) {
@@ -353,12 +360,12 @@ export const getButton: (
 			break;
 	}
 
-	if(isSpinning) {
+	if (isSpinning) {
 		return (
 			<PrimaryButton type='button'>
-				<CircularProgress color='inherit' size={'16px'}/>
+				<CircularProgress color='inherit' size={'16px'} />
 			</PrimaryButton>
-		)	
+		);
 	}
 
 	return contentState === ContentState.Complete ? (
@@ -638,20 +645,18 @@ export const sortContractsList = <T extends { id: string }, K extends string | n
 };
 
 export const validateLightningUrl = async (email: string | undefined) => {
-	if(!email)
-		return false;
+	if (!email) return false;
 
 	try {
-		const [username, domain] = email.split("@");
+		const [username, domain] = email.split('@');
 		const url = `https://${domain}/.well-known/lnurlp/${username}`;
 		const res = await fetch(url);
 		const data = await res.json();
 		return data.callback;
-	}
-	catch(e) {
+	} catch (e) {
 		return false;
 	}
-}
+};
 
 type StringOrNumber = string | number | bigint;
 

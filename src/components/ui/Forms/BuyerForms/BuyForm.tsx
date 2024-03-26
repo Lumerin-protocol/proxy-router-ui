@@ -13,7 +13,7 @@ import {
 	getPoolRfc2396,
 	getValidatorURL,
 	getHandlerBlockchainError,
-	validateLightningUrl
+	validateLightningUrl,
 } from '../../../../utils';
 
 import { ethers } from 'ethers';
@@ -288,21 +288,20 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 	const onSubmit = () => {
 		setShowValidationError(false);
-		if(usedLightningPayoutsFlow) {
+		if (usedLightningPayoutsFlow) {
 			setValidatingUrl(true);
 			validateLightningUrl(formData?.username).then((isValid) => {
 				setValidatingUrl(false);
-				if(isValid) {
-					buyContractAsync(formData)
-				}
-				else {
+				if (isValid) {
+					buyContractAsync(formData);
+				} else {
 					setShowValidationError(true);
 				}
 			});
 			return;
 		}
-		buyContractAsync(formData)
-	}
+		buyContractAsync(formData);
+	};
 
 	// Set styles and button based on ContentState
 	const display =
