@@ -21,7 +21,7 @@ import {
 	encryptMessage,
 	getValidatorURL,
 	getHandlerBlockchainError,
-	validateLightningUrl
+	validateLightningUrl,
 } from '../../../../utils';
 import { ConfirmContent } from './ConfirmContent';
 import { CompletedContent } from './CompletedContent';
@@ -237,21 +237,20 @@ export const EditForm: React.FC<EditFormProps> = ({
 
 	const onSubmit = () => {
 		setShowValidationError(false);
-		if(usedLightningPayoutsFlow) {
+		if (usedLightningPayoutsFlow) {
 			setValidatingUrl(true);
 			validateLightningUrl(formData?.username).then((isValid) => {
 				setValidatingUrl(false);
-				if(isValid) {
-					editContractAsync(formData)
-				}
-				else {
+				if (isValid) {
+					editContractAsync(formData);
+				} else {
 					setShowValidationError(true);
 				}
 			});
 			return;
 		}
-		editContractAsync(formData)
-	}
+		editContractAsync(formData);
+	};
 
 	// Set styles and button based on ContentState
 	const display =
