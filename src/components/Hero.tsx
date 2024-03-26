@@ -7,9 +7,9 @@ import { ModalItem } from './ui/Modal';
 import styled from '@emotion/styled';
 
 const ConnectBtn = styled(PrimaryButton)`
-	backgroundcolor: rgb(255, 184, 0);
+	background-color: rgb(255, 184, 0);
 	background: linear-gradient(0deg, rgba(255, 184, 0, 1) 0%, rgba(230, 139, 3, 1) 100%);
-	boxshadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.2);
+	box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.2);
 	color: black;
 	font-weight: 600;
 `;
