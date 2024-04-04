@@ -103,7 +103,7 @@ export const ResponsiveNavigation = (prop: {
 				<div className='version'>Version: {process.env.REACT_APP_VERSION}</div>
 				<Socials>
 					{[
-						{ link: 'https://discord.gg/ncBTzhZPP6', icon: faDiscord },
+						{ link: 'https://discord.gg/lumerin', icon: faDiscord },
 						{ link: 'https://medium.com/titan-mining-blog', icon: faMedium },
 						{ link: 'https://t.me/LumerinOfficial', icon: faTelegram },
 						{ link: 'http://twitter.com/hellolumerin', icon: faXTwitter },
