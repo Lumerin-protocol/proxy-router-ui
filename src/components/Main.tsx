@@ -258,17 +258,26 @@ export const Main: React.FC = () => {
 		const data = await web3Gateway.getContractsV2(userAccount);
 
 		return data.map((e) => {
+			const { hasFutureTerms, futureTerms, state } = e;
+			let { version, speed, length, price } = e;
+			if (hasFutureTerms && futureTerms && state === '0') {
+				speed = futureTerms.speed;
+				length = futureTerms.length;
+				price = futureTerms.price;
+				version = futureTerms.version;
+			}
+
 			return {
 				id: e.id,
-				price: e.price,
-				speed: e.speed,
-				length: e.length,
+				price,
+				speed,
+				length,
 				buyer: e.buyer,
 				seller: e.seller,
 				timestamp: e.startingBlockTimestamp,
 				state: e.state,
 				encryptedPoolData: e.encrValidatorUrl,
-				version: e.version,
+				version,
 				isDeleted: e.isDeleted,
 				history: e.history.map((h) => {
 					return {
