@@ -1,8 +1,8 @@
 import { HashRentalContract, SortTypes } from '../../../types';
 import { getReadableDate } from '../../../utils';
-import SpeedIcon from '../../../images/icons/download-speed.png';
-import PriceIcon from '../../../images/icons/price-tag.png';
-import TimeIcon from '../../../images/icons/time-left.png';
+import SpeedIcon from '../../../images/icons/speed-icon-white.png';
+import PriceIcon from '../../../images/icons/price-icon-white.png';
+import TimeIcon from '../../../images/icons/time-icon-white.png';
 import {
 	AvailableContract,
 	MobileAvailableContract,

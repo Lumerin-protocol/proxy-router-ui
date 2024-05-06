@@ -7,12 +7,12 @@ export const MobileWalletInfo = (props: { walletAddress: string; isMobile: boole
 	const WalletBalanceWrapper = styled(MobileWidget)`
 		flex: 40%;
 		h3 {
-			color: #696969;
+			color: #fff;
 			font-size: 10px;
 		}
 		p {
 			font-size: 16px;
-			color: rgba(14, 67, 83);
+			color: #fff;
 			font-weight: 500;
 		}
 	`;

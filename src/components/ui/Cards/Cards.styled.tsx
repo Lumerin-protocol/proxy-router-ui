@@ -19,6 +19,10 @@ export const SmallWidget = styled(Card)`
 	flex-direction: column;
 	justify-content: center;
 	min-width: 215px;
+	background-color: rgba(79, 126, 145, 0.04);
+	background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
+	border: rgba(171, 171, 171, 1) 1px solid;
+	color: #fff;
 
 	h3 {
 		text-align: center;
@@ -30,7 +34,8 @@ export const SmallWidget = styled(Card)`
 		text-align: center;
 		border-top-width: 2px;
 		font-size: 0.65rem;
-		border-top: 2px solid rgba(234, 247, 252);
+		border-top: 1px solid #eaf7fc;
+		width: 100%;
 	}
 `;
 

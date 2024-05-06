@@ -3,13 +3,13 @@ import styled from '@emotion/styled';
 export const TabSwitch = styled.div`
 	display: flex;
 	align-items: center;
-	background-color: #fff;
-	color: #0e4353;
+	border: rgba(171, 171, 171, 1) 1px solid;
+	color: #fff;
 	box-shadow: 0 0 1px 0 rgba(#185ee0, 0.15), 0 6px 12px 0 rgba(#185ee0, 0.15);
 	padding: 0.7rem 0.25rem;
 	max-width: 408px;
 	height: 53px;
-	border-radius: 99px;
+	border-radius: 9px;
 	margin-bottom: 3rem;
 	margin-top: 2rem;
 
@@ -45,8 +45,9 @@ export const TabSwitch = styled.div`
 			height: 2rem;
 			margin-left: 0.75rem;
 			border-radius: 50%;
-			background-color: #e6eef9;
 			transition: 0.15s ease-in;
+			color: #4c5a5f;
+			background-color: #fff;
 		}
 	}
 
@@ -68,17 +69,17 @@ export const TabSwitch = styled.div`
 	}
 
 	.active > span {
-		background-color: white;
-		color: #0e4353;
+		color: #4c5a5f;
+		background-color: #fff;
 	}
 	.glider {
 		position: absolute;
 		display: flex;
 		height: 45px;
 		width: 200px;
-		background-color: #0e4353;
+		background-color: #4c5a5f;
 		z-index: 1;
-		border-radius: 99px;
+		border-radius: 9px;
 		transition: 0.25s ease-out;
 
 		@media (max-width: 450px) {

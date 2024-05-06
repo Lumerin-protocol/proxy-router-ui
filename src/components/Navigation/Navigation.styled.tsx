@@ -7,17 +7,19 @@ export const DrawerContent = styled.div`
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
+	color: white;
 
 	nav a,
 	.resources a {
 		display: flex;
 		padding: 0.5rem;
 		align-items: center;
+		color: white;
 	}
 
 	.item-name {
 		margin-left: 1rem;
-		font-size: 0.925rem;
+		font-size: 1rem;
 		line-height: 1.25rem;
 		font-weight: 500;
 	}
@@ -41,7 +43,7 @@ export const DrawerContent = styled.div`
 		border-top: 2px solid #f4f4f4;
 
 		h3 {
-			color: #0e4353;
+			color: white;
 			margin-bottom: 1rem;
 			font-weight: 500;
 			padding-left: 0.5rem;
