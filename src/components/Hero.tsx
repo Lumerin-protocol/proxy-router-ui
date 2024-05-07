@@ -5,13 +5,16 @@ import { ConnectWalletModal } from './ui/Forms/ConnectWalletModal';
 import { PrimaryButton } from './ui/Forms/FormButtons/Buttons.styled';
 import { ModalItem } from './ui/Modal';
 import styled from '@emotion/styled';
+import Prototype from '../images/landing-hero.png';
 
 const ConnectBtn = styled(PrimaryButton)`
-	background-color: rgb(255, 184, 0);
-	background: linear-gradient(0deg, rgba(255, 184, 0, 1) 0%, rgba(230, 139, 3, 1) 100%);
+	background-color: #4c5a5f;
+	background: #4c5a5f
+		linear-gradient(45deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
 	box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.2);
-	color: black;
-	font-weight: 600;
+	color: #fff;
+	font-weight: 500;
+	padding: 0.75rem 1.75rem;
 `;
 
 export const Hero = (prop: { actionButtons: JSX.Element }) => {
@@ -49,15 +52,24 @@ export const Hero = (prop: { actionButtons: JSX.Element }) => {
 			/>
 			<HeroWrapper>
 				<div className='content-wrapper'>
-					<HeroHeadline>
-						Lumerin <br />
-						Hashpower <br />
-						Marketplace
-					</HeroHeadline>
-					<HeroSubheadline>Buy, sell, and own hashpower through your Web3 wallet</HeroSubheadline>
-					<ConnectBtn type='button' onClick={openConnectWalletModal}>
-						Connect Wallet
-					</ConnectBtn>
+					<div className='hero'>
+						<div className='left'>
+							<HeroHeadline>
+								Lumerin <br />
+								Hashpower <br />
+								Marketplace
+							</HeroHeadline>
+							<HeroSubheadline>
+								Buy, sell, and own hashpower through your Web3 wallet
+							</HeroSubheadline>
+							<ConnectBtn type='button' onClick={openConnectWalletModal}>
+								Connect Wallet
+							</ConnectBtn>
+						</div>
+						<div className='right'>
+							<img src={Prototype} alt='prototype screenshot' />
+						</div>
+					</div>
 					<h3>Easiest way to start mining Bitcoin, without hardware</h3>
 					<Steps>
 						{instructions.map((item) => (

@@ -157,7 +157,7 @@ export const AvailableContracts = (prop: {
 	}
 
 	if (prop.contracts.length === 0) {
-		return <h2>No contracts available for purchase.</h2>;
+		return <h2 className='text-white'>No contracts available for purchase.</h2>;
 	}
 
 	// Mobile view

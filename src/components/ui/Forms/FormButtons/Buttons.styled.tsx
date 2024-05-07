@@ -39,6 +39,7 @@ export const ConnectButtonsWrapper = styled.div`
 		justify-content: center;
 		align-items: center;
 		padding: 1rem;
+		color: black;
 
 		span {
 			margin-right: 1rem;

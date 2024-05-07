@@ -2,26 +2,50 @@ import styled from '@emotion/styled';
 // import HeroBubble from '../images/hero-bubble-round.png';
 // import HeroVase from '../images/hero-bubble-vase.png';
 // import HeroBubbleLines from '../images/hero-bubble-lines.png';
-import Background from '../images/connect-wallet-page.png';
+import BackgroundGradient from '../images/landing-gradient.png';
+import BackgroundDots from '../images/landing-bg-dots.png';
+import Grid from '../images/landing-grid.png';
 
 export const HeroWrapper = styled.div`
 	min-height: 100vh;
 	padding-top: 5rem;
 	width: 100%;
 	background-color: #1e1e1e;
+	background-image: url(${BackgroundGradient}), url(${BackgroundDots}), url(${Grid});
+	background-position: top right, top right, right 50px top 60px;
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	background-size: contain, 40%, 65%;
 
-	/* @media (max-width: 650px) {
-		background-position: top 414px right 2px, top 500px right 200px, top right -75px, bottom right,
-			top;
-		background-size: 34%, 50%, 72%, 100%, 100%;
-		background-repeat: no-repeat;
-	} */
+	@media (max-width: 650px) {
+		background-image: url(${BackgroundGradient}), url(${BackgroundDots});
+		background-size: 60%, 70%;
+		background-position: bottom right, right;
+		background-repeat: no-repeat, no-repeat;
+		background-size: cover, contain;
+	}
 
 	.content-wrapper {
 		max-width: 1150px;
 		margin: 0 auto;
 		padding: 2rem;
 		padding-bottom: 5rem;
+	}
+
+	.hero {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 2rem;
+		margin-bottom: 5rem;
+	}
+
+	.right {
+		max-width: 500px;
+
+		@media (max-width: 650px) {
+			display: none;
+		}
 	}
 	p {
 		color: #fff;
@@ -99,7 +123,7 @@ export const Steps = styled.ul`
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		font-family: Raleway;
+		font-family: Inter, sans-serif;
 		font-weight: 700;
 		font-size: 1.5rem;
 		margin-bottom: 1rem;
