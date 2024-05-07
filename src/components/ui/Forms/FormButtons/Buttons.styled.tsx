@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 export const ActionButtonWrapper = styled.div`
 	width: 30px;
 	margin-left: 0.75rem;
+	margin-bottom: 10px;
 	button {
 		border-radius: 50px;
 		width: 30px;
@@ -23,7 +24,7 @@ export const ActionButtonWrapper = styled.div`
 		font-family: Inter, sans-serif;
 		font-size: 0.65rem;
 		text-align: center;
-		color: #0f4454;
+		margin-bottom: 5px;
 	}
 `;
 
