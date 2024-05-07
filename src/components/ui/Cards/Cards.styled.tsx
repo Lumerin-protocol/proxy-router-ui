@@ -2,8 +2,11 @@ import styled from '@emotion/styled';
 
 export const Card = styled.div`
 	padding: 1.5rem;
-	background-color: white;
-	border-radius: 15px;
+	background-color: rgba(79, 126, 145, 0.04);
+	background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
+	border: rgba(171, 171, 171, 1) 1px solid;
+	color: #fff;
+	border-radius: 9px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -14,7 +17,7 @@ export const Card = styled.div`
 export const SmallWidget = styled(Card)`
 	padding: 0.5rem 1.25rem;
 	margin-bottom: 0.75rem;
-	border-radius: 15px;
+	border-radius: 9px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -41,8 +44,11 @@ export const SmallWidget = styled(Card)`
 
 export const MobileWidget = styled.div`
 	padding: 0.5rem;
-	background-color: white;
-	border-radius: 15px;
+	background-color: rgba(79, 126, 145, 0.04);
+	background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
+	border: rgba(171, 171, 171, 1) 1px solid;
+	color: #fff;
+	border-radius: 9px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
