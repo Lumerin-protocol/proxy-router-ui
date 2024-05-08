@@ -4,7 +4,7 @@ export const TableHeader = styled.li`
 	background-color: rgba(79, 126, 145, 0.04);
 	background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
 	border: rgba(171, 171, 171, 1) 1px solid;
-	border-radius: 15px;
+	border-radius: 9px;
 	margin-bottom: 1rem;
 	padding-left: 2rem;
 	width: 100%;
@@ -37,7 +37,7 @@ export const AvailableContract = styled.li`
 	background-color: rgba(79, 126, 145, 0.04);
 	background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
 	border: rgba(171, 171, 171, 1) 1px solid;
-	border-radius: 15px;
+	border-radius: 9px;
 	color: white;
 	margin-bottom: 1rem;
 	padding: 2rem;
@@ -63,8 +63,10 @@ export const AvailableContract = styled.li`
 `;
 
 export const MobileAvailableContract = styled.div`
-	background: white;
-	border-radius: 15px;
+	background-color: rgba(79, 126, 145, 0.04);
+	background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
+	border: rgba(171, 171, 171, 1) 1px solid;
+	border-radius: 9px;
 	margin-bottom: 1rem;
 	padding: 1.5rem;
 	width: 100%;
@@ -98,7 +100,7 @@ export const MobileAvailableContract = styled.div`
 
 export const SkeletonWrap = styled.div`
 	& span {
-		border-radius: 15px;
+		border-radius: 9px;
 		margin-bottom: 1rem;
 	}
 `;
