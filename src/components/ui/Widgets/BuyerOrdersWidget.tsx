@@ -52,7 +52,7 @@ export const BuyerOrdersWidget = (props: {
 		}
 
 		.active {
-			color: #0e4353;
+			color: #fff;
 		}
 		.completed {
 			color: #a7a9b6;

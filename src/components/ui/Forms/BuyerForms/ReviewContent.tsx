@@ -143,14 +143,15 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				}}
 			/>
 			{!useLightningPayouts && (
-				<InputWrapper style={{ display: isEdit ? 'none' : undefined }}>
-					<InputLabel sx={{ color: 'black', fontFamily: 'inherit' }} id='preferred-pools-label'>
+				<InputWrapper style={{ display: isEdit ? 'none' : undefined, marginTop: '1rem' }}>
+					<InputLabel sx={{ color: 'white', fontFamily: 'inherit' }} id='preferred-pools-label'>
 						Predefined Pools
 					</InputLabel>
 					<Select
 						labelId='preferred-pools-label'
 						id='preferred-pools'
 						displayEmpty
+						sx={{ border: '1px solid white', color: '#fff' }}
 						value={preferredPool.name}
 						label='Predefined Pools'
 						onChange={(event: any) => handlePoolChange(event)}

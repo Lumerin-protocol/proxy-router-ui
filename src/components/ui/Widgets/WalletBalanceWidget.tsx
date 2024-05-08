@@ -21,7 +21,7 @@ export const WalletBalanceWidget = (props: {
 			.balance {
 				font-size: 1.5rem;
 				margin-left: 0.65rem;
-				color: rgba(14, 67, 83);
+				color: #fff;
 
 				.lmr {
 					font-size: 1.125rem;
@@ -40,7 +40,7 @@ export const WalletBalanceWidget = (props: {
 		}
 		p {
 			font-size: 16px;
-			color: rgba(14, 67, 83);
+			color: #fff;
 			font-weight: 500;
 
 			.lmr {

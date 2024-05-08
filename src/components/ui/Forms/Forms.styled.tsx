@@ -13,9 +13,10 @@ export const InputWrapper = styled.div`
 		border-radius: 12px;
 		padding: 12px 1.5rem;
 		margin-top: 0.25rem;
+		color: #000;
 
 		::placeholder {
-			color: rgba(1, 67, 83, 0.56);
+			color: grey;
 		}
 	}
 `;
@@ -34,7 +35,7 @@ export const ReviewItems = styled.div`
 			font-size: 0.75rem;
 		}
 		p {
-			color: #014353;
+			color: #fff;
 			font-weight: 500;
 		}
 	}

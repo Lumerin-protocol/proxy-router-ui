@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 export const ActionButtonWrapper = styled.div`
 	width: 30px;
 	margin-left: 0.75rem;
+	margin-bottom: 10px;
 	button {
 		border-radius: 50px;
 		width: 30px;
@@ -23,7 +24,7 @@ export const ActionButtonWrapper = styled.div`
 		font-family: Inter, sans-serif;
 		font-size: 0.65rem;
 		text-align: center;
-		color: #0f4454;
+		margin-bottom: 5px;
 	}
 `;
 
@@ -39,6 +40,7 @@ export const ConnectButtonsWrapper = styled.div`
 		justify-content: center;
 		align-items: center;
 		padding: 1rem;
+		color: black;
 
 		span {
 			margin-right: 1rem;
@@ -60,7 +62,7 @@ export const FormButtonsWrapper = styled.div`
 `;
 
 export const Button = styled.button`
-	border-radius: 85px;
+	border-radius: 8px;
 	padding: 0.5rem 1rem;
 	outline: none;
 	display: flex;
@@ -79,21 +81,21 @@ export const Button = styled.button`
 `;
 
 export const PrimaryButton = styled(Button)`
-	color: white;
-	background: #014353;
+	color: #fff;
+	background-color: #4c5a5f;
 `;
 
 export const DisabledButton = styled(Button)`
-	color: rgba(0, 0, 0, 0.26);
+	color: black;
+	background: grey;
 	box-shadow: none;
-	background-color: rgba(0, 0, 0, 0.12);
 	cursor: not-allowed;
 `;
 
 export const SecondaryButton = styled(Button)`
-	color: #014353;
+	color: #fff;
 	background: none;
-	border: 2px solid #014353;
+	border: 2px solid #fff;
 `;
 
 export const CancelButton = styled(Button)`

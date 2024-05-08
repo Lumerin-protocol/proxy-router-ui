@@ -1,9 +1,9 @@
 import { Drawer } from '@mui/material';
 import { DrawerContent, Socials } from './Navigation.styled';
-import { LogoIcon } from '../../images/index';
 import { PathName } from '../../types';
 import MarketplaceIconActive from '../../images/icons/store-blue.png';
 import MarketplaceIconInactive from '../../images/icons/store-grey.png';
+import LogoIcon from '../../images/icons/nav-logo-white.png';
 import BuyerIconActive from '../../images/icons/buyer-blue.png';
 import BuyerIconInactive from '../../images/icons/buyer-grey.png';
 // import SellerIconActive from '../../images/icons/seller-blue.png';
@@ -64,19 +64,22 @@ export const ResponsiveNavigation = (prop: {
 	const drawer = (
 		<DrawerContent>
 			<nav>
-				<LogoIcon className='menu-icon' />
+				<img src={LogoIcon} alt='' className='menu-icon' style={{ width: '100%' }} />
 				{navigation.map((item) => (
 					<Link
 						key={item.name}
 						to={item.to}
-						className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
+						// className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
 						onClick={() => {
 							prop.setSidebarOpen(false);
 							prop.setPathname(item.to);
 						}}
 					>
-						<img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' />
-						<span className='item-name'>{item.name}</span>
+						{/* <img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' /> */}
+						<img src={item.inactiveIcon} alt='' />
+						<span className='item-name' style={{ fontWeight: item.current ? 700 : 400 }}>
+							{item.name}
+						</span>
 					</Link>
 				))}
 			</nav>
@@ -84,7 +87,7 @@ export const ResponsiveNavigation = (prop: {
 				<nav className='resources'>
 					<h3>Resources</h3>
 					<a href={`${process.env.REACT_APP_GITBOOK_URL}`} target='_blank' rel='noreferrer'>
-						<HelpIcon style={{ fill: '#0E4353' }} />
+						<HelpIcon style={{ fill: '#509EBA' }} />
 						<span className='item-name'>Help</span>
 					</a>
 					<a
@@ -92,11 +95,11 @@ export const ResponsiveNavigation = (prop: {
 						target='_blank'
 						rel='noreferrer'
 					>
-						<FlagCircleIcon style={{ fill: '#0E4353' }} />
+						<FlagCircleIcon style={{ fill: '#509EBA' }} />
 						<span className='item-name'>Report issue</span>
 					</a>
 					<a href='https://lumerin.io/privacy-policy' target='_blank' rel='noreferrer'>
-						<ShieldIcon style={{ fill: '#0E4353' }} />
+						<ShieldIcon style={{ fill: '#509EBA' }} />
 						<span className='item-name'>Privacy Policy</span>
 					</a>
 				</nav>
@@ -110,7 +113,7 @@ export const ResponsiveNavigation = (prop: {
 						{ link: 'https://www.tiktok.com/@hellolumerin_', icon: faTiktok },
 					].map((item) => (
 						<a href={item.link} target='_blank' rel='noreferrer'>
-							<FontAwesomeIcon icon={item.icon} color='#0E4353' />
+							<FontAwesomeIcon icon={item.icon} color='#fff' />
 						</a>
 					))}
 				</Socials>
@@ -143,6 +146,11 @@ export const ResponsiveNavigation = (prop: {
 						boxSizing: 'border-box',
 						width: prop.drawerWidth,
 						border: 'none',
+						backgroundColor: 'rgba(79, 126, 145, 0.04)',
+						background:
+							'radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, .05) 100%)',
+						// borderRight: 'linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(171,171,171,1) 100%)',
+						borderRight: 'rgba(171,171,171,1) 1px solid',
 					},
 				}}
 				open

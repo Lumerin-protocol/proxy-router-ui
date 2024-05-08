@@ -25,11 +25,8 @@ export const ConnectedWalletWidget = (props: {
 				<span className='pr-3'>{isHovering ? label : props.truncatedWalletAddress}</span>
 				{props.isMetamask ? <MetaMaskIcon /> : <WalletConnectIcon />}
 			</div>
-			<button
-				className='link text-xs text-lumerin-blue-text'
-				onClick={() => props.addTokenToMetamask()}
-			>
-				<span style={{ display: 'flex', alignItems: 'center' }}>
+			<button className='link text-xs' onClick={() => props.addTokenToMetamask()}>
+				<span style={{ display: 'flex', alignItems: 'center', color: '#fff' }}>
 					Import LMR into MetaMask{' '}
 					<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
 				</span>

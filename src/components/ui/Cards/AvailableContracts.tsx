@@ -1,8 +1,8 @@
 import { HashRentalContract, SortTypes } from '../../../types';
 import { getReadableDate } from '../../../utils';
-import SpeedIcon from '../../../images/icons/download-speed.png';
-import PriceIcon from '../../../images/icons/price-tag.png';
-import TimeIcon from '../../../images/icons/time-left.png';
+import SpeedIcon from '../../../images/icons/speed-icon-white.png';
+import PriceIcon from '../../../images/icons/price-icon-white.png';
+import TimeIcon from '../../../images/icons/time-icon-white.png';
 import {
 	AvailableContract,
 	MobileAvailableContract,
@@ -157,7 +157,7 @@ export const AvailableContracts = (prop: {
 	}
 
 	if (prop.contracts.length === 0) {
-		return <h2>No contracts available for purchase.</h2>;
+		return <h2 className='text-white'>No contracts available for purchase.</h2>;
 	}
 
 	// Mobile view

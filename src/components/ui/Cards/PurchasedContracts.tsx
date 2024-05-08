@@ -7,11 +7,11 @@ import {
 import { getReadableDate, truncateAddress } from '../../../utils';
 import 'react-circular-progressbar/dist/styles.css';
 import PickaxeAnimated from '../../../images/icons/pickaxe-animated.gif';
-import IDCard from '../../../images/icons/id-card.png';
-import PriceTag from '../../../images/icons/price-tag.png';
-import Pickaxe from '../../../images/icons/pickaxe.png';
-import Speed from '../../../images/icons/download-speed.png';
-import Time from '../../../images/icons/time-left.png';
+import IDCard from '../../../images/id-card-white.png';
+import Pickaxe from '../../../images/pickaxe-white.png';
+import Speed from '../../../images/icons/speed-icon-white.png';
+import PriceTag from '../../../images/icons/price-icon-white.png';
+import Time from '../../../images/icons/time-icon-white.png';
 import { ContractCards } from './PurchasedContracts.styled';
 import { Divider, LinearProgress, linearProgressClasses } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
@@ -24,11 +24,11 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 	height: 10,
 	borderRadius: 5,
 	[`&.${linearProgressClasses.colorPrimary}`]: {
-		backgroundColor: '#B5D3DD',
+		backgroundColor: '#000',
 	},
 	[`& .${linearProgressClasses.bar}`]: {
 		borderRadius: 5,
-		backgroundColor: '#0E4353',
+		backgroundColor: '#fff',
 	},
 }));
 

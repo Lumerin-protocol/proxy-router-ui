@@ -22,7 +22,7 @@ export const Header = (prop: {
 	`;
 
 	const PageTitle = styled(Typography)`
-		color: #004c5f;
+		color: #fff;
 		font-weight: 600;
 		font-family: Raleway, sans-serif;
 		font-size: 2rem;

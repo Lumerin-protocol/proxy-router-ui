@@ -25,7 +25,7 @@ export const EditButton: React.FC<EditButtonProps> = ({
 			<button type='button' onClick={(event) => clickHandler(event)}>
 				<img src={EditIcon} alt='' />
 			</button>
-			<p>Edit</p>
+			<p className='text-white'>Edit</p>
 		</ActionButtonWrapper>
 	);
 };
