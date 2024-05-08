@@ -66,6 +66,7 @@ export const MobileAvailableContract = styled.div`
 	background-color: rgba(79, 126, 145, 0.04);
 	background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
 	border: rgba(171, 171, 171, 1) 1px solid;
+	color: white;
 	border-radius: 9px;
 	margin-bottom: 1rem;
 	padding: 1.5rem;
