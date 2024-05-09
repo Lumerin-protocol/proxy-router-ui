@@ -29,7 +29,7 @@ export const CompletedContent: React.FC<CompletedContentProps> = ({
 	useLightningPayouts,
 }) => {
 	return (
-		<div className='bg-white flex flex-col'>
+		<div className=' text-white flex flex-col'>
 			{contentState === ContentState.Pending ? (
 				<div className='flex flex-col w-full items-center mb-4'>
 					<p className='w-4/6 text-center text-xl mb-8'>Your transaction is pending.</p>

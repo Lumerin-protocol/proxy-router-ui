@@ -495,10 +495,7 @@ export const Main: React.FC = () => {
 	const BodyWrapper = styled.div`
 		display: flex;
 		min-height: 100vh;
-		background: #eaf7fc;
-		background-image: url(${Bg});
-		background-size: 100% 100%;
-		background-attachment: fixed;
+		background: #1e1e1e;
 	`;
 
 	const drawerWidth = 240;

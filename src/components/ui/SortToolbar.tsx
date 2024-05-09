@@ -23,7 +23,7 @@ export const SortToolbar = (props: {
 }) => {
 	return (
 		<StyledToolbar>
-			<h2 className='text-lg text-lumerin-blue-text font-Raleway font-regular text-left mb-5'>
+			<h2 className='text-lg text-white font-Raleway font-regular text-left mb-5'>
 				{!props.isMobile ? props.pageTitle : ''}
 			</h2>
 
