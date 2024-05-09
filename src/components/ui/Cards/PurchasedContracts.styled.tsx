@@ -11,8 +11,11 @@ export const ContractCards = styled.div`
 		grid-template-columns: repeat(3, 1fr);
 	}
 	.card {
-		background: white;
-		border-radius: 15px;
+		background-color: rgba(79, 126, 145, 0.04);
+		background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
+		border: rgba(171, 171, 171, 1) 1px solid;
+		color: #fff;
+		border-radius: 9px;
 		padding: 1.75rem;
 		padding-bottom: 1rem;
 		margin-bottom: 1rem;
@@ -30,7 +33,8 @@ export const ContractCards = styled.div`
 			margin-bottom: 1.5rem;
 
 			.pickaxe {
-				background-color: #0f4454;
+				background: rgb(128, 125, 125);
+				background: linear-gradient(0deg, rgba(128, 125, 125, 1) 12%, rgba(26, 26, 26, 1) 100%);
 				display: flex;
 				justify-content: center;
 				align-items: center;
@@ -53,7 +57,6 @@ export const ContractCards = styled.div`
 				h2 {
 					font-size: 1.1rem;
 					font-weight: 500;
-					color: #0f4454;
 				}
 				a {
 					font-weight: 400;
@@ -65,9 +68,9 @@ export const ContractCards = styled.div`
 			h3,
 			.sm-header {
 				font-size: 0.65rem;
-				color: #384764;
 				font-weight: 300;
 				margin-bottom: 0.6rem;
+				color: #999999;
 			}
 			.item-value {
 				display: flex;
@@ -82,7 +85,6 @@ export const ContractCards = styled.div`
 				p {
 					font-weight: 400;
 					font-size: 0.85rem;
-					color: #0f4454;
 				}
 			}
 			.address {
@@ -90,7 +92,6 @@ export const ContractCards = styled.div`
 				a {
 					text-decoration: underline;
 					font-size: 0.85rem;
-					color: #0f4454;
 				}
 			}
 		}

@@ -16,14 +16,7 @@ import {
 	sortContracts,
 } from '../utils';
 import { DateTime } from 'luxon';
-import {
-	ContractData,
-	ContractState,
-	HashRentalContract,
-	CurrentTab,
-	ContractHistory,
-	ContractHistoryData,
-} from '../types';
+import { ContractState, HashRentalContract, CurrentTab, ContractHistoryData } from '../types';
 import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
 import { ButtonGroup } from './ui/ButtonGroup';
@@ -282,14 +275,14 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 					className={activeOrdersTab === CurrentTab.Running ? 'active' : ''}
 					onClick={handleRunningTab}
 				>
-					Running <span>{showSpinner ? '' : runningContracts.length}</span>
+					Active <span>{showSpinner ? '' : runningContracts.length}</span>
 				</button>
 				<button
 					id='completed'
 					className={activeOrdersTab === CurrentTab.Completed ? 'active' : ''}
 					onClick={handleCompletedTab}
 				>
-					Finished <span>{showSpinner ? '' : completedContracts.length}</span>
+					Completed <span>{showSpinner ? '' : completedContracts.length}</span>
 				</button>
 				<span className='glider'></span>
 			</TabSwitch>
@@ -307,7 +300,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 								<PurchasedContracts sortType={runningSortType} contracts={runningContracts} />
 							</>
 						) : (
-							!showSpinner && <p className='text-2xl'>You have no running contracts.</p>
+							!showSpinner && <p className='text-2xl text-white'>You have no running contracts.</p>
 						)}
 					</>
 				)}
@@ -324,7 +317,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 								<FinishedContracts contracts={completedContracts} sortType={completedSortType} />
 							</>
 						) : (
-							!showSpinner && <p className='text-2xl'>You have no finished contracts.</p>
+							!showSpinner && (
+								<p className='text-2xl text-white'>You have no completed contracts.</p>
+							)
 						)}
 					</>
 				)}
