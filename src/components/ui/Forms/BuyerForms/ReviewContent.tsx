@@ -1,7 +1,8 @@
-import { InputLabel, MenuItem, Select } from '@mui/material';
+import { InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm } from '../../../../types';
+import { DisabledButton } from '../../../ui/Forms/FormButtons/Buttons.styled';
 import {
 	getHostName,
 	getWorkerName,
@@ -107,21 +108,30 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				isOpen={alertOpen}
 				onClose={() => setAlertOpen(false)}
 			/>
-			<InputWrapper style={{ marginBottom: '0px' }}>
-				<label htmlFor='validatorAddress'>Validator Address</label>
-				<input
-					type='text'
-					{...register('validatorAddress', {})}
-					disabled={true}
-					placeholder='stratum+tcp://IPADDRESS'
-					className={
-						errors?.poolAddress
-							? 'bg-red-100 btn-modal placeholder-red-400 review-input'
-							: 'review-no-errors review-input'
-					}
-					value={getValidatorURL()}
-				/>
-			</InputWrapper>
+			<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+				<InputWrapper style={{ display: isEdit ? 'none' : undefined, marginTop: '1rem' }}>
+					<InputLabel sx={{ color: 'white', fontFamily: 'inherit' }} id='validator-label'>
+						Validator Address
+					</InputLabel>
+					<Select
+						labelId='validator-label'
+						id='validator'
+						{...register('validatorAddress', {})}
+						sx={{ border: '1px solid white', color: '#fff' }}
+						value={getValidatorURL()}
+						label='Validators'
+					>
+						<MenuItem value={getValidatorURL()} key={getValidatorURL()}>
+							{getValidatorURL()}
+						</MenuItem>
+					</Select>
+				</InputWrapper>
+
+				<Tooltip title='Temporary Unavailable' placement='top'>
+					<DisabledButton>Become Validator</DisabledButton>
+				</Tooltip>
+			</div>
+
 			<Checkbox
 				legend={checkboxLegend}
 				label={checkboxLabel}
