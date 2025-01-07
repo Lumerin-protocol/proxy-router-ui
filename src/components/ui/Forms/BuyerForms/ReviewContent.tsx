@@ -59,6 +59,8 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	[preferredPool, setPreferredPool] = useState<PoolData>({ name: '', address: '', port: '' });
 	const lightningUrl = getTitanLightningPoolUrl();
 
+	// pull active validator list
+
 	const preferredPools = [
 		{ name: 'Titan', address: 'mining.pool.titan.io:4242', port: '4242' },
 		{ name: 'Luxor', address: 'btc.global.luxor.tech:700', port: '700' },

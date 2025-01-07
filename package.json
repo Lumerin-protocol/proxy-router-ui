@@ -47,7 +47,7 @@
 		"@types/react-table": "^7.7.2",
 		"@walletconnect/web3-provider": "^1.7.3",
 		"buffer": "^6.0.3",
-		"contracts-js": "github:Lumerin-protocol/contracts-js#v0.2.0",
+		"contracts-js": "github:Lumerin-protocol/contracts-js#v1.1.1",
 		"ecies-geth": "^1.6.2",
 		"ethereumjs-tx": "^2.1.2",
 		"ethereumjs-util": "^7.1.5",
@@ -67,6 +67,7 @@
 		"react-scripts": "4.0.3",
 		"react-table": "^7.7.0",
 		"uri-js": "^4.4.1",
+		"viem": "^2.22.2",
 		"web-vitals": "^1.1.2",
 		"web3": "^1.10.4"
 	},
