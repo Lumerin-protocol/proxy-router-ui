@@ -43,6 +43,7 @@ import {
 	WalletText,
 	ConnectInfo,
 	CurrentTab,
+	Validator,
 } from '../types';
 
 import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
@@ -55,6 +56,7 @@ import { EthereumGateway } from '../gateway/ethereum';
 import { HistoryentryResponse } from 'contracts-js/dist/generated-types/Implementation';
 import { getRate } from '../rates/rate';
 import { Rates } from '../rates/interfaces';
+import { ValidatorRegistry } from '../gateway/validator';
 
 // Main contains the basic layout of pages and maintains contract state needed by its children
 export const Main: React.FC = () => {
@@ -63,7 +65,9 @@ export const Main: React.FC = () => {
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 	const [isConnected, setIsConnected] = useState<boolean>(false);
 	const [web3Gateway, setWeb3Gateway] = useState<EthereumGateway>();
+	const [validatorRegistry, setValidatorRegistry] = useState<ValidatorRegistry>();
 	const [accounts, setAccounts] = useState<string[]>();
+	const [validators, setValidators] = useState<Validator[]>([]);
 	const [contracts, setContracts] = useState<HashRentalContract[]>([]);
 	const [contractId, setContractId] = useState<string>('');
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
@@ -172,7 +176,15 @@ export const Main: React.FC = () => {
 			return;
 		}
 
-		const { accounts, web3, web3Gateway } = web3Result;
+		const validatorAddress = process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS;
+
+		if (!validatorAddress) {
+			console.error('Missing Validator Address Env');
+			return;
+		}
+
+		const { accounts, web3, web3Gateway, web3ReadOnly } = web3Result;
+		const validator = new ValidatorRegistry(web3ReadOnly, validatorAddress);
 
 		if (accounts.length === 0 || accounts[0] === '') {
 			setAlertOpen(true);
@@ -191,6 +203,7 @@ export const Main: React.FC = () => {
 		}
 		setAccounts(accounts);
 		setWeb3Gateway(web3Gateway);
+		setValidatorRegistry(validator);
 		setIsConnected(true);
 		localStorage.setItem('walletName', walletName);
 		localStorage.setItem('isConnected', 'true');
@@ -214,6 +227,16 @@ export const Main: React.FC = () => {
 	useEffect(() => {
 		if (alertOpen) setIsConnected(false);
 	}, [alertOpen]);
+
+	useEffect(() => {
+		(async () => {
+			let offset = 0;
+			let limit = 100;
+
+			const validators = await validatorRegistry?.getValidators(offset, limit);
+			setValidators(validators as any);
+		})();
+	}, [validatorRegistry]);
 
 	// Attempt to reconnect wallet on page refresh
 	useEffect(() => {
@@ -517,6 +540,7 @@ export const Main: React.FC = () => {
 						contractId={contractId}
 						userAccount={userAccount}
 						web3Gateway={web3Gateway}
+						validators={validators}
 						lumerinbalance={lumerinBalance}
 						setOpen={setBuyModalOpen}
 					/>

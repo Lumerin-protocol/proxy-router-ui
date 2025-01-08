@@ -1,7 +1,8 @@
 import Web3 from 'web3';
 import { HttpProvider } from 'web3-core';
-import viem, { fallback, http, PublicClient } from 'viem';
+import { createPublicClient, fallback, http, PublicClient } from 'viem';
 import { abi } from './validator-registry';
+import { arbitrumSepolia } from 'viem/chains';
 
 export class ValidatorRegistry {
 	private registryAddr: string;
@@ -9,8 +10,9 @@ export class ValidatorRegistry {
 
 	constructor(web3Private: Web3, registryAddr: string) {
 		this.registryAddr = registryAddr;
-		this.viemClient = viem.createPublicClient({
+		this.viemClient = createPublicClient({
 			transport: fallback([http(), http((web3Private.currentProvider as HttpProvider).host)]),
+			chain: arbitrumSepolia,
 		});
 	}
 

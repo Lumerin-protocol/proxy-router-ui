@@ -12,6 +12,7 @@ interface Web3Result {
 	accounts: string[];
 	web3: Web3;
 	web3Gateway: EthereumGateway;
+	web3ReadOnly: Web3;
 }
 
 const ethereum = window.ethereum as Ethereum;
@@ -94,7 +95,7 @@ export const getWeb3ResultAsync = async (
 		);
 		await web3Gateway.init();
 
-		return { accounts, web3, web3Gateway };
+		return { accounts, web3, web3Gateway, web3ReadOnly };
 	} catch (error) {
 		const typedError = error as Error;
 		printError(typedError.message, typedError.stack as string);

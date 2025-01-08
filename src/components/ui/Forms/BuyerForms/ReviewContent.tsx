@@ -1,7 +1,7 @@
 import { InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister, UseFormSetValue } from 'react-hook-form';
-import { AlertMessage, InputValuesBuyForm } from '../../../../types';
+import { AlertMessage, InputValuesBuyForm, Validator } from '../../../../types';
 import { DisabledButton } from '../../../ui/Forms/FormButtons/Buttons.styled';
 import {
 	getHostName,
@@ -12,7 +12,6 @@ import {
 	isValidPoolAddress,
 	isValidPortNumber,
 	isValidUsername,
-	getValidatorURL,
 	getTitanLightningPoolUrl,
 	isValidLightningUsername,
 } from '../../../../utils';
@@ -37,6 +36,7 @@ interface ReviewContentProps {
 	onUseLightningPayoutsFlow: (value: boolean) => void;
 	clearErrors: () => void;
 	showValidationError?: boolean;
+	validators: Validator[];
 }
 
 let preferredPool: PoolData, setPreferredPool: React.Dispatch<React.SetStateAction<PoolData>>;
@@ -52,6 +52,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	onUseLightningPayoutsFlow,
 	clearErrors,
 	showValidationError,
+	validators,
 }) => {
 	const { poolAddress, username } = inputData;
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -66,6 +67,11 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 		{ name: 'Luxor', address: 'btc.global.luxor.tech:700', port: '700' },
 		{ name: 'Braiins', address: 'stratum.braiins.com:3333', port: '3333' },
 	];
+
+	const validatorsOptions = validators.map((v) => ({
+		name: v.host,
+		address: v.addr,
+	}));
 
 	// hiding references to validator service at the moment: my 5/9/22
 	const checkboxLegend = 'Lightning payouts';
@@ -84,6 +90,18 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 		});
 		setValue?.('poolAddress', preferredPool.address);
 	}, [preferredPool]);
+
+	useEffect(() => {
+		if (!validators?.length) {
+			return;
+		}
+		const index = Math.floor(Math.random() * validators.length);
+		setValue?.('validatorAddress', validators[index].addr);
+		setFormData({
+			...inputData,
+			validatorAddress: validators[index].addr,
+		});
+	}, [validators]);
 
 	const poolAddressController = register('poolAddress', {
 		required: 'Pool Address is required',
@@ -117,21 +135,30 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 					</InputLabel>
 					<Select
 						labelId='validator-label'
-						id='validator'
+						id='validatorAddress'
 						{...register('validatorAddress', {})}
 						sx={{ border: '1px solid white', color: '#fff' }}
-						value={getValidatorURL()}
+						onChange={(event: any) => {
+							setFormData({
+								...inputData,
+								validatorAddress: event.target.value,
+							});
+							setValue?.('validatorAddress', event.target.value);
+						}}
+						value={inputData?.validatorAddress}
 						label='Validators'
 					>
-						<MenuItem value={getValidatorURL()} key={getValidatorURL()}>
-							{getValidatorURL()}
-						</MenuItem>
+						{validatorsOptions.map((o) => (
+							<MenuItem value={o.address} key={o.name}>
+								{o.name}
+							</MenuItem>
+						))}
 					</Select>
 				</InputWrapper>
 
-				<Tooltip title='Temporary Unavailable' placement='top'>
+				{/* <Tooltip title='Temporary Unavailable' placement='top'>
 					<DisabledButton>Become Validator</DisabledButton>
-				</Tooltip>
+				</Tooltip> */}
 			</div>
 
 			<Checkbox
