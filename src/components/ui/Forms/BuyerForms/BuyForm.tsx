@@ -27,6 +27,7 @@ import {
 	HashRentalContract,
 	InputValuesBuyForm,
 	PathName,
+	Validator,
 } from '../../../../types';
 import { Alert } from '../../Alert';
 import { buttonText, paragraphText } from '../../../../shared';
@@ -37,6 +38,7 @@ import { ContractLink } from '../../Modal.styled';
 import { Alert as AlertMUI } from '@mui/material';
 import { useHistory } from 'react-router';
 import { EthereumGateway } from '../../../../gateway/ethereum';
+import { decompressPublicKey } from '../../../../gateway/utils';
 
 interface ErrorWithCode extends Error {
 	code?: number;
@@ -58,6 +60,7 @@ interface BuyFormProps {
 	contractId: string;
 	userAccount: string;
 	web3Gateway?: EthereumGateway;
+	validators: Validator[];
 	lumerinbalance: number;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
@@ -68,6 +71,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	userAccount,
 	web3Gateway,
 	lumerinbalance,
+	validators,
 	setOpen,
 }) => {
 	const [contentState, setContentState] = useState<string>(ContentState.Review);
@@ -127,6 +131,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				portNumber: data.portNumber,
 				username: data.username,
 				password: data.password,
+				validatorAddress: data.validatorAddress,
 				...getContractInfo(),
 			});
 		}
@@ -179,7 +184,16 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				try {
 					const buyerDest: string = getPoolRfc2396(formData)!;
 
-					const validatorPublicKey = getValidatorPublicKey();
+					var validator = validators.find((v) => v.addr == formData.validatorAddress);
+					if (!validator) {
+						console.error('Validator is not set');
+						return;
+					}
+
+					const validatorPublicKey = decompressPublicKey(
+						validator.pubKeyYparity,
+						validator.pubKeyX as any
+					);
 					if (!validatorPublicKey) {
 						console.error('Validator public key is not available');
 						return;
@@ -189,7 +203,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					const encrDestURL = (
 						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 					).toString('hex');
-					const validatorURL: string = `stratum+tcp://:@${getValidatorURL()}`;
+					const validatorURL: string = `stratum+tcp://:@${validator?.host}`;
 
 					const pubKey = await web3Gateway.getContractPublicKey(contract.id);
 					const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString(
@@ -249,7 +263,8 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 			case ContentState.Confirm:
 				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirm as string;
-				content = <ConfirmContent data={formData} />;
+				const validator = validators.find((v) => v.addr == formData.validatorAddress)?.host;
+				content = <ConfirmContent data={formData} validator={validator} />;
 				break;
 			case ContentState.Pending:
 			case ContentState.Complete:
@@ -272,6 +287,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						setValue={setValue}
 						setFormData={setFormData}
 						inputData={formData}
+						validators={validators}
 						onUseLightningPayoutsFlow={(e) => {
 							setUsedLightningPayoutsFlow(e);
 							setShowValidationError(false);

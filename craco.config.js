@@ -18,7 +18,16 @@ module.exports = {
 		plugins: [
 			new webpack.DefinePlugin({
 				"process.env.REACT_APP_VERSION": JSON.stringify(version)
-			})
+			}),
 		]
-	}
+	},
+	babel:
+		{
+			presets: [["@babel/preset-env", { targets: "defaults" }]],
+			plugins: [
+				"@babel/plugin-proposal-nullish-coalescing-operator",
+				"@babel/plugin-transform-numeric-separator",
+				"@babel/plugin-transform-optional-chaining",
+			]
+		}
 };

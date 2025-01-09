@@ -218,6 +218,8 @@ export const EditForm: React.FC<EditFormProps> = ({
 						register={register}
 						errors={errors}
 						buyerString={contract.encryptedPoolData}
+						// TODO: path validator for edit form
+						validators={[]}
 						isEdit={true}
 						inputData={formData}
 						setFormData={setFormData}

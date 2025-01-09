@@ -207,3 +207,10 @@ interface Networks {
 export interface ContractJson {
 	networks: Networks;
 }
+
+export interface Validator {
+	addr: string;
+	host: string;
+	pubKeyX: string;
+	pubKeyYparity: boolean;
+}
