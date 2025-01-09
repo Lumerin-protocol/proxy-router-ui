@@ -4,7 +4,7 @@ WORKDIR '/app'
 RUN apk add git
 
 COPY ./package.json ./
-RUN npm install
+RUN npm install --force
 COPY . .
 
 # keep alphabetically sorted
