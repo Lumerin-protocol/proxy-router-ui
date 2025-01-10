@@ -1,20 +1,21 @@
 import React from 'react';
 import { FormData } from '../../../../types';
 import { ReviewItems } from '../Forms.styled';
-import { getValidatorURL } from '../../../../utils';
 
 interface ConfirmContentProps {
 	data: FormData;
+	validator?: string;
 }
 
 export const ConfirmContent: React.FC<ConfirmContentProps> = ({
 	data: { poolAddress, portNumber, username, speed, price, length },
+	validator,
 }) => {
 	return (
 		<ReviewItems>
 			<div>
 				<h3>Validator Address</h3>
-				<p>{getValidatorURL()}</p>
+				<p>{validator}</p>
 			</div>
 			<div>
 				<h3>Pool Address</h3>
