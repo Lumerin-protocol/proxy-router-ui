@@ -1,18 +1,20 @@
 import Web3 from 'web3';
 import { HttpProvider } from 'web3-core';
-import { createPublicClient, fallback, http, PublicClient } from 'viem';
-import { abi } from './validator-registry';
-import { arbitrumSepolia } from 'viem/chains';
+import { Chain, createPublicClient, fallback, http, PublicClient } from 'viem';
+import { abi as contracts } from 'contracts-js';
+import { arbitrumSepolia, arbitrum } from 'viem/chains';
+
+const abi = contracts.validatorRegistryAbi;
 
 export class ValidatorRegistry {
 	private registryAddr: string;
 	private viemClient: PublicClient;
 
-	constructor(web3Private: Web3, registryAddr: string) {
+	constructor(web3Private: Web3, registryAddr: string, chainId: number) {
 		this.registryAddr = registryAddr;
 		this.viemClient = createPublicClient({
 			transport: fallback([http(), http((web3Private.currentProvider as HttpProvider).host)]),
-			chain: arbitrumSepolia,
+			chain: this.getChainPublicNodes(chainId),
 		});
 	}
 
@@ -72,5 +74,13 @@ export class ValidatorRegistry {
 		});
 
 		return providerData;
+	}
+
+	private getChainPublicNodes(chainId: number): Chain {
+		if (chainId == 421614) {
+			return arbitrumSepolia;
+		}
+
+		return arbitrum;
 	}
 }
