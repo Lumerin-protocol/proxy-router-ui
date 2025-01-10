@@ -184,7 +184,6 @@ export const Main: React.FC = () => {
 		}
 
 		const { accounts, web3, web3Gateway, web3ReadOnly } = web3Result;
-		const validator = new ValidatorRegistry(web3ReadOnly, validatorAddress);
 
 		if (accounts.length === 0 || accounts[0] === '') {
 			setAlertOpen(true);
@@ -201,6 +200,8 @@ export const Main: React.FC = () => {
 			);
 			setAlertOpen(true);
 		}
+
+		const validator = new ValidatorRegistry(web3ReadOnly, validatorAddress, chainId);
 		setAccounts(accounts);
 		setWeb3Gateway(web3Gateway);
 		setValidatorRegistry(validator);
