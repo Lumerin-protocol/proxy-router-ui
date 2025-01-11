@@ -11,6 +11,7 @@ variables:
     REACT_APP_TITAN_LIGHTNING_POOL: $TITAN_LIGHTNING_POOL
     REACT_APP_VALIDATOR_PUBLIC_KEY: $VALIDATOR_PUBLICKEY
     REACT_APP_VALIDATOR_URL: $VALIDATOR_URL
+    REACT_APP_VALIDATOR_REGISTRY_ADDRESS: $VALIDATOR_REGISTRY_ADDRESS
 
 stages:
     - develop
@@ -54,6 +55,7 @@ stages:
     --build-arg REACT_APP_TITAN_LIGHTNING_POOL=$REACT_APP_TITAN_LIGHTNING_POOL \
     --build-arg REACT_APP_VALIDATOR_PUBLIC_KEY=$REACT_APP_VALIDATOR_PUBLIC_KEY \
     --build-arg REACT_APP_VALIDATOR_URL=$REACT_APP_VALIDATOR_URL \
+    --build-arg REACT_APP_VALIDATOR_REGISTRY_ADDRESS=$REACT_APP_VALIDATOR_REGISTRY_ADDRESS \
     -t $CI_AWS_TitanIO_NET_ECR/$CI_AWS_ECS_NAME:$IMAGE_TAG --no-cache .
   
   echo "**************************"
@@ -157,7 +159,6 @@ titanio-04-lmn-PROD:
     stage: deploy
     only:
         - main
-    when: manual
     image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
     tags:
         - devops
