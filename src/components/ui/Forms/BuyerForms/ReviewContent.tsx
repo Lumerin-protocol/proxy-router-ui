@@ -1,16 +1,12 @@
-import { InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
+import { InputLabel, MenuItem, Select } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { DeepMap, FieldError, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { AlertMessage, InputValuesBuyForm, Validator } from '../../../../types';
-import { DisabledButton } from '../../../ui/Forms/FormButtons/Buttons.styled';
 import {
 	getHostName,
 	getWorkerName,
-	getPortString,
 	getSchemeName,
-	getPassword,
 	isValidPoolAddress,
-	isValidPortNumber,
 	isValidUsername,
 	getTitanLightningPoolUrl,
 	isValidLightningUsername,
@@ -63,7 +59,6 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 	// pull active validator list
 
 	const preferredPools = [
-		{ name: 'Titan', address: 'mining.pool.titan.io:4242', port: '4242' },
 		{ name: 'Luxor', address: 'btc.global.luxor.tech:700', port: '700' },
 		{ name: 'Braiins', address: 'stratum.braiins.com:3333', port: '3333' },
 	];
@@ -149,7 +144,7 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 						label='Validators'
 					>
 						{validatorsOptions.map((o) => (
-							<MenuItem value={o.address} key={o.name}>
+							<MenuItem value={o.address} key={o.address}>
 								{o.name}
 							</MenuItem>
 						))}
@@ -176,8 +171,8 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 						poolAddress: value ? lightningUrl : undefined,
 						username: '',
 					});
-					setValue?.('poolAddress', value ? lightningUrl : undefined);
-					setValue?.('username', undefined);
+					setValue?.('poolAddress', value ? lightningUrl : '');
+					setValue?.('username', '');
 					clearErrors();
 				}}
 			/>

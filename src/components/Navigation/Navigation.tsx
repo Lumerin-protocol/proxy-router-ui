@@ -47,10 +47,10 @@ export const ResponsiveNavigation = (prop: {
 		},
 		{
 			name: 'Buyer Hub',
-			to: PathName.MyOrders,
+			to: PathName.BuyerHub,
 			activeIcon: BuyerIconActive,
 			inactiveIcon: BuyerIconInactive,
-			current: prop.pathName === PathName.MyOrders,
+			current: prop.pathName === PathName.BuyerHub,
 		},
 		// {
 		// 	name: 'Seller Hub',
@@ -112,7 +112,7 @@ export const ResponsiveNavigation = (prop: {
 						{ link: 'http://twitter.com/hellolumerin', icon: faXTwitter },
 						{ link: 'https://www.tiktok.com/@hellolumerin_', icon: faTiktok },
 					].map((item) => (
-						<a href={item.link} target='_blank' rel='noreferrer'>
+						<a href={item.link} target='_blank' rel='noreferrer' key={item.link}>
 							<FontAwesomeIcon icon={item.icon} color='#fff' />
 						</a>
 					))}

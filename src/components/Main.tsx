@@ -32,6 +32,7 @@ import {
 	getWeb3ResultAsync,
 	intToHex,
 	reconnectWalletAsync,
+	USDCDecimalToUSDC,
 } from '../web3/helpers';
 import { buttonClickHandler, truncateAddress, printError } from '../utils';
 import {
@@ -46,14 +47,8 @@ import {
 	Validator,
 } from '../types';
 
-import { MetaMaskIcon, WalletConnectIcon } from '../images/index';
-import BubbleGraphic1 from '../images/Bubble_1.png';
-import BubbleGraphic2 from '../images/Bubble_2.png';
-import BubbleGraphic3 from '../images/Bubble_3.png';
-import BubbleGraphic4 from '../images/Bubble_4.png';
-import Bg from '../images/bg.png';
+import { MetaMaskIcon } from '../images/index';
 import { EthereumGateway } from '../gateway/ethereum';
-import { HistoryentryResponse } from 'contracts-js/dist/generated-types/Implementation';
 import { getRate } from '../rates/rate';
 import { Rates } from '../rates/interfaces';
 import { ValidatorRegistry } from '../gateway/validator';
@@ -73,6 +68,7 @@ export const Main: React.FC = () => {
 	const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 	const [lumerinBalance, setLumerinBalance] = useState<number>(0);
 	const [ethBalance, setEthBalance] = useState<number>(0);
+	const [usdcBalance, setUsdcBalance] = useState<number>(0);
 	const [rates, setRates] = useState<Rates | undefined>();
 
 	const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -283,7 +279,7 @@ export const Main: React.FC = () => {
 
 		return data.map((e) => {
 			const { hasFutureTerms, futureTerms, state } = e;
-			let { version, speed, length, price } = e;
+			let { version, speed, length, price, fee } = e;
 			if (hasFutureTerms && futureTerms && state === '0') {
 				speed = futureTerms.speed;
 				length = futureTerms.length;
@@ -294,6 +290,7 @@ export const Main: React.FC = () => {
 			return {
 				id: e.id,
 				price,
+				fee,
 				speed,
 				length,
 				buyer: e.buyer,
@@ -306,13 +303,13 @@ export const Main: React.FC = () => {
 				history: e.history.map((h) => {
 					return {
 						id: e.id,
-						_goodCloseout: h.isGoodCloseout,
-						_buyer: h.buyer,
-						_endTime: h.endTime,
-						_purchaseTime: h.purchaseTime,
-						_price: h.price,
-						_speed: h.speed,
-						_length: h.length,
+						goodCloseout: h.isGoodCloseout,
+						buyer: h.buyer,
+						endTime: h.endTime,
+						purchaseTime: h.purchaseTime,
+						price: h.price,
+						speed: h.speed,
+						length: h.length,
 					};
 				}),
 			};
@@ -337,11 +334,13 @@ export const Main: React.FC = () => {
 			return;
 		}
 
-		const balanceDecimal = await web3Gateway.getLumerinBalance(userAccount);
+		const balanceDecimal = await web3Gateway.getFeeTokenBalance(userAccount);
 		const ethBalanceDecimal = await web3Gateway.getEthBalance(userAccount);
+		const usdcBalanceDecimal = await web3Gateway.getPaymentTokenBalance(userAccount);
 
 		setLumerinBalance(LMRDecimalToLMR(+balanceDecimal));
 		setEthBalance(ETHDecimalToETH(+ethBalanceDecimal));
+		setUsdcBalance(USDCDecimalToUSDC(+usdcBalanceDecimal));
 
 		const rates = await getRate();
 		if (rates) {
@@ -417,7 +416,7 @@ export const Main: React.FC = () => {
 		<Suspense fallback={<Spinner />}>
 			<Switch>
 				<Route
-					path={PathName.MyOrders}
+					path={PathName.BuyerHub}
 					exact
 					render={(props: RouteComponentProps) => (
 						<MyOrders
@@ -469,6 +468,7 @@ export const Main: React.FC = () => {
 							isMetaMask={isMetaMask}
 							lumerinBalance={lumerinBalance}
 							ethBalance={ethBalance}
+							usdcBalance={usdcBalance}
 							rates={rates}
 							contracts={contracts}
 							setContractId={setContractId}
@@ -488,7 +488,7 @@ export const Main: React.FC = () => {
 
 	const getPageTitle: () => string = () => {
 		if (pathName === PathName.Marketplace) return 'Marketplace';
-		if (pathName === PathName.MyOrders) return 'Buyer Hub';
+		if (pathName === PathName.BuyerHub) return 'Buyer Hub';
 		if (pathName === PathName.MyContracts) return 'Seller Hub';
 		return '';
 	};

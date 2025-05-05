@@ -4,6 +4,7 @@ export interface IndexerContractEntry {
 	state: string;
 	version: string;
 	price: string;
+	fee: string;
 	limit: string;
 	speed: string;
 	length: string;

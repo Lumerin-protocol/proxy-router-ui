@@ -2,9 +2,14 @@ import Web3 from 'web3';
 import { HttpProvider } from 'web3-core';
 import { Chain, createPublicClient, fallback, http, PublicClient } from 'viem';
 import { abi as contracts } from 'contracts-js';
-import { arbitrumSepolia, arbitrum } from 'viem/chains';
+import { arbitrum, arbitrumSepolia, hardhat } from 'viem/chains';
 
 const abi = contracts.validatorRegistryAbi;
+const chains = {
+	[arbitrumSepolia.id]: arbitrumSepolia,
+	[arbitrum.id]: arbitrum,
+	[hardhat.id]: hardhat,
+} as const;
 
 export class ValidatorRegistry {
 	private registryAddr: string;
@@ -14,7 +19,7 @@ export class ValidatorRegistry {
 		this.registryAddr = registryAddr;
 		this.viemClient = createPublicClient({
 			transport: fallback([http(), http((web3Private.currentProvider as HttpProvider).host)]),
-			chain: this.getChainPublicNodes(chainId),
+			chain: chains[chainId as keyof typeof chains],
 		});
 	}
 
@@ -45,6 +50,12 @@ export class ValidatorRegistry {
 	}
 
 	public async getValidators(offset: number, limit: number) {
+		const providerCount = await this.viemClient.readContract({
+			abi: abi,
+			address: this.registryAddr as `0x${string}`,
+			functionName: 'activeValidatorsLength',
+		});
+
 		const providerAddrs = await this.viemClient.readContract({
 			abi: abi,
 			address: this.registryAddr as `0x${string}`,
@@ -52,17 +63,24 @@ export class ValidatorRegistry {
 			args: [BigInt(offset), limit],
 		});
 
-		const providerData = await this.viemClient.multicall({
-			allowFailure: false,
-			contracts: (providerAddrs as string[]).map((addr) => ({
-				abi: abi,
-				address: this.registryAddr as `0x${string}`,
-				functionName: 'getValidator',
-				args: [addr],
-			})),
-		});
+		if (this.viemClient.chain?.contracts?.multicall3) {
+			const providerData = await this.viemClient.multicall({
+				allowFailure: false,
+				contracts: (providerAddrs as string[]).map(
+					(addr) =>
+						({
+							abi: abi,
+							address: this.registryAddr as `0x${string}`,
+							functionName: 'getValidator',
+							args: [addr],
+						} as const)
+				),
+			});
 
-		return providerData;
+			return providerData;
+		}
+
+		return Promise.all((providerAddrs as string[]).map((addr) => this.getValidator(addr)));
 	}
 
 	public async getValidator(addr: string) {

@@ -1,13 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { TableIcon } from './ui/TableIcon';
-import { BuyButton } from './ui/Forms/FormButtons/BuyButton';
 import { AvailableContracts } from './ui/Cards/AvailableContracts';
 import { setMediaQueryListOnChangeHandler } from '../utils';
 import { ContractState, HashRentalContract } from '../types';
 import { useInterval } from './hooks/useInterval';
-import { divideByDigits } from '../web3/helpers';
-import _ from 'lodash';
 import styled from '@emotion/styled';
 import { BuyerOrdersWidget } from './ui/Widgets/BuyerOrdersWidget';
 import { WalletBalanceWidget } from './ui/Widgets/WalletBalanceWidget';
@@ -26,6 +22,7 @@ interface MarketplaceProps {
 	currentBlockTimestamp: number;
 	lumerinBalance: number;
 	ethBalance: number;
+	usdcBalance: number;
 	isMobile: boolean;
 	rates: Rates | undefined;
 }
@@ -36,6 +33,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	currentBlockTimestamp,
 	lumerinBalance,
 	ethBalance,
+	usdcBalance,
 	contracts,
 	rates,
 	setContractId,
@@ -44,6 +42,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 }) => {
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [sortType, setSortType] = useState('');
 
 	// Adjust contract address length when breakpoint > lg
 	const mediaQueryList = window.matchMedia('(min-width: 1200px)');
@@ -61,49 +60,12 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 		}
 	}, [mediaQueryList?.matches]);
 
-	const getTableData: () => HashRentalContract[] = () => {
-		const filteredContracts = contracts.filter(
-			(contract) =>
-				(contract.state as string) === ContractState.Available && contract.seller !== userAccount
+	const availableContracts = useMemo(() => {
+		const usersAvailableContracts = contracts.filter(
+			(contract) => contract.state === ContractState.Available && contract.seller !== userAccount
 		);
-		const updatedContracts = filteredContracts.map((contract: any) => {
-			const updatedContract = { ...contract };
-			if (!_.isEmpty(contract)) {
-				updatedContract.id = (
-					<TableIcon
-						icon={null}
-						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
-						text={updatedContract.id as string}
-						hasLink
-						justify='start'
-					/>
-				);
-				updatedContract.price = divideByDigits(updatedContract.price as number);
-				updatedContract.speed = Number(updatedContract.speed) / 10 ** 12;
-				updatedContract.length = parseInt(updatedContract.length as string) / 3600;
-				updatedContract.contractId = String(contract.id);
-				updatedContract.trade = (
-					<BuyButton
-						contractId={contract.id as string}
-						setContractId={setContractId}
-						buyClickHandler={buyClickHandler}
-					/>
-				);
-			}
-			return updatedContract;
-		});
-
-		return updatedContracts;
-	};
-
-	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
-
-	const [availableContracts, setAvailableContracts] = useState<HashRentalContract[]>([...data]);
-	const [sortType, setSortType] = useState('');
-
-	useEffect(() => {
-		sortContracts(sortType, availableContracts, setAvailableContracts);
-	}, [sortType]);
+		return sortContracts(sortType, usersAvailableContracts);
+	}, [contracts, userAccount, sortType]);
 
 	// Remove spinner if no contracts after 1 minute
 	useInterval(() => {
@@ -111,36 +73,10 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	}, 7000);
 
 	useEffect(() => {
-		if (data.length > 0) {
+		if (contracts.length > 0) {
 			setIsLoading(false);
 		}
 	});
-
-	const WidgetsWrapper = styled.div`
-		display: flex;
-		flex-wrap: wrap;
-		margin-top: 2rem;
-		margin-bottom: 2.5rem;
-		width: 100%;
-		column-gap: 1rem;
-		row-gap: 1rem;
-
-		.widget {
-			display: flex;
-			flex-direction: column;
-			flex: 1 1 0px;
-		}
-	`;
-
-	const MobileWidgetsWrapper = styled.div`
-		.widget-row {
-			display: flex;
-			flex-direction: row;
-			gap: 1rem;
-			margin-bottom: 1rem;
-			margin-top: 1rem;
-		}
-	`;
 
 	return (
 		<>
@@ -154,6 +90,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 								rates={rates}
 								isMobile={isMobile}
 								ethBalance={ethBalance}
+								usdcBalance={usdcBalance}
 							/>
 						)}
 						<BuyerOrdersWidget
@@ -169,6 +106,8 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 						loading={isLoading}
 						setSortType={setSortType}
 						sortType={sortType}
+						setContractId={setContractId}
+						buyClickHandler={buyClickHandler}
 					/>
 				</>
 			) : (
@@ -182,22 +121,19 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 									isMobile={isMobile}
 									ethBalance={ethBalance}
 									rates={rates}
+									usdcBalance={usdcBalance}
 								/>
 							)}
 						</div>
 					</MobileWidgetsWrapper>
 					<MessageWidget isMobile={isMobile} />
-					{/* <SortToolbar
-						pageTitle='Hashrate For Sale'
-						sortType={sortType}
-						setSortType={setSortType}
-						isMobile={isMobile}
-					/> */}
 					<AvailableContracts
 						contracts={availableContracts}
 						loading={isLoading}
 						setSortType={setSortType}
 						sortType={sortType}
+						setContractId={setContractId}
+						buyClickHandler={buyClickHandler}
 					/>
 				</>
 			)}
@@ -205,5 +141,28 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 	);
 };
 
-Marketplace.displayName = 'Marketplace';
-Marketplace.whyDidYouRender = false;
+const WidgetsWrapper = styled.div`
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 2rem;
+	margin-bottom: 2.5rem;
+	width: 100%;
+	column-gap: 1rem;
+	row-gap: 1rem;
+
+	.widget {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 0px;
+	}
+`;
+
+const MobileWidgetsWrapper = styled.div`
+	.widget-row {
+		display: flex;
+		flex-direction: row;
+		gap: 1rem;
+		margin-bottom: 1rem;
+		margin-top: 1rem;
+	}
+`;

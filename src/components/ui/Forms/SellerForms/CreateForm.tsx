@@ -78,7 +78,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway
 					speed = 0;
 				}
 				const receipt = await web3Gateway.createContract({
-					price: String(price),
+					profitTarget: '0',
 					speed: String(speed),
 					durationSeconds: contractDuration,
 					pubKey: '', // TODO: update to actual public key retrieved from metamask
@@ -154,7 +154,7 @@ export const CreateForm: React.FC<CreateFormProps> = ({ userAccount, web3Gateway
 					Close
 				</SecondaryButton>
 				{contentState !== ContentState.Pending &&
-					getButton(contentState, buttonContent, () => {}, handleSubmit, !isValid)}
+					getButton(contentState, buttonContent, () => {}, handleSubmit as any, !isValid)}
 			</FormButtonsWrapper>
 		</form>
 	);

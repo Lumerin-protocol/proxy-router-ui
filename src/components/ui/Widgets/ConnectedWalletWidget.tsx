@@ -1,6 +1,4 @@
 import EastIcon from '@mui/icons-material/East';
-import styled from '@emotion/styled';
-import { SmallWidget } from '../Cards/Cards.styled';
 import { MetaMaskIcon, WalletConnectIcon } from '../../../images';
 import { useState } from 'react';
 

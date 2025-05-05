@@ -75,6 +75,7 @@ export const getWeb3ResultAsync = async (
 			ethereum.on('chainChanged', (chainID: string) => onChainChange(chainID, ethereum));
 			ethereum.on('accountsChanged', onAccountsChange);
 			await ethereum.request({ method: 'eth_requestAccounts' });
+			console.log('after request accounts');
 		} else {
 			provider.on('disconnect', onDisconnect);
 			provider.on('chainChanged', onChainChange);
@@ -168,6 +169,10 @@ export const ETHDecimalToETH = (decimal: number): number => {
 	return decimal / 10 ** ETHDecimal;
 };
 
+export const USDCDecimalToUSDC = (decimal: number): number => {
+	return decimal / 10 ** 6;
+};
+
 // Convert integer provided as number, BigInt or decimal string to hex string with prefix '0x'
 export const intToHex = (value: number | BigInt | string) => {
 	if (typeof value === 'string') {
@@ -181,14 +186,14 @@ export const formatCurrency: (param: {
 	currency: string | undefined;
 	maxSignificantFractionDigits: number;
 }) => string = ({ value, currency, maxSignificantFractionDigits }) => {
-	let style = 'currency';
+	let style = 'currency' as 'currency' | 'decimal';
 
 	if (!currency) {
 		currency = undefined;
 		style = 'decimal';
 	}
 
-	if (maxSignificantFractionDigits == 0) {
+	if (maxSignificantFractionDigits === 0) {
 		return Math.floor(value).toString();
 	}
 

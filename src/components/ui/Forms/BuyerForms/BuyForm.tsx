@@ -9,9 +9,7 @@ import {
 	printError,
 	encryptMessage,
 	truncateAddress,
-	getValidatorPublicKey,
 	getPoolRfc2396,
-	getValidatorURL,
 	getHandlerBlockchainError,
 	validateLightningUrl,
 } from '../../../../utils';
@@ -30,7 +28,7 @@ import {
 	Validator,
 } from '../../../../types';
 import { Alert } from '../../Alert';
-import { buttonText, paragraphText } from '../../../../shared';
+import { buttonText } from '../../../../shared';
 import { divideByDigits } from '../../../../web3/helpers';
 import { FormButtonsWrapper, SecondaryButton } from '../FormButtons/Buttons.styled';
 import { purchasedHashrate } from '../../../../analytics';
@@ -40,7 +38,7 @@ import { useHistory } from 'react-router';
 import { EthereumGateway } from '../../../../gateway/ethereum';
 import { decompressPublicKey } from '../../../../gateway/utils';
 
-interface ErrorWithCode extends Error {
+export interface ErrorWithCode extends Error {
 	code?: number;
 }
 
@@ -86,18 +84,9 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	const [validatingUrl, setValidatingUrl] = useState(false);
 	const [showValidationError, setShowValidationError] = useState(false);
 
-	/*
-	 * This will need to be changed to the mainnet token
-	 * once we move over to mainnet
-	 * including this comment in the hopes that this line of code will be easy to find
-	 * TODO import this from web3/utils
-	 */
-	const lumerinTokenAddress = process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS;
-
 	// Input validation setup
 	const {
 		register,
-		handleSubmit,
 		clearErrors,
 		formState: { errors, isValid },
 		setValue,
@@ -106,16 +95,17 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
-	const getContractInfo: () => ContractInfo = () => {
-		setTotalHashrate(Number(contract.speed) * Number(contract.length));
-		return {
-			speed: contract.speed as string,
-			price: contract.price as string,
-			length: contract.length as string,
-			//TODO: test validity of this field in this context
-			version: contract.version as string,
-		};
-	};
+
+	// const getContractInfo: () => ContractInfo = () => {
+	// 	setTotalHashrate(Number(contract.speed) * Number(contract.length));
+	// 	return {
+	// 		speed: contract.speed as string,
+	// 		price: contract.price as string,
+	// 		length: contract.length as string,
+	// 		//TODO: test validity of this field in this context
+	// 		version: contract.version as string,
+	// 	};
+	// };
 
 	const handlePurchaseError = getHandlerBlockchainError(
 		setAlertMessage,
@@ -132,7 +122,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				username: data.username,
 				password: data.password,
 				validatorAddress: data.validatorAddress,
-				...getContractInfo(),
 			});
 		}
 
@@ -158,11 +147,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					return;
 				}
 
-				if (!formData.price) {
-					console.error('Price is not available');
-					return;
-				}
-
 				const contractState = await web3Gateway.getContractState(contract.id);
 				if (contractState !== ContractState.Available) {
 					setAlertMessage(AlertMessage.ContractIsPurchased);
@@ -171,10 +155,17 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					return;
 				}
 
-				// Approve clone factory contract to transfer LMR on buyer's behalf
-				const receipt = await web3Gateway.increaseAllowance(formData.price, userAccount);
+				const receipt = await web3Gateway.approvePayment(contract.price, userAccount);
 				if (!receipt.status) {
-					setAlertMessage(AlertMessage.IncreaseAllowanceFailed);
+					setAlertMessage(AlertMessage.ApprovePaymentFailed);
+					setAlertOpen(true);
+					setContentState(ContentState.Cancel);
+					return;
+				}
+
+				const feeReceipt = await web3Gateway.approveFee(contract.fee, userAccount);
+				if (!feeReceipt.status) {
+					setAlertMessage(AlertMessage.ApproveFeeFailed);
 					setAlertOpen(true);
 					setContentState(ContentState.Cancel);
 					return;
@@ -184,7 +175,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				try {
 					const buyerDest: string = getPoolRfc2396(formData)!;
 
-					var validator = validators.find((v) => v.addr == formData.validatorAddress);
+					const validator = validators.find((v) => v.addr === formData.validatorAddress);
 					if (!validator) {
 						console.error('Validator is not set');
 						return;
@@ -203,20 +194,18 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 					const encrDestURL = (
 						await encryptMessage(validatorPublicKey.slice(2), buyerDest)
 					).toString('hex');
+					console.log('encrDestURL', encrDestURL);
 					const validatorURL: string = `stratum+tcp://:@${validator?.host}`;
-
 					const pubKey = await web3Gateway.getContractPublicKey(contract.id);
-					const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString(
-						'hex'
-					);
+					console.log('pubKey', pubKey);
+					const encrValidatorURL = (await encryptMessage(pubKey, validatorURL)).toString('hex');
+					console.log('encrValidatorURL', encrValidatorURL);
 
-					const marketplaceFee = web3Gateway.getMarketplaceFee();
 					const receipt = await web3Gateway.purchaseContract({
 						contractAddress: contract.id,
 						validatorAddress: validatorAddr,
 						encrValidatorURL: encrValidatorURL,
 						encrDestURL: encrDestURL,
-						feeETH: marketplaceFee,
 						buyer: userAccount,
 						termsVersion: contract.version,
 					});
@@ -255,15 +244,13 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 	// Content setup
 	// Defaults to review state
 	// Initialize variables since html elements need values on first render
-	let paragraphContent = '';
 	let buttonContent = '';
 	let content = <div></div>;
 	const createContent: () => void = () => {
 		switch (contentState) {
 			case ContentState.Confirm:
-				paragraphContent = paragraphText.confirm as string;
 				buttonContent = buttonText.confirm as string;
-				const validator = validators.find((v) => v.addr == formData.validatorAddress)?.host;
+				const validator = validators.find((v) => v.addr === formData.validatorAddress)?.host;
 				content = <ConfirmContent data={formData} validator={validator} />;
 				break;
 			case ContentState.Pending:
@@ -278,7 +265,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 				);
 				break;
 			default:
-				paragraphContent = paragraphText.review as string;
 				buttonContent = buttonText.review as string;
 				content = (
 					<ReviewContent
@@ -353,7 +339,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 			{content}
 
-			{/* {display && <p className='subtext'>{paragraphContent}</p>} */}
 			<FormButtonsWrapper>
 				<SecondaryButton type='submit' onClick={() => setOpen(false)}>
 					Close
@@ -364,7 +349,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 						buttonContent,
 						() => {
 							setOpen(false);
-							history.push(PathName.MyOrders);
+							history.push(PathName.BuyerHub);
 						},
 						() => onSubmit(),
 						!isValid,

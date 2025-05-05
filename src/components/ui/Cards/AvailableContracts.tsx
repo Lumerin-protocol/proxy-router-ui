@@ -1,5 +1,5 @@
-import { HashRentalContract, SortTypes } from '../../../types';
-import { getReadableDate } from '../../../utils';
+import { AddressLength, HashRentalContract, SortTypes } from '../../../types';
+import { getReadableDate, truncateAddress } from '../../../utils';
 import SpeedIcon from '../../../images/icons/speed-icon-white.png';
 import PriceIcon from '../../../images/icons/price-icon-white.png';
 import TimeIcon from '../../../images/icons/time-icon-white.png';
@@ -11,10 +11,13 @@ import {
 	MobileTableHeader,
 } from './AvailableContract.styled';
 import { Skeleton } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { SecondaryButton } from '../Forms/FormButtons/Buttons.styled';
 import styled from '@emotion/styled';
 import { ArrowsUpDownIcon, ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
+import { formatEther, formatUnits, parseUnits } from 'viem';
+import { BuyButton } from '../Forms/FormButtons/BuyButton';
+import { formatFeePrice, formatPaymentPrice, formatTHPS } from '../../units';
 
 const HeaderItem = styled.div`
 	display: flex;
@@ -32,10 +35,12 @@ const HeaderItem = styled.div`
 `;
 
 export const AvailableContracts = (prop: {
-	contracts: Array<HashRentalContract>;
+	contracts: HashRentalContract[];
 	loading: boolean;
 	setSortType: (sortType: string) => void;
 	sortType?: string;
+	setContractId: Dispatch<SetStateAction<string>>;
+	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
 }) => {
 	const [width, setWidth] = useState<number>(window.innerWidth);
 	const [activeSort, setActiveSort] = useState<string>('');
@@ -61,10 +66,6 @@ export const AvailableContracts = (prop: {
 	`;
 
 	useEffect(() => {
-		updateSortType();
-	}, [sortState, activeSort]);
-
-	const updateSortType = () => {
 		if (activeSort === 'speed') {
 			if (sortState === 0) {
 				prop.setSortType('');
@@ -92,7 +93,7 @@ export const AvailableContracts = (prop: {
 				prop.setSortType(SortTypes.PriceLowToHigh);
 			}
 		}
-	};
+	}, [sortState, activeSort, prop]);
 
 	const onClickSort = (field: string) => {
 		setActiveSort(field);
@@ -138,6 +139,9 @@ export const AvailableContracts = (prop: {
 					<p>Price</p>
 					{getSortFieldIcon('price')}
 				</HeaderItem>
+				<HeaderItem>
+					<p>Fee</p>
+				</HeaderItem>
 			</Header>
 		);
 	};
@@ -164,37 +168,57 @@ export const AvailableContracts = (prop: {
 	if (isMobile) {
 		return (
 			<ul>
-				{getTableHeader()}
+				<MobileTableHeader key='header'>
+					<HeaderItem onClick={() => onClickSort('speed')}>
+						<p>Speed</p>
+						{getSortFieldIcon('speed')}
+					</HeaderItem>
+					<HeaderItem onClick={() => onClickSort('length')}>
+						<p>Duration</p>
+						{getSortFieldIcon('length')}
+					</HeaderItem>
+					<HeaderItem onClick={() => onClickSort('price')}>
+						<p>Price</p>
+						{getSortFieldIcon('price')}
+					</HeaderItem>
+					<HeaderItem>
+						<p>Fee</p>
+					</HeaderItem>
+				</MobileTableHeader>
 				{prop.contracts.map((item, index) => (
-					<MobileAvailableContract key={item.contractId as any}>
+					<MobileAvailableContract key={item.id as any}>
 						<div className='stats'>
 							<div>
 								<img src={SpeedIcon} alt='' />
-								{item.speed} th/s
+								{formatSpeed(item.speed as string)}
 							</div>
 							{item.length && (
 								<div>
 									<img src={TimeIcon} alt='' />
-									{getReadableDate(item.length.toString())}
+									{formatDuration(item.length as string)}
 								</div>
 							)}
 							<div>
 								<img src={PriceIcon} alt='' />
-								{item.price} LMR
+								{formatPaymentPrice(item.price).full}
 							</div>
 						</div>
 						<div className='actions'>
 							<TradeButtonsGroup>
 								<SecondaryButton>
 									<a
-										href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.contractId}`}
+										href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.id}`}
 										target='_blank'
 										rel='noreferrer'
 									>
 										View Contract
 									</a>
 								</SecondaryButton>
-								{item.trade}
+								<BuyButton
+									contractId={item.id as string}
+									setContractId={prop.setContractId}
+									buyClickHandler={prop.buyClickHandler}
+								/>
 							</TradeButtonsGroup>
 						</div>
 					</MobileAvailableContract>
@@ -206,36 +230,81 @@ export const AvailableContracts = (prop: {
 	// Desktop view
 	return (
 		<ul>
-			{getTableHeader()}
-			{prop.contracts.map((item, index) => (
-				<AvailableContract key={item.contractId as any}>
+			<TableHeader key='header'>
+				<HeaderItem>
+					<p>Address</p>
+				</HeaderItem>
+				<HeaderItem onClick={() => onClickSort('speed')}>
+					<p>Speed</p>
+					{getSortFieldIcon('speed')}
+				</HeaderItem>
+				<HeaderItem onClick={() => onClickSort('length')}>
+					<p>Duration</p>
+					{getSortFieldIcon('length')}
+				</HeaderItem>
+				<HeaderItem onClick={() => onClickSort('price')}>
+					<p>Price</p>
+					{getSortFieldIcon('price')}
+				</HeaderItem>
+				<HeaderItem>
+					<p>Fee</p>
+				</HeaderItem>
+			</TableHeader>
+			{prop.contracts.map((item) => (
+				<AvailableContract key={item.id as any}>
 					<p>
 						<a
 							className='underline pb-0 font-Raleway cursor-pointer'
-							href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractId}`}
+							href={process.env.REACT_APP_ETHERSCAN_URL + `${item.id}`}
 							target='_blank'
 							rel='noreferrer'
 						>
-							View Contract
+							{formatAddress(item.id as string)}
 						</a>
 					</p>
 					<p>
 						<img src={SpeedIcon} alt='' />
-						{item.speed} th/s
+						{formatSpeed(item.speed as string)}
 					</p>
 					{item.length && (
 						<p>
 							<img src={TimeIcon} alt='' />
-							{getReadableDate(item.length.toString())}
+							{formatDuration(item.length as string)}
 						</p>
 					)}
 					<p>
 						<img src={PriceIcon} alt='' />
-						{item.price} LMR
+						{formatPaymentPrice(item.price).full}
 					</p>
-					{item.trade}
+					<p>
+						<img src={PriceIcon} alt='' />
+						{formatFeePrice(item.fee).full}
+					</p>
+					<BuyButton
+						contractId={item.id as string}
+						setContractId={prop.setContractId}
+						buyClickHandler={prop.buyClickHandler}
+					/>
 				</AvailableContract>
 			))}
 		</ul>
 	);
 };
+
+function formatSpeed(speedHps: string) {
+	if (speedHps === undefined || speedHps === null) {
+		return '…';
+	}
+	return formatTHPS(speedHps).full;
+}
+
+function formatDuration(length: string) {
+	return getReadableDate(String(Number(length) / 3600));
+}
+
+function formatAddress(address: string) {
+	if (address === undefined || address === null) {
+		return '…';
+	}
+	return truncateAddress(address, AddressLength.MEDIUM);
+}

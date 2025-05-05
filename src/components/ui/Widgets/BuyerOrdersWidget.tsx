@@ -101,9 +101,9 @@ export const BuyerOrdersWidget = (props: {
 				</div>
 			</div>
 			<div className='link'>
-				<a onClick={() => history.push('buyerhub')}>
+				<button onClick={() => history.push('buyerhub')}>
 					View all purchased contracts <EastIcon style={{ fontSize: '0.75rem' }} />
-				</a>
+				</button>
 			</div>
 		</BuyerOrdersWrapper>
 	);

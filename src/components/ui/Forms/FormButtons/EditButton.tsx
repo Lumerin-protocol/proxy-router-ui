@@ -4,8 +4,8 @@ import EditIcon from '../../../../images/icons/edit.png';
 
 interface EditButtonProps {
 	contractId: string;
-	setContractId: Dispatch<SetStateAction<string>>;
-	editClickHandler: React.MouseEventHandler<HTMLButtonElement>;
+	setContractId: (contractId: string) => void;
+	editClickHandler: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const EditButton: React.FC<EditButtonProps> = ({

@@ -14,7 +14,9 @@
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"noEmit": true,
-		"jsx": "react-jsx"
+		"jsx": "react-jsx",
+		"types": []
 	},
-	"include": ["src", "craco.config.js"]
+	"include": ["src", "craco.config.js"],
+	"exclude": ["node_modules", "build"]
 }

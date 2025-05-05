@@ -76,10 +76,8 @@ export const EditForm: React.FC<EditFormProps> = ({
 	// Input validation setup
 	const {
 		register,
-		handleSubmit,
 		clearErrors,
 		formState: { errors, isValid },
-		setValue,
 		trigger,
 	} = useForm<InputValuesBuyForm>({ mode: 'onBlur', reValidateMode: 'onBlur' });
 
@@ -285,7 +283,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 						buttonContent,
 						() => {
 							closeForm();
-							history.push(PathName.MyOrders);
+							history.push(PathName.BuyerHub);
 						},
 						() => onSubmit(),
 						!isValid,

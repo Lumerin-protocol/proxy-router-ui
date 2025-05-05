@@ -21,13 +21,14 @@ module.exports = {
 			}),
 		]
 	},
-	babel:
-		{
-			presets: [["@babel/preset-env", { targets: "defaults" }]],
-			plugins: [
-				"@babel/plugin-proposal-nullish-coalescing-operator",
-				"@babel/plugin-transform-numeric-separator",
-				"@babel/plugin-transform-optional-chaining",
-			]
-		}
+	babel: {
+		presets: [["@babel/preset-env", { targets: "defaults" }]],
+		plugins: [
+			["@emotion"],
+			"@babel/plugin-proposal-nullish-coalescing-operator",
+			"@babel/plugin-transform-numeric-separator",
+			"@babel/plugin-transform-optional-chaining",
+			['babel-plugin-macros'],
+		]
+	}
 };
