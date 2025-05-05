@@ -1,9 +1,9 @@
 FROM node:16.20.2-alpine as build
 WORKDIR '/app'
 
-RUN apk add git
+RUN apk add --no-cache git python3 make g++
 
-COPY ./package.json ./
+COPY package*.json ./
 RUN npm install --force
 COPY . .
 
