@@ -2,9 +2,9 @@ import Web3 from 'web3';
 import {
 	CloneFactory,
 	CloneFactoryContext,
+	IERC20,
+	IERC20Context,
 	Implementation,
-	Lumerin,
-	LumerinContext,
 } from 'contracts-js';
 import { CloseOutType, ContractState } from '../types';
 import { ethers } from 'ethers';
@@ -22,9 +22,10 @@ export class EthereumGateway {
 	private web3Prv: Web3; // private node readonly
 	private cloneFactoryPub: CloneFactoryContext; // public clonefactory instance
 	private cloneFactoryPrv: CloneFactoryContext; // private clonefactory instance
-	private lumerin: LumerinContext | null = null;
-	private fee: string | null = null;
+	private paymentToken: IERC20Context | null = null;
+	private feeToken: IERC20Context | null = null;
 	private contractIndexerUrl: string;
+	private feeRate: number | null = null;
 
 	constructor(
 		web3Public: Web3,
@@ -41,38 +42,52 @@ export class EthereumGateway {
 	}
 
 	async init() {
-		const lumerinAddr = await this.getLumerinAddr();
-		this.lumerin = Lumerin(this.web3Pub, lumerinAddr);
-		this.fee = await this.getMarketplaceFeeAddr();
+		const feeTokenAddr = await this._getFeeToken();
+		const paymentTokenAddr = await this._getPaymentToken();
+		this.feeRate = await this._getFeeRate();
+		this.feeToken = IERC20(this.web3Pub, feeTokenAddr);
+		this.paymentToken = IERC20(this.web3Pub, paymentTokenAddr);
 		console.log('web3 gateway initialized');
 	}
 
-	async getLumerinAddr(): Promise<string> {
+	async _getPaymentToken(): Promise<string> {
 		return await callProviders(
-			() => this.cloneFactoryPub.methods.lumerin().call(),
-			() => this.cloneFactoryPrv.methods.lumerin().call()
+			() => this.cloneFactoryPub.methods.paymentToken().call(),
+			() => this.cloneFactoryPrv.methods.paymentToken().call()
 		);
 	}
 
-	async getMarketplaceFeeAddr(): Promise<string> {
+	async _getFeeToken(): Promise<string> {
 		return await callProviders(
-			() => this.cloneFactoryPub.methods.marketplaceFee().call(),
-			() => this.cloneFactoryPrv.methods.marketplaceFee().call()
+			() => this.cloneFactoryPub.methods.feeToken().call(),
+			() => this.cloneFactoryPrv.methods.feeToken().call()
 		);
 	}
 
-	getLumerin() {
-		if (!this.lumerin) {
-			throw new Error('Web3 Gateway is not initialized');
-		}
-		return this.lumerin;
+	async _getFeeRate(): Promise<number> {
+		const feeRateScaled = await callProviders(
+			() => this.cloneFactoryPub.methods.validatorFeeRateScaled().call(),
+			() => this.cloneFactoryPrv.methods.validatorFeeRateScaled().call()
+		);
+		const feeDecimals = await callProviders(
+			() => this.cloneFactoryPub.methods.VALIDATOR_FEE_DECIMALS().call(),
+			() => this.cloneFactoryPrv.methods.VALIDATOR_FEE_DECIMALS().call()
+		);
+		return Number(feeRateScaled) / Number(feeDecimals);
 	}
 
-	getMarketplaceFee(): string {
-		if (!this.fee) {
+	getPaymentToken() {
+		if (!this.paymentToken) {
 			throw new Error('Web3 Gateway is not initialized');
 		}
-		return this.fee;
+		return this.paymentToken;
+	}
+
+	getFeeToken() {
+		if (!this.feeToken) {
+			throw new Error('Web3 Gateway is not initialized');
+		}
+		return this.feeToken;
 	}
 
 	async getCurrentBlockTimestamp(): Promise<number> {
@@ -82,24 +97,28 @@ export class EthereumGateway {
 		);
 	}
 
-	async getLumerinBalance(address: string): Promise<string> {
-		return this.getLumerin().methods.balanceOf(address).call();
+	async getPaymentTokenBalance(address: string): Promise<string> {
+		return this.getPaymentToken().methods.balanceOf(address).call();
+	}
+
+	async getFeeTokenBalance(address: string): Promise<string> {
+		return this.getFeeToken().methods.balanceOf(address).call();
 	}
 
 	async createContract(props: {
-		price: string;
 		speed: string;
 		durationSeconds: number;
 		pubKey: string;
+		profitTarget: string;
 		from: string;
 	}): Promise<SendStatus> {
 		const esimate = await this.cloneFactoryPub.methods
 			.setCreateNewRentalContractV2(
-				props.price,
+				'0',
 				'0',
 				props.speed,
 				String(props.durationSeconds),
-				'0',
+				props.profitTarget,
 				'',
 				props.pubKey
 			)
@@ -107,11 +126,11 @@ export class EthereumGateway {
 
 		const res = await this.cloneFactoryPub.methods
 			.setCreateNewRentalContractV2(
-				props.price,
+				'0',
 				'0',
 				props.speed,
 				String(props.durationSeconds),
-				'0',
+				props.profitTarget,
 				'',
 				props.pubKey
 			)
@@ -127,7 +146,6 @@ export class EthereumGateway {
 		encrDestURL: string;
 		termsVersion: string;
 		buyer: string;
-		feeETH: string;
 	}): Promise<SendStatus> {
 		const gas = await this.cloneFactoryPub.methods
 			.setPurchaseRentalContractV2(
@@ -137,7 +155,7 @@ export class EthereumGateway {
 				props.encrDestURL,
 				props.termsVersion
 			)
-			.estimateGas({ from: props.buyer, value: props.feeETH, ...(await this.getGasConfig()) });
+			.estimateGas({ from: props.buyer, ...(await this.getGasConfig()) });
 
 		const res = await this.cloneFactoryPub.methods
 			.setPurchaseRentalContractV2(
@@ -147,7 +165,7 @@ export class EthereumGateway {
 				props.encrDestURL,
 				props.termsVersion
 			)
-			.send({ from: props.buyer, value: props.feeETH, gas, ...(await this.getGasConfig()) });
+			.send({ from: props.buyer, gas, ...(await this.getGasConfig()) });
 
 		return { status: res.status, transactionHash: res.transactionHash };
 	}
@@ -159,20 +177,18 @@ export class EthereumGateway {
 		closeoutType: CloseOutType;
 	}): Promise<SendStatus> {
 		const impl = Implementation(this.web3Pub, props.contractAddress);
-		const gas = await impl.methods.setContractCloseOut(String(props.closeoutType)).estimateGas({
+		const gas = await impl.methods.closeEarly(0).estimateGas({
 			from: props.from,
 			value: props.fee,
 			...(await this.getGasConfig()),
 		});
 
-		const receipt = await impl.methods
-			.setContractCloseOut(String(CloseOutType.BuyerOrValidatorCancel))
-			.send({
-				from: props.from,
-				value: props.fee,
-				gas,
-				...(await this.getGasConfig()),
-			});
+		const receipt = await impl.methods.closeEarly(0).send({
+			from: props.from,
+			value: props.fee,
+			gas,
+			...(await this.getGasConfig()),
+		});
 
 		return { status: receipt.status, transactionHash: receipt.transactionHash };
 	}
@@ -193,26 +209,26 @@ export class EthereumGateway {
 		}
 	}
 
-	async getContract(contractAddress: string) {
-		const data = await callProviders(
-			() => Implementation(this.web3Pub, contractAddress).methods.getPublicVariables().call(),
-			() => Implementation(this.web3Prv, contractAddress).methods.getPublicVariables().call()
-		);
+	// async getContract(contractAddress: string) {
+	// 	const data = await callProviders(
+	// 		() => Implementation(this.web3Pub, contractAddress).methods.getPublicVariablesV2().call(),
+	// 		() => Implementation(this.web3Prv, contractAddress).methods.getPublicVariablesV2().call()
+	// 	);
 
-		return {
-			id: contractAddress,
-			price: data._price,
-			speed: data._speed,
-			length: data._length,
-			buyer: data._buyer,
-			seller: data._seller,
-			timestamp: data._startingBlockTimestamp,
-			state: data._state,
-			encryptedPoolData: data._encryptedPoolData,
-			version: data._version,
-			isDeleted: data._isDeleted,
-		};
-	}
+	// 	return {
+	// 		id: contractAddress,
+	// 		price: data._price,
+	// 		speed: data._speed,
+	// 		length: data._length,
+	// 		buyer: data._buyer,
+	// 		seller: data._seller,
+	// 		timestamp: data._startingBlockTimestamp,
+	// 		state: data._state,
+	// 		encryptedPoolData: data._encryptedPoolData,
+	// 		version: data._version,
+	// 		isDeleted: data._isDeleted,
+	// 	};
+	// }
 
 	async getContractPublicKey(contractAddress: string): Promise<string> {
 		return callProviders(
@@ -236,13 +252,25 @@ export class EthereumGateway {
 		}
 	}
 
-	async increaseAllowance(price: string, from: string): Promise<SendStatus> {
-		const gas = await this.getLumerin()
-			.methods.increaseAllowance(this.cloneFactoryAddr, price)
+	async approvePayment(price: string, from: string): Promise<SendStatus> {
+		const gas = await this.getPaymentToken()
+			.methods.approve(this.cloneFactoryAddr, price)
 			.estimateGas({ from, ...(await this.getGasConfig()) });
 
-		const res = await this.getLumerin()
-			.methods.increaseAllowance(this.cloneFactoryAddr, price)
+		const res = await this.getPaymentToken()
+			.methods.approve(this.cloneFactoryAddr, price)
+			.send({ from, gas, ...(await this.getGasConfig()) });
+
+		return { status: res.status, transactionHash: res.transactionHash };
+	}
+
+	async approveFee(price: string, from: string): Promise<SendStatus> {
+		const gas = await this.getFeeToken()
+			.methods.approve(this.cloneFactoryAddr, price)
+			.estimateGas({ from, ...(await this.getGasConfig()) });
+
+		const res = await this.getFeeToken()
+			.methods.approve(this.cloneFactoryAddr, price)
 			.send({ from, gas, ...(await this.getGasConfig()) });
 
 		return { status: res.status, transactionHash: res.transactionHash };
@@ -273,18 +301,18 @@ export class EthereumGateway {
 	async editContractTerms(props: {
 		contractAddress: string;
 		from: string;
-		price: string;
+		// price: string;
 		speed: string;
 		length: string;
 		profitTarget: string;
 	}): Promise<SendStatus> {
 		const impl = Implementation(this.web3Pub, props.contractAddress);
 		const gas = await impl.methods
-			.setUpdatePurchaseInformation(props.price, '0', props.speed, props.length, props.profitTarget)
+			.setUpdatePurchaseInformation(props.speed, props.length, props.profitTarget)
 			.estimateGas({ from: props.from, ...(await this.getGasConfig()) });
 
 		const receipt = await impl.methods
-			.setUpdatePurchaseInformation(props.price, '0', props.speed, props.length, props.profitTarget)
+			.setUpdatePurchaseInformation(props.speed, props.length, props.profitTarget)
 			.send({ from: props.from, gas, ...(await this.getGasConfig()) });
 
 		return { status: receipt.status, transactionHash: receipt.transactionHash };

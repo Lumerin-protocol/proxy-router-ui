@@ -70,7 +70,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({
 				return;
 			}
 			try {
-				const fee = web3Gateway.getMarketplaceFee();
+				const fee = '0'; //web3Gateway.getMarketplaceFee();
 				const receipt = await web3Gateway.closeContract({
 					contractAddress: contractId,
 					from: userAccount,

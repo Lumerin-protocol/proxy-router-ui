@@ -3,8 +3,8 @@ import { PrimaryButton } from './Buttons.styled';
 
 interface BuyButtonProps {
 	contractId: string;
-	setContractId: Dispatch<SetStateAction<string>>;
-	buyClickHandler: React.MouseEventHandler<HTMLButtonElement>;
+	setContractId: (id: string) => void;
+	buyClickHandler: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const BuyButton: React.FC<BuyButtonProps> = ({
@@ -12,14 +12,16 @@ export const BuyButton: React.FC<BuyButtonProps> = ({
 	setContractId,
 	buyClickHandler,
 }) => {
-	const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (
-		event
-	) => {
-		setContractId(contractId);
-		buyClickHandler(event);
-	};
-
-	return <PrimaryButton onClick={(event) => clickHandler(event)}>Purchase</PrimaryButton>;
+	return (
+		<PrimaryButton
+			onClick={(event) => {
+				setContractId(contractId);
+				buyClickHandler(event);
+			}}
+		>
+			Purchase
+		</PrimaryButton>
+	);
 };
 
 BuyButton.displayName = 'BuyButton';

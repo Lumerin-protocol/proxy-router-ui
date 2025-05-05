@@ -26,6 +26,25 @@ export const ContractCards = styled.div`
 			justify-content: space-between;
 		}
 
+		.terms {
+			.item-value {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				padding-bottom: 0.8rem;
+				div {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					justify-content: center;
+					gap: 0.5rem;
+					h3 {
+						margin-bottom: 0;
+					}
+				}
+			}
+		}
+
 		.progress {
 			display: flex;
 			width: 100%;

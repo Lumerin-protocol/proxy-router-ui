@@ -4,8 +4,8 @@ import CancelIcon from '../../../../images/icons/cancel.png';
 
 interface CancelButtonProps {
 	contractId: string;
-	setContractId: Dispatch<SetStateAction<string>>;
-	cancelClickHandler: React.MouseEventHandler<HTMLButtonElement>;
+	setContractId: (contractId: string) => void;
+	cancelClickHandler: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const CancelButton: React.FC<CancelButtonProps> = ({

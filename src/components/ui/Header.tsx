@@ -1,7 +1,6 @@
 import { Bars3BottomLeftIcon } from '@heroicons/react/24/outline';
 import { Toolbar, Typography } from '@mui/material';
-import { LumerinIcon, MetaMaskIcon, WalletConnectIcon, LogoIcon } from '../../images';
-import EastIcon from '@mui/icons-material/East';
+import { LumerinIcon } from '../../images';
 import styled from '@emotion/styled';
 import { ConnectedWalletWidget } from './Widgets/ConnectedWalletWidget';
 

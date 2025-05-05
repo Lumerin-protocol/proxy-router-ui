@@ -85,7 +85,6 @@ export const EditForm: React.FC<EditFormProps> = ({
 			}
 			try {
 				// TODO: convert usd to lmr (aggregate of exchanges?)
-				const gasLimit = 1000000;
 				const price = multiplyByDigits(formData.listPrice as number);
 				let speed;
 				if (formData && formData.speed) {
@@ -99,10 +98,9 @@ export const EditForm: React.FC<EditFormProps> = ({
 				}
 				const receipt = await web3Gateway.editContractTerms({
 					contractAddress: contractId,
-					price: String(price),
+					profitTarget: '0',
 					speed: String(speed),
 					length: String(formData.contractTime * 3600),
-					profitTarget: '0',
 					from: userAccount,
 				});
 				if (receipt?.status) {
@@ -192,7 +190,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 						Close
 					</button>
 					{contentState !== ContentState.Pending
-						? getButton(contentState, buttonContent, () => {}, handleSubmit, !isValid)
+						? getButton(contentState, buttonContent, () => {}, handleSubmit as any, !isValid)
 						: null}
 				</div>
 			</div>

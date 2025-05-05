@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {
 	Dispatch,
 	MouseEventHandler,
@@ -7,24 +6,14 @@ import React, {
 	useMemo,
 	useState,
 } from 'react';
-import { TableIcon } from './ui/TableIcon';
-import {
-	getProgressDiv,
-	getProgressPercentage,
-	getStatusDiv,
-	setMediaQueryListOnChangeHandler,
-	sortContracts,
-} from '../utils';
-import { DateTime } from 'luxon';
+import { getProgressPercentage, setMediaQueryListOnChangeHandler, sortContracts } from '../utils';
+
 import { ContractState, HashRentalContract, CurrentTab, ContractHistoryData } from '../types';
 import { Spinner } from './ui/Spinner.styled';
 import { useInterval } from './hooks/useInterval';
-import { ButtonGroup } from './ui/ButtonGroup';
-import { EditButton } from './ui/Forms/FormButtons/EditButton';
-import { CancelButton } from './ui/Forms/FormButtons/CancelButton';
-import { divideByDigits } from '../web3/helpers';
+
 import _ from 'lodash';
-import { FinishedContracts, PurchasedContracts } from './ui/Cards/PurchasedContracts';
+import { Card, FinishedContracts, PurchasedContracts } from './ui/Cards/PurchasedContracts';
 import { TabSwitch } from './ui/TabSwitch.Styled';
 import { SortToolbar } from './ui/SortToolbar';
 
@@ -43,17 +32,13 @@ interface MyOrdersProps {
 
 // TODO: fix this disgusting interface
 export interface HistoryUglyMapped extends ContractHistoryData {
-	id: JSX.Element;
-	contractId: string;
-	editCancel: JSX.Element;
+	id: string;
 	endDate: string;
 	length: string;
-	price: number;
-	progress: JSX.Element;
+	price: string;
 	progressPercentage: number;
 	speed: string;
 	state: string;
-	status: JSX.Element;
 	timestamp: string;
 	isDeleted?: boolean;
 	version?: string;
@@ -73,6 +58,9 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	const [isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater] = useState<boolean>(true);
 	const [isMediumBreakpointOrBelow, setIsMediumBreakpointOrBelow] = useState<boolean>(false);
 	const [showSpinner, setShowSpinner] = useState<boolean>(true);
+
+	const [runningSortType, setRunningSortType] = useState('');
+	const [completedSortType, setCompletedSortType] = useState('');
 
 	const mediaQueryListLarge = window.matchMedia('(min-width: 1280px)');
 	const mediaQueryListMedium = window.matchMedia('(max-width:1279px)');
@@ -106,7 +94,7 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 		}
 	}, [mediaQueryListLarge?.matches, mediaQueryListMedium?.matches]);
 
-	const getTableData: () => HistoryUglyMapped[] = () => {
+	const runningContracts = useMemo(() => {
 		const buyerOrders = contracts.filter(
 			(contract) => contract.buyer === userAccount && contract.state === ContractState.Running
 		);
@@ -115,121 +103,23 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 			setShowSpinner(false);
 		}
 
-		const updatedOrders = buyerOrders.map((contract) => {
-			const updatedOrder = { ...contract } as unknown as HistoryUglyMapped;
-			if (!_.isEmpty(contract)) {
-				// FIX IT!
-				updatedOrder.id = (
-					<TableIcon
-						icon={null}
-						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
-						text={contract.id as string}
-						hasLink
-						justify='start'
-					/>
-				) as any;
-				updatedOrder.price = divideByDigits(Number(updatedOrder.price));
-				updatedOrder.status = getStatusDiv(updatedOrder.state as string);
-				updatedOrder.progress = getProgressDiv(
-					updatedOrder.state as string,
-					updatedOrder.timestamp as string,
-					parseInt(updatedOrder.length as string),
-					currentBlockTimestamp
-				);
-				updatedOrder.progressPercentage = getProgressPercentage(
-					updatedOrder.state as string,
-					updatedOrder.timestamp as string,
-					parseInt(updatedOrder.length as string),
-					currentBlockTimestamp
-				);
-				updatedOrder.speed = String(Number(updatedOrder.speed) / 10 ** 12);
-				updatedOrder.length = String(parseInt(updatedOrder.length as string) / 3600);
-				updatedOrder.timestamp = DateTime.fromSeconds(
-					parseInt(updatedOrder.timestamp as string)
-				).toFormat('MM/dd/yyyy');
-				updatedOrder.endDate = DateTime.fromSeconds(parseInt(contract.timestamp as string))
-					.plus({ hours: parseInt(contract.length as string) / 3600 })
-					.toFormat('MM/dd/yyyy');
-				updatedOrder.contractId = contract.id as string;
-				updatedOrder.editCancel = (
-					<ButtonGroup
-						button1={
-							<EditButton
-								contractId={contract.id as string}
-								setContractId={setContractId}
-								editClickHandler={editClickHandler}
-							/>
-						}
-						button2={
-							<CancelButton
-								contractId={contract.id as string}
-								setContractId={setContractId}
-								cancelClickHandler={cancelClickHandler}
-							/>
-						}
-					/>
-				);
-			}
-			return updatedOrder;
-		});
+		const runningContracts = buyerOrders.filter(
+			(contract) => contract.state === ContractState.Running
+		);
+		return sortContracts(runningSortType, runningContracts);
+	}, [contracts, isLargeBreakpointOrGreater, runningSortType]);
 
-		return updatedOrders;
-	};
-
-	const getHistoryTableData: () => HistoryUglyMapped[] = () => {
+	const completedContracts = useMemo(() => {
 		const buyerOrders = contracts
 			.filter((contract) => contract?.history?.length)
-			.map((c) => c.history)
+			.map((c) => c.history!)
 			.flat();
-
 		if (contracts.length) {
 			setShowSpinner(false);
 		}
 
-		const updatedOrders = buyerOrders.map((contract) => {
-			const updatedOrder = { ...contract } as HistoryUglyMapped;
-			if (!_.isEmpty(contract)) {
-				updatedOrder.id = (
-					<TableIcon
-						icon={null}
-						isLargeBreakpointOrGreater={isLargeBreakpointOrGreater}
-						text={contract.id as string}
-						hasLink
-						justify='start'
-					/>
-				);
-				updatedOrder.price = divideByDigits(updatedOrder._price as number);
-				updatedOrder.status = getStatusDiv(ContractState.Running);
-				updatedOrder.progress = getProgressDiv(
-					ContractState.Running as string,
-					updatedOrder._purchaseTime as string,
-					parseInt(updatedOrder._length as string),
-					Number(contract._endTime)
-				);
-				updatedOrder.progressPercentage = getProgressPercentage(
-					ContractState.Running as string,
-					updatedOrder._purchaseTime as string,
-					parseInt(updatedOrder._length as string),
-					Number(updatedOrder._endTime)
-				);
-				updatedOrder.speed = String(Number(updatedOrder._speed) / 10 ** 12);
-				updatedOrder.length = String(parseInt(updatedOrder._length as string) / 3600);
-				updatedOrder.timestamp = DateTime.fromSeconds(
-					parseInt(updatedOrder._purchaseTime as string)
-				).toFormat('MM/dd/yyyy');
-				updatedOrder.endDate = DateTime.fromSeconds(parseInt(updatedOrder._purchaseTime as string))
-					.plus({ hours: parseInt(updatedOrder._length as string) / 3600 })
-					.toFormat('MM/dd/yyyy');
-				updatedOrder.contractId = contract.id as string;
-			}
-			return updatedOrder;
-		});
-
-		return updatedOrders;
-	};
-
-	const data = useMemo(() => getTableData(), [contracts, isLargeBreakpointOrGreater]);
-	const historyData = useMemo(() => getHistoryTableData(), [contracts, isLargeBreakpointOrGreater]);
+		return sortContracts(completedSortType, buyerOrders);
+	}, [contracts, isLargeBreakpointOrGreater, completedSortType]);
 
 	const handleRunningTab = () => {
 		setActiveOrdersTab(CurrentTab.Running);
@@ -245,27 +135,56 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 	}, 15000);
 
 	useEffect(() => {
-		if (data.length > 0) {
+		if (contracts.length > 0) {
 			setShowSpinner(false);
 		}
 	});
 
-	const [runningContracts, setRunningContracts] = useState<HistoryUglyMapped[]>([
-		...data.filter((contract) => contract.progressPercentage! < 100),
-	]);
-	const [completedContracts, setCompletedContracts] = useState<HistoryUglyMapped[]>([
-		...historyData,
-	]);
-	const [runningSortType, setRunningSortType] = useState('');
-	const [completedSortType, setCompletedSortType] = useState('');
+	const runningContractsCards: Card[] = runningContracts.map((contract) => {
+		const endTime = Number(contract.timestamp) + Number(contract.length);
+		const progressPercentage = getProgressPercentage(
+			contract.state,
+			contract.timestamp,
+			Number(contract.length),
+			currentBlockTimestamp
+		);
 
-	useEffect(() => {
-		sortContracts(runningSortType, runningContracts as any, setRunningContracts as any);
-	}, [runningSortType]);
+		const poolInfoString = localStorage.getItem(contract.id!);
+		const poolInfoParsed = poolInfoString ? JSON.parse(poolInfoString) : {};
+		const { poolAddress = '', username = '' } = poolInfoParsed;
 
-	useEffect(() => {
-		sortContracts(completedSortType, completedContracts as any, setCompletedContracts as any);
-	}, [completedSortType]);
+		return {
+			contractAddr: contract.id!,
+			startTime: Number(contract.timestamp!),
+			endTime: endTime,
+			progressPercentage: progressPercentage,
+			speedHps: String(contract.speed!),
+			price: contract.price!,
+			fee: contract.fee!,
+			length: String(contract.length!),
+			poolAddress: poolAddress,
+			poolUsername: username,
+		};
+	});
+
+	const completedContractsCards: Card[] = completedContracts.map((contract) => {
+		const poolInfoString = localStorage.getItem(contract.id!);
+		const poolInfoParsed = poolInfoString ? JSON.parse(poolInfoString) : {};
+		const { poolAddress = '', username = '' } = poolInfoParsed;
+
+		return {
+			contractAddr: contract.id!,
+			startTime: Number(contract.purchaseTime!),
+			endTime: Number(contract.endTime!),
+			progressPercentage: 100,
+			speedHps: String(contract.speed!),
+			price: contract.price!,
+			fee: '0',
+			length: String(contract.length!),
+			poolAddress: poolAddress,
+			poolUsername: username,
+		};
+	});
 
 	return (
 		<>
@@ -297,7 +216,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									setSortType={setRunningSortType}
 									isMobile={isMobile}
 								/>
-								<PurchasedContracts sortType={runningSortType} contracts={runningContracts} />
+								<PurchasedContracts
+									sortType={runningSortType}
+									contracts={runningContractsCards}
+									editClickHandler={editClickHandler}
+									cancelClickHandler={cancelClickHandler}
+									setContractId={setContractId}
+								/>
 							</>
 						) : (
 							!showSpinner && <p className='text-2xl text-white'>You have no running contracts.</p>
@@ -314,7 +239,13 @@ export const MyOrders: React.FC<MyOrdersProps> = ({
 									setSortType={setCompletedSortType}
 									isMobile={isMobile}
 								/>
-								<FinishedContracts contracts={completedContracts} sortType={completedSortType} />
+								<FinishedContracts
+									contracts={completedContractsCards}
+									sortType={completedSortType}
+									editClickHandler={editClickHandler}
+									cancelClickHandler={cancelClickHandler}
+									setContractId={setContractId}
+								/>
 							</>
 						) : (
 							!showSpinner && (

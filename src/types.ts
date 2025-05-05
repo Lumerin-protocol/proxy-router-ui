@@ -42,7 +42,7 @@ export enum StatusText {
 
 export enum PathName {
 	Marketplace = '/',
-	MyOrders = '/buyerhub',
+	BuyerHub = '/buyerhub',
 	MyContracts = '/sellerhub',
 }
 
@@ -57,7 +57,8 @@ export enum AlertMessage {
 	InvalidPoolAddress = 'The pool address is invalid.',
 	RemovePort = 'Oops, looks like you included the port number with the pool address. Please remove the port number from the pool address. The port number should be inputted in the port number field.',
 	ContractIsPurchased = 'The contract you have attempted to purchase has already been sold. Please purchase another contract.',
-	IncreaseAllowanceFailed = 'Failed to approve LMR transfer',
+	ApprovePaymentFailed = 'Failed to approve payment',
+	ApproveFeeFailed = 'Failed to approve fee',
 	PurchaseFailed = 'Purchase failed',
 	CancelFailed = 'Failed to close contract',
 	EditFailed = 'Failed to edit contract',
@@ -97,31 +98,28 @@ export interface ConnectInfo {
 }
 
 export interface ContractHistory {
-	id: JSX.Element | string;
-	_goodCloseout: boolean;
-	_buyer: string;
-	_endTime: string;
-	_purchaseTime: string;
-	_price: JSX.Element | string | number;
-	_speed: string | number;
-	_length: string | number;
+	id: string;
+	goodCloseout: boolean;
+	buyer: string;
+	endTime: string;
+	purchaseTime: string;
+	price: string;
+	speed: string;
+	length: string;
 }
 
 export interface HashRentalContract {
 	id: string;
-	contractId?: string;
 	price: string;
-	speed?: string | number;
-	length?: string | number;
-	trade?: JSX.Element | string;
-	progress?: JSX.Element | string;
+	fee: string;
+	speed: string;
+	length: string;
 	progressPercentage?: number;
-	editCancel?: JSX.Element | string;
-	buyer?: string;
-	seller?: string;
-	timestamp?: string;
-	state?: string;
-	encryptedPoolData?: string;
+	buyer: string;
+	seller: string;
+	timestamp: string;
+	state: string;
+	encryptedPoolData: string;
 	history?: ContractHistory[];
 	version: string;
 	isDeleted: boolean;
@@ -131,10 +129,10 @@ export interface HashRentalContract {
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValuesBuyForm {
 	validatorAddress?: string;
-	poolAddress?: string;
-	portNumber?: string;
-	username?: string;
-	password?: string;
+	poolAddress: string;
+	portNumber: string;
+	username: string;
+	password: string;
 }
 
 export interface FormData extends InputValuesBuyForm {
@@ -171,10 +169,7 @@ export interface ContractData extends HashRentalContract {
 }
 
 export interface ContractHistoryData extends ContractHistory {
-	status?: JSX.Element | string;
-	progress?: JSX.Element | string;
 	progressPercentage?: number;
-	contractId?: string;
 }
 
 export interface Text {

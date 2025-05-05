@@ -1,20 +1,17 @@
-//@ts-nocheck
 import { ProgressBar } from './components/ui/ProgressBar';
 import {
 	AddressLength,
+	AlertMessage,
 	ContentState,
 	ContractState,
 	Ethereum,
 	FormData,
 	HashRentalContract,
-	InputValuesBuyForm,
-	InputValuesCreateForm,
 	PathName,
 	SortByType,
 	StatusText,
 } from './types';
 import React, { Dispatch, SetStateAction } from 'react';
-import { UseFormHandleSubmit } from 'react-hook-form';
 import _ from 'lodash';
 import * as ethJsUtil from 'ethereumjs-util';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
@@ -26,6 +23,7 @@ import { CloneFactoryContract } from 'contracts-js';
 import * as URI from 'uri-js';
 import { DisabledButton, PrimaryButton } from './components/ui/Forms/FormButtons/Buttons.styled';
 import { CircularProgress } from '@mui/material';
+import { ErrorWithCode } from './components/ui/Forms/BuyerForms/BuyForm';
 
 const { abi, bytecode } = CloneFactoryContract;
 
@@ -51,7 +49,8 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 	let index;
 	switch (desiredLength) {
 		case AddressLength.SHORT:
-			return `${address.substring(0, 5)}...`;
+			index = 3;
+			break;
 		case AddressLength.MEDIUM:
 			index = 5;
 			break;
@@ -61,18 +60,18 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
 		default:
 			index = 10;
 	}
-	return `${address.substring(0, index)}...${address.substring(
+	return `${address.substring(0, index + 2)}...${address.substring(
 		address.length - index,
 		address.length
 	)}`;
 };
 
 // Convert buyer input into RFC2396 URL format
-export const toRfc2396: (address, username, password) => string | undefined = (
-	address,
-	username,
-	password
-) => {
+export const toRfc2396: (
+	address: string,
+	username: string,
+	password: string
+) => string | undefined = (address, username, password) => {
 	const protocol = 'stratum+tcp';
 
 	const encodedUsername = encodeURIComponent(username);
@@ -84,13 +83,19 @@ export const getPoolRfc2396: (formData: FormData) => string | undefined = (formD
 };
 
 export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
+	if (!formData.validatorAddress) {
+		throw new Error('Validator address is required');
+	}
 	return toRfc2396(formData.validatorAddress, formData.username, formData.password);
 };
 
 //encrypts a string passed into it
 export const encryptMessage = async (pubKey: string, msg: string) => {
-	const ciphertext = await encrypt(Buffer.from(pubKey, 'hex'), Buffer.from(msg));
-	return ciphertext;
+	// Remove 0x prefix and ensure 04 prefix is present
+	let key = pubKey.startsWith('0x') ? pubKey.slice(2) : pubKey;
+	key = key.startsWith('04') ? key.slice(2) : key;
+	const normalizedKey = `04${key}`;
+	return await encrypt(Buffer.from(normalizedKey, 'hex'), Buffer.from(msg));
 };
 
 export const getValidatorPublicKey = () => {
@@ -300,33 +305,27 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
 	return 0;
 };
 
-export const sortContracts = (
+export const sortContracts = <
+	T extends { id: string; price: string; length: string; speed: string }
+>(
 	sortType: string,
-	contractData: HashRentalContract[],
-	setContractData: React.Dispatch<React.SetStateAction<HashRentalContract[]>>
-) => {
+	contractData: T[]
+): T[] => {
 	switch (sortType) {
 		case 'Price: Low to High':
-			setContractData(sortContractsList(contractData, (k) => Number(k.price), 'asc'));
-			return;
+			return sortContractsList(contractData, (k) => Number(k.price), 'asc');
 		case 'Price: High to Low':
-			setContractData(sortContractsList(contractData, (k) => Number(k.price), 'desc'));
-			return;
+			return sortContractsList(contractData, (k) => Number(k.price), 'desc');
 		case 'Duration: Short to Long':
-			setContractData(sortContractsList(contractData, (k) => Number(k.length), 'asc'));
-			return;
+			return sortContractsList(contractData, (k) => Number(k.length), 'asc');
 		case 'Duration: Long to Short':
-			setContractData(sortContractsList(contractData, (k) => Number(k.length), 'desc'));
-			return;
+			return sortContractsList(contractData, (k) => Number(k.length), 'desc');
 		case 'Speed: Slow to Fast':
-			setContractData(sortContractsList(contractData, (k) => Number(k.speed), 'asc'));
-			return;
+			return sortContractsList(contractData, (k) => Number(k.speed), 'asc');
 		case 'Speed: Fast to Slow':
-			setContractData(sortContractsList(contractData, (k) => Number(k.speed), 'desc'));
-			return;
+			return sortContractsList(contractData, (k) => Number(k.speed), 'desc');
 		default:
-			setContractData([...contractData]);
-			return;
+			return [...contractData];
 	}
 };
 
@@ -334,8 +333,8 @@ export const getButton: (
 	contentState: string,
 	buttonContent: string,
 	onComplete: () => void,
-	onSubmit,
-	isDisabled,
+	onSubmit: () => void,
+	isDisabled: boolean,
 	isSpinning?: boolean
 ) => JSX.Element = (
 	contentState,
@@ -350,7 +349,7 @@ export const getButton: (
 	switch (pathName) {
 		// Buying contract
 		case PathName.Marketplace:
-			pathName = PathName.MyOrders;
+			pathName = PathName.BuyerHub;
 			viewText = 'Orders';
 			break;
 		// Creating contract
@@ -393,7 +392,7 @@ export const getLengthDisplay: (length: number) => string = (length) => {
 };
 
 // Get contract duration in days, hours, and minutes
-export const getReadableDate: (length: string) => string = (length) => {
+export const getReadableDate = (length: string): string => {
 	const numLength = parseFloat(length);
 	const days = Math.floor(numLength / 24);
 	const remainder = numLength % 24;
@@ -556,7 +555,7 @@ export const getPublicKeyFromTransaction: (transaction: Web3Transaction) => Buff
 			data: transaction.input,
 			r: transaction.r,
 			s: transaction.s,
-			v: getV(transaction.v, chainId),
+			v: getV(transaction.v as string, Number(chainId)),
 		},
 		{
 			chain: chainId,
@@ -586,7 +585,12 @@ export const getPublicKeyAsync: (from: string) => Promise<Buffer | undefined> = 
 };
 
 export const getHandlerBlockchainError =
-	(setAlertMessage, setAlertOpen, setContentState) => (error: ErrorWithCode) => {
+	(
+		setAlertMessage: (msg: string) => void,
+		setAlertOpen: (open: boolean) => void,
+		setContentState: (state: ContentState) => void
+	) =>
+	(error: ErrorWithCode) => {
 		// If user rejects transaction
 		if (error.code === 4001) {
 			setAlertMessage(error.message);
@@ -630,7 +634,7 @@ export const getHandlerBlockchainError =
 		setContentState(ContentState.Review);
 	};
 
-export const sortContractsList = <T extends { id: string }, K extends string | number>(
+export const sortContractsList = <T extends { id: string }>(
 	data: T[],
 	getter: (k: T) => number,
 	direction: 'asc' | 'desc'
