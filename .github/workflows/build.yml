@@ -139,7 +139,6 @@ jobs:
       )
     needs:
       - Generate-Tag
-      - Test-Build-Marketplace-Container
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
