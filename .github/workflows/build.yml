@@ -11,7 +11,6 @@ on:
   push:
     branches:
       - main
-      - test
       - dev
       - cicd/*
 
@@ -97,12 +96,11 @@ jobs:
           echo "✅ Docker Image: ${IMAGE_NAME}:${VTAG}" >> $GITHUB_STEP_SUMMARY
           echo "❌ Old Major Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
 
-  Build-Marketplace-Container:
-    name: Build Marketplace Container
+  Test-Build-Marketplace-Container:
+    name: Test Build Marketplace Container
     if: 
       (
-        (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'test' || github.base_ref == 'dev')) ||
-        (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/cicd/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test' || github.ref == 'refs/heads/dev')) ||
+        (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'dev')) ||
         (github.event_name == 'workflow_dispatch' && (github.event.inputs.build_container == 'true')) 
       )
     runs-on: ubuntu-latest
@@ -136,12 +134,12 @@ jobs:
     name: Build & Push Docker Image
     if: |
       (
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test')) ||
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')) ||
         (github.event_name == 'workflow_dispatch' && (github.event.inputs.build_container == 'true')) 
       )
     needs:
       - Generate-Tag
-      - Build-Marketplace-Container
+      - Test-Build-Marketplace-Container
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -149,9 +147,6 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -178,7 +173,7 @@ jobs:
           echo "Injecting version $FULLTAG into package.json"
           sed -i "s/\"version\": \".*\"/\"version\": \"$FULLTAG\"/" ./package.json
           cat ./package.json | grep '"version"'  # Optional: Verify the change
-          docker buildx build \
+          docker build \
             --platform linux/amd64 \
             --build-arg TAG_NAME=$BUILDTAG \
             --build-arg COMMIT=$BUILDCOMMIT \
@@ -202,7 +197,7 @@ jobs:
     name: Deploy Marketplace to GitLab
     if: |
       (
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test'))
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'))
       )
     needs:
       - Generate-Tag
@@ -226,7 +221,7 @@ jobs:
           FULLTAG=${{ needs.Generate-Tag.outputs.vfull }}       
           echo "Triggering GitLab Deploy for branch ${{ github.ref_name }} with tag $BUILDTAG"
           # Determine branch
-          if [ "${{ github.ref_name }}" == "test" ]; then
+          if [ "${{ github.ref_name }}" == "dev" ]; then
             GITLABBRANCH="dev"
           elif [ "${{ github.ref_name }}" == "main" ]; then
             GITLABBRANCH="main"
