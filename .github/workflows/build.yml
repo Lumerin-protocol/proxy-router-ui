@@ -30,6 +30,15 @@ defaults:
 
 env:
   TEST_ENV_VAR: "test"
+  REACT_APP_CHAIN_ID: ${{ vars.REACT_APP_CHAIN_ID }}
+  REACT_APP_CLONE_FACTORY: ${{ vars.REACT_APP_CLONE_FACTORY }}
+  REACT_APP_INDEXER_URL: ${{ vars.REACT_APP_INDEXER_URL }}
+  REACT_APP_ETHERSCAN_URL: ${{ vars.REACT_APP_ETHERSCAN_URL }}
+  REACT_APP_LUMERIN_TOKEN_ADDRESS: ${{ vars.REACT_APP_LUMERIN_TOKEN_ADDRESS }}
+  REACT_APP_USDC_TOKEN_ADDRESS: ${{ vars.REACT_APP_USDC_TOKEN_ADDRESS }}
+  REACT_APP_READ_ONLY_ETH_NODE_URL: ${{ vars.REACT_APP_READ_ONLY_ETH_NODE_URL }}
+  REACT_APP_VALIDATOR_REGISTRY_ADDRESS: ${{ vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }}
+  PORT: ${{ vars.PORT }}
 
 jobs:
   Generate-Tag:
@@ -124,6 +133,15 @@ jobs:
             --platform linux/amd64 \
             --build-arg TAG_NAME=$BUILDTAG \
             --build-arg COMMIT=$BUILDCOMMIT \
+            --build-arg REACT_APP_CHAIN_ID=${{ env.REACT_APP_CHAIN_ID }} \
+            --build-arg REACT_APP_CLONE_FACTORY=${{ env.REACT_APP_CLONE_FACTORY }} \
+            --build-arg REACT_APP_INDEXER_URL=${{ env.REACT_APP_INDEXER_URL }} \
+            --build-arg REACT_APP_ETHERSCAN_URL=${{ env.REACT_APP_ETHERSCAN_URL }} \
+            --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=${{ env.REACT_APP_LUMERIN_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_USDC_TOKEN_ADDRESS=${{ env.REACT_APP_USDC_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL=${{ env.REACT_APP_READ_ONLY_ETH_NODE_URL }} \
+            --build-arg REACT_APP_VALIDATOR_REGISTRY_ADDRESS=${{ env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }} \
+            --build-arg PORT=${{ env.PORT }} \
             --load \
             -t $BUILDIMAGE:$BUILDTAG \
             -f ./Dockerfile \
@@ -176,6 +194,15 @@ jobs:
             --platform linux/amd64 \
             --build-arg TAG_NAME=$BUILDTAG \
             --build-arg COMMIT=$BUILDCOMMIT \
+            --build-arg REACT_APP_CHAIN_ID=${{ env.REACT_APP_CHAIN_ID }} \
+            --build-arg REACT_APP_CLONE_FACTORY=${{ env.REACT_APP_CLONE_FACTORY }} \
+            --build-arg REACT_APP_INDEXER_URL=${{ env.REACT_APP_INDEXER_URL }} \
+            --build-arg REACT_APP_ETHERSCAN_URL=${{ env.REACT_APP_ETHERSCAN_URL }} \
+            --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=${{ env.REACT_APP_LUMERIN_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_USDC_TOKEN_ADDRESS=${{ env.REACT_APP_USDC_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL=${{ env.REACT_APP_READ_ONLY_ETH_NODE_URL }} \
+            --build-arg REACT_APP_VALIDATOR_REGISTRY_ADDRESS=${{ env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }} \
+            --build-arg PORT=${{ env.PORT }} \
             --push \
             -t $BUILDIMAGE:$BUILDTAG \
             -f ./Dockerfile \
