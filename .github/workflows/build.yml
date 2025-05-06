@@ -106,6 +106,7 @@ jobs:
           echo "❌ Old Major Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
 
   Test-Build-Marketplace-Container:
+    environment: 'dev'
     name: Test Build Marketplace Container
     if: (
       (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'dev')) ||
@@ -149,6 +150,7 @@ jobs:
 
   GHCR-Build-and-Push:
     name: Build & Push Docker Image
+    environment: 'dev'
     if: |
       (
         (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')) ||
@@ -189,40 +191,6 @@ jobs:
           echo "Injecting version $FULLTAG into package.json"
           sed -i "s/\"version\": \".*\"/\"version\": \"$FULLTAG\"/" ./package.json
           cat ./package.json | grep '"version"'  # Optional: Verify the change
-
-          env
-
-          echo "REACT_APP_CHAIN_ID: $REACT_APP_CHAIN_ID"
-          echo "REACT_APP_CLONE_FACTORY: $REACT_APP_CLONE_FACTORY"
-          echo "REACT_APP_INDEXER_URL: $REACT_APP_INDEXER_URL"
-          echo "REACT_APP_ETHERSCAN_URL: $REACT_APP_ETHERSCAN_URL"
-          echo "REACT_APP_LUMERIN_TOKEN_ADDRESS: $REACT_APP_LUMERIN_TOKEN_ADDRESS"
-          echo "REACT_APP_USDC_TOKEN_ADDRESS: $REACT_APP_USDC_TOKEN_ADDRESS"
-          echo "REACT_APP_READ_ONLY_ETH_NODE_URL: $REACT_APP_READ_ONLY_ETH_NODE_URL"
-          echo "REACT_APP_VALIDATOR_REGISTRY_ADDRESS: $REACT_APP_VALIDATOR_REGISTRY_ADDRESS"
-
-          echo "--------------------------------"
-          echo "env.REACT_APP_CHAIN_ID: $env.REACT_APP_CHAIN_ID"
-          echo "env.REACT_APP_CLONE_FACTORY: $env.REACT_APP_CLONE_FACTORY"
-          echo "env.REACT_APP_INDEXER_URL: $env.REACT_APP_INDEXER_URL"
-          echo "env.REACT_APP_ETHERSCAN_URL: $env.REACT_APP_ETHERSCAN_URL"
-          echo "env.REACT_APP_LUMERIN_TOKEN_ADDRESS: $env.REACT_APP_LUMERIN_TOKEN_ADDRESS"
-          echo "env.REACT_APP_USDC_TOKEN_ADDRESS: $env.REACT_APP_USDC_TOKEN_ADDRESS"
-          echo "env.REACT_APP_READ_ONLY_ETH_NODE_URL: $env.REACT_APP_READ_ONLY_ETH_NODE_URL"
-          echo "env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS: $env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS"
-
-          echo "--------------------------------"
-
-          echo "vars.REACT_APP_CHAIN_ID: $vars.REACT_APP_CHAIN_ID"
-          echo "vars.REACT_APP_CLONE_FACTORY: $vars.REACT_APP_CLONE_FACTORY"
-          echo "vars.REACT_APP_INDEXER_URL: $vars.REACT_APP_INDEXER_URL"
-          echo "vars.REACT_APP_ETHERSCAN_URL: $vars.REACT_APP_ETHERSCAN_URL"
-          echo "vars.REACT_APP_LUMERIN_TOKEN_ADDRESS: $vars.REACT_APP_LUMERIN_TOKEN_ADDRESS"
-          echo "vars.REACT_APP_USDC_TOKEN_ADDRESS: $vars.REACT_APP_USDC_TOKEN_ADDRESS"
-          echo "vars.REACT_APP_READ_ONLY_ETH_NODE_URL: $vars.REACT_APP_READ_ONLY_ETH_NODE_URL"
-          echo "vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS: $vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS"
-
-          echo "--------------------------------"
 
           docker build \
             --platform linux/amd64 \
