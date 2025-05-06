@@ -60,7 +60,7 @@ interface BuyFormProps {
 	web3Gateway?: EthereumGateway;
 	validators: Validator[];
 	lumerinbalance: number;
-	setOpen: Dispatch<SetStateAction<boolean>>;
+	setOpen: (isOpen: boolean) => void;
 }
 
 export const BuyForm: React.FC<BuyFormProps> = ({
@@ -95,17 +95,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({
 
 	// Contract setup
 	const contract = contracts.filter((contract) => contract.id === contractId)[0];
-
-	// const getContractInfo: () => ContractInfo = () => {
-	// 	setTotalHashrate(Number(contract.speed) * Number(contract.length));
-	// 	return {
-	// 		speed: contract.speed as string,
-	// 		price: contract.price as string,
-	// 		length: contract.length as string,
-	// 		//TODO: test validity of this field in this context
-	// 		version: contract.version as string,
-	// 	};
-	// };
 
 	const handlePurchaseError = getHandlerBlockchainError(
 		setAlertMessage,

@@ -3,7 +3,7 @@ import { ModalCard } from './Modal.styled';
 import CloseIcon from '@mui/icons-material/Close';
 interface ModalProps {
 	open: boolean;
-	setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	setOpen: (isOpen: boolean) => void;
 	content: React.ReactElement<any>;
 }
 

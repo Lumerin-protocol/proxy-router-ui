@@ -234,7 +234,7 @@ export const classNames: (...classes: string[]) => string = (...classes) => {
 export const buttonClickHandler: (
 	event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
 	open: boolean,
-	setOpen: Dispatch<SetStateAction<boolean>>
+	setOpen: (isOpen: boolean) => void
 ) => void = (event, open, setOpen) => {
 	if (!open) setOpen(true);
 };

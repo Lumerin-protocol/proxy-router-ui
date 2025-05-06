@@ -80,10 +80,18 @@ export const Main: React.FC = () => {
 	const [claimLmrModalOpen, setClaimLmrModalOpen] = useState<boolean>(false);
 	const [anyModalOpen, setAnyModalOpen] = useState<boolean>(false);
 	const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
+	const [triggerRefreshContracts, setTriggerRefreshContracts] = useState<boolean>(false);
 
 	const [chainId, setChainId] = useState<number>(0);
 	const [isMetaMask, setIsMetaMask] = useState<boolean>(false);
 	const [pathName, setPathname] = useState<string>('/');
+
+	const setBuyModalOpenRefresh = (isOpen: boolean) => {
+		setBuyModalOpen(isOpen);
+		if (!isOpen) {
+			setTriggerRefreshContracts(!triggerRefreshContracts);
+		}
+	};
 
 	const userAccount = useMemo(() => {
 		console.log('updating user account value: ', accounts && accounts[0] ? accounts[0] : '');
@@ -252,6 +260,10 @@ export const Main: React.FC = () => {
 	useInterval(() => {
 		refreshContracts(false, undefined, true);
 	}, 30 * 1000);
+
+	useEffect(() => {
+		refreshContracts();
+	}, [triggerRefreshContracts]);
 
 	const refreshContracts = (
 		ignoreCheck: boolean | any = false,
@@ -473,7 +485,9 @@ export const Main: React.FC = () => {
 							contracts={contracts}
 							setContractId={setContractId}
 							currentBlockTimestamp={currentBlockTimestamp}
-							buyClickHandler={(event) => buttonClickHandler(event, buyModalOpen, setBuyModalOpen)}
+							buyClickHandler={(event) =>
+								buttonClickHandler(event, buyModalOpen, setBuyModalOpenRefresh)
+							}
 							isMobile={isMobile}
 						/>
 					)}
@@ -534,7 +548,7 @@ export const Main: React.FC = () => {
 			/>
 			<ModalItem
 				open={buyModalOpen}
-				setOpen={setBuyModalOpen}
+				setOpen={setBuyModalOpenRefresh}
 				content={
 					<BuyForm
 						contracts={contracts}
@@ -543,7 +557,7 @@ export const Main: React.FC = () => {
 						web3Gateway={web3Gateway}
 						validators={validators}
 						lumerinbalance={lumerinBalance}
-						setOpen={setBuyModalOpen}
+						setOpen={setBuyModalOpenRefresh}
 					/>
 				}
 			/>
