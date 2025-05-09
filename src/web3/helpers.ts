@@ -16,7 +16,7 @@ export const getWeb3ResultAsync = async (
   onDisconnect: (err: Error) => void,
   onChainChange: (chainId: string, pr: provider) => void,
   onAccountsChange: (accounts: string[]) => void,
-  walletName: string,
+  walletName: string
 ): Promise<Web3Result | null> => {
   try {
     const provider = await getProviderAsync(walletName);
@@ -45,7 +45,10 @@ export const getWeb3ResultAsync = async (
       await WalletConnectProvider.enable();
     }
 
-    const web3Gateway = new EthereumGateway(process.env.REACT_APP_CLONE_FACTORY!, process.env.REACT_APP_INDEXER_URL!);
+    const web3Gateway = new EthereumGateway(
+      process.env.REACT_APP_CLONE_FACTORY!,
+      process.env.REACT_APP_INDEXER_URL!
+    );
     await web3Gateway.init();
 
     return { web3Gateway, accounts: await web3Gateway.getAccounts() };
@@ -67,27 +70,6 @@ export const reconnectWalletAsync: () => void = async () => {
       },
     ],
   });
-};
-
-// https://docs.metamask.io/guide/registering-your-token.html#example
-export const addLumerinTokenToMetaMaskAsync: () => void = async () => {
-  try {
-    await ethereum?.request({
-      method: "wallet_watchAsset",
-      params: {
-        type: "ERC20",
-        options: {
-          address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
-          symbol: "LMR",
-          decimals: 8,
-          image: lumerin,
-        },
-      },
-    });
-  } catch (error) {
-    const typedError = error as Error;
-    printError(typedError.message, typedError.stack as string);
-  }
 };
 
 export const multiplyByDigits: (amount: number) => number = (amount) => {
@@ -141,7 +123,7 @@ export const formatCurrency: (param: {
     return new Intl.NumberFormat(navigator.language, {
       style: style,
       currency: currency,
-      maximumSignificantDigits: 4,
+      maximumSignificantDigits: maxSignificantFractionDigits,
     }).format(value);
   }
 

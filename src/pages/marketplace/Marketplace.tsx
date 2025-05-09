@@ -15,6 +15,7 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ContractState } from "../../types/types";
 import { sortContracts } from "../../utils/utils";
 import { MobileWidgetsWrapper, WidgetsWrapper } from "./styled";
+import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 
 interface Props {
   web3Gateway: EthereumGateway;
@@ -61,8 +62,14 @@ export const Marketplace: React.FC<Props> = ({ web3Gateway }) => {
       <WidgetsWrapper>
         <MessageWidget isMobile={isMobile} />
         <WalletBalanceWidget />
-        <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
-        <MarketplaceStatistics isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
+        <BuyerOrdersWidget
+          isLoading={contractsQuery.isLoading}
+          contracts={contractsQuery.data || []}
+        />
+        <MarketplaceStatistics
+          isLoading={contractsQuery.isLoading}
+          contracts={contractsQuery.data || []}
+        />
       </WidgetsWrapper>
       <AvailableContracts
         contracts={availableContracts}

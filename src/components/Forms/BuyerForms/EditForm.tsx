@@ -20,8 +20,6 @@ import {
   getButton,
   getHandlerBlockchainError,
   getPoolRfc2396,
-  getValidatorPublicKey,
-  getValidatorURL,
   isNoEditBuyer,
   printError,
   truncateAddress,
@@ -74,7 +72,18 @@ export const EditForm: React.FC<EditFormProps> = ({ contractId, web3Gateway, clo
     clearErrors,
     formState: { errors, isValid },
     trigger,
-  } = useForm<InputValuesBuyForm>({ mode: "onBlur", reValidateMode: "onBlur" });
+  } = useForm<InputValuesBuyForm>({
+    mode: "onBlur",
+    reValidateMode: "onBlur",
+    defaultValues: {
+      portNumber: "",
+      poolAddress: "",
+      username: "",
+      predefinedPoolIndex: -1,
+      useLightningPayouts: false,
+      lightningAddress: "",
+    },
+  });
 
   // Contract setup
   const getContractInfo: () => ContractInfo = () => {
@@ -115,12 +124,15 @@ export const EditForm: React.FC<EditFormProps> = ({ contractId, web3Gateway, clo
         }
 
         const buyerDest: string = getPoolRfc2396(formData)!;
-        const validatorPublicKey = (await getValidatorPublicKey()) as string;
-        const encryptedBuyerInput = (await encryptMessage(validatorPublicKey.slice(2), buyerDest)).toString("hex");
+        // const validatorPublicKey = (await getValidatorPublicKey()) as string;
+        // const encryptedBuyerInput = (await encryptMessage(validatorPublicKey.slice(2), buyerDest)).toString("hex");
 
-        const validatorURL: string = `stratum+tcp://:@${getValidatorURL()}`;
+        // const validatorURL: string = `stratum+tcp://:@${getValidatorURL()}`;
+        const validatorURL: string = `stratum+tcp://:@`;
         const pubKey = await web3Gateway.getContractPublicKey(contractId);
-        const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString("hex");
+        const encrValidatorURL = (await encryptMessage(`04${pubKey}`, validatorURL)).toString(
+          "hex"
+        );
 
         const receipt = await web3Gateway.editContractDestination({
           from: userAccount,
@@ -133,7 +145,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contractId, web3Gateway, clo
           setContentState(ContentState.Complete);
           localStorage.setItem(
             contractId,
-            JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username }),
+            JSON.stringify({ poolAddress: formData.poolAddress, username: formData.username })
           );
         } else {
           setAlertMessage(AlertMessage.EditFailed);
@@ -187,7 +199,11 @@ export const EditForm: React.FC<EditFormProps> = ({ contractId, web3Gateway, clo
       case ContentState.Complete:
         buttonContent = buttonText.completed as string;
         content = (
-          <CompletedContent contentState={contentState} isEdit useLightningPayouts={usedLightningPayoutsFlow} />
+          <CompletedContent
+            contentState={contentState}
+            isEdit
+            useLightningPayouts={usedLightningPayoutsFlow}
+          />
         );
         break;
       default:
@@ -235,7 +251,8 @@ export const EditForm: React.FC<EditFormProps> = ({ contractId, web3Gateway, clo
   };
 
   // Set styles and button based on ContentState
-  const display = contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
+  const display =
+    contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
 
   return (
     <Fragment>
@@ -268,7 +285,7 @@ export const EditForm: React.FC<EditFormProps> = ({ contractId, web3Gateway, clo
             },
             () => onSubmit(),
             !isValid,
-            validatingUrl,
+            validatingUrl
           )}
       </FormButtonsWrapper>
     </Fragment>

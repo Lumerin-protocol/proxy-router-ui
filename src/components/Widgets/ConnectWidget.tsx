@@ -1,61 +1,82 @@
-import EastIcon from "@mui/icons-material/East";
-import Avatar from "boring-avatars";
-import { useState } from "react";
-import { useAccount, useDisconnect } from "wagmi";
-import { useModal } from "../../hooks/useModal";
-import { ConnectBtn } from "../../pages/landing/Landing.styled";
+import { useAccount } from "wagmi";
+import styled from "@emotion/styled";
 import { AddressLength } from "../../types/types";
 import { truncateAddress } from "../../utils/utils";
-import { addLumerinTokenToMetaMaskAsync } from "../../web3/helpers";
-import { ConnectWalletModal } from "../Forms/ConnectWalletModal";
-import { ModalItem } from "../Modal";
+import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
+import { useAppKit } from "@reown/appkit/react";
+import { arbitrum, arbitrumSepolia, hardhat } from "viem/chains";
+import { ArbitrumLogo, ArbitrumSepoliaLogo, HardhatLogo } from "../../images";
+import { ChainIcon } from "../../config/chains";
 
 export const ConnectWidget = () => {
-  const { address: userAccount, connector } = useAccount();
-  const { disconnect } = useDisconnect();
-  const connectWalletModal = useModal();
+  const { address, connector, chain } = useAccount();
+  const { open } = useAppKit();
 
   return (
-    <div style={{ minWidth: "225px" }}>
-      <ModalItem open={connectWalletModal.isOpen} setOpen={connectWalletModal.setOpen}>
-        <ConnectWalletModal onConnect={connectWalletModal.close} />
-      </ModalItem>
-      {userAccount ? (
-        <ConnectBtn type="button" className="header-wallet" onClick={() => disconnect()}>
-          <Avatar
-            size="24px"
-            name={userAccount}
-            variant="marble"
-            colors={["#1876D1", "#9A5AF7", "#CF9893", "#849483", "#4E937A"]}
-          />
-          <span className="ml-2">{truncateAddress(userAccount, AddressLength.MEDIUM)}</span>
-          {connector?.icon}
-        </ConnectBtn>
+    <ButtonGroup>
+      {address ? (
+        <>
+          <Button type="button" onClick={() => open({ view: "Account" })}>
+            {/* <Avatar
+              size="24px"
+              name={address}
+              variant="marble"
+              colors={["#1876D1", "#9A5AF7", "#CF9893", "#849483", "#4E937A"]}
+              style={{ marginRight: "0.5rem" }}
+            /> */}
+            <WuiAvatar address={address} />
+            {truncateAddress(address, AddressLength.MEDIUM)}
+          </Button>
+        </>
       ) : (
-        <ConnectBtn type="button" onClick={() => connectWalletModal.open()}>
+        <Button type="button" onClick={() => open({ view: "Connect" })}>
           Connect wallet
-        </ConnectBtn>
+        </Button>
       )}
-    </div>
+      {ChainIcon && (
+        <Button type="button" onClick={() => open({ view: "Networks" })}>
+          <ChainIcon width="1.5rem" height="1.5rem" />
+          {chain?.name}
+        </Button>
+      )}
+      {connector?.icon && (
+        <Button type="button" onClick={() => open({ view: "Connect" })}>
+          <ConnectorIcon src={connector?.icon} alt="connector icon" />
+        </Button>
+      )}
+    </ButtonGroup>
   );
-
-  // return (
-  // 	<div style={{ minWidth: '225px' }}>
-  // 		<div
-  // 			onClick={() => disconnect()}
-  // 			onMouseOver={() => setIsHovering(true)}
-  // 			onMouseOut={() => setIsHovering(false)}
-  // 			className='btn-connected cursor-pointer flex justify-evenly items-center px-8'
-  // 		>
-  // 			<span className='pr-3'>{isHovering ? 'ChangeAccount' : truncatedWalletAddress}</span>
-  // 			{connector?.icon}
-  // 		</div>
-  // 		<button className='link text-xs' onClick={() => addLumerinTokenToMetaMaskAsync()}>
-  // 			<span style={{ display: 'flex', alignItems: 'center', color: '#fff' }}>
-  // 				Import LMR into MetaMask{' '}
-  // 				<EastIcon style={{ fontSize: '0.85rem', marginLeft: '0.25rem' }} />
-  // 			</span>
-  // 		</button>
-  // 	</div>
-  // );
 };
+
+// The same avatar component as the one in the appkit
+const WuiAvatar = (props: { address: string }) => {
+  const { address } = props;
+  return <wui-avatar alt={address} address={address} size="sm" />;
+};
+
+const ButtonGroup = styled("div")`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0rem;
+`;
+
+const ConnectorIcon = styled("img")`
+  width: 1.5rem;
+  height: 1.5rem;
+`;
+
+const Button = styled(PrimaryButton)`
+  height: 48px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 0.5rem;
+  border: rgba(171, 171, 171, 0.5) 1px solid;
+`;

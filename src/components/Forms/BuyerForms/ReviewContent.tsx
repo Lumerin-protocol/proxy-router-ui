@@ -1,152 +1,129 @@
-import { InputLabel, MenuItem, Select } from "@mui/material";
+import { Checkbox, FormControlLabel, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import type { DeepMap, FieldError, UseFormRegister, UseFormSetValue } from "react-hook-form";
+import { UseFormSetValue, type UseFormReturn } from "react-hook-form";
 import { useValidators } from "../../../hooks/data/useValidators";
 import { AlertMessage, type InputValuesBuyForm, Validator } from "../../../types/types";
 import {
-  getHostName,
-  getSchemeName,
-  getTitanLightningPoolUrl,
-  getWorkerName,
   isValidLightningUsername,
   isValidPoolAddress,
   isValidUsername,
 } from "../../../utils/utils";
 import { Alert } from "../../Alert";
-import { Checkbox } from "../../Checkbox";
+// import { Checkbox } from "../../Checkbox";
 import { InputWrapper } from "../Forms.styled";
 
 interface PoolData {
   name: string;
   address: string;
-  port: string;
+  isLightning?: boolean;
 }
 
-interface ReviewContentProps {
-  register?: UseFormRegister<InputValuesBuyForm> | any;
-  errors?: DeepMap<InputValuesBuyForm, FieldError | undefined> | any; // undefined bc error for specific input might not exist
-  setValue?: UseFormSetValue<InputValuesBuyForm>;
-  buyerString?: string;
-  isEdit?: boolean;
-  setFormData?: any;
-  inputData?: any;
-  onUseLightningPayoutsFlow: (value: boolean) => void;
-  clearErrors: () => void;
-  showValidationError?: boolean;
+interface Props {
+  form: UseFormReturn<InputValuesBuyForm>;
+  setValue: UseFormSetValue<InputValuesBuyForm>;
 }
 
-let preferredPool: PoolData, setPreferredPool: React.Dispatch<React.SetStateAction<PoolData>>;
+const predefinedPools: PoolData[] = [
+  { name: "Luxor", address: "btc.global.luxor.tech:700" },
+  { name: "Braiins", address: "stratum.braiins.com:3333" },
+  {
+    name: "Titan Lightning Pool",
+    address: process.env.REACT_APP_TITAN_LIGHTNING_POOL,
+    isLightning: true,
+  },
+];
 
-export const ReviewContent: React.FC<ReviewContentProps> = ({
-  register,
-  errors,
-  setValue,
-  buyerString,
-  isEdit,
-  setFormData,
-  inputData,
-  onUseLightningPayoutsFlow,
-  clearErrors,
-  showValidationError,
-}) => {
-  const { data: validators } = useValidators({
+export const ReviewContent: React.FC<Props> = ({ form, setValue }) => {
+  const { data: validators, isLoading: isLoadingValidators } = useValidators({
     offset: 0,
     limit: 100,
   });
 
-  const { poolAddress, username } = inputData;
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
-  const [useLightningPayouts, setUseLightningPayouts] = useState<boolean>(false);
-  [preferredPool, setPreferredPool] = useState<PoolData>({ name: "", address: "", port: "" });
-  const lightningUrl = getTitanLightningPoolUrl();
+  const hasSetValidator = React.useRef(false);
 
-  // pull active validator list
+  // register fields
 
-  const preferredPools = [
-    { name: "Luxor", address: "btc.global.luxor.tech:700", port: "700" },
-    { name: "Braiins", address: "stratum.braiins.com:3333", port: "3333" },
-  ];
-
-  const validatorsOptions = validators?.map((v) => ({
-    name: v.host,
-    address: v.addr,
-  }));
-
-  // hiding references to validator service at the moment: my 5/9/22
-  const checkboxLegend = "Lightning payouts";
-  const checkboxLabel = "Use Titan Pool for Lightning Payouts";
-  const checkboxDescription = "";
-
-  const handlePoolChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedPool = preferredPools.find((item) => item.name === event.target.value);
-    setPreferredPool({ ...preferredPool, ...selectedPool });
-  };
-
-  useEffect(() => {
-    setFormData({
-      ...inputData,
-      poolAddress: preferredPool.address,
-    });
-    setValue?.("poolAddress", preferredPool.address);
-  }, [preferredPool]);
-
-  useEffect(() => {
-    if (!validators?.length) {
-      return;
-    }
-    const index = Math.floor(Math.random() * validators.length);
-    setValue?.("validatorAddress", validators[index].addr);
-    setFormData({
-      ...inputData,
-      validatorAddress: validators[index].addr,
-    });
-  }, [validators]);
-
-  const poolAddressController = register("poolAddress", {
+  const poolAddressController = form.register("poolAddress", {
     required: "Pool Address is required",
     validate: (poolAddress: string) => isValidPoolAddress(poolAddress) || "Invalid pool address.",
   });
 
-  const usernameController = register("username", {
+  const usernameController = form.register("username", {
     required: "Username is required",
     validate: (username: string) => {
-      if (useLightningPayouts) {
-        return isValidLightningUsername(username) || "Invalid email.";
-      }
-
-      return isValidUsername(username) || "Invalid username. Only letters a-z, numbers and .@- allowed";
+      return (
+        isValidUsername(username) || "Invalid username. Only letters a-z, numbers and .@- allowed"
+      );
     },
   });
 
+  const lightningAddressController = form.register("lightningAddress", {
+    required: "Lightning Address is required",
+    validate: (lightningAddress: string) =>
+      isValidLightningUsername(lightningAddress) || "Invalid email.",
+  });
+
+  const validatorAddressController = form.register("validatorAddress", {
+    required: "Validator Address is required",
+  });
+
+  const poolController = form.register("predefinedPoolIndex", {
+    required: "Pool is required",
+    onChange: (event) => {
+      const value = event.target.value;
+      if (value >= 0) {
+        setValue("poolAddress", predefinedPools[value].address);
+      } else {
+        setValue("poolAddress", "");
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (!validators?.length || hasSetValidator.current) {
+      return;
+    }
+    const index = Math.floor(Math.random() * validators.length);
+    setValue("validatorAddress", validators[index].addr);
+    hasSetValidator.current = true;
+    console.log("validatorAddress updated", validators[index].addr);
+  }, [validators, setValue]);
+
+  const predefinedPoolIndex = form.watch("predefinedPoolIndex");
+  const validatorAddress = form.watch("validatorAddress");
+  console.log("validatorAddress", validatorAddress);
+
+  const isManualPool = predefinedPoolIndex === -1;
+  const isLightningPool =
+    !isManualPool && predefinedPoolIndex && predefinedPools[predefinedPoolIndex].isLightning;
+
+  if (isLoadingValidators) {
+    return <></>;
+  }
+
   return (
-    <React.Fragment>
-      <Alert message={AlertMessage.RemovePort} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <InputWrapper style={{ display: isEdit ? "none" : undefined, marginTop: "1rem" }}>
-          <InputLabel sx={{ color: "white", fontFamily: "inherit" }} id="validator-label">
-            Validator Address
-          </InputLabel>
-          <Select
-            labelId="validator-label"
+    <>
+      <Alert
+        message={AlertMessage.RemovePort}
+        isOpen={alertOpen}
+        onClose={() => setAlertOpen(false)}
+      />
+      <div>
+        <InputWrapper>
+          <TextField
             id="validatorAddress"
-            {...register("validatorAddress", {})}
-            sx={{ border: "1px solid white", color: "#fff" }}
-            onChange={(event: any) => {
-              setFormData({
-                ...inputData,
-                validatorAddress: event.target.value,
-              });
-              setValue?.("validatorAddress", event.target.value);
-            }}
-            value={inputData?.validatorAddress}
+            {...validatorAddressController}
             label="Validators"
+            defaultValue=""
+            select
           >
-            {validatorsOptions?.map((o) => (
-              <MenuItem value={o.address} key={o.address}>
-                {o.name}
+            {validators?.map((o) => (
+              <MenuItem value={o.addr} key={o.addr}>
+                {o.host}
               </MenuItem>
             ))}
-          </Select>
+          </TextField>
         </InputWrapper>
 
         {/* <Tooltip title='Temporary Unavailable' placement='top'>
@@ -154,107 +131,50 @@ export const ReviewContent: React.FC<ReviewContentProps> = ({
 				</Tooltip> */}
       </div>
 
-      <Checkbox
-        legend={checkboxLegend}
-        label={checkboxLabel}
-        description={checkboxDescription}
-        onChange={(value) => {
-          onUseLightningPayoutsFlow(value);
-          setUseLightningPayouts(value);
-          if (!value) {
-            setPreferredPool({ name: "", address: "", port: "" });
-          }
-          setFormData({
-            ...inputData,
-            poolAddress: value ? lightningUrl : undefined,
-            username: "",
-          });
-          setValue?.("poolAddress", value ? lightningUrl : "");
-          setValue?.("username", "");
-          clearErrors();
-        }}
-      />
-      {!useLightningPayouts && (
-        <InputWrapper style={{ display: isEdit ? "none" : undefined, marginTop: "1rem" }}>
-          <InputLabel sx={{ color: "white", fontFamily: "inherit" }} id="preferred-pools-label">
-            Predefined Pools
-          </InputLabel>
-          <Select
-            labelId="preferred-pools-label"
-            id="preferred-pools"
-            displayEmpty
-            sx={{ border: "1px solid white", color: "#fff" }}
-            value={preferredPool.name}
-            label="Predefined Pools"
-            onChange={(event: any) => handlePoolChange(event)}
-          >
-            <MenuItem value="">Select a predefined pool</MenuItem>
-            {preferredPools.map((item) => (
-              <MenuItem value={item.name} key={item.name}>
-                {item.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </InputWrapper>
-      )}
-      {!useLightningPayouts && (
-        <InputWrapper>
-          <label htmlFor="poolAddress">Pool Address *</label>
-          <input
-            {...poolAddressController}
-            id="poolAddress"
-            type="text"
-            disabled={useLightningPayouts}
-            placeholder="POOL_IP_ADDRESS:PORT"
-            className={
-              errors?.poolAddress
-                ? "bg-red-100 btn-modal placeholder-red-400 review-input"
-                : "review-no-errors review-input"
-            }
-            // defaultValue={
-            // 	isEdit && buyerString
-            // 		? `${getSchemeName(buyerString)}://${getHostName(buyerString)}`
-            // 		: ''
-            // }
-            onChange={(e) => {
-              poolAddressController.onChange(e);
-              setFormData({
-                ...inputData,
-                poolAddress: e.target.value,
-              });
-            }}
-            value={poolAddress}
-          />
-          {errors.poolAddress && <div className="text-xs text-red-500">{errors.poolAddress.message}</div>}
-        </InputWrapper>
-      )}
       <InputWrapper>
-        <label htmlFor="username">Username *</label>
-        <input
-          {...usernameController}
-          id="username"
-          type="text"
-          placeholder={useLightningPayouts ? "bob@getalby.com" : "account.worker"}
-          className={
-            errors?.username ? "bg-red-100 btn-modal placeholder-red-400 review-input" : "review-no-errors review-input"
-          }
-          // defaultValue={isEdit && buyerString ? getWorkerName(buyerString) : ''}
-          value={username}
-          onChange={(e) => {
-            usernameController.onChange(e);
-            setFormData({
-              ...inputData,
-              username: e.target.value,
-            });
-          }}
-        />
-        {showValidationError && (
-          <div className="text-xs text-red-500">Username not recognized as valid Lightning Address</div>
-        )}
-        {errors.username?.type === "required" && <div className="text-xs text-red-500">{errors.username.message}</div>}
-        {errors.username?.type === "validate" && <div className="text-xs text-red-500">{errors.username.message}</div>}
+        <TextField select {...poolController} label="Predefined Pools" defaultValue="">
+          {predefinedPools.map((item, index) => (
+            <MenuItem key={item.name} value={index}>
+              {item.name}
+            </MenuItem>
+          ))}
+          <MenuItem key="-1" value={-1}>
+            Enter manually
+          </MenuItem>
+        </TextField>
       </InputWrapper>
-    </React.Fragment>
+      <InputWrapper>
+        <TextField
+          {...poolAddressController}
+          id="poolAddress"
+          type="text"
+          placeholder="mypool.com:3333"
+          label="Pool Address"
+          disabled={!isManualPool}
+        />
+      </InputWrapper>
+
+      {isLightningPool ? (
+        <InputWrapper>
+          <TextField
+            {...lightningAddressController}
+            id="lightningAddress"
+            type="text"
+            placeholder="bob@getalby.com"
+            label="Lightning Address"
+          />
+        </InputWrapper>
+      ) : (
+        <InputWrapper>
+          <TextField
+            {...usernameController}
+            id="username"
+            placeholder="account.worker"
+            label="Username"
+          />
+        </InputWrapper>
+      )}
+    </>
   );
 };
 

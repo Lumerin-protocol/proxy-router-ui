@@ -2,23 +2,15 @@ import styled from "@emotion/styled";
 import EastIcon from "@mui/icons-material/East";
 import { formatUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
-import { Rates } from "../../gateway/rates/interfaces";
 import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
 import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
 import { useRates } from "../../hooks/data/useRates";
-import { ArbitrumLogo, EtherIcon, LumerinIcon, UsdcIcon } from "../../images";
+import { EtherIcon, LumerinIcon, UsdcIcon } from "../../images";
 import { formatCurrency } from "../../web3/helpers";
-import { MobileWidget, SmallWidget } from "../Cards/Cards.styled";
+import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
-
-type WalletBalanceWidgetProps = {
-  tokens: {
-    name: string;
-    balance: bigint;
-    rateUSD: number;
-    icon: React.ReactNode;
-  }[];
-};
+import { chain } from "../../config/chains";
+import { ChainIcon } from "../../config/chains";
 
 export const WalletBalanceWidget = () => {
   const { address } = useAccount();
@@ -51,93 +43,127 @@ export const WalletBalanceWidget = () => {
     },
   ];
 
-  const isLoading = paymentTokenBalance.isLoading || feeTokenBalance.isLoading || ethBalance.isLoading;
+  const isLoading =
+    paymentTokenBalance.isLoading || feeTokenBalance.isLoading || ethBalance.isLoading;
+
+  const isSuccess = !!(
+    paymentTokenBalance.balance &&
+    feeTokenBalance.balance &&
+    ethBalance.data &&
+    address
+  );
 
   return (
-    <WalletBalanceWrapper>
+    <SmallWidget>
       <h3>
-        <ArbitrumLogo style={{ width: "15px", display: "inline", marginTop: "-3px" }} /> Wallet Balance (Arbitrum)
+        <ChainIcon style={{ width: "15px", display: "inline", marginTop: "-3px" }} /> Wallet Balance
+        ({chain.name})
       </h3>
-      <div className="flex items-center justify-evenly flex-1 balance-wrapper w-100 flex-col lg:flex-row ">
+      <Balances>
         {!address && <div>Connect your wallet to view your balance</div>}
-        {isLoading && <Spinner />}
-        {!isLoading &&
+        {isLoading && <Spinner fontSize="0.3em" />}
+        {isSuccess &&
           address &&
-          tokens.map((token) => (
-            <div className="flex items-center justify-center flex-col" key={token.name}>
-              <div className="flex items-center justify-center">
-                {token.icon}
-                <span className="balance">
-                  {formatCurrency({
-                    value: Number(formatUnits(token.balance || 0n, Number(token.decimals))),
-                    maxSignificantFractionDigits: 4,
-                    currency: undefined,
-                  })}
-                  <span className="symbol">{token.name}</span>
-                </span>
-              </div>
-              <div className="items-center justify-center hidden">
-                {token.rateUSD && <Rate>≈ ${(token.rateUSD * Number(token.balance)).toFixed(2)}</Rate>}
-              </div>
-            </div>
-          ))}
-      </div>
+          tokens.map((token) => {
+            const balanceFloat = Number.parseFloat(
+              formatUnits(token.balance || 0n, Number(token.decimals))
+            );
+            const rateUSD = token.rateUSD * balanceFloat;
+            return (
+              <TokenContainer key={token.name}>
+                <TokenBalanceWrapper>
+                  {token.icon}
+                  <BalanceText>
+                    {formatCurrency({
+                      value: balanceFloat,
+                      maxSignificantFractionDigits: 4,
+                      currency: undefined,
+                    })}
+                    <TokenSymbol>{token.name}</TokenSymbol>
+                  </BalanceText>
+                </TokenBalanceWrapper>
+                <RateWrapper>
+                  {token.rateUSD && (
+                    <Rate>
+                      ≈ $
+                      {formatCurrency({
+                        value: rateUSD,
+                        maxSignificantFractionDigits: 2,
+                        currency: undefined,
+                      })}
+                    </Rate>
+                  )}
+                </RateWrapper>
+              </TokenContainer>
+            );
+          })}
+      </Balances>
       <div className="link">
         <a href={process.env.REACT_APP_BUY_LMR_URL} target="_blank" rel="noreferrer">
           Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: "0.75rem" }} />
         </a>
       </div>
-    </WalletBalanceWrapper>
+    </SmallWidget>
   );
 };
 
-const WalletBalanceWrapper = styled(SmallWidget)`
-	.balance-wrapper {
-		width: 100%;
-		display: flex;
-		justify-content: space-evenly;
-		align-items: center;
+const TokenContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
 
-		.balance {
-			font-size: 1.5rem;
-			margin-left: 0.65rem;
-			color: #fff;
+const TokenBalanceWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
 
-			.symbol {
-				font-size: 1.125rem;
-				line-height: 1.75rem;
-				margin-left: 0.3rem;
-			}
-		}
+const BalanceText = styled.span`
+  font-size: 1.1rem;
+  margin-left: 0.65rem;
+  color: #fff;
 
-		@media (max-width: 768px) {
-			flex-direction: column;
-			flex: 40%;
-			h3 {
-				color: #696969;
-				font-size: 10px;
-			}
-			p {
-				font-size: 16px;
-				color: #fff;
-				font-weight: 500;
-			}
-			.balance {
-				font-size: 1rem;
-				margin-left: 0.65rem;
-				color: #fff;
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin-left: 0.65rem;
+    color: #fff;
+  }
+`;
 
-				.symbol {
-					font-size: 0.8rem;
-					line-height: 1.75rem;
-				}
-			}
-		}
-	}
+const TokenSymbol = styled.span`
+  font-size: 0.8em;
+  line-height: 1.75rem;
+  margin-left: 0.3rem;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    line-height: 1.75rem;
+  }
+`;
+
+const RateWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Balances = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex: 1;
+  width: 100%;
+  flex-direction: column;
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+  }
 `;
 
 const Rate = styled.p`
-	font-size: 0.625rem;
-	text-align: center;
-	color: #a7a9b6;
+  font-size: 0.8rem;
+  text-align: center;
+  color: rgb(155, 155, 155);
 `;

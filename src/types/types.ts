@@ -123,7 +123,9 @@ export interface InputValuesBuyForm {
   poolAddress: string;
   portNumber: string;
   username: string;
-  password: string;
+  predefinedPoolIndex?: number;
+  useLightningPayouts: boolean;
+  lightningAddress: string;
 }
 
 export interface FormData extends InputValuesBuyForm {
@@ -164,13 +166,13 @@ export interface ContractHistoryData extends ContractHistory {
 }
 
 export interface Text {
-  create?: string;
-  edit?: string;
-  cancel?: string;
-  review?: string;
-  confirm?: string;
-  confirmChanges?: string;
-  completed?: string;
+  create: string;
+  edit: string;
+  cancel: string;
+  review: string;
+  confirm: string;
+  confirmChanges: string;
+  completed: string;
 }
 
 export interface ContractInfo {

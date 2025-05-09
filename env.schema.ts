@@ -15,6 +15,9 @@ export const EnvSchema = Type.Object({
   REACT_APP_READ_ONLY_ETH_NODE_URL: Type.String({ format: "uri" }),
   REACT_APP_VALIDATOR_REGISTRY_ADDRESS: TypeEthAddress(),
   REACT_APP_VERSION: Type.String(),
+  REACT_APP_URL: Type.String({ format: "uri" }),
+  REACT_APP_WALLET_CONNECT_ID: Type.String({ minLength: 1 }),
+  REACT_APP_TITAN_LIGHTNING_POOL: Type.String({ default: "pplp.titan.io:4141" }),
 });
 
 // Inferred type of environment variables

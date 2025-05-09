@@ -9,4 +9,6 @@ export { default as LumerinLandingPage } from "./lumerin_landingpage.svg?react";
 export { default as WalletConnectIcon } from "./walletconnect.svg?react";
 export { default as EtherIcon } from "./eth_icon.svg?react";
 export { default as ArbitrumLogo } from "./arbitrum.svg?react";
+export { default as ArbitrumSepoliaLogo } from "./arbitrum-sepolia.svg?react";
+export { default as HardhatLogo } from "./hardhat.svg?react";
 export { default as UsdcIcon } from "./usdc.svg?react";
