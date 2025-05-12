@@ -8,6 +8,7 @@ import { BuyerHub } from "./pages/buyer-hub/BuyerHub";
 import { Landing } from "./pages/landing/Landing";
 import { Marketplace } from "./pages/marketplace/Marketplace";
 import { PathName } from "./types/types";
+// import { Test } from "./pages/test/test";
 
 type Props = {
   web3Gateway: EthereumGateway;
@@ -20,6 +21,7 @@ export const Router: React.FC<Props> = ({ web3Gateway }) => {
         <Route path={PathName.Landing} element={<Landing />} />
         <Route path={PathName.BuyerHub} element={<BuyerHub web3Gateway={web3Gateway} />} />
         <Route path={PathName.Marketplace} element={<Marketplace web3Gateway={web3Gateway} />} />
+        {/* <Route path={"test"} element={<Test />} /> */}
       </Routes>
     </Suspense>
   );

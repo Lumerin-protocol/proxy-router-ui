@@ -1,21 +1,18 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import type React from "react";
-import { Fragment, useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   encryptMessage,
   formatStratumUrl,
   getButton,
   getHandlerBlockchainError,
-  getPoolRfc2396,
   printError,
+  type ErrorWithCode,
   truncateAddress,
-  validateLightningUrl,
 } from "../../../utils/utils";
 import { CompletedContent } from "./CompletedContent";
 import { ConfirmContent } from "./ConfirmContent";
 import { ReviewContent } from "./ReviewContent";
-
 import { Alert as AlertMUI } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
@@ -26,21 +23,12 @@ import { useContracts } from "../../../hooks/data/useContracts";
 import { useFeeTokenBalance } from "../../../hooks/data/useFeeTokenBalance";
 import { usePaymentTokenBalance } from "../../../hooks/data/usePaymentTokenBalance";
 import { useValidators } from "../../../hooks/data/useValidators";
-import {
-  AddressLength,
-  AlertMessage,
-  ContentState,
-  type InputValuesBuyForm,
-  PathName,
-} from "../../../types/types";
+import { AddressLength, AlertMessage, ContentState, type InputValuesBuyForm, PathName } from "../../../types/types";
 import { buttonText } from "../../../utils/shared";
 import { Alert } from "../../Alert";
 import { ContractLink } from "../../Modal.styled";
 import { FormButtonsWrapper, SecondaryButton } from "../FormButtons/Buttons.styled";
-
-export interface ErrorWithCode extends Error {
-  code?: number;
-}
+import { setPoolInfo } from "../../../gateway/localStorage";
 
 interface BuyFormProps {
   contractId: string;
@@ -63,8 +51,6 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [alertMessage, setAlertMessage] = useState<string>("");
   const [purchasedTx, setPurchasedTx] = useState<string>("");
-  const [usedLightningPayoutsFlow, setUsedLightningPayoutsFlow] = useState<boolean>(false);
-  const [validatingUrl, setValidatingUrl] = useState(false);
 
   // form setup
   const form = useForm<InputValuesBuyForm>({
@@ -74,8 +60,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
       poolAddress: "",
       username: "",
       validatorAddress: "",
-      predefinedPoolIndex: -1,
-      useLightningPayouts: false,
+      predefinedPoolIndex: "",
       lightningAddress: "",
     },
   });
@@ -83,37 +68,21 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
   // Contract setup
   const contract = contractsQuery.data?.filter((contract) => contract.id === contractId)?.[0]!;
 
-  const handlePurchaseError = getHandlerBlockchainError(
-    setAlertMessage,
-    setAlertOpen,
-    setContentState
-  );
-
-  const buyContractAsync = async (data: InputValuesBuyForm): Promise<void> => {
+  const onSubmit = async (data: InputValuesBuyForm): Promise<void> => {
     if (contentState === ContentState.Review) {
       setContentState(ContentState.Confirm);
     }
 
     if (contentState === ContentState.Confirm) {
       setContentState(ContentState.Pending);
-    }
 
-    if (contentState === ContentState.Pending) {
-      if (
-        contract.price &&
-        paymentTokenBalance.balance &&
-        paymentTokenBalance.balance < BigInt(contract.price)
-      ) {
+      if (contract.price && paymentTokenBalance.balance && paymentTokenBalance.balance < BigInt(contract.price)) {
         setAlertOpen(true);
         setAlertMessage("Insufficient USDC balance");
         return;
       }
 
-      if (
-        contract.fee &&
-        feeTokenBalance.balance &&
-        feeTokenBalance.balance < BigInt(contract.fee)
-      ) {
+      if (contract.fee && feeTokenBalance.balance && feeTokenBalance.balance < BigInt(contract.fee)) {
         setAlertOpen(true);
         setAlertMessage("Insufficient LMR balance");
         return;
@@ -145,7 +114,10 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
           return;
         }
 
-        const buyerDest = getPoolRfc2396(data);
+        const buyerDest = formatStratumUrl({
+          host: data.poolAddress,
+          username: data.username,
+        });
 
         const validator = validators?.find((v) => v.addr === data.validatorAddress)!;
         if (!validator) {
@@ -155,24 +127,21 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
 
         const validatorPublicKey = decompressPublicKey(validator.pubKeyYparity, validator.pubKeyX);
 
-        const encrDestURL = (await encryptMessage(validatorPublicKey.slice(2), buyerDest)).toString(
-          "hex"
-        );
+        const encrDestURL = await encryptMessage(validatorPublicKey.slice(2), buyerDest);
 
         const validatorURL = formatStratumUrl({
           host: validator.host,
           username: data.username,
-          password: data.password,
         });
 
         const pubKey = await web3Gateway.getContractPublicKey(contract.id);
-        const encrValidatorURL = (await encryptMessage(pubKey, validatorURL)).toString("hex");
+        const encrValidatorURL = await encryptMessage(pubKey, validatorURL);
 
         const receipt2 = await web3Gateway.purchaseContract({
           contractAddress: contract.id,
           validatorAddress: validator.addr,
-          encrValidatorURL: encrValidatorURL,
-          encrDestURL: encrDestURL,
+          encrValidatorURL: encrValidatorURL.toString("hex"),
+          encrDestURL: encrDestURL.toString("hex"),
           buyer: userAccount,
           termsVersion: contract.version,
         });
@@ -186,14 +155,17 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
         setPurchasedTx(receipt2.transactionHash);
         purchasedHashrate(Number(contract.speed));
         setContentState(ContentState.Complete);
-        localStorage.setItem(
+        setPoolInfo({
           contractId,
-          JSON.stringify({ poolAddress: data.poolAddress, username: data.username })
-        );
+          startedAt: receipt2.timestamp,
+          poolAddress: data.poolAddress,
+          username: data.username || data.lightningAddress,
+          validatorAddress: data.validatorAddress,
+        });
       } catch (error) {
         const typedError = error as ErrorWithCode;
-        printError(typedError.message, typedError.stack as string);
-        handlePurchaseError(typedError);
+        printError(typedError.message, typedError.stack);
+        getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState)(typedError);
       }
     }
   };
@@ -201,9 +173,7 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
   function renderContent() {
     switch (contentState) {
       case ContentState.Confirm: {
-        const validator = validators?.find(
-          (v) => v.addr === form.getValues().validatorAddress
-        )?.host;
+        const validator = validators?.find((v) => v.addr === form.getValues().validatorAddress)?.host;
         return <ConfirmContent data={form.getValues()} validator={validator} />;
       }
       case ContentState.Pending:
@@ -212,96 +182,79 @@ export const BuyForm: React.FC<BuyFormProps> = ({ contractId, web3Gateway, setOp
           <CompletedContent
             contentState={contentState}
             tx={purchasedTx}
-            useLightningPayouts={usedLightningPayoutsFlow}
+            useLightningPayouts={form.getValues().lightningAddress !== ""}
           />
         );
       }
       default: {
-        return <ReviewContent form={form} setValue={form.setValue} />;
+        return <ReviewContent form={form} />;
       }
     }
   }
 
-  function getButtonText() {
-    switch (contentState) {
-      case ContentState.Confirm:
-        return buttonText.confirm;
-      case ContentState.Pending:
-        return buttonText.completed;
-    }
-    return buttonText.review;
-  }
-
-  const onSubmit = () => {
-    setShowValidationError(false);
-    if (usedLightningPayoutsFlow) {
-      setValidatingUrl(true);
-      validateLightningUrl(formData?.username).then((isValid) => {
-        setValidatingUrl(false);
-        if (isValid) {
-          buyContractAsync(formData);
-        } else {
-          setShowValidationError(true);
-        }
-      });
-      return;
-    }
-    buyContractAsync(formData);
-  };
-
   // Set styles and button based on ContentState
-  const display =
-    contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
+  const displayIntroText = !(contentState === ContentState.Pending || contentState === ContentState.Complete);
+
+  const { isValid } = form.formState;
 
   return (
-    <FormProvider {...form}>
+    <>
       <Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
-      {display && (
+      {displayIntroText && (
         <>
           <h2>Purchase Hashpower</h2>
           <p className="font-normal mb-3">
-            Enter the Pool Address, Port Number, and Username you are pointing the purchased
-            hashpower to.
+            Enter the Pool Address, Port Number, and Username you are pointing the purchased hashpower to.
           </p>
-          <ContractLink
-            href={`${process.env.REACT_APP_ETHERSCAN_URL}${contract.id as string}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Contract Address: {truncateAddress(contract.id as string, AddressLength.MEDIUM)}
+          <ContractLink href={`${process.env.REACT_APP_ETHERSCAN_URL}${contract.id}`} target="_blank" rel="noreferrer">
+            Contract Address: {truncateAddress(contract.id, AddressLength.MEDIUM)}
           </ContractLink>
         </>
       )}
       {contentState === ContentState.Confirm && (
         <AlertMUI severity="warning" sx={{ margin: "3px 0" }}>
-          Thank you for choosing the Lumerin Hashpower Marketplace. Click "Confirm Order" below. You
-          will be prompted to approve a transaction through your wallet. Stand by for a second
-          transaction. Once both transactions are confirmed, you will be redirected to view your
-          orders.
+          You will be prompted to approve 3 transactions through your wallet. Once they are confirmed, you will be
+          redirected to view your order.
         </AlertMUI>
       )}
 
       {renderContent()}
 
       <FormButtonsWrapper>
-        <SecondaryButton type="submit" onClick={() => setOpen(false)}>
-          Close
-        </SecondaryButton>
         {contentState !== ContentState.Pending &&
           getButton(
             contentState,
-            getButtonText(),
+            getButtonText(contentState),
             () => {
               setOpen(false);
               navigate(PathName.BuyerHub);
             },
-            () => onSubmit(),
-            !form.formState.isValid,
-            validatingUrl
+            async () => {
+              if (!isValid) {
+                const isValidated = await form.trigger();
+                if (!isValidated) {
+                  return;
+                }
+              }
+              onSubmit(form.getValues());
+            },
+            false,
+            form.formState.isValidating,
           )}
+        <SecondaryButton type="submit" onClick={() => setOpen(false)}>
+          Close
+        </SecondaryButton>
       </FormButtonsWrapper>
-    </FormProvider>
+    </>
   );
 };
 
-BuyForm.displayName = "BuyForm";
+function getButtonText(contentState: string) {
+  switch (contentState) {
+    case ContentState.Confirm:
+      return buttonText.confirm;
+    case ContentState.Pending:
+      return buttonText.completed;
+  }
+  return buttonText.review;
+}

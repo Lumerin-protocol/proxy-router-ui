@@ -43,21 +43,14 @@ export const WalletBalanceWidget = () => {
     },
   ];
 
-  const isLoading =
-    paymentTokenBalance.isLoading || feeTokenBalance.isLoading || ethBalance.isLoading;
+  const isLoading = paymentTokenBalance.isLoading || feeTokenBalance.isLoading || ethBalance.isLoading;
 
-  const isSuccess = !!(
-    paymentTokenBalance.balance &&
-    feeTokenBalance.balance &&
-    ethBalance.data &&
-    address
-  );
+  const isSuccess = !!(paymentTokenBalance.balance && feeTokenBalance.balance && ethBalance.data && address);
 
   return (
     <SmallWidget>
       <h3>
-        <ChainIcon style={{ width: "15px", display: "inline", marginTop: "-3px" }} /> Wallet Balance
-        ({chain.name})
+        <ChainIcon style={{ width: "15px", display: "inline", marginTop: "-3px" }} /> Wallet Balance ({chain.name})
       </h3>
       <Balances>
         {!address && <div>Connect your wallet to view your balance</div>}
@@ -65,9 +58,7 @@ export const WalletBalanceWidget = () => {
         {isSuccess &&
           address &&
           tokens.map((token) => {
-            const balanceFloat = Number.parseFloat(
-              formatUnits(token.balance || 0n, Number(token.decimals))
-            );
+            const balanceFloat = Number.parseFloat(formatUnits(token.balance || 0n, Number(token.decimals)));
             const rateUSD = token.rateUSD * balanceFloat;
             return (
               <TokenContainer key={token.name}>

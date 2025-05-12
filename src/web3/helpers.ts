@@ -16,7 +16,7 @@ export const getWeb3ResultAsync = async (
   onDisconnect: (err: Error) => void,
   onChainChange: (chainId: string, pr: provider) => void,
   onAccountsChange: (accounts: string[]) => void,
-  walletName: string
+  walletName: string,
 ): Promise<Web3Result | null> => {
   try {
     const provider = await getProviderAsync(walletName);
@@ -45,10 +45,7 @@ export const getWeb3ResultAsync = async (
       await WalletConnectProvider.enable();
     }
 
-    const web3Gateway = new EthereumGateway(
-      process.env.REACT_APP_CLONE_FACTORY!,
-      process.env.REACT_APP_INDEXER_URL!
-    );
+    const web3Gateway = new EthereumGateway(process.env.REACT_APP_CLONE_FACTORY!, process.env.REACT_APP_INDEXER_URL!);
     await web3Gateway.init();
 
     return { web3Gateway, accounts: await web3Gateway.getAccounts() };

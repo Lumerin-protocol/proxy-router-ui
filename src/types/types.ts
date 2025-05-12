@@ -119,12 +119,10 @@ export interface HashRentalContract {
 // Making fields optional bc a user might not have filled out the input fields
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValuesBuyForm {
-  validatorAddress?: string;
+  validatorAddress: string;
   poolAddress: string;
-  portNumber: string;
   username: string;
-  predefinedPoolIndex?: number;
-  useLightningPayouts: boolean;
+  predefinedPoolIndex: number | "";
   lightningAddress: string;
 }
 

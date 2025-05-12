@@ -62,14 +62,8 @@ export const Marketplace: React.FC<Props> = ({ web3Gateway }) => {
       <WidgetsWrapper>
         <MessageWidget isMobile={isMobile} />
         <WalletBalanceWidget />
-        <BuyerOrdersWidget
-          isLoading={contractsQuery.isLoading}
-          contracts={contractsQuery.data || []}
-        />
-        <MarketplaceStatistics
-          isLoading={contractsQuery.isLoading}
-          contracts={contractsQuery.data || []}
-        />
+        <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
+        <MarketplaceStatistics isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
       </WidgetsWrapper>
       <AvailableContracts
         contracts={availableContracts}

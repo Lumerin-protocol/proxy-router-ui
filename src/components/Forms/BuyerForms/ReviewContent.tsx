@@ -1,82 +1,117 @@
-import { Checkbox, FormControlLabel, InputLabel, MenuItem, Select, TextField } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { UseFormSetValue, type UseFormReturn } from "react-hook-form";
+import { MenuItem, TextField, Tooltip } from "@mui/material";
+import React, { useEffect } from "react";
+import { useController, type UseFormReturn } from "react-hook-form";
 import { useValidators } from "../../../hooks/data/useValidators";
-import { AlertMessage, type InputValuesBuyForm, Validator } from "../../../types/types";
+import type { InputValuesBuyForm } from "../../../types/types";
 import {
   isValidLightningUsername,
   isValidPoolAddress,
   isValidUsername,
+  validateLightningUrl,
 } from "../../../utils/utils";
-import { Alert } from "../../Alert";
-// import { Checkbox } from "../../Checkbox";
 import { InputWrapper } from "../Forms.styled";
-
-interface PoolData {
-  name: string;
-  address: string;
-  isLightning?: boolean;
-}
+import { DisabledButton } from "../FormButtons/Buttons.styled";
+import styled from "@emotion/styled";
+import { predefinedPools, type PoolData } from "./predefinedPools";
 
 interface Props {
   form: UseFormReturn<InputValuesBuyForm>;
-  setValue: UseFormSetValue<InputValuesBuyForm>;
 }
 
-const predefinedPools: PoolData[] = [
-  { name: "Luxor", address: "btc.global.luxor.tech:700" },
-  { name: "Braiins", address: "stratum.braiins.com:3333" },
-  {
-    name: "Titan Lightning Pool",
-    address: process.env.REACT_APP_TITAN_LIGHTNING_POOL,
-    isLightning: true,
-  },
-];
-
-export const ReviewContent: React.FC<Props> = ({ form, setValue }) => {
+export const ReviewContent: React.FC<Props> = ({ form }) => {
   const { data: validators, isLoading: isLoadingValidators } = useValidators({
     offset: 0,
     limit: 100,
   });
 
-  const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const hasSetValidator = React.useRef(false);
 
   // register fields
 
-  const poolAddressController = form.register("poolAddress", {
-    required: "Pool Address is required",
-    validate: (poolAddress: string) => isValidPoolAddress(poolAddress) || "Invalid pool address.",
-  });
-
-  const usernameController = form.register("username", {
-    required: "Username is required",
-    validate: (username: string) => {
-      return (
-        isValidUsername(username) || "Invalid username. Only letters a-z, numbers and .@- allowed"
-      );
+  const poolAddressController = useController({
+    name: "poolAddress",
+    control: form.control,
+    rules: {
+      required: "Pool Address is required",
+      validate: (poolAddress: string) => {
+        if (isValidPoolAddress(poolAddress)) {
+          return true;
+        }
+        return "Pool address should have the format: mypool.com:3333";
+      },
     },
   });
 
-  const lightningAddressController = form.register("lightningAddress", {
-    required: "Lightning Address is required",
-    validate: (lightningAddress: string) =>
-      isValidLightningUsername(lightningAddress) || "Invalid email.",
+  const usernameController = useController({
+    name: "username",
+    control: form.control,
+    rules: {
+      validate: (username: string, formValues: InputValuesBuyForm) => {
+        if (formValues.predefinedPoolIndex === "") {
+          return true;
+        }
+        const isManualPool = formValues.predefinedPoolIndex === -1;
+        const isLightningPool = !isManualPool && predefinedPools[formValues.predefinedPoolIndex].isLightning;
+        if (!isLightningPool) {
+          return isValidUsername(username) || "Invalid username. Only letters a-z, numbers and .@- allowed";
+        }
+        return true;
+      },
+    },
   });
 
-  const validatorAddressController = form.register("validatorAddress", {
-    required: "Validator Address is required",
+  const lightningAddressController = useController({
+    name: "lightningAddress",
+    control: form.control,
+    rules: {
+      validate: async (lightningAddress: string, formValues: InputValuesBuyForm) => {
+        if (formValues.predefinedPoolIndex === "") {
+          return true;
+        }
+        if (formValues.predefinedPoolIndex === -1) {
+          return true;
+        }
+        const isLightningPool = predefinedPools[formValues.predefinedPoolIndex].isLightning;
+        if (!isLightningPool) {
+          return true;
+        }
+        if (!isValidLightningUsername(lightningAddress)) {
+          return "Invalid lightning address format, it should be like bob@getalby.com";
+        }
+
+        const isValid = await validateLightningUrl(lightningAddress);
+        if (!isValid) {
+          return "This lightning address is not reachable";
+        }
+        return true;
+      },
+    },
   });
 
-  const poolController = form.register("predefinedPoolIndex", {
-    required: "Pool is required",
-    onChange: (event) => {
-      const value = event.target.value;
-      if (value >= 0) {
-        setValue("poolAddress", predefinedPools[value].address);
-      } else {
-        setValue("poolAddress", "");
-      }
+  const validatorAddressController = useController({
+    name: "validatorAddress",
+    control: form.control,
+    rules: {
+      required: "Validator is required",
+    },
+  });
+
+  const predefinedPool = useController({
+    name: "predefinedPoolIndex",
+    control: form.control,
+    rules: {
+      required: true,
+      onChange: (event) => {
+        const value = event.target.value;
+        if (value >= 0) {
+          const selectedPool = predefinedPools[value];
+          form.resetField("poolAddress");
+          form.setValue("poolAddress", selectedPool.address);
+        } else {
+          form.resetField("poolAddress");
+          form.setFocus("poolAddress");
+        }
+      },
     },
   });
 
@@ -85,38 +120,94 @@ export const ReviewContent: React.FC<Props> = ({ form, setValue }) => {
       return;
     }
     const index = Math.floor(Math.random() * validators.length);
-    setValue("validatorAddress", validators[index].addr);
+    form.setValue("validatorAddress", validators[index].addr);
     hasSetValidator.current = true;
-    console.log("validatorAddress updated", validators[index].addr);
-  }, [validators, setValue]);
+  }, [validators, form]);
 
   const predefinedPoolIndex = form.watch("predefinedPoolIndex");
-  const validatorAddress = form.watch("validatorAddress");
-  console.log("validatorAddress", validatorAddress);
 
   const isManualPool = predefinedPoolIndex === -1;
-  const isLightningPool =
-    !isManualPool && predefinedPoolIndex && predefinedPools[predefinedPoolIndex].isLightning;
+  const isLightningPool = !isManualPool && predefinedPoolIndex && predefinedPools[predefinedPoolIndex].isLightning;
 
-  if (isLoadingValidators) {
+  useEffect(() => {
+    if (isLightningPool) {
+      form.resetField("username");
+    } else {
+      form.resetField("lightningAddress");
+    }
+  }, [isLightningPool, form]);
+
+  if (isLoadingValidators || form.formState.isLoading) {
     return <></>;
   }
 
   return (
     <>
-      <Alert
-        message={AlertMessage.RemovePort}
-        isOpen={alertOpen}
-        onClose={() => setAlertOpen(false)}
-      />
-      <div>
+      <InputWrapper>
+        <TextField
+          select
+          {...predefinedPool.field}
+          label="Predefined Pools"
+          error={!!predefinedPool.fieldState.error}
+          helperText={predefinedPool.fieldState.error?.message}
+        >
+          {predefinedPools.map((item, index) => (
+            <MenuItem key={item.name} value={index}>
+              {item.name}
+            </MenuItem>
+          ))}
+          <MenuItem key="-1" value={-1}>
+            Manually enter pool address
+          </MenuItem>
+        </TextField>
+      </InputWrapper>
+      <InputWrapper>
+        <TextField
+          {...poolAddressController.field}
+          id="poolAddress"
+          type="text"
+          placeholder="mypool.com:3333"
+          label="Pool Address"
+          disabled={!isManualPool}
+          error={!!poolAddressController.fieldState.error}
+          helperText={poolAddressController.fieldState.error?.message}
+        />
+      </InputWrapper>
+
+      {isLightningPool ? (
+        <InputWrapper>
+          <TextField
+            {...lightningAddressController.field}
+            id="lightningAddress"
+            type="text"
+            placeholder="bob@getalby.com"
+            label="Lightning Address"
+            error={!!lightningAddressController.fieldState.error}
+            helperText={lightningAddressController.fieldState.error?.message}
+          />
+        </InputWrapper>
+      ) : (
+        <InputWrapper>
+          <TextField
+            {...usernameController.field}
+            id="username"
+            placeholder="account.worker"
+            label="Username"
+            error={!!usernameController.fieldState.error}
+            helperText={usernameController.fieldState.error?.message}
+          />
+        </InputWrapper>
+      )}
+
+      <ValidatorRow>
         <InputWrapper>
           <TextField
             id="validatorAddress"
-            {...validatorAddressController}
+            {...validatorAddressController.field}
             label="Validators"
-            defaultValue=""
             select
+            error={!!validatorAddressController.fieldState.error}
+            helperText={validatorAddressController.fieldState.error?.message}
           >
             {validators?.map((o) => (
               <MenuItem value={o.addr} key={o.addr}>
@@ -126,56 +217,27 @@ export const ReviewContent: React.FC<Props> = ({ form, setValue }) => {
           </TextField>
         </InputWrapper>
 
-        {/* <Tooltip title='Temporary Unavailable' placement='top'>
-					<DisabledButton>Become Validator</DisabledButton>
-				</Tooltip> */}
-      </div>
-
-      <InputWrapper>
-        <TextField select {...poolController} label="Predefined Pools" defaultValue="">
-          {predefinedPools.map((item, index) => (
-            <MenuItem key={item.name} value={index}>
-              {item.name}
-            </MenuItem>
-          ))}
-          <MenuItem key="-1" value={-1}>
-            Enter manually
-          </MenuItem>
-        </TextField>
-      </InputWrapper>
-      <InputWrapper>
-        <TextField
-          {...poolAddressController}
-          id="poolAddress"
-          type="text"
-          placeholder="mypool.com:3333"
-          label="Pool Address"
-          disabled={!isManualPool}
-        />
-      </InputWrapper>
-
-      {isLightningPool ? (
-        <InputWrapper>
-          <TextField
-            {...lightningAddressController}
-            id="lightningAddress"
-            type="text"
-            placeholder="bob@getalby.com"
-            label="Lightning Address"
-          />
-        </InputWrapper>
-      ) : (
-        <InputWrapper>
-          <TextField
-            {...usernameController}
-            id="username"
-            placeholder="account.worker"
-            label="Username"
-          />
-        </InputWrapper>
-      )}
+        <Tooltip title="Temporary Unavailable" placement="top">
+          <BecomeValidatorButton>Become Validator</BecomeValidatorButton>
+        </Tooltip>
+      </ValidatorRow>
     </>
   );
 };
 
-ReviewContent.displayName = "ReviewContent";
+const ValidatorRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 1em;
+`;
+
+const BecomeValidatorButton = styled(DisabledButton)`
+  height: unset;
+  padding: 16.5px 1em;
+  margin-top: 1.3rem;
+  font-size: 0.8rem;
+  background: rgb(52, 52, 52);
+  color: rgb(225, 225, 225);
+  opacity: 0.5;
+`;

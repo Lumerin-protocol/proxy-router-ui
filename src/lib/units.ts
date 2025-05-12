@@ -69,9 +69,7 @@ function limitSignificantDecimals(value: string, significantDecimals: number) {
   const firstNonZero = decimals.findIndex((d) => d !== "0");
   const lastNonZero = decimals.findLastIndex((d) => d !== "0");
   const significantNumbers = decimals.slice(firstNonZero, lastNonZero + 1);
-  const trimmed =
-    (Number(significantNumbers.join("")) / 10 ** significantNumbers.length) *
-    10 ** significantDecimals;
+  const trimmed = (Number(significantNumbers.join("")) / 10 ** significantNumbers.length) * 10 ** significantDecimals;
   const roundedSignificantPart = Math.round(trimmed);
   const out = `${integer}.${"0".repeat(firstNonZero)}${roundedSignificantPart}`;
   return out;

@@ -11,9 +11,7 @@ export const MarketplaceStatistics = (props: {
 }) => {
   const { watchAsset } = useWatchAsset();
 
-  const activeContracts = props.contracts.filter(
-    (contract: HashRentalContract) => !contract.isDeleted
-  );
+  const activeContracts = props.contracts.filter((contract: HashRentalContract) => !contract.isDeleted);
 
   const getContractEndTimestamp = (contract: any) => {
     if (+contract.timestamp === 0) {
@@ -39,33 +37,15 @@ export const MarketplaceStatistics = (props: {
       <h3>Marketplace Contracts</h3>
       <div className="stats">
         <div className="stat active">
-          <h4>
-            {props.isLoading ? (
-              <Skeleton variant="rectangular" width={40} height={28} />
-            ) : (
-              stats.count
-            )}
-          </h4>
+          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats.count}</h4>
           <p>TOTAL</p>
         </div>
         <div className="stat active">
-          <h4>
-            {props.isLoading ? (
-              <Skeleton variant="rectangular" width={40} height={28} />
-            ) : (
-              stats.rented
-            )}
-          </h4>
+          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats.rented}</h4>
           <p>RENTED</p>
         </div>
         <div className="stat active">
-          <h4>
-            {props.isLoading ? (
-              <Skeleton variant="rectangular" width={40} height={28} />
-            ) : (
-              stats.expiresInHour
-            )}
-          </h4>
+          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats.expiresInHour}</h4>
           <p>EXPIRING</p>
         </div>
       </div>

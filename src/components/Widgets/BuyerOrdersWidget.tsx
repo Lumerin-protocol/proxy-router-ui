@@ -16,9 +16,7 @@ export const BuyerOrdersWidget = (props: {
   const navigate = useNavigate();
   const { address: userAccount } = useAccount();
 
-  const buyerOrders = props.contracts.filter(
-    (contract: HashRentalContract) => contract.buyer === userAccount
-  );
+  const buyerOrders = props.contracts.filter((contract: HashRentalContract) => contract.buyer === userAccount);
 
   const currentBlockTimestamp = useSimulatedBlockchainTime();
 
@@ -29,7 +27,7 @@ export const BuyerOrdersWidget = (props: {
         updatedOrder.state as string,
         updatedOrder.timestamp as string,
         Number.parseInt(updatedOrder.length as string),
-        Number(currentBlockTimestamp)
+        Number(currentBlockTimestamp),
       );
       return updatedOrder;
     }
@@ -37,11 +35,9 @@ export const BuyerOrdersWidget = (props: {
   });
 
   const runningContracts = updatedOrders.filter(
-    (c) => c.progressPercentage! < 100 && c.state === ContractState.Running
+    (c) => c.progressPercentage! < 100 && c.state === ContractState.Running,
   );
-  const completedContractsAmount = props.contracts.flatMap(
-    (contract: HashRentalContract) => contract.history
-  ).length;
+  const completedContractsAmount = props.contracts.flatMap((contract: HashRentalContract) => contract.history).length;
 
   return (
     <BuyerOrdersWrapper>
@@ -49,21 +45,13 @@ export const BuyerOrdersWidget = (props: {
       <div className="stats">
         <div className="stat active">
           <h4>
-            {props.isLoading ? (
-              <Skeleton variant="rectangular" width={40} height={28} />
-            ) : (
-              runningContracts.length
-            )}
+            {props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : runningContracts.length}
           </h4>
           <p>ACTIVE</p>
         </div>
         <div className="stat completed">
           <h4>
-            {props.isLoading ? (
-              <Skeleton variant="rectangular" width={40} height={28} />
-            ) : (
-              completedContractsAmount
-            )}
+            {props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : completedContractsAmount}
           </h4>
           <p>FINISHED</p>
         </div>

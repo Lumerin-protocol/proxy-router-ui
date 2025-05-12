@@ -3,7 +3,6 @@ import { encrypt } from "ecies-geth/dist/lib/src/typescript/browser";
 import _ from "lodash";
 import type React from "react";
 import * as URI from "uri-js";
-import type { ErrorWithCode } from "../components/Forms/BuyerForms/BuyForm";
 import { DisabledButton, PrimaryButton } from "../components/Forms/FormButtons/Buttons.styled";
 import { ProgressBar } from "../components/ProgressBar";
 import {
@@ -22,12 +21,13 @@ import {
 import { Buffer } from "buffer/";
 (window as any).Buffer = Buffer;
 
+export interface ErrorWithCode extends Error {
+  code?: number;
+}
+
 // STRING HELPERS
 // Get address based on desired length
-export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (
-  address,
-  desiredLength
-) => {
+export const truncateAddress: (address: string, desiredLength?: AddressLength) => string = (address, desiredLength) => {
   let index;
   switch (desiredLength) {
     case AddressLength.SHORT:
@@ -42,10 +42,7 @@ export const truncateAddress: (address: string, desiredLength?: AddressLength) =
     default:
       index = 10;
   }
-  return `${address.substring(0, index + 2)}...${address.substring(
-    address.length - index,
-    address.length
-  )}`;
+  return `${address.substring(0, index + 2)}...${address.substring(address.length - index, address.length)}`;
 };
 
 export const formatStratumUrl = (props: { host: string; username?: string; password?: string }) => {
@@ -117,25 +114,19 @@ export const getWorkerName = (connectionString: string): string | undefined => {
 export const getPassword = (connectionString: string): string | undefined => {
   const usernameWithPassword = getUsernameWithPassword(connectionString);
   return usernameWithPassword!.includes(":")
-    ? usernameWithPassword?.substring(
-        usernameWithPassword.indexOf(":") + 1,
-        usernameWithPassword.length
-      )
+    ? usernameWithPassword?.substring(usernameWithPassword.indexOf(":") + 1, usernameWithPassword.length)
     : "";
 };
 
-export const getHostName = (connectionString: string): string | undefined =>
-  URI.parse(connectionString).host;
+export const getHostName = (connectionString: string): string | undefined => URI.parse(connectionString).host;
 
 export const getPortString = (connectionString: string): string | undefined =>
   URI.parse(connectionString).port?.toString();
 
-export const getSchemeName = (connectionString: string): string | undefined =>
-  URI.parse(connectionString).scheme;
+export const getSchemeName = (connectionString: string): string | undefined => URI.parse(connectionString).scheme;
 
 // Make sure username contains no spaces
-export const isValidUsername: (username: string) => boolean = (username) =>
-  /^[a-zA-Z0-9.@-]+$/.test(username);
+export const isValidUsername: (username: string) => boolean = (username) => /^[a-zA-Z0-9.@-]+$/.test(username);
 
 const EMAIL_REGEX =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -162,7 +153,7 @@ export const classNames: (...classes: string[]) => string = (...classes) => {
 export const buttonClickHandler: (
   event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   open: boolean,
-  setOpen: (isOpen: boolean) => void
+  setOpen: (isOpen: boolean) => void,
 ) => void = (event, open, setOpen) => {
   if (!open) setOpen(true);
 };
@@ -171,7 +162,7 @@ export const buttonClickHandler: (
 export const setMediaQueryListOnChangeHandler: (
   mediaQueryList: MediaQueryList,
   isLargeBreakpointOrGreater: boolean,
-  setIsLargeBreakpointOrGreater: React.Dispatch<React.SetStateAction<boolean>>
+  setIsLargeBreakpointOrGreater: React.Dispatch<React.SetStateAction<boolean>>,
 ) => void = (mediaQueryList, isLargeBreakpointOrGreater, setIsLargeBreakpointOrGreater) => {
   function mediaQueryListOnChangeHandler(this: MediaQueryList, event: MediaQueryListEvent): void {
     if (this.matches && !isLargeBreakpointOrGreater) {
@@ -183,38 +174,32 @@ export const setMediaQueryListOnChangeHandler: (
   if (mediaQueryList) mediaQueryList.onchange = mediaQueryListOnChangeHandler;
 };
 
-export const isNoClaim: (userAccount: string, sellerAccount: string) => boolean = (
-  userAccount,
-  sellerAccount
-) => {
+export const isNoClaim: (userAccount: string, sellerAccount: string) => boolean = (userAccount, sellerAccount) => {
   return userAccount !== sellerAccount;
 };
 
 export const isNoEditBuyer: (contract: HashRentalContract, userAccount: string) => boolean = (
   contract,
-  userAccount
+  userAccount,
 ) => {
   return contract.buyer === userAccount && contract.state !== ContractState.Running;
 };
 
 export const isNoEditSeller: (contract: HashRentalContract, userAccount: string) => boolean = (
   contract,
-  userAccount
+  userAccount,
 ) => {
   return contract.seller === userAccount && contract.state === ContractState.Running;
 };
 
-export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (
-  contract,
-  userAccount
-) => {
+export const isNoCancel: (contract: HashRentalContract, userAccount: string) => boolean = (contract, userAccount) => {
   return userAccount !== contract.buyer || contract.state !== ContractState.Running;
 };
 
 export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) => number = (
   rowA,
   rowB,
-  sortByType
+  sortByType,
 ) => {
   let rowASortType;
   let rowBSortType;
@@ -233,11 +218,9 @@ export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) 
   return 0;
 };
 
-export const sortContracts = <
-  T extends { id: string; price: string; length: string; speed: string }
->(
+export const sortContracts = <T extends { id: string; price: string; length: string; speed: string }>(
   sortType: string,
-  contractData: T[]
+  contractData: T[],
 ): T[] => {
   switch (sortType) {
     case "Price: Low to High":
@@ -263,15 +246,8 @@ export const getButton: (
   onComplete: () => void,
   onSubmit: () => void,
   isDisabled: boolean,
-  isSpinning?: boolean
-) => JSX.Element = (
-  contentState,
-  buttonContent,
-  onComplete,
-  onSubmit,
-  isDisabled,
-  isSpinning = false
-) => {
+  isSpinning?: boolean,
+) => JSX.Element = (contentState, buttonContent, onComplete, onSubmit, isDisabled, isSpinning = false) => {
   let pathName = window.location.pathname;
   let viewText = "";
   switch (pathName) {
@@ -326,16 +302,10 @@ export const getReadableDate = (length: string): string => {
   const remainder = numLength % 24;
   const hours = days >= 1 ? Math.floor(remainder) : Math.floor(numLength);
   const minutes =
-    days >= 1
-      ? Math.floor(60 * (remainder - hours))
-      : Math.floor((numLength - Math.floor(numLength)) * 60);
+    days >= 1 ? Math.floor(60 * (remainder - hours)) : Math.floor((numLength - Math.floor(numLength)) * 60);
   const readableDays = days ? (days === 1 ? `${days} day` : `${days} days`) : "";
   const readableHours = hours ? (hours === 1 ? `${hours} hour` : `${hours} hours`) : "";
-  const readableMinutes = minutes
-    ? minutes === 1
-      ? `${minutes} minute`
-      : `${minutes} minutes`
-    : "";
+  const readableMinutes = minutes ? (minutes === 1 ? `${minutes} minute` : `${minutes} minutes`) : "";
   const readableDate = `${readableDays} ${readableHours} ${readableMinutes}`;
   return readableDate;
 };
@@ -355,11 +325,9 @@ export const getStatusText: (state: string) => string = (state) => {
 // Display address based on breakpoint
 export const getAddressDisplay: (isLargeBreakpointOrGreater: boolean, address: string) => string = (
   isLargeBreakpointOrGreater,
-  address
+  address,
 ) => {
-  return isLargeBreakpointOrGreater
-    ? truncateAddress(address)
-    : truncateAddress(address, AddressLength.SHORT);
+  return isLargeBreakpointOrGreater ? truncateAddress(address) : truncateAddress(address, AddressLength.SHORT);
 };
 
 // Get progress div
@@ -367,7 +335,7 @@ export const getProgressDiv: (
   state: string,
   startTime: string,
   length: number,
-  currentBlockTimestamp: number
+  currentBlockTimestamp: number,
 ) => JSX.Element = (state, startTime, length, currentBlockTimestamp) => {
   let timeElapsed = 0;
   let percentage = 0;
@@ -381,10 +349,7 @@ export const getProgressDiv: (
   }
 
   return (
-    <div
-      key={percentage.toFixed()}
-      className="flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row"
-    >
+    <div key={percentage.toFixed()} className="flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row">
       <div>{percentage.toFixed()}%</div>
       <div className="w-1/2 sm:ml-4">
         <ProgressBar width={percentage.toString()} />
@@ -397,7 +362,7 @@ export const getProgressPercentage: (
   state: string,
   startTime: string,
   length: number,
-  currentBlockTimestamp: number
+  currentBlockTimestamp: number,
 ) => number = (state, startTime, length, currentBlockTimestamp) => {
   let timeElapsed = 0;
   let percentage = 0;
@@ -423,10 +388,7 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
   return (
     <div
       key={state}
-      className={classNames(
-        getStatusClass(state),
-        "flex justify-center items-center px-4 py-0.5 rounded-15 text-xs"
-      )}
+      className={classNames(getStatusClass(state), "flex justify-center items-center px-4 py-0.5 rounded-15 text-xs")}
     >
       <p>{_.capitalize(getStatusText(state))}</p>
     </div>
@@ -435,7 +397,7 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 
 // ERROR LOGGING
 // Print error message and stacktrace
-export const printError: (message: string, stacktrace: string) => void = (message, stacktrace) => {
+export const printError: (message: string, stacktrace?: string) => void = (message, stacktrace) => {
   console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
 };
 
@@ -472,7 +434,7 @@ export const getHandlerBlockchainError =
   (
     setAlertMessage: (msg: string) => void,
     setAlertOpen: (open: boolean) => void,
-    setContentState: (state: ContentState) => void
+    setContentState: (state: ContentState) => void,
   ) =>
   (error: ErrorWithCode) => {
     // If user rejects transaction
@@ -521,7 +483,7 @@ export const getHandlerBlockchainError =
 export const sortContractsList = <T extends { id: string }>(
   data: T[],
   getter: (k: T) => number,
-  direction: "asc" | "desc"
+  direction: "asc" | "desc",
 ) => {
   return data.sort((a, b) => {
     let delta = numberCompareFn(getter(a), getter(b));
@@ -532,9 +494,7 @@ export const sortContractsList = <T extends { id: string }>(
   });
 };
 
-export const validateLightningUrl = async (email: string | undefined) => {
-  if (!email) return false;
-
+export const validateLightningUrl = async (email: string) => {
   try {
     const [username, domain] = email.split("@");
     const url = `https://${domain}/.well-known/lnurlp/${username}`;
@@ -549,5 +509,4 @@ export const validateLightningUrl = async (email: string | undefined) => {
 type StringOrNumber = string | number | bigint;
 
 const numberCompareFn = (a: StringOrNumber, b: StringOrNumber) => Number(a) - Number(b);
-const stringCompareFn = (a: StringOrNumber, b: StringOrNumber) =>
-  String(a).localeCompare(String(b));
+const stringCompareFn = (a: StringOrNumber, b: StringOrNumber) => String(a).localeCompare(String(b));

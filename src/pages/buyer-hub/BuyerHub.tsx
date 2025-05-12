@@ -1,5 +1,4 @@
-import type React from "react";
-import { MouseEventHandler, useMemo, useState } from "react";
+import { useMemo, useState, type FC } from "react";
 import { useAccount } from "wagmi";
 import { type Card, FinishedContracts, RunningContracts } from "../../components/Cards/PurchasedContracts";
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
@@ -11,12 +10,13 @@ import { useContracts } from "../../hooks/data/useContracts";
 import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
 import { ContractState, CurrentTab } from "../../types/types";
 import { getProgressPercentage, sortContracts } from "../../utils/utils";
+import { getPoolInfo } from "../../gateway/localStorage";
 
 type Props = {
   web3Gateway: EthereumGateway;
 };
 
-export const BuyerHub: React.FC<Props> = ({ web3Gateway }) => {
+export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
   const { address: userAccount } = useAccount();
   const contractsQuery = useContracts({ userAccount });
 
@@ -60,9 +60,10 @@ export const BuyerHub: React.FC<Props> = ({ web3Gateway }) => {
       Number(currentBlockTimestamp),
     );
 
-    const poolInfoString = localStorage.getItem(contract.id!);
-    const poolInfoParsed = poolInfoString ? JSON.parse(poolInfoString) : {};
-    const { poolAddress = "", username = "" } = poolInfoParsed;
+    const poolInfo = getPoolInfo({
+      contractId: contract.id,
+      startedAt: BigInt(contract.timestamp),
+    });
 
     return {
       contractAddr: contract.id!,
@@ -73,15 +74,17 @@ export const BuyerHub: React.FC<Props> = ({ web3Gateway }) => {
       price: contract.price!,
       fee: contract.fee!,
       length: String(contract.length!),
-      poolAddress: poolAddress,
-      poolUsername: username,
+      poolAddress: poolInfo?.poolAddress || "",
+      poolUsername: poolInfo?.username || "",
+      validatorAddress: poolInfo?.validatorAddress || "",
     };
   });
 
   const completedContractsCards: Card[] = completedContracts.map((contract) => {
-    const poolInfoString = localStorage.getItem(contract.id!);
-    const poolInfoParsed = poolInfoString ? JSON.parse(poolInfoString) : {};
-    const { poolAddress = "", username = "" } = poolInfoParsed;
+    const poolInfo = getPoolInfo({
+      contractId: contract.id,
+      startedAt: BigInt(contract.purchaseTime),
+    });
 
     return {
       contractAddr: contract.id!,
@@ -92,8 +95,9 @@ export const BuyerHub: React.FC<Props> = ({ web3Gateway }) => {
       price: contract.price!,
       fee: "0",
       length: String(contract.length!),
-      poolAddress: poolAddress,
-      poolUsername: username,
+      poolAddress: poolInfo?.poolAddress || "",
+      poolUsername: poolInfo?.username || "",
+      validatorAddress: poolInfo?.validatorAddress || "",
     };
   });
 
@@ -101,6 +105,7 @@ export const BuyerHub: React.FC<Props> = ({ web3Gateway }) => {
     <DefaultLayout>
       <TabSwitch>
         <button
+          type="button"
           id="running"
           className={activeOrdersTab === CurrentTab.Running ? "active" : ""}
           onClick={handleRunningTab}
@@ -108,51 +113,42 @@ export const BuyerHub: React.FC<Props> = ({ web3Gateway }) => {
           Active <span>{contractsQuery.isLoading ? "" : runningContracts.length}</span>
         </button>
         <button
+          type="button"
           id="completed"
           className={activeOrdersTab === CurrentTab.Completed ? "active" : ""}
           onClick={handleCompletedTab}
         >
           Completed <span>{contractsQuery.isLoading ? "" : completedContracts.length}</span>
         </button>
-        <span className="glider"></span>
+        <span className="glider" />
       </TabSwitch>
       <div className="flex flex-col items-center">
-        {activeOrdersTab === CurrentTab.Running && (
-          <>
-            {runningContracts.length > 0 ? (
-              <>
-                <SortToolbar
-                  pageTitle="Running Contracts"
-                  sortType={runningSortType}
-                  setSortType={setRunningSortType}
-                />
-                <RunningContracts
-                  sortType={runningSortType}
-                  contracts={runningContractsCards}
-                  web3Gateway={web3Gateway}
-                />
-              </>
-            ) : (
-              contractsQuery.isSuccess && <p className="text-2xl text-white">You have no running contracts.</p>
-            )}
-          </>
-        )}
-        {activeOrdersTab === CurrentTab.Completed && (
-          <>
-            {completedContracts.length > 0 ? (
-              <>
-                <SortToolbar
-                  pageTitle="Finished Contracts"
-                  sortType={completedSortType}
-                  setSortType={setCompletedSortType}
-                />
-                <FinishedContracts contracts={completedContractsCards} sortType={completedSortType} />
-              </>
-            ) : (
-              contractsQuery.isSuccess && <p className="text-2xl text-white">You have no completed contracts.</p>
-            )}
-          </>
-        )}
+        {activeOrdersTab === CurrentTab.Running &&
+          (runningContracts.length > 0 ? (
+            <>
+              <SortToolbar pageTitle="Running Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
+              <RunningContracts
+                sortType={runningSortType}
+                contracts={runningContractsCards}
+                web3Gateway={web3Gateway}
+              />
+            </>
+          ) : (
+            contractsQuery.isSuccess && <p className="text-2xl text-white">You have no running contracts.</p>
+          ))}
+        {activeOrdersTab === CurrentTab.Completed &&
+          (completedContracts.length > 0 ? (
+            <>
+              <SortToolbar
+                pageTitle="Finished Contracts"
+                sortType={completedSortType}
+                setSortType={setCompletedSortType}
+              />
+              <FinishedContracts contracts={completedContractsCards} sortType={completedSortType} />
+            </>
+          ) : (
+            contractsQuery.isSuccess && <p className="text-2xl text-white">You have no completed contracts.</p>
+          ))}
         {contractsQuery.isLoading && (
           <div className="spinner">
             <Spinner />

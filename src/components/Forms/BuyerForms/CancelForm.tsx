@@ -1,15 +1,17 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { Fragment, type MouseEventHandler, useEffect, useState } from "react";
+import { type MouseEventHandler, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import type { EthereumGateway } from "../../../gateway/ethereum";
 import { useContracts } from "../../../hooks/data/useContracts";
-import { AlertMessage, CloseOutType, ContentState, ContractState } from "../../../types/types";
-import { getHandlerBlockchainError, isNoCancel, printError } from "../../../utils/utils";
+import { AddressLength, AlertMessage, ContentState, ContractState } from "../../../types/types";
+import { getHandlerBlockchainError, isNoCancel, printError, truncateAddress } from "../../../utils/utils";
 import { Alert } from "../../Alert";
 import { ButtonGroup } from "../../ButtonGroup";
 import { Spinner } from "../../Spinner.styled";
 import { CancelButton } from "../FormButtons/Buttons.styled";
 import { SecondaryButton } from "../FormButtons/Buttons.styled";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { colors } from "../../../styles/styles.config";
 
 export interface CancelFormProps {
   contractId: string;
@@ -26,7 +28,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
   const [isConfirmModal, setIsConfirmModal] = useState<boolean>(false);
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [alertMessage, setAlertMessage] = useState<string>("");
-
+  const [txHash, setTxHash] = useState<string>("");
   const contract = contractsQuery.data?.filter((contract) => contract.id === contractId)?.[0];
   const handleCancelError = getHandlerBlockchainError(setAlertMessage, setAlertOpen, setContentState);
 
@@ -59,16 +61,14 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
         return;
       }
       try {
-        const fee = "0"; //web3Gateway.getMarketplaceFee();
         const receipt = await web3Gateway.closeContract({
           contractAddress: contractId,
           from: userAccount,
-          fee: fee,
-          closeoutType: CloseOutType.BuyerOrValidatorCancel,
         });
 
         if (receipt.status) {
           setContentState(ContentState.Complete);
+          setTxHash(receipt.transactionHash);
         } else {
           setAlertMessage(AlertMessage.CancelFailed);
           setAlertOpen(true);
@@ -82,27 +82,13 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
     }
   };
 
-  // Check if user is buyer or seller and contract is running
-  useEffect(() => {
-    if (!contract || !userAccount) return;
-
-    let timeoutId: NodeJS.Timeout;
-    if (isNoCancel(contract, userAccount)) {
-      setAlertMessage(AlertMessage.NoCancelBuyer);
-      setAlertOpen(true);
-      timeoutId = setTimeout(() => closeForm(), 3000);
-    }
-
-    return () => clearTimeout(timeoutId);
-  }, []);
-
   // Create transaction when in pending state
   useEffect(() => {
     if (contentState === ContentState.Pending) cancelContractAsync();
   }, [contentState]);
 
   return (
-    <Fragment>
+    <>
       <Alert message={alertMessage} isOpen={alertOpen} onClose={() => setAlertOpen(false)} />
       <div>
         {!isConfirmModal && contentState === ContentState.Review && (
@@ -129,7 +115,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
           </>
         )}
         {isConfirmModal && contentState === ContentState.Confirm && (
-          <Fragment>
+          <>
             <p className="mb-2">Make sure you want to cancel the order.</p>
             <p>The cancellation is permanent.</p>
             <ButtonGroup
@@ -144,12 +130,12 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
                 </CancelButton>
               }
             />
-          </Fragment>
+          </>
         )}
         {contentState === ContentState.Pending && (
-          <div className="flex flex-col items-center bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5">
+          <div className="flex flex-col items-center modal-input-spacing pb-8 border-transparent rounded-5">
             <div className="flex justify-center">
-              <p className="bg-white modal-input-spacing border-transparent pt-0 mb-8 text-xl text-center">
+              <p className="modal-input-spacing border-transparent pt-0 mb-8 text-xl text-center">
                 Your transaction is pending.
               </p>
             </div>
@@ -157,12 +143,25 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
           </div>
         )}
         {contentState === ContentState.Complete && (
-          <div className="flex bg-white text-black modal-input-spacing pb-8 border-transparent rounded-5">
-            <p className="mb-1">The order has been cancelled successfully, and its status will update shortly.</p>
-          </div>
+          <>
+            <FontAwesomeIcon className="mb-8" icon={faCheckCircle} size="5x" color={colors["lumerin-aqua"]} />
+            <h2 className="w-6/6 text-left font-semibold mb-3">The order has been cancelled successfully.</h2>
+            <p className="w-6/6 text-left font-normal text-s">The status of the order will update shortly.</p>
+            <br />
+            {txHash && (
+              <a
+                href={`${process.env.REACT_APP_ETHERSCAN_URL?.replace("address", "tx")}${txHash}`}
+                target="_blank"
+                rel="noreferrer"
+                className="font-light underline mb-4"
+              >
+                View Transaction: {truncateAddress(txHash, AddressLength.LONG)}
+              </a>
+            )}
+          </>
         )}
       </div>
-    </Fragment>
+    </>
   );
 };
 

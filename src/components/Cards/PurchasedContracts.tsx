@@ -37,7 +37,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const getIcon = (contract: any, isCompleted = false) => {
+const getIcon = (contract: Card, isCompleted = false) => {
   const isGoodCloseout = contract.progressPercentage === 100;
   if (isCompleted) {
     if (isGoodCloseout) {
@@ -59,6 +59,7 @@ export type Card = {
   length: string;
   poolAddress: string;
   poolUsername: string;
+  validatorAddress: string;
 };
 
 interface CardProps {
@@ -126,7 +127,7 @@ const Card = (props: CardProps) => {
         <div className="item-value address">
           <div>
             <h3>CONTRACT ADDRESS</h3>
-            <a href={process.env.REACT_APP_ETHERSCAN_URL + `${item.contractAddr}`} target="_blank" rel="noreferrer">
+            <a href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.contractAddr}`} target="_blank" rel="noreferrer">
               {item.contractAddr ? truncateAddress(item.contractAddr, AddressLength.LONG) : "…"}
             </a>
           </div>
@@ -179,6 +180,14 @@ const Card = (props: CardProps) => {
             </div>
           </>
         )}
+        <Divider variant="middle" sx={{ my: 2 }} />
+        <h3 className="sm-header">VALIDATOR</h3>
+        <div className="item-value username">
+          <img src={IDCard} alt="" />
+          <div>
+            <p>{truncateAddress(item.validatorAddress, AddressLength.LONG)} </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -199,13 +208,13 @@ export const RunningContracts = (props: {
 
   return (
     <ContractCards>
-      <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen}>
+      <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contractId}`}>
         <BuyerEditForm contractId={contractId!} web3Gateway={props.web3Gateway} closeForm={() => editModal.close()} />
       </ModalItem>
-      <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen}>
+      <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen} key={`cancel-${contractId}`}>
         <CancelForm contractId={contractId!} web3Gateway={props.web3Gateway} closeForm={() => cancelModal.close()} />
       </ModalItem>
-      {purchasedContracts.map((item, index) => {
+      {purchasedContracts.map((item) => {
         return (
           <Card
             key={item.contractAddr}
@@ -247,11 +256,4 @@ function formatSpeed(speedHps: string) {
 
 function formatDuration(length: string) {
   return getReadableDate(String(Number(length) / 3600));
-}
-
-function formatAddress(address: string) {
-  if (address === undefined || address === null) {
-    return "…";
-  }
-  return truncateAddress(address, AddressLength.MEDIUM);
 }

@@ -144,7 +144,7 @@ export class EthereumGateway {
     encrDestURL: string;
     termsVersion: string;
     buyer: string;
-  }): Promise<SendStatus> {
+  }): Promise<SendStatus & { timestamp: bigint }> {
     const req = await this.cloneFactory!.simulate.setPurchaseRentalContractV2(
       [
         props.contractAddress as `0x${string}`,
@@ -160,28 +160,28 @@ export class EthereumGateway {
     const hash = await walletClient.writeContract(req.request);
 
     const receipt = await this.pc.waitForTransactionReceipt({ hash });
+    const block = await this.pc.getBlock({ blockNumber: receipt.blockNumber });
 
-    return { status: receipt.status === "success", transactionHash: receipt.transactionHash };
+    return {
+      status: receipt.status === "success",
+      transactionHash: receipt.transactionHash,
+      timestamp: block.timestamp,
+    };
   }
 
-  async closeContract(props: {
-    contractAddress: string;
-    from: string;
-    fee: string;
-  }): Promise<SendStatus> {
+  async closeContract(props: { contractAddress: string; from: string }): Promise<SendStatus> {
     const impl = getContract({
       address: props.contractAddress as `0x${string}`,
       abi: abi.implementationAbi,
       client: this.client,
     });
+    const walletClient = getWalletClient(this.pc.chain!);
 
     const req = await impl.simulate.closeEarly([0], {
       account: props.from as `0x${string}`,
     });
 
-    const walletClient = getWalletClient(this.pc.chain!);
     const hash = await walletClient.writeContract(req.request);
-
     const receipt = await this.pc.waitForTransactionReceipt({ hash });
 
     return { status: receipt.status === "success", transactionHash: receipt.transactionHash };
@@ -230,6 +230,13 @@ export class EthereumGateway {
   }
 
   async approvePayment(price: string, from: string): Promise<SendStatus> {
+    const currentAllowance = await (await this.getPaymentToken()).read.allowance([
+      from as `0x${string}`,
+      this.cloneFactory?.address!,
+    ]);
+    if (currentAllowance >= BigInt(price)) {
+      return { status: true, transactionHash: "" };
+    }
     const req = await (await this.getPaymentToken()).simulate.approve([this.cloneFactory?.address!, BigInt(price)], {
       account: from as `0x${string}`,
     });
@@ -240,6 +247,13 @@ export class EthereumGateway {
   }
 
   async approveFee(price: string, from: string): Promise<SendStatus> {
+    const currentAllowance = await (await this.getFeeToken()).read.allowance([
+      from as `0x${string}`,
+      this.cloneFactory?.address!,
+    ]);
+    if (currentAllowance >= BigInt(price)) {
+      return { status: true, transactionHash: "" };
+    }
     const req = await (await this.getFeeToken()).simulate.approve([this.cloneFactory?.address!, BigInt(price)], {
       account: from as `0x${string}`,
     });

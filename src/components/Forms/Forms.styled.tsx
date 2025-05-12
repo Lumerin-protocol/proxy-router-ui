@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 export const InputWrapper = styled.div`
   width: 100%;
   max-width: 300px;
-  margin-bottom: 1rem;
+  margin-top: 1.3rem;
 
   @media (max-width: 600px) {
     margin-top: 0;
@@ -39,7 +39,8 @@ export const ReviewItems = styled.div`
       border-bottom: none;
     }
     h3 {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
+      align-self: center;
     }
     p {
       color: #fff;
