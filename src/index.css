@@ -1,90 +1,92 @@
+@import "tailwindcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer components {
-	/* buttons */
-	.btn-action-panel {
-		@apply w-5/12 rounded-full inline-flex justify-center rounded-md border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm;
-	}
+  /* buttons */
+  .btn-action-panel {
+    @reference w-5/12 rounded-full inline-flex justify-center rounded-md border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm;
+  }
 
-	.btn-wallet {
-		@apply flex items-center justify-center bg-white text-base font-medium text-white hover:text-indigo-50;
-	}
+  .btn-wallet {
+    @reference flex items-center justify-center bg-white text-base font-medium text-white hover:text-indigo-50;
+  }
 
-	.btn-connected {
-		@apply w-auto h-12 hidden rounded-15 py-2 px-6 bg-white text-sm text-lumerin-black-text font-Inter font-medium;
-	}
+  .btn-connected {
+    @reference w-auto h-12 hidden rounded-15 py-2 px-6 bg-white text-sm text-lumerin-black-text font-Inter font-medium;
+  }
 
-	.btn-lmr {
-		@apply w-40 sm:w-48 h-12 mt-4 flex items-center justify-center rounded-5 py-2 px-4 bg-white text-sm text-lumerin-aqua font-Inter font-medium;
-	}
+  .btn-lmr {
+    @reference w-40 sm:w-48 h-12 mt-4 flex items-center justify-center rounded-5 py-2 px-4 bg-white text-sm text-lumerin-aqua font-Inter font-medium;
+  }
 
-	.btn-add-lmr {
-		@apply w-40 h-12 mt-4 hidden md:block items-center justify-center rounded-5 py-2 px-4 bg-lumerin-aqua text-sm text-white font-Inter font-medium;
-	}
+  .btn-add-lmr {
+    @reference w-40 h-12 mt-4 hidden md:block items-center justify-center rounded-5 py-2 px-4 bg-lumerin-aqua text-sm text-white font-Inter font-medium;
+  }
 
-	.btn-disconnect {
-		@apply w-40 h-12 mt-4 md:block items-center justify-center rounded-5 py-2 px-4 text-sm text-lumerin-aqua font-semibold font-Inter;
-	}
+  .btn-disconnect {
+    @reference w-40 h-12 mt-4 md:block items-center justify-center rounded-5 py-2 px-4 text-sm text-lumerin-aqua font-semibold font-Inter;
+  }
 
-	.btn-modal {
-		@apply border border-transparent rounded-5 shadow-sm;
-	}
+  .btn-modal {
+    @reference border border-transparent rounded-5 shadow-sm;
+  }
 
-	.btn-edit-cancel {
-		@apply w-12 h-4 flex justify-center items-center text-xxs sm:w-20 sm:h-6 sm:text-xs border;
-	}
+  .btn-edit-cancel {
+    @reference w-12 h-4 flex justify-center items-center text-xxs sm:w-20 sm:h-6 sm:text-xs border;
+  }
 
-	.modal-input-spacing {
-		@apply px-8 pt-8;
-	}
+  .modal-input-spacing {
+    @reference px-8 pt-8;
+  }
 
-	/* transitions */
-	.enter-300 {
-		@apply ease-out duration-300;
-	}
+  /* transitions */
+  .enter-300 {
+    @reference ease-out duration-300;
+  }
 
-	.enter-from-95 {
-		@apply opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95;
-	}
+  .enter-from-95 {
+    @reference opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95;
+  }
 
-	.enter-to-100 {
-		@apply opacity-100 translate-y-0 sm:scale-100;
-	}
+  .enter-to-100 {
+    @reference opacity-100 translate-y-0 sm:scale-100;
+  }
 
-	.enterto-enterleave-opacity {
-		@apply opacity-100;
-	}
+  .enterto-enterleave-opacity {
+    @reference opacity-100;
+  }
 
-	.entertfrom-leaveto-opacity {
-		@apply opacity-0;
-	}
+  .entertfrom-leaveto-opacity {
+    @reference opacity-0;
+  }
 
-	.leave-200 {
-		@apply ease-in duration-200;
-	}
+  .leave-200 {
+    @reference ease-in duration-200;
+  }
 
-	/* inputs */
-	.review-input {
-		@apply appearance-none block w-full px-3 py-2 placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm;
-	}
+  /* inputs */
+  .review-input {
+    @reference appearance-none block w-full px-3 py-2 placeholder-opacity-75 focus:outline-none focus:ring-lumerin-aqua focus:border-indigo-500 sm:text-sm;
+  }
 
-	.review-no-errors {
-		@apply bg-lumerin-input-gray btn-modal;
-	}
+  .review-no-errors {
+    @reference bg-lumerin-input-gray btn-modal;
+  }
 
-	/* divs */
-	.confirm-div {
-		@apply flex justify-between my-2;
-	}
+  /* divs */
+  .confirm-div {
+    @reference flex justify-between my-2;
+  }
 
-	.spinner {
-		@apply flex justify-center mt-36 sm:mt-50;
-	}
+  .spinner {
+    @reference flex justify-center mt-36 sm:mt-50;
+  }
 
-	.link:hover {
-		cursor: pointer;
-		@apply text-lumerin-aqua ease-in duration-200;
-	}
+  .link:hover {
+    cursor: pointer;
+    @reference text-lumerin-aqua ease-in duration-200;
+  }
 }
