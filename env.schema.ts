@@ -6,8 +6,10 @@ const TypeEthAddress = (opt?: StringOptions) =>
 
 // Environment variables schema
 export const EnvSchema = Type.Object({
+  REACT_APP_BUY_LMR_URL: Type.String({ format: "uri" }),
   REACT_APP_CHAIN_ID: Type.Number(),
   REACT_APP_CLONE_FACTORY: TypeEthAddress(),
+  REACT_APP_GITBOOK_URL: Type.String({ format: "uri" }),
   REACT_APP_INDEXER_URL: Type.String({ format: "uri" }),
   REACT_APP_ETHERSCAN_URL: Type.String({ format: "uri" }),
   REACT_APP_LUMERIN_TOKEN_ADDRESS: TypeEthAddress(),

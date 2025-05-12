@@ -2,6 +2,7 @@ import { type CaipNetworkId, createAppKit } from "@reown/appkit/react";
 import { chain } from "../config/chains";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import type { AppKitNetwork } from "@reown/appkit/networks";
+import { fallback, http } from "wagmi";
 // import { http, createConfig } from "wagmi";
 // import { injected, metaMask, safe, walletConnect } from "wagmi/connectors";
 
@@ -20,6 +21,9 @@ const chains = [chain];
 // config for using reown appkit
 const wagmiAdapter = new WagmiAdapter({
   networks: chains,
+  transports: {
+    [chain.id]: fallback([http(process.env.REACT_APP_READ_ONLY_ETH_NODE_URL), http()]),
+  },
   projectId,
   ssr: false,
 });

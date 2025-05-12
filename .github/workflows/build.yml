@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_container:
-        description: 'Build container image'
+        description: "Build container image"
         required: true
         type: boolean
 
@@ -14,11 +14,11 @@ on:
       - dev
       - cicd/*
 
-    paths: ['.github/**', 'src/**', 'Dockerfile', 'package.json', 'LICENSE', 'README.md']
+    paths: [".github/**", "src/**", "Dockerfile", "package.json", "LICENSE", "README.md"]
 
   pull_request:
     types: [opened, reopened, synchronize]
-    paths: ['.github/**', 'src/**', 'Dockerfile', 'package.json', 'LICENSE', 'README.md']
+    paths: [".github/**", "src/**", "Dockerfile", "package.json", "LICENSE", "README.md"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -29,16 +29,7 @@ defaults:
     shell: bash
 
 env:
-  TEST_ENV_VAR: 'test'
-  REACT_APP_CHAIN_ID: ${{ vars.REACT_APP_CHAIN_ID }}
-  REACT_APP_CLONE_FACTORY: ${{ vars.REACT_APP_CLONE_FACTORY }}
-  REACT_APP_INDEXER_URL: ${{ vars.REACT_APP_INDEXER_URL }}
-  REACT_APP_ETHERSCAN_URL: ${{ vars.REACT_APP_ETHERSCAN_URL }}
-  REACT_APP_LUMERIN_TOKEN_ADDRESS: ${{ vars.REACT_APP_LUMERIN_TOKEN_ADDRESS }}
-  REACT_APP_USDC_TOKEN_ADDRESS: ${{ vars.REACT_APP_USDC_TOKEN_ADDRESS }}
-  REACT_APP_READ_ONLY_ETH_NODE_URL: ${{ vars.REACT_APP_READ_ONLY_ETH_NODE_URL }}
-  REACT_APP_VALIDATOR_REGISTRY_ADDRESS: ${{ vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }}
-  PORT: ${{ vars.PORT }}
+  TEST_ENV_VAR: "test"
 
 jobs:
   Generate-Tag:
@@ -106,7 +97,7 @@ jobs:
           echo "❌ Old Major Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
 
   Test-Build-Marketplace-Container:
-    environment: 'dev'
+    environment: "dev"
     name: Test Build Marketplace Container
     if: (
       (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'dev')) ||
@@ -134,14 +125,20 @@ jobs:
             --platform linux/amd64 \
             --build-arg TAG_NAME=$BUILDTAG \
             --build-arg COMMIT=$BUILDCOMMIT \
-            --build-arg REACT_APP_CHAIN_ID=${{ vars.REACT_APP_CHAIN_ID }} \
-            --build-arg REACT_APP_CLONE_FACTORY=${{ vars.REACT_APP_CLONE_FACTORY }} \
-            --build-arg REACT_APP_INDEXER_URL=${{ vars.REACT_APP_INDEXER_URL }} \
-            --build-arg REACT_APP_ETHERSCAN_URL=${{ vars.REACT_APP_ETHERSCAN_URL }} \
-            --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=${{ vars.REACT_APP_LUMERIN_TOKEN_ADDRESS }} \
-            --build-arg REACT_APP_USDC_TOKEN_ADDRESS=${{ vars.REACT_APP_USDC_TOKEN_ADDRESS }} \
-            --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL=${{ vars.REACT_APP_READ_ONLY_ETH_NODE_URL }} \
-            --build-arg REACT_APP_VALIDATOR_REGISTRY_ADDRESS=${{ vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }} \
+            --build-arg REACT_APP_BUY_LMR_URL = ${{ vars.REACT_APP_BUY_LMR_URL }} \
+            --build-arg REACT_APP_CHAIN_ID = ${{ vars.REACT_APP_CHAIN_ID }} \
+            --build-arg REACT_APP_CLONE_FACTORY = ${{ vars.REACT_APP_CLONE_FACTORY }} \
+            --build-arg REACT_APP_GITBOOK_URL = ${{ vars.REACT_APP_GITBOOK_URL }} \
+            --build-arg REACT_APP_INDEXER_URL = ${{ vars.REACT_APP_INDEXER_URL }} \
+            --build-arg REACT_APP_ETHERSCAN_URL = ${{ vars.REACT_APP_ETHERSCAN_URL }} \
+            --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS = ${{ vars.REACT_APP_LUMERIN_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_USDC_TOKEN_ADDRESS = ${{ vars.REACT_APP_USDC_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL = ${{ vars.REACT_APP_READ_ONLY_ETH_NODE_URL }} \
+            --build-arg REACT_APP_VALIDATOR_REGISTRY_ADDRESS = ${{ vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }} \
+            --build-arg REACT_APP_VERSION = ${{ vars.REACT_APP_VERSION }} \
+            --build-arg REACT_APP_URL = ${{ vars.REACT_APP_URL }} \
+            --build-arg REACT_APP_WALLET_CONNECT_ID = ${{ vars.REACT_APP_WALLET_CONNECT_ID }} \
+            --build-arg REACT_APP_TITAN_LIGHTNING_POOL = ${{ vars.REACT_APP_TITAN_LIGHTNING_POOL }} \
             --load \
             -t $BUILDIMAGE:$BUILDTAG \
             -f ./Dockerfile \
@@ -150,7 +147,7 @@ jobs:
 
   GHCR-Build-and-Push:
     name: Build & Push Docker Image
-    environment: 'dev'
+    environment: "dev"
     if: |
       (
         (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')) ||
@@ -196,14 +193,20 @@ jobs:
             --platform linux/amd64 \
             --build-arg TAG_NAME=$BUILDTAG \
             --build-arg COMMIT=$BUILDCOMMIT \
-            --build-arg REACT_APP_CHAIN_ID=${{ vars.REACT_APP_CHAIN_ID }} \
-            --build-arg REACT_APP_CLONE_FACTORY=${{ vars.REACT_APP_CLONE_FACTORY }} \
-            --build-arg REACT_APP_INDEXER_URL=${{ vars.REACT_APP_INDEXER_URL }} \
-            --build-arg REACT_APP_ETHERSCAN_URL=${{ vars.REACT_APP_ETHERSCAN_URL }} \
-            --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS=${{ vars.REACT_APP_LUMERIN_TOKEN_ADDRESS }} \
-            --build-arg REACT_APP_USDC_TOKEN_ADDRESS=${{ vars.REACT_APP_USDC_TOKEN_ADDRESS }} \
-            --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL=${{ vars.REACT_APP_READ_ONLY_ETH_NODE_URL }} \
-            --build-arg REACT_APP_VALIDATOR_REGISTRY_ADDRESS=${{ vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }} \
+            --build-arg REACT_APP_BUY_LMR_URL = ${{ vars.REACT_APP_BUY_LMR_URL }} \
+            --build-arg REACT_APP_CHAIN_ID = ${{ vars.REACT_APP_CHAIN_ID }} \
+            --build-arg REACT_APP_CLONE_FACTORY = ${{ vars.REACT_APP_CLONE_FACTORY }} \
+            --build-arg REACT_APP_GITBOOK_URL = ${{ vars.REACT_APP_GITBOOK_URL }} \
+            --build-arg REACT_APP_INDEXER_URL = ${{ vars.REACT_APP_INDEXER_URL }} \
+            --build-arg REACT_APP_ETHERSCAN_URL = ${{ vars.REACT_APP_ETHERSCAN_URL }} \
+            --build-arg REACT_APP_LUMERIN_TOKEN_ADDRESS = ${{ vars.REACT_APP_LUMERIN_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_USDC_TOKEN_ADDRESS = ${{ vars.REACT_APP_USDC_TOKEN_ADDRESS }} \
+            --build-arg REACT_APP_READ_ONLY_ETH_NODE_URL = ${{ vars.REACT_APP_READ_ONLY_ETH_NODE_URL }} \
+            --build-arg REACT_APP_VALIDATOR_REGISTRY_ADDRESS = ${{ vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }} \
+            --build-arg REACT_APP_VERSION = ${{ vars.REACT_APP_VERSION }} \
+            --build-arg REACT_APP_URL = ${{ vars.REACT_APP_URL }} \
+            --build-arg REACT_APP_WALLET_CONNECT_ID = ${{ vars.REACT_APP_WALLET_CONNECT_ID }} \
+            --build-arg REACT_APP_TITAN_LIGHTNING_POOL = ${{ vars.REACT_APP_TITAN_LIGHTNING_POOL }} \
             --push \
             -t $BUILDIMAGE:$BUILDTAG \
             -f ./Dockerfile \
