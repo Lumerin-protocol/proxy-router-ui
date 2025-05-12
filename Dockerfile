@@ -1,10 +1,10 @@
-FROM node:16.20.2-alpine as build
+FROM node:20-alpine as build
 WORKDIR '/app'
 
 RUN apk add --no-cache git python3 make g++
 
 COPY package*.json ./
-RUN npm install --force
+RUN yarn ci
 COPY . .
 
 # keep alphabetically sorted
@@ -38,7 +38,7 @@ ARG REACT_APP_WALLET_CONNECT_ID
 ENV REACT_APP_WALLET_CONNECT_ID=$REACT_APP_WALLET_CONNECT_ID
 
 
-RUN npm run build
+RUN yarn build
 
 FROM nginx
 EXPOSE 80
