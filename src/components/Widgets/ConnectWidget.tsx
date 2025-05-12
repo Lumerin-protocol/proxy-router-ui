@@ -4,13 +4,27 @@ import { AddressLength } from "../../types/types";
 import { truncateAddress } from "../../utils/utils";
 import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
 import { useAppKit } from "@reown/appkit/react";
-import { arbitrum, arbitrumSepolia, hardhat } from "viem/chains";
-import { ArbitrumLogo, ArbitrumSepoliaLogo, HardhatLogo } from "../../images";
 import { ChainIcon } from "../../config/chains";
+import { useEffect, useRef } from "react";
 
-export const ConnectWidget = () => {
-  const { address, connector, chain } = useAccount();
+type Props = {
+  onConnect?: () => void;
+  hideChain?: boolean;
+  hideConnector?: boolean;
+};
+
+export const ConnectWidget = (props: Props) => {
+  const { onConnect } = props;
+  const { address, connector, chain, isConnected } = useAccount();
   const { open } = useAppKit();
+
+  const shouldRedirect = useRef(false);
+
+  useEffect(() => {
+    if (isConnected && shouldRedirect.current) {
+      onConnect?.();
+    }
+  }, [isConnected, onConnect]);
 
   return (
     <ButtonGroup>
@@ -29,17 +43,23 @@ export const ConnectWidget = () => {
           </Button>
         </>
       ) : (
-        <Button type="button" onClick={() => open({ view: "Connect" })}>
+        <Button
+          type="button"
+          onClick={() => {
+            open({ view: "Connect" });
+            shouldRedirect.current = true;
+          }}
+        >
           Connect wallet
         </Button>
       )}
-      {ChainIcon && (
+      {!props.hideChain && ChainIcon && (
         <Button type="button" onClick={() => open({ view: "Networks" })}>
           <ChainIcon width="1.5rem" height="1.5rem" />
           {chain?.name}
         </Button>
       )}
-      {connector?.icon && (
+      {!props.hideConnector && connector?.icon && (
         <Button type="button" onClick={() => open({ view: "Connect" })}>
           <ConnectorIcon src={connector?.icon} alt="connector icon" />
         </Button>

@@ -1,13 +1,13 @@
 import EastIcon from "@mui/icons-material/East";
-import { type FC, useState } from "react";
+import type { FC } from "react";
 import { useNavigate } from "react-router";
 import { useAccount, useDisconnect } from "wagmi";
-import { ConnectWalletModal } from "../../components/Forms/ConnectWalletModal";
 import { ModalItem } from "../../components/Modal";
 import { useModal } from "../../hooks/useModal";
 import Prototype from "../../images/landing-hero.png";
 import { PathName } from "../../types/types";
 import { ButtonsWrapper, ConnectBtn, HeroHeadline, HeroSubheadline, HeroWrapper, Steps } from "./Landing.styled";
+import { ConnectWidget } from "../../components/Widgets/ConnectWidget";
 
 export const Landing: FC = () => {
   const connectWalletModal = useModal();
@@ -36,14 +36,6 @@ export const Landing: FC = () => {
 
   return (
     <>
-      <ModalItem open={connectWalletModal.isOpen} setOpen={connectWalletModal.setOpen}>
-        <ConnectWalletModal
-          onConnect={() => {
-            connectWalletModal.close();
-            navigate(PathName.Marketplace);
-          }}
-        />
-      </ModalItem>
       <HeroWrapper>
         <div className="content-wrapper">
           <div className="hero">
@@ -55,15 +47,7 @@ export const Landing: FC = () => {
               </HeroHeadline>
               <HeroSubheadline>Buy, sell, and own hashpower through your Web3 wallet</HeroSubheadline>
               <ButtonsWrapper>
-                {address ? (
-                  <ConnectBtn type="button" onClick={() => disconnect()}>
-                    Disconnect Wallet
-                  </ConnectBtn>
-                ) : (
-                  <ConnectBtn type="button" onClick={() => connectWalletModal.open()}>
-                    Connect Wallet
-                  </ConnectBtn>
-                )}
+                <ConnectWidget hideChain={true} hideConnector={true} onConnect={() => navigate(PathName.Marketplace)} />
                 <ConnectBtn type="button" onClick={() => navigate(PathName.Marketplace)}>
                   Enter Marketplace
                 </ConnectBtn>
