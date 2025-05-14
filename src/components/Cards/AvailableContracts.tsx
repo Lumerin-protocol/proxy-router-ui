@@ -22,27 +22,27 @@ import {
 } from "./AvailableContract.styled";
 
 const HeaderItem = styled.div`
-	display: flex;
-	gap: 5px;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
+  display: flex;
+  gap: 5px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 
-	p,
-	svg {
-		:hover {
-			cursor: pointer;
-		}
-	}
+  p,
+  svg {
+    :hover {
+      cursor: pointer;
+    }
+  }
 `;
 
 const TradeButtonsGroup = styled.div`
-	display: flex;
-	justify-content: space-between;
-	flex: 1;
-	button {
-		width: 100%;
-	}
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  button {
+    width: 100%;
+  }
 `;
 
 export const AvailableContracts = (prop: {
@@ -96,7 +96,7 @@ export const AvailableContracts = (prop: {
     }
   };
 
-  const getSortFieldIcon = (field: string) => {
+  const getSortFieldIcon = (field: string): React.ReactNode => {
     if (!activeSort) {
       return <ArrowsUpDownIcon className="h-4 w-4" />;
     }
@@ -104,38 +104,16 @@ export const AvailableContracts = (prop: {
     if (activeSort === field) {
       if (sortState === 0) {
         return <ArrowsUpDownIcon className="h-4 w-4" />;
-      } else if (sortState === 1) {
+      }
+      if (sortState === 1) {
         return <ArrowUpIcon className="h-4 w-4" />;
-      } else if (sortState === 2) {
+      }
+      if (sortState === 2) {
         return <ArrowDownIcon className="h-4 w-4" />;
       }
-    } else {
-      return <ArrowsUpDownIcon className="h-4 w-4" />;
     }
-  };
 
-  const getTableHeader = () => {
-    const Header = isMobile ? MobileTableHeader : TableHeader;
-    return (
-      <Header key={"header"}>
-        {!isMobile && <p>Address</p>}
-        <HeaderItem onClick={() => onClickSort("speed")}>
-          <p>Speed</p>
-          {getSortFieldIcon("speed")}
-        </HeaderItem>
-        <HeaderItem onClick={() => onClickSort("length")}>
-          <p>Duration</p>
-          {getSortFieldIcon("length")}
-        </HeaderItem>
-        <HeaderItem onClick={() => onClickSort("price")}>
-          <p>Price</p>
-          {getSortFieldIcon("price")}
-        </HeaderItem>
-        <HeaderItem>
-          <p>Fee</p>
-        </HeaderItem>
-      </Header>
-    );
+    return <ArrowsUpDownIcon className="h-4 w-4" />;
   };
 
   function renderModal() {
@@ -187,16 +165,16 @@ export const AvailableContracts = (prop: {
           </HeaderItem>
         </MobileTableHeader>
         {prop.contracts.map((item, index) => (
-          <MobileAvailableContract key={item.id as any}>
+          <MobileAvailableContract key={item.id}>
             <div className="stats">
               <div>
                 <img src={SpeedIcon} alt="" />
-                {formatSpeed(item.speed as string)}
+                {formatSpeed(item.speed)}
               </div>
               {item.length && (
                 <div>
                   <img src={TimeIcon} alt="" />
-                  {formatDuration(item.length as string)}
+                  {formatDuration(item.length)}
                 </div>
               )}
               <div>
@@ -253,33 +231,37 @@ export const AvailableContracts = (prop: {
         </HeaderItem>
       </TableHeader>
       {prop.contracts.map((item) => (
-        <AvailableContract key={item.id as any}>
+        <AvailableContract key={item.id}>
           <p>
             <a
               className="underline pb-0 font-Raleway cursor-pointer"
-              href={process.env.REACT_APP_ETHERSCAN_URL + `${item.id}`}
+              href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.id}`}
               target="_blank"
               rel="noreferrer"
             >
-              {formatAddress(item.id as string)}
+              {formatAddress(item.id)}
             </a>
           </p>
           <p>
             <img src={SpeedIcon} alt="" />
-            {formatSpeed(item.speed as string)}
+            {formatSpeed(item.speed)}
           </p>
           {item.length && (
             <p>
               <img src={TimeIcon} alt="" />
-              {formatDuration(item.length as string)}
+              {formatDuration(item.length)}
             </p>
           )}
           <p>
             <img src={PriceIcon} alt="" />
+            {item.price}
+            <br />
             {formatPaymentPrice(item.price).full}
           </p>
           <p>
             <img src={PriceIcon} alt="" />
+            {item.fee}
+            <br />
             {formatFeePrice(item.fee).full}
           </p>
           <PrimaryButton
