@@ -3,38 +3,39 @@ import { Card, MobileWidget } from "../Cards/Cards.styled";
 
 export const MessageWidget = (props: { isMobile: boolean }) => {
   const MessageWrapper = styled(Card)`
-		min-width: 250px;
-		padding: 1rem;
-		min-height: fit-content;
-		background-color: rgba(79, 126, 145, 0.04);
-		background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
-		border: rgba(171, 171, 171, 1) 1px solid;
-		p {
-			font-size: 14px;
-			color: #fff;
-		}
-		a {
-			text-decoration: underline;
-			color: #289ec1;
-		}
-	`;
+    min-width: 250px;
+    padding: 1rem;
+    min-height: fit-content;
+    width: 100%;
+    background-color: rgba(79, 126, 145, 0.04);
+    background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
+    border: rgba(171, 171, 171, 1) 1px solid;
+    p {
+      font-size: 14px;
+      color: #fff;
+    }
+    a {
+      text-decoration: underline;
+      color: #289ec1;
+    }
+  `;
 
   const MobileMessageWrapper = styled(MobileWidget)`
-		width: 100%;
-		padding: 18px;
-		margin-bottom: 1rem;
-		background-color: rgba(79, 126, 145, 0.04);
-		background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
-		border: rgba(171, 171, 171, 1) 1px solid;
-		p {
-			font-size: 14px;
-			color: #fff;
-		}
-		a {
-			text-decoration: underline;
-			color: #289ec1;
-		}
-	`;
+    width: 100%;
+    padding: 18px;
+    margin-bottom: 1rem;
+    background-color: rgba(79, 126, 145, 0.04);
+    background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
+    border: rgba(171, 171, 171, 1) 1px solid;
+    p {
+      font-size: 14px;
+      color: #fff;
+    }
+    a {
+      text-decoration: underline;
+      color: #289ec1;
+    }
+  `;
 
   const Content = () => {
     return (

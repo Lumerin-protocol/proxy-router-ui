@@ -103,6 +103,11 @@ const TokenContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 1024px) {
+    flex-direction: row;
+    gap: 0rem 0.5rem;
+  }
 `;
 
 const TokenBalanceWrapper = styled.div`
@@ -142,11 +147,13 @@ const RateWrapper = styled.div`
 
 const Balances = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-evenly;
   flex: 1;
   width: 100%;
   flex-direction: column;
+  padding: 0.4rem 0;
+  gap: 0.5rem 0;
 
   @media (min-width: 1024px) {
     flex-direction: row;
