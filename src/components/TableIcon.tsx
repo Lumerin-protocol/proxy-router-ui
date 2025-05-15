@@ -1,5 +1,6 @@
 import type React from "react";
-import { classNames, getAddressDisplay } from "../../utils";
+import { classNames, getAddressDisplay } from "../utils/utils";
+import { getContractUrl } from "../lib/indexer";
 
 interface TableIconProps {
   icon: JSX.Element | null;
@@ -19,12 +20,7 @@ export const TableIcon: React.FC<TableIconProps> = ({ icon, text, isLargeBreakpo
         <span className={icon ? "mr-2" : ""}>{icon}</span>
         <span className="font-semibold text-left">
           {hasLink ? (
-            <a
-              href={process.env.REACT_APP_ETHERSCAN_URL + `${text}`}
-              target="_blank"
-              rel="noreferrer"
-              className="cursor-pointer"
-            >
+            <a href={getContractUrl(text as `0x${string}`)} target="_blank" rel="noreferrer" className="cursor-pointer">
               {getAddressDisplay(isLargeBreakpointOrGreater as boolean, text)}
             </a>
           ) : (

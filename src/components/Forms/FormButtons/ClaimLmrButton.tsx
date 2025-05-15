@@ -1,28 +1,20 @@
 import type React from "react";
-import type { Dispatch, SetStateAction } from "react";
-import ClaimIcon from "../../../../images/icons/money-bag.png";
 import { ActionButtonWrapper } from "./Buttons.styled";
+import { faSackDollar } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface ClaimLmrButtonProps {
-  contractId: string;
-  setContractId: Dispatch<SetStateAction<string>>;
-  claimLmrClickHandler: React.MouseEventHandler<HTMLButtonElement>;
+  onClick: () => void;
+  disabled: boolean;
 }
 
-export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({ contractId, setContractId, claimLmrClickHandler }) => {
-  const clickHandler: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (event) => {
-    setContractId(contractId);
-    claimLmrClickHandler(event);
-  };
-
+export const ClaimLmrButton: React.FC<ClaimLmrButtonProps> = ({ onClick, disabled }) => {
   return (
     <ActionButtonWrapper>
-      <button type="button" onClick={(event) => clickHandler(event)}>
-        <img src={ClaimIcon} alt="" />
+      <button type="button" onClick={onClick} disabled={disabled}>
+        <FontAwesomeIcon icon={faSackDollar} color="rgb(6 65 82)" />
       </button>
       <p>Claim</p>
     </ActionButtonWrapper>
   );
 };
-
-ClaimLmrButton.displayName = "ClaimLmrButton";

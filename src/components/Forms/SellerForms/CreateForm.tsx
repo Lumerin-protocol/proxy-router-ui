@@ -1,91 +1,71 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAccount } from "wagmi";
 import type { EthereumGateway } from "../../../gateway/ethereum";
-import { ContentState, type InputValuesCreateForm, type Text } from "../../../types/types";
+import { ContentState } from "../../../types/types";
 import { getButton, printError } from "../../../utils/utils";
-import { multiplyByDigits } from "../../../web3/helpers";
 import { FormButtonsWrapper, SecondaryButton } from "../FormButtons/Buttons.styled";
 import { CompletedContent } from "./CompletedContent";
 import { ConfirmContent } from "./ConfirmContent";
 import { ReviewContent } from "./ReviewContent";
 
-// Form text setup
-const buttonText: Text = {
-  create: "Create New Contract",
-  confirm: "Confirm New Contract",
-  completed: "Close",
-};
-
-// Set initial state for formData
-const getFormData: (userAccount: string) => InputValuesCreateForm = (userAccount) => {
-  return {
-    walletAddress: userAccount,
-    contractTime: 0,
-    speed: 0,
-    listPrice: 0,
-  };
-};
+export interface InputValuesCreateForm {
+  walletAddress: string;
+  durationHours: number | "";
+  speedTHPS: number | "";
+  profitTargetPercent: number | "";
+}
 
 interface CreateFormProps {
-  web3Gateway?: EthereumGateway;
+  web3Gateway: EthereumGateway;
   setOpen: (isOpen: boolean) => void;
 }
 
-export const CreateForm: React.FC<CreateFormProps> = ({ web3Gateway, setOpen }) => {
+export const CreateContract: React.FC<CreateFormProps> = ({ web3Gateway, setOpen }) => {
   const { address: userAccount } = useAccount();
-  const [contentState, setContentState] = useState<string>(ContentState.Create);
-  const [formData, setFormData] = useState<InputValuesCreateForm>(getFormData(userAccount));
+  const [contentState, setContentState] = useState<ContentState>(ContentState.Create);
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
 
   // Input validation setup
+  const form = useForm<InputValuesCreateForm>({
+    mode: "onBlur",
+    defaultValues: {
+      walletAddress: userAccount,
+      durationHours: 24,
+      speedTHPS: 100,
+      profitTargetPercent: 5,
+    },
+  });
+
   const {
-    register,
     handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<InputValuesCreateForm>({ mode: "onBlur" });
+    formState: { isValid },
+  } = form;
 
   const createContractAsync = async (data: InputValuesCreateForm): Promise<void> => {
-    if (!web3Gateway) {
-      console.error("web3Gateway is not defined");
-      return;
-    }
-
     // Create
     if (isValid && contentState === ContentState.Create) {
       setContentState(ContentState.Confirm);
-      setFormData(data);
+      return;
     }
 
     // Confirm
     if (isValid && contentState === ContentState.Confirm) {
       setContentState(ContentState.Pending);
-    }
 
-    // Pending
-    if (isValid && contentState === ContentState.Pending) {
       // Create contract
       try {
-        const contractDuration =
-          (formData.contractTime as number) < 12
-            ? (formData.contractTime as number) * 600
-            : (formData.contractTime as number) * 3600;
-        // TODO: update to actual validator address
-        const price = multiplyByDigits(formData.listPrice as number);
-        let speed;
-        if (formData && formData.speed) {
-          speed = formData.speed * 10 ** 12;
-        } else {
-          speed = 0;
-        }
+        const durationSeconds = Number(data.durationHours) * 3600;
+        const speedHPS = Number(data.speedTHPS) * 10 ** 12;
+
         const receipt = await web3Gateway.createContract({
-          profitTarget: "0",
-          speed: String(speed),
-          durationSeconds: contractDuration,
-          pubKey: "", // TODO: update to actual public key retrieved from metamask
-          from: userAccount,
+          profitTargetPercent: BigInt(data.profitTargetPercent),
+          speedHPS: BigInt(speedHPS),
+          durationSeconds: BigInt(durationSeconds),
+          from: userAccount!,
         });
-        if (receipt?.status) {
+        setTxHash(receipt.transactionHash);
+        if (receipt.status) {
           setContentState(ContentState.Complete);
         }
       } catch (error) {
@@ -96,68 +76,49 @@ export const CreateForm: React.FC<CreateFormProps> = ({ web3Gateway, setOpen }) 
     }
   };
 
-  // Create transaction when in pending state
-  useEffect(() => {
-    if (contentState === ContentState.Pending) createContractAsync(formData);
-  }, [contentState]);
-
-  // Content setup
-  // Defaults to create state
-  // Initialize since html element needs a value on first render
-  let buttonContent = "";
-  let content = <div></div>;
-  const createContent: () => void = () => {
+  function renderContent() {
     switch (contentState) {
       case ContentState.Confirm:
-        buttonContent = buttonText.confirm as string;
-        content = <ConfirmContent data={formData} />;
-        break;
+        return <ConfirmContent data={form.getValues()} />;
       case ContentState.Pending:
       case ContentState.Complete:
-        buttonContent = buttonText.completed as string;
-        content = <CompletedContent contentState={contentState} />;
-        break;
+        return <CompletedContent contentState={contentState} txHash={txHash} />;
       default:
-        buttonContent = buttonText.create as string;
-        content = <ReviewContent register={register} errors={errors} data={formData} isCreate />;
+        return <ReviewContent form={form} isCreate />;
     }
-  };
-  createContent();
+  }
+
+  function renderButton() {
+    switch (contentState) {
+      case ContentState.Confirm:
+        return "Confirm New Contract";
+      case ContentState.Pending:
+      case ContentState.Complete:
+        return "Close";
+      default:
+        return "Create New Contract";
+    }
+  }
 
   // Set styles and button based on ContentState
-  const display = contentState === ContentState.Pending || contentState === ContentState.Complete ? false : true;
+  const displayHeader = ![ContentState.Pending, ContentState.Complete].includes(contentState);
 
   return (
     <form onSubmit={handleSubmit(createContractAsync)}>
-      {display && (
+      {displayHeader && (
         <>
           <h2>Create New Contract</h2>
           <p>Sell your hashpower on the Lumerin Marketplace</p>
         </>
       )}
-      {/* <AlertMUI severity='warning' sx={{ margin: '3px 0' }}>
-				Thank you for choosing the Lumerin Hashpower Marketplace. To sell hashpower, please download
-				the{' '}
-				<a
-					href='https://lumerin.io/wallet'
-					target='_blank'
-					rel='noreferrer'
-					className='text-lumerin-dark-blue underline'
-				>
-					Lumerin wallet desktop application
-				</a>{' '}
-				to ensure a smooth and secure transaction.
-			</AlertMUI> */}
-      {content}
+      {renderContent()}
       <FormButtonsWrapper>
-        <SecondaryButton type="submit" onClick={() => setOpen(false)}>
+        <SecondaryButton type="button" onClick={() => setOpen(false)}>
           Close
         </SecondaryButton>
         {contentState !== ContentState.Pending &&
-          getButton(contentState, buttonContent, () => {}, handleSubmit as any, !isValid)}
+          getButton(contentState, renderButton(), () => {}, handleSubmit(createContractAsync), false)}
       </FormButtonsWrapper>
     </form>
   );
 };
-
-CreateForm.displayName = "CreateForm";

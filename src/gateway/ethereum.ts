@@ -9,14 +9,17 @@ import {
   custom,
   fallback,
   getContract,
+  recoverPublicKey,
+  hashMessage,
+  zeroAddress,
 } from "viem";
 import { mainnet } from "viem/chains";
-import { CloseOutType, ContractState } from "../types/types";
+import { ContractState } from "../types/types";
 import { sortContractsList } from "../utils/utils";
 import type { IndexerContractEntry } from "./interfaces";
 interface SendStatus {
   status: boolean;
-  transactionHash: string;
+  transactionHash?: `0x${string}`;
 }
 
 function createViemClient() {
@@ -128,13 +131,26 @@ export class EthereumGateway {
   }
 
   async createContract(props: {
-    speed: string;
-    durationSeconds: number;
-    pubKey: string;
-    profitTarget: string;
-    from: string;
+    speedHPS: bigint;
+    durationSeconds: bigint;
+    profitTargetPercent: bigint;
+    from: `0x${string}`;
   }): Promise<SendStatus> {
-    return { status: false, transactionHash: "" };
+    const message = "";
+    const signature = await this.wc.signMessage({ message, account: props.from });
+    console.log(signature);
+    const publicKey = await recoverPublicKey({ hash: hashMessage(message), signature });
+    console.log(publicKey);
+
+    const req = await this.cloneFactory!.simulate.setCreateNewRentalContractV2(
+      [0n, 0n, props.speedHPS, props.durationSeconds, Number(props.profitTargetPercent), zeroAddress, publicKey],
+      { account: props.from },
+    );
+
+    const hash = await this.wc.writeContract(req.request);
+    const receipt = await this.pc.waitForTransactionReceipt({ hash });
+
+    return { status: receipt.status === "success", transactionHash: receipt.transactionHash };
   }
 
   async purchaseContract(props: {
@@ -235,7 +251,7 @@ export class EthereumGateway {
       this.cloneFactory?.address!,
     ]);
     if (currentAllowance >= BigInt(price)) {
-      return { status: true, transactionHash: "" };
+      return { status: true };
     }
     const req = await (await this.getPaymentToken()).simulate.approve([this.cloneFactory?.address!, BigInt(price)], {
       account: from as `0x${string}`,
@@ -252,7 +268,7 @@ export class EthereumGateway {
       this.cloneFactory?.address!,
     ]);
     if (currentAllowance >= BigInt(price)) {
-      return { status: true, transactionHash: "" };
+      return { status: true };
     }
     const req = await (await this.getFeeToken()).simulate.approve([this.cloneFactory?.address!, BigInt(price)], {
       account: from as `0x${string}`,
@@ -285,27 +301,59 @@ export class EthereumGateway {
 
   async editContractTerms(props: {
     contractAddress: string;
-    from: string;
-    // price: string;
-    speed: string;
-    length: string;
-    profitTarget: string;
+    speedHPS: bigint;
+    durationSeconds: bigint;
+    profitTargetPercent: bigint;
+    from: `0x${string}`;
   }): Promise<SendStatus> {
-    // const impl = Implementation(this.web3Pub, props.contractAddress);
-    // const gas = await impl.methods
-    // 	.setUpdatePurchaseInformation(props.speed, props.length, props.profitTarget)
-    // 	.estimateGas({ from: props.from, ...(await this.getGasConfig()) });
+    const req = await this.cloneFactory!.simulate.setUpdateContractInformationV2(
+      [
+        props.contractAddress as `0x${string}`,
+        0n,
+        0n,
+        props.speedHPS,
+        props.durationSeconds,
+        Number(props.profitTargetPercent),
+      ],
+      { account: props.from },
+    );
 
-    // const receipt = await impl.methods
-    // 	.setUpdatePurchaseInformation(props.speed, props.length, props.profitTarget)
-    // 	.send({ from: props.from, gas, ...(await this.getGasConfig()) });
-
-    // return { status: receipt.status, transactionHash: receipt.transactionHash };
-    return { status: false, transactionHash: "" };
+    const walletClient = getWalletClient(this.pc.chain!);
+    const hash = await walletClient.writeContract(req.request);
+    const receipt = await this.pc.waitForTransactionReceipt({ hash });
+    return { status: receipt.status === "success", transactionHash: receipt.transactionHash };
   }
 
   async getEthBalance(address: string): Promise<string> {
     const balance = await this.pc.getBalance({ address: address as `0x${string}` });
     return balance.toString();
+  }
+
+  async claimFunds(contractAddress: string, from: string): Promise<SendStatus> {
+    const impl = getContract({
+      address: contractAddress as `0x${string}`,
+      abi: abi.implementationAbi,
+      client: this.client,
+    });
+
+    const req = await impl.simulate.claimFunds({
+      account: from as `0x${string}`,
+    });
+
+    const walletClient = getWalletClient(this.pc.chain!);
+    const hash = await walletClient.writeContract(req.request);
+    const receipt = await this.pc.waitForTransactionReceipt({ hash });
+    return { status: receipt.status === "success", transactionHash: receipt.transactionHash };
+  }
+
+  async setContractDeleted(contractAddress: string, isDeleted: boolean, from: string): Promise<SendStatus> {
+    const req = await this.cloneFactory!.simulate.setContractDeleted([contractAddress as `0x${string}`, isDeleted], {
+      account: from as `0x${string}`,
+    });
+
+    const walletClient = getWalletClient(this.pc.chain!);
+    const hash = await walletClient.writeContract(req.request);
+    const receipt = await this.pc.waitForTransactionReceipt({ hash });
+    return { status: receipt.status === "success", transactionHash: receipt.transactionHash };
   }
 }

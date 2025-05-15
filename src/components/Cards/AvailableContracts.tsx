@@ -130,6 +130,7 @@ export const AvailableContracts = (prop: {
     return (
       <>
         {[...Array(10)].map((_, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: this list is a placeholder
           <SkeletonWrap key={index}>
             <Skeleton variant="rectangular" width={"100%"} height={100} />
           </SkeletonWrap>
@@ -254,19 +255,15 @@ export const AvailableContracts = (prop: {
           )}
           <p>
             <img src={PriceIcon} alt="" />
-            {item.price}
-            <br />
             {formatPaymentPrice(item.price).full}
           </p>
           <p>
             <img src={PriceIcon} alt="" />
-            {item.fee}
-            <br />
             {formatFeePrice(item.fee).full}
           </p>
           <PrimaryButton
             onClick={() => {
-              setBuyContractId(item.id as string);
+              setBuyContractId(item.id);
               setOpen(true);
             }}
           >
