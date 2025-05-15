@@ -5,9 +5,10 @@ import type { HashRentalContract } from "../../types/types";
 
 interface Props {
   userAccount: string | undefined;
+  includeDeleted?: boolean;
 }
 
-export const useContracts = ({ userAccount }: Props) => {
+export const useContracts = ({ userAccount, includeDeleted = false }: Props) => {
   const queryClient = useQueryClient();
   const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
 
@@ -34,8 +35,10 @@ export const useContracts = ({ userAccount }: Props) => {
         timestamp: e.startingBlockTimestamp,
         state: e.state,
         encryptedPoolData: e.encrValidatorUrl,
+        profitTargetPercent: e.profitTarget,
         version,
         isDeleted: e.isDeleted,
+        balance: e.balance,
         history: e.history.map((h) => {
           return {
             id: e.id,
@@ -56,7 +59,7 @@ export const useContracts = ({ userAccount }: Props) => {
     queryKey: ["contracts", userAccount],
     queryFn: fetchContractsAsync,
     refetchInterval: 30000, // 30 seconds
-    select: (data) => data.filter((c) => !c.isDeleted),
+    select: (data) => (includeDeleted ? data : data.filter((c) => !c.isDeleted)),
   });
 
   // Optionally update timestamp on refetch

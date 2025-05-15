@@ -4,8 +4,8 @@ import FlagCircleIcon from "@mui/icons-material/FlagCircle";
 import HelpIcon from "@mui/icons-material/Help";
 import ShieldIcon from "@mui/icons-material/Shield";
 import { Drawer } from "@mui/material";
-// import SellerIconActive from '../../images/icons/seller-blue.png';
-// import SellerIconInactive from '../../images/icons/seller-grey.png';
+import SellerIconActive from "../../images/icons/seller-blue.png";
+import SellerIconInactive from "../../images/icons/seller-grey.png";
 import { Link, useLocation, useNavigate, useNavigation, useResolvedPath } from "react-router";
 import BuyerIconActive from "../../images/icons/buyer-blue.png";
 import BuyerIconInactive from "../../images/icons/buyer-grey.png";
@@ -47,13 +47,13 @@ export const ResponsiveNavigation = (prop: {
       inactiveIcon: BuyerIconInactive,
       current: location.pathname === PathName.BuyerHub,
     },
-    // {
-    // 	name: 'Seller Hub',
-    // 	to: PathName.MyContracts,
-    // 	activeIcon: SellerIconActive,
-    // 	inactiveIcon: SellerIconInactive,
-    // 	current: prop.pathName === PathName.MyContracts,
-    // },
+    {
+      name: "Seller Hub",
+      to: PathName.SellerHub,
+      activeIcon: SellerIconActive,
+      inactiveIcon: SellerIconInactive,
+      current: location.pathname === PathName.SellerHub,
+    },
   ];
 
   const drawer = (

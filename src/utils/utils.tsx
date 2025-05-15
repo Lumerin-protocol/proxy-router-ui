@@ -341,12 +341,12 @@ export const getProgressDiv: (
   let percentage = 0;
   if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {
     return <div>0%</div>;
-  } else {
-    timeElapsed = (currentBlockTimestamp as number) - Number.parseInt(startTime);
-    percentage = (timeElapsed / length) * 100;
-    percentage = percentage > 100 ? 100 : percentage;
-    percentage = percentage < 0 ? 0 : percentage;
   }
+
+  timeElapsed = (currentBlockTimestamp as number) - Number.parseInt(startTime);
+  percentage = (timeElapsed / length) * 100;
+  percentage = percentage > 100 ? 100 : percentage;
+  percentage = percentage < 0 ? 0 : percentage;
 
   return (
     <div key={percentage.toFixed()} className="flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row">

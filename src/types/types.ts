@@ -42,7 +42,7 @@ export enum PathName {
   Landing = "/",
   Marketplace = "/marketplace",
   BuyerHub = "/buyerhub",
-  MyContracts = "/sellerhub",
+  SellerHub = "/sellerhub",
 }
 
 export enum AlertMessage {
@@ -105,12 +105,13 @@ export interface HashRentalContract {
   fee: string;
   speed: string;
   length: string;
-  progressPercentage?: number;
+  profitTargetPercent: string;
   buyer: string;
   seller: string;
   timestamp: string;
   state: string;
   encryptedPoolData: string;
+  balance: string;
   history?: ContractHistory[];
   version: string;
   isDeleted: boolean;
@@ -130,13 +131,6 @@ export interface FormData extends InputValuesBuyForm {
   speed?: string;
   price?: string;
   length?: string;
-}
-
-export interface InputValuesCreateForm {
-  walletAddress?: string;
-  contractTime?: number;
-  speed?: number;
-  listPrice?: number;
 }
 
 export interface Receipt {
