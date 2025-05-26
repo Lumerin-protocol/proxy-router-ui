@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { Bars3BottomLeftIcon } from "@heroicons/react/24/outline";
 import { Toolbar, Typography, useMediaQuery } from "@mui/material";
-import { useState } from "react";
 import { useLocation } from "react-router";
 import { LumerinIcon } from "../images";
 import { PathName } from "../types/types";
@@ -29,22 +28,22 @@ export const Header = (prop: { setSidebarOpen: (isOpen: boolean) => void }) => {
 };
 
 const StyledToolbar = styled(Toolbar)`
-	display: flex;
-	justify-content: space-between;
-	padding: 0 !important;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 !important;
 `;
 
 const PageTitle = styled(Typography)`
-	color: #fff;
-	font-weight: 600;
-	font-family: Raleway, sans-serif;
-	font-size: 2rem;
+  color: #fff;
+  font-weight: 600;
+  font-family: Raleway, sans-serif;
+  font-size: 2rem;
 `;
 
 const getPageTitle = (pathName: string) => {
   if (pathName === PathName.Marketplace) return "Marketplace";
   if (pathName === PathName.BuyerHub) return "Buyer Hub";
-  if (pathName === PathName.MyContracts) return "Seller Hub";
+  if (pathName === PathName.SellerHub) return "Seller Hub";
   if (pathName === PathName.Landing) return "";
   return "";
 };

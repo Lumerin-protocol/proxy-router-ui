@@ -1,12 +1,9 @@
 import styled from "@emotion/styled";
 import EastIcon from "@mui/icons-material/East";
 import { Skeleton } from "@mui/material";
-import { isEmpty } from "lodash";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
-import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
 import { ContractState, type HashRentalContract, PathName } from "../../types/types";
-import { getProgressPercentage } from "../../utils/utils";
 import { SmallWidget } from "../Cards/Cards.styled";
 
 export const BuyerOrdersWidget = (props: {
@@ -16,43 +13,28 @@ export const BuyerOrdersWidget = (props: {
   const navigate = useNavigate();
   const { address: userAccount } = useAccount();
 
-  const buyerOrders = props.contracts.filter((contract: HashRentalContract) => contract.buyer === userAccount);
+  let runningContracts = 0;
+  let completedContracts = 0;
 
-  const currentBlockTimestamp = useSimulatedBlockchainTime();
-
-  const updatedOrders: HashRentalContract[] = buyerOrders.map((contract: HashRentalContract) => {
-    const updatedOrder = { ...contract };
-    if (!isEmpty(contract)) {
-      updatedOrder.progressPercentage = getProgressPercentage(
-        updatedOrder.state as string,
-        updatedOrder.timestamp as string,
-        Number.parseInt(updatedOrder.length as string),
-        Number(currentBlockTimestamp),
-      );
-      return updatedOrder;
+  for (const contract of props.contracts) {
+    if (contract.buyer === userAccount) {
+      if (contract.state === ContractState.Running) {
+        runningContracts++;
+      }
+      completedContracts += contract.history?.length ?? 0;
     }
-    return updatedOrder;
-  });
-
-  const runningContracts = updatedOrders.filter(
-    (c) => c.progressPercentage! < 100 && c.state === ContractState.Running,
-  );
-  const completedContractsAmount = props.contracts.flatMap((contract: HashRentalContract) => contract.history).length;
+  }
 
   return (
     <BuyerOrdersWrapper>
       <h3>Purchased Contracts</h3>
       <div className="stats">
         <div className="stat active">
-          <h4>
-            {props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : runningContracts.length}
-          </h4>
+          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : runningContracts}</h4>
           <p>ACTIVE</p>
         </div>
         <div className="stat completed">
-          <h4>
-            {props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : completedContractsAmount}
-          </h4>
+          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : completedContracts}</h4>
           <p>FINISHED</p>
         </div>
       </div>

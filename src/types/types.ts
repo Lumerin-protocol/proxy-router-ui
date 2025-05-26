@@ -43,6 +43,7 @@ export enum PathName {
   Marketplace = "/marketplace",
   BuyerHub = "/buyerhub",
   SellerHub = "/sellerhub",
+  ValidatorHub = "/validatorhub",
 }
 
 export enum AlertMessage {
@@ -115,6 +116,8 @@ export interface HashRentalContract {
   history?: ContractHistory[];
   version: string;
   isDeleted: boolean;
+  validator: string;
+  feeBalance: string;
 }
 
 // Making fields optional bc a user might not have filled out the input fields

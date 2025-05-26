@@ -1,9 +1,9 @@
 import { abi } from "contracts-js";
 import { useReadContract } from "wagmi";
+import { backgroundRefetchOpts } from "./config";
 
-export function usePaymentTokenBalance(address: `0x${string}` | undefined) {
-  // Get payment token address from clone factory
-  const { data: paymentTokenAddress } = useReadContract({
+export function usePaymentTokenAddress() {
+  return useReadContract({
     address: process.env.REACT_APP_CLONE_FACTORY,
     abi: abi.cloneFactoryAbi,
     functionName: "paymentToken",
@@ -12,26 +12,20 @@ export function usePaymentTokenBalance(address: `0x${string}` | undefined) {
       gcTime: Number.POSITIVE_INFINITY,
     },
   });
+}
+
+export function usePaymentTokenBalance(address: `0x${string}` | undefined) {
+  const { data: paymentTokenAddress } = usePaymentTokenAddress();
 
   // Read balance using the payment token address
-  const {
-    data: balance,
-    isLoading,
-    error,
-  } = useReadContract({
+  return useReadContract({
     address: paymentTokenAddress,
     abi: abi.usdcMockAbi,
     functionName: "balanceOf",
     args: [address!],
     query: {
+      ...backgroundRefetchOpts,
       enabled: !!address && !!paymentTokenAddress,
-      refetchInterval: 60 * 1000,
     },
   });
-
-  return {
-    balance,
-    isLoading,
-    error,
-  };
 }

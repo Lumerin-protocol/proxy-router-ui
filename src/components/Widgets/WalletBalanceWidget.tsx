@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import EastIcon from "@mui/icons-material/East";
 import { formatUnits } from "viem";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount } from "wagmi";
 import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
 import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
 import { useRates } from "../../hooks/data/useRates";
@@ -11,41 +11,43 @@ import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
 import { chain } from "../../config/chains";
 import { ChainIcon } from "../../config/chains";
+import { useEthBalance } from "../../hooks/data/useEthBalance";
+import { feeToken, gasToken, paymentToken } from "../../lib/units";
 
 export const WalletBalanceWidget = () => {
   const { address } = useAccount();
   const paymentTokenBalance = usePaymentTokenBalance(address);
   const feeTokenBalance = useFeeTokenBalance(address);
-  const ethBalance = useBalance({ address });
+  const ethBalance = useEthBalance({ address });
   const ratesQuery = useRates();
 
   const tokens = [
     {
-      name: "USDC",
-      balance: paymentTokenBalance.balance,
+      name: paymentToken.symbol,
+      balance: paymentTokenBalance.data,
       rateUSD: 1,
-      decimals: 6n,
+      decimals: paymentToken.decimals,
       icon: <UsdcIcon style={{ width: "25px" }} />,
     },
     {
-      name: "LMR",
-      balance: feeTokenBalance.balance,
+      name: feeToken.symbol,
+      balance: feeTokenBalance.data,
       rateUSD: ratesQuery.data?.LMR ?? 0,
-      decimals: 8n,
+      decimals: feeToken.decimals,
       icon: <LumerinIcon />,
     },
     {
-      name: "ETH",
+      name: gasToken.symbol,
       balance: ethBalance.data?.value,
       rateUSD: ratesQuery.data?.ETH ?? 0,
-      decimals: 18n,
+      decimals: gasToken.decimals,
       icon: <EtherIcon style={{ width: "28px" }} />,
     },
   ];
 
   const isLoading = paymentTokenBalance.isLoading || feeTokenBalance.isLoading || ethBalance.isLoading;
 
-  const isSuccess = !!(paymentTokenBalance.balance && feeTokenBalance.balance && ethBalance.data && address);
+  const isSuccess = !!(paymentTokenBalance.isSuccess && feeTokenBalance.isSuccess && ethBalance.isSuccess && address);
 
   return (
     <SmallWidget>

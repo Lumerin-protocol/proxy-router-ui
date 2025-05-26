@@ -1,4 +1,4 @@
-import { formatUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 
 type Unit = {
   decimals: number;
@@ -13,17 +13,29 @@ type Value = {
   full: string;
 };
 
-const paymentToken: Unit = {
+const usdcToken: Unit = {
   decimals: 6,
   symbol: "USDC",
   name: "USDC Coin",
 } as const;
 
-const feeToken: Unit = {
+const lmrToken: Unit = {
   decimals: 8,
   symbol: "LMR",
   name: "Lumerin",
 } as const;
+
+const ethToken: Unit = {
+  decimals: 18,
+  symbol: "ETH",
+  name: "Ethereum",
+} as const;
+
+export const paymentToken = usdcToken;
+export const feeToken = lmrToken;
+export const validatorStakeToken = lmrToken;
+export const sellerStakeToken = lmrToken;
+export const gasToken = ethToken;
 
 const terahashPerSecond: Unit = {
   decimals: 12,
@@ -39,8 +51,16 @@ export const formatFeePrice = (priceUnits: string | bigint): Value => {
   return formatValue(priceUnits, feeToken);
 };
 
-export const formatTHPS = (speedHashPerSecond: string | bigint): Value => {
+export const formatHashrateTHPS = (speedHashPerSecond: string | bigint): Value => {
   return formatValue(speedHashPerSecond, terahashPerSecond);
+};
+
+export const formatValidatorStake = (stakeUnits: string | bigint): Value => {
+  return formatValue(stakeUnits, validatorStakeToken);
+};
+
+export const parseValidatorStake = (stakeUnits: string): bigint => {
+  return parseUnits(stakeUnits, validatorStakeToken.decimals);
 };
 
 const formatValue = (units: string | bigint, token: Unit) => {

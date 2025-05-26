@@ -6,9 +6,12 @@ import { faAngleDoubleLeft, faAngleDoubleRight, faAngleLeft, faAngleRight } from
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { colors } from "../styles/styles.config";
 import styled from "@emotion/styled";
+import { ArrowDownIcon } from "@heroicons/react/24/outline";
+import { ArrowUpIcon } from "@heroicons/react/24/outline";
+import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
+import { Checkbox } from "@mui/material";
 interface TableProps<T> {
   tableInstance: ReactTable<T>;
-  columnCount: number;
   pagination?: boolean;
 }
 
@@ -22,15 +25,20 @@ export const Table = <T,>({ tableInstance: table, pagination }: TableProps<T>): 
           {getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <Th key={header.id} colSpan={header.colSpan}>
+                <TableHeader
+                  key={header.id}
+                  canSort={header.column.getCanSort()}
+                  sortDirection={header.column.getIsSorted()}
+                  onClick={header.column.getToggleSortingHandler()}
+                >
                   {flexRender(header.column.columnDef.header, header.getContext())}
-                </Th>
+                </TableHeader>
               ))}
             </tr>
           ))}
         </thead>
         <tbody>
-          {getRowModel().rows.map((row) => (
+          {getRowModel()?.rows.map((row) => (
             <Tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
                 <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
@@ -102,6 +110,37 @@ export const Table = <T,>({ tableInstance: table, pagination }: TableProps<T>): 
   );
 };
 
+export const TableHeader = (props: {
+  children: ReactNode;
+  sortDirection: "asc" | "desc" | false;
+  canSort: boolean;
+  onClick?: undefined | ((event: unknown) => void);
+}) => {
+  return (
+    <Th onClick={props.onClick}>
+      <ThInner>
+        {props.children}
+        {getSortIcon(props.canSort, props.sortDirection)}
+      </ThInner>
+    </Th>
+  );
+};
+
+const getSortIcon = (canSort: boolean, sortDirection: "asc" | "desc" | false) => {
+  if (!canSort) {
+    return null;
+  }
+
+  switch (sortDirection) {
+    case "asc":
+      return <ArrowDownIcon className="h-4 w-4" />;
+    case "desc":
+      return <ArrowUpIcon className="h-4 w-4" />;
+    default:
+      return <ArrowsUpDownIcon className="h-4 w-4" />;
+  }
+};
+
 export const StyledTable = styled.table`
   border-collapse: separate;
   border-spacing: 0 1em;
@@ -112,7 +151,6 @@ export const Tr = styled.tr`
   border-radius: 9px;
   color: white;
   margin-bottom: 1rem;
-  padding: 2rem;
   width: 100%;
   height: 100px;
 
@@ -129,10 +167,14 @@ export const Tr = styled.tr`
   }
 `;
 
-export const Td = styled.td`
+export const Th = styled.th`
   border-top: 1px solid rgba(171, 171, 171, 1);
   border-bottom: 1px solid rgba(171, 171, 171, 1);
   text-align: center;
+  color: #fff;
+  cursor: pointer;
+  font-weight: normal;
+  font-size: 1.3em;
 
   &:first-of-type {
     border-left: 1px solid rgba(171, 171, 171, 1);
@@ -145,11 +187,16 @@ export const Td = styled.td`
   }
 `;
 
-export const Th = styled.th`
+const ThInner = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 0.5em;
+`;
+
+export const Td = styled.td`
   border-top: 1px solid rgba(171, 171, 171, 1);
   border-bottom: 1px solid rgba(171, 171, 171, 1);
   text-align: center;
-  color: #fff;
 
   &:first-of-type {
     border-left: 1px solid rgba(171, 171, 171, 1);

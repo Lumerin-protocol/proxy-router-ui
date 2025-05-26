@@ -19,8 +19,9 @@ export const DefaultLayout: FC<PropsWithChildren> = ({ children }) => {
           marginLeft: "auto",
           flexGrow: 1,
           p: 3,
-          width: { xs: `100%`, sm: `100%`, md: `calc(100% - ${drawerWidth}px)` },
+          width: { xs: "100%", sm: "100%", md: `calc(100% - ${drawerWidth}px)` },
           minHeight: "100vh",
+          color: "white",
         }}
       >
         <Header setSidebarOpen={sidebar.setOpen} />
@@ -31,9 +32,9 @@ export const DefaultLayout: FC<PropsWithChildren> = ({ children }) => {
 };
 
 const BodyWrapper = styled.div`
-	display: flex;
-	min-height: 100vh;
-	background: #1e1e1e;
+  display: flex;
+  min-height: 100vh;
+  background: #1e1e1e;
 `;
 
 const drawerWidth = 240;

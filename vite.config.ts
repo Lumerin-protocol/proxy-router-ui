@@ -52,7 +52,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react({
-        jsxImportSource: "@emotion/react",
+        // jsxImportSource: "@emotion/react",
+        jsxImportSource: "@welldone-software/why-did-you-render",
         babel: {
           plugins: ["@emotion/babel-plugin"],
         },

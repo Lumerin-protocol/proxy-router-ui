@@ -1,6 +1,6 @@
 import { useController, type UseFormReturn } from "react-hook-form";
 import { InputWrapper } from "../Forms.styled";
-import type { InputValuesCreateForm } from "./CreateForm";
+import type { InputValuesCreateForm } from "../CreateForm";
 import { InputAdornment, TextField } from "@mui/material";
 import type { FC } from "react";
 

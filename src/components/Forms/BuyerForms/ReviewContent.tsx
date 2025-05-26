@@ -1,24 +1,29 @@
 import { MenuItem, TextField, Tooltip } from "@mui/material";
 import React, { useEffect } from "react";
-import { useController, type UseFormReturn } from "react-hook-form";
+import {
+  Control,
+  useController,
+  UseFormResetField,
+  UseFormSetValue,
+  useFormState,
+  useWatch,
+  type UseFormReturn,
+} from "react-hook-form";
 import { useValidators } from "../../../hooks/data/useValidators";
 import type { InputValuesBuyForm } from "../../../types/types";
-import {
-  isValidLightningUsername,
-  isValidPoolAddress,
-  isValidUsername,
-  validateLightningUrl,
-} from "../../../utils/utils";
+import { isValidLightningUsername, isValidHost, isValidUsername, validateLightningUrl } from "../../../utils/utils";
 import { InputWrapper } from "../Forms.styled";
 import { DisabledButton } from "../FormButtons/Buttons.styled";
 import styled from "@emotion/styled";
 import { predefinedPools, type PoolData } from "./predefinedPools";
 
 interface Props {
-  form: UseFormReturn<InputValuesBuyForm>;
+  control: Control<InputValuesBuyForm>;
+  resetField: UseFormResetField<InputValuesBuyForm>;
+  setValue: UseFormSetValue<InputValuesBuyForm>;
 }
 
-export const ReviewContent: React.FC<Props> = ({ form }) => {
+export const ReviewContent: React.FC<Props> = ({ control, resetField, setValue }) => {
   const { data: validators, isLoading: isLoadingValidators } = useValidators({
     offset: 0,
     limit: 100,
@@ -30,11 +35,11 @@ export const ReviewContent: React.FC<Props> = ({ form }) => {
 
   const poolAddressController = useController({
     name: "poolAddress",
-    control: form.control,
+    control: control,
     rules: {
       required: "Pool Address is required",
       validate: (poolAddress: string) => {
-        if (isValidPoolAddress(poolAddress)) {
+        if (isValidHost(poolAddress)) {
           return true;
         }
         return "Pool address should have the format: mypool.com:3333";
@@ -42,9 +47,11 @@ export const ReviewContent: React.FC<Props> = ({ form }) => {
     },
   });
 
+  const formState = useFormState({ control });
+
   const usernameController = useController({
     name: "username",
-    control: form.control,
+    control: control,
     rules: {
       validate: (username: string, formValues: InputValuesBuyForm) => {
         if (formValues.predefinedPoolIndex === "") {
@@ -62,7 +69,7 @@ export const ReviewContent: React.FC<Props> = ({ form }) => {
 
   const lightningAddressController = useController({
     name: "lightningAddress",
-    control: form.control,
+    control: control,
     rules: {
       validate: async (lightningAddress: string, formValues: InputValuesBuyForm) => {
         if (formValues.predefinedPoolIndex === "") {
@@ -90,7 +97,7 @@ export const ReviewContent: React.FC<Props> = ({ form }) => {
 
   const validatorAddressController = useController({
     name: "validatorAddress",
-    control: form.control,
+    control: control,
     rules: {
       required: "Validator is required",
     },
@@ -98,18 +105,26 @@ export const ReviewContent: React.FC<Props> = ({ form }) => {
 
   const predefinedPool = useController({
     name: "predefinedPoolIndex",
-    control: form.control,
+    control: control,
     rules: {
       required: true,
       onChange: (event) => {
         const value = event.target.value;
-        if (value >= 0) {
-          const selectedPool = predefinedPools[value];
-          form.resetField("poolAddress");
-          form.setValue("poolAddress", selectedPool.address);
-        } else {
-          form.resetField("poolAddress");
-          form.setFocus("poolAddress");
+        const poolType = getPoolType(value);
+
+        if (poolType === "pool") {
+          resetField("lightningAddress");
+          setValue("poolAddress", predefinedPools[value].address);
+        }
+
+        if (poolType === "manual") {
+          resetField("poolAddress");
+          resetField("lightningAddress");
+        }
+
+        if (poolType === "lightning") {
+          resetField("username");
+          setValue("poolAddress", predefinedPools[value].address);
         }
       },
     },
@@ -120,24 +135,15 @@ export const ReviewContent: React.FC<Props> = ({ form }) => {
       return;
     }
     const index = Math.floor(Math.random() * validators.length);
-    form.setValue("validatorAddress", validators[index].addr);
+    setValue("validatorAddress", validators[index].addr);
     hasSetValidator.current = true;
-  }, [validators, form]);
+  }, [validators, setValue]);
 
-  const predefinedPoolIndex = form.watch("predefinedPoolIndex");
+  const predefinedPoolIndex = useWatch({ control, name: "predefinedPoolIndex" });
+  const isManualPool = predefinedPoolIndex && getPoolType(predefinedPoolIndex) === "manual";
+  const isLightningPool = predefinedPoolIndex && getPoolType(predefinedPoolIndex) === "lightning";
 
-  const isManualPool = predefinedPoolIndex === -1;
-  const isLightningPool = !isManualPool && predefinedPoolIndex && predefinedPools[predefinedPoolIndex].isLightning;
-
-  useEffect(() => {
-    if (isLightningPool) {
-      form.resetField("username");
-    } else {
-      form.resetField("lightningAddress");
-    }
-  }, [isLightningPool, form]);
-
-  if (isLoadingValidators || form.formState.isLoading) {
+  if (isLoadingValidators || formState.isLoading) {
     return <></>;
   }
 
@@ -241,3 +247,10 @@ const BecomeValidatorButton = styled(DisabledButton)`
   color: rgb(225, 225, 225);
   opacity: 0.5;
 `;
+
+function getPoolType(predefinedPoolIndex: number) {
+  if (predefinedPoolIndex === -1) {
+    return "manual";
+  }
+  return predefinedPools[predefinedPoolIndex].isLightning ? "lightning" : "pool";
+}

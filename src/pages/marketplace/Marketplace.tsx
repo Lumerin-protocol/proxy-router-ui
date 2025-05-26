@@ -10,12 +10,11 @@ import { MessageWidget } from "../../components/Widgets/MessageWidget";
 import { MobileWalletInfo } from "../../components/Widgets/MobileWalletInfo";
 import { WalletBalanceWidget } from "../../components/Widgets/WalletBalanceWidget";
 import type { EthereumGateway } from "../../gateway/ethereum";
-import { useContracts } from "../../hooks/data/useContracts";
+import { useBuyerContracts } from "../../hooks/data/useContracts";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ContractState } from "../../types/types";
 import { sortContracts } from "../../utils/utils";
 import { MobileWidgetsWrapper, WidgetsWrapper } from "./styled";
-import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 
 interface Props {
   web3Gateway: EthereumGateway;
@@ -23,7 +22,7 @@ interface Props {
 
 export const Marketplace: React.FC<Props> = ({ web3Gateway }) => {
   const { address: userAccount } = useAccount();
-  const contractsQuery = useContracts({ userAccount });
+  const contractsQuery = useBuyerContracts({ address: userAccount });
   const [sortType, setSortType] = useState("");
 
   const isMobile = useMediaQuery("(max-width: 768px)");

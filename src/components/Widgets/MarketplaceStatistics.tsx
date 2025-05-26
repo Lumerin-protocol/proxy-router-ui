@@ -4,12 +4,14 @@ import type { HashRentalContract } from "../../types/types";
 import { SmallWidget } from "../Cards/Cards.styled";
 import EastIcon from "@mui/icons-material/East";
 import { useWatchAsset } from "wagmi";
+import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 
 export const MarketplaceStatistics = (props: {
   contracts: Array<HashRentalContract>;
   isLoading: boolean;
 }) => {
   const { watchAsset } = useWatchAsset();
+  const { data: feeTokenAddress } = useFeeTokenAddress();
 
   const activeContracts = props.contracts.filter((contract: HashRentalContract) => !contract.isDeleted);
 
@@ -56,7 +58,7 @@ export const MarketplaceStatistics = (props: {
             watchAsset({
               type: "ERC20",
               options: {
-                address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
+                address: feeTokenAddress!,
                 symbol: "LMR",
                 decimals: 8,
                 image: "https://s2.coinmarketcap.com/static/img/coins/128x128/19118.png",

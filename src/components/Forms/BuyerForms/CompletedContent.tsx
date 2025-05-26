@@ -5,6 +5,7 @@ import { colors } from "../../../styles/styles.config";
 import { AddressLength, ContentState } from "../../../types/types";
 import { truncateAddress } from "../../../utils/utils";
 import { Spinner } from "../../Spinner.styled";
+import { getTxUrl } from "../../../lib/indexer";
 
 enum buyText {
   thankYou = "Thank you for purchasing Hashpower from Lumerin!",
@@ -58,12 +59,7 @@ const CompletedContent2: React.FC<{
       <p className="w-6/6 text-left font-normal text-s">{isEdit ? editText.view : buyText.view}</p>
       <br />
       {tx && (
-        <a
-          href={`${process.env.REACT_APP_ETHERSCAN_URL?.replace("address", "tx")}${tx}`}
-          target="_blank"
-          rel="noreferrer"
-          className="font-light underline mb-4"
-        >
+        <a href={getTxUrl(tx as `0x${string}`)} target="_blank" rel="noreferrer" className="font-light underline mb-4">
           View Transaction: {truncateAddress(tx, AddressLength.LONG)}
         </a>
       )}
