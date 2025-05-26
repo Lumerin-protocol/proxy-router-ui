@@ -1,8 +1,6 @@
+import type React from "react";
 import { CircularProgress } from "@mui/material";
 import { encrypt } from "ecies-geth/dist/lib/src/typescript/browser";
-import _ from "lodash";
-import type React from "react";
-import * as URI from "uri-js";
 import { DisabledButton, PrimaryButton } from "../components/Forms/FormButtons/Buttons.styled";
 import { ProgressBar } from "../components/ProgressBar";
 import {
@@ -19,7 +17,14 @@ import {
 
 // Buffer polyfill for encrypt library
 import { Buffer } from "buffer/";
-(window as any).Buffer = Buffer;
+
+declare global {
+  interface Window {
+    Buffer: typeof Buffer;
+  }
+}
+
+window.Buffer = Buffer;
 
 export interface ErrorWithCode extends Error {
   code?: number;
@@ -64,17 +69,6 @@ export const toRfc2396 = (address: string, username: string, password: string) =
   return `${protocol}://${encodedUsername}:${password}@${address}`;
 };
 
-export const getPoolRfc2396: (formData: FormData) => string = (formData) => {
-  return toRfc2396(formData.poolAddress, formData.username, formData.password);
-};
-
-export const getValidatorRfc2396: (formData: FormData) => string | undefined = (formData) => {
-  if (!formData.validatorAddress) {
-    throw new Error("Validator address is required");
-  }
-  return toRfc2396(formData.validatorAddress, formData.username, formData.password);
-};
-
 //encrypts a string passed into it
 export const encryptMessage = async (pubKey: string, msg: string) => {
   // Remove 0x prefix and ensure 04 prefix is present
@@ -84,7 +78,7 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
   return await encrypt(Buffer.from(normalizedKey, "hex"), Buffer.from(msg));
 };
 
-export const isValidPoolAddress = (address: string): boolean => {
+export const isValidHost = (address: string): boolean => {
   const regexP = /^[a-zA-Z0-9.-]+:\d+$/;
   if (!regexP.test(address)) return false;
 
@@ -97,33 +91,6 @@ export const isValidPoolAddress = (address: string): boolean => {
 
   return true;
 };
-
-// Parse connectionString as URI to get worker and host name
-
-export const getUsernameWithPassword = (connectionString: string): string | undefined =>
-  URI.parse(connectionString!).userinfo?.replace(/:$/, "");
-
-export const getWorkerName = (connectionString: string): string | undefined => {
-  const usernameWithPassword = getUsernameWithPassword(connectionString);
-  // Strip password and return username and workername only
-  return usernameWithPassword && usernameWithPassword.indexOf(":") > -1
-    ? usernameWithPassword?.substring(0, usernameWithPassword.indexOf(":"))
-    : usernameWithPassword;
-};
-
-export const getPassword = (connectionString: string): string | undefined => {
-  const usernameWithPassword = getUsernameWithPassword(connectionString);
-  return usernameWithPassword!.includes(":")
-    ? usernameWithPassword?.substring(usernameWithPassword.indexOf(":") + 1, usernameWithPassword.length)
-    : "";
-};
-
-export const getHostName = (connectionString: string): string | undefined => URI.parse(connectionString).host;
-
-export const getPortString = (connectionString: string): string | undefined =>
-  URI.parse(connectionString).port?.toString();
-
-export const getSchemeName = (connectionString: string): string | undefined => URI.parse(connectionString).scheme;
 
 // Make sure username contains no spaces
 export const isValidUsername: (username: string) => boolean = (username) => /^[a-zA-Z0-9.@-]+$/.test(username);
@@ -139,9 +106,6 @@ export const isValidLightningUsername: (username: string) => boolean = (username
 // Make sure port number is a number between 1 and 65535
 export const isValidPortNumber: (portNumber: string) => boolean = (portNumber) =>
   Number(portNumber) > 0 && Number(portNumber) < 65536;
-
-// Convert string to URI
-export const stringToURI = (connectionString: string) => URI.parse(connectionString);
 
 // HTML HELPERS
 // Dynamically set classes for html elements
@@ -257,8 +221,8 @@ export const getButton: (
       viewText = "Orders";
       break;
     // Creating contract
-    case PathName.MyContracts:
-      pathName = PathName.MyContracts;
+    case PathName.BuyerHub:
+      pathName = PathName.BuyerHub;
       viewText = "Contracts";
       break;
   }
@@ -282,32 +246,6 @@ export const getButton: (
       {buttonContent}
     </PrimaryButton>
   );
-};
-
-// TABLE HELPERS
-// Get contract duration in days
-export const getLengthDisplay: (length: number) => string = (length) => {
-  const secondsInHour = 3600;
-  const secondsInDay = secondsInHour * 24;
-
-  const days = (length / secondsInDay).toFixed(2);
-
-  return days;
-};
-
-// Get contract duration in days, hours, and minutes
-export const getReadableDate = (length: string): string => {
-  const numLength = Number.parseFloat(length);
-  const days = Math.floor(numLength / 24);
-  const remainder = numLength % 24;
-  const hours = days >= 1 ? Math.floor(remainder) : Math.floor(numLength);
-  const minutes =
-    days >= 1 ? Math.floor(60 * (remainder - hours)) : Math.floor((numLength - Math.floor(numLength)) * 60);
-  const readableDays = days ? (days === 1 ? `${days} day` : `${days} days`) : "";
-  const readableHours = hours ? (hours === 1 ? `${hours} hour` : `${hours} hours`) : "";
-  const readableMinutes = minutes ? (minutes === 1 ? `${minutes} minute` : `${minutes} minutes`) : "";
-  const readableDate = `${readableDays} ${readableHours} ${readableMinutes}`;
-  return readableDate;
 };
 
 // Display status of contracts
@@ -368,12 +306,11 @@ export const getProgressPercentage: (
   let percentage = 0;
   if (length === 0 || currentBlockTimestamp === 0 || state === ContractState.Available) {
     return 0;
-  } else {
-    timeElapsed = (currentBlockTimestamp as number) - Number.parseInt(startTime);
-    percentage = (timeElapsed / length) * 100;
-    percentage = percentage > 100 ? 100 : percentage;
-    percentage = percentage < 0 ? 0 : percentage;
   }
+  timeElapsed = (currentBlockTimestamp as number) - Number.parseInt(startTime);
+  percentage = (timeElapsed / length) * 100;
+  percentage = percentage > 100 ? 100 : percentage;
+  percentage = percentage < 0 ? 0 : percentage;
   return percentage;
 };
 
@@ -390,7 +327,7 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
       key={state}
       className={classNames(getStatusClass(state), "flex justify-center items-center px-4 py-0.5 rounded-15 text-xs")}
     >
-      <p>{_.capitalize(getStatusText(state))}</p>
+      <p className="capitalize">{getStatusText(state)}</p>
     </div>
   );
 };
@@ -399,35 +336,6 @@ export const getStatusDiv: (state: string) => JSX.Element = (state) => {
 // Print error message and stacktrace
 export const printError: (message: string, stacktrace?: string) => void = (message, stacktrace) => {
   console.log(`Error: ${message}, Stacktrace: ${stacktrace}`);
-};
-
-// Encryption helpers
-// https://gist.github.com/lancecarlson/6003283
-export const hexToBytes: (hex: string) => number[] = (hex) => {
-  const bytes = [];
-  for (let c = 0; c < hex.length; c += 2) bytes.push(Number.parseInt(hex.substring(c, c + 2), 16));
-  return bytes;
-};
-
-// https://gist.github.com/lancecarlson/6003283
-export const bytesToHex: (bytes: number[]) => string = (bytes) => {
-  const hex = [];
-  for (let i = 0; i < bytes.length; i++) {
-    const current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
-    hex.push((current >>> 4).toString(16)); // upper nibble to string
-    hex.push((current & 0xf).toString(16)); // lower nibble to string
-  }
-  return hex.join("");
-};
-
-const getV: (v: string, chainId: number) => string = (v, chainId) => {
-  switch (v) {
-    case "0x0":
-    case "0x1":
-      return `0x${(Number.parseInt(v, 16) + chainId * 2 + 35).toString(16)}`;
-    default:
-      return v;
-  }
 };
 
 export const getHandlerBlockchainError =

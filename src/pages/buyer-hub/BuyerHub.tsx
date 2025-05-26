@@ -1,16 +1,20 @@
 import { useMemo, useState, type FC } from "react";
 import { useAccount } from "wagmi";
-import { type Card, FinishedContracts, RunningContracts } from "../../components/Cards/PurchasedContracts";
+import { Card, type CardData } from "../../components/Cards/PurchasedContracts";
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { SortToolbar } from "../../components/SortToolbar";
 import { Spinner } from "../../components/Spinner.styled";
 import { TabSwitch } from "../../components/TabSwitch.Styled";
 import type { EthereumGateway } from "../../gateway/ethereum";
-import { useContracts } from "../../hooks/data/useContracts";
-import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
+import { useBuyerContracts } from "../../hooks/data/useContracts";
 import { ContractState, CurrentTab } from "../../types/types";
 import { getProgressPercentage, sortContracts } from "../../utils/utils";
 import { getPoolInfo } from "../../gateway/localStorage";
+import { useModal } from "../../hooks/useModal";
+import { ModalItem } from "../../components/Modal";
+import { BuyerEditForm } from "../../components/Forms/BuyerEditForm";
+import { CancelForm } from "../../components/Forms/CancelForm";
+import { ContractCards } from "../../components/Cards/PurchasedContracts.styled";
 
 type Props = {
   web3Gateway: EthereumGateway;
@@ -18,11 +22,16 @@ type Props = {
 
 export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
   const { address: userAccount } = useAccount();
-  const contractsQuery = useContracts({ userAccount });
+  const contractsQuery = useBuyerContracts({ address: userAccount });
+
+  const editModal = useModal();
+  const cancelModal = useModal();
+  const [contractId, setContractId] = useState<string | null>(null);
 
   const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
   const [runningSortType, setRunningSortType] = useState("");
   const [completedSortType, setCompletedSortType] = useState("");
+  const currentBlockTimestamp = new Date().getTime() / 1000;
 
   const runningContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
@@ -30,28 +39,20 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
       (contract) => contract.buyer === userAccount && contract.state === ContractState.Running,
     );
 
-    const runningContracts = buyerOrders.filter((contract) => contract.state === ContractState.Running);
-    return sortContracts(runningSortType, runningContracts);
+    return sortContracts(runningSortType, buyerOrders);
   }, [contractsQuery.data, runningSortType]);
 
   const completedContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
-    const buyerOrders = contractsQuery.data.filter((contract) => contract?.history?.length).flatMap((c) => c.history!);
+
+    const buyerOrders = contractsQuery.data
+      .flatMap((c) => c.history!)
+      .filter((c) => Number(c.endTime) < currentBlockTimestamp);
 
     return sortContracts(completedSortType, buyerOrders);
   }, [contractsQuery.data, completedSortType]);
 
-  const handleRunningTab = () => {
-    setActiveOrdersTab(CurrentTab.Running);
-  };
-
-  const handleCompletedTab = () => {
-    setActiveOrdersTab(CurrentTab.Completed);
-  };
-
-  const currentBlockTimestamp = useSimulatedBlockchainTime();
-
-  const runningContractsCards: Card[] = runningContracts.map((contract) => {
+  const runningContractsCards: CardData[] = runningContracts.map((contract) => {
     const endTime = Number(contract.timestamp) + Number(contract.length);
     const progressPercentage = getProgressPercentage(
       contract.state,
@@ -80,7 +81,7 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
     };
   });
 
-  const completedContractsCards: Card[] = completedContracts.map((contract) => {
+  const completedContractsCards: CardData[] = completedContracts.map((contract) => {
     const poolInfo = getPoolInfo({
       contractId: contract.id,
       startedAt: BigInt(contract.purchaseTime),
@@ -103,12 +104,18 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
 
   return (
     <DefaultLayout>
+      <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contractId}`}>
+        <BuyerEditForm contractId={contractId!} web3Gateway={web3Gateway} closeForm={() => editModal.close()} />
+      </ModalItem>
+      <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen} key={`cancel-${contractId}`}>
+        <CancelForm contractId={contractId!} web3Gateway={web3Gateway} closeForm={() => cancelModal.close()} />
+      </ModalItem>
       <TabSwitch>
         <button
           type="button"
           id="running"
           className={activeOrdersTab === CurrentTab.Running ? "active" : ""}
-          onClick={handleRunningTab}
+          onClick={() => setActiveOrdersTab(CurrentTab.Running)}
         >
           Active <span>{contractsQuery.isLoading ? "" : runningContracts.length}</span>
         </button>
@@ -116,39 +123,43 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
           type="button"
           id="completed"
           className={activeOrdersTab === CurrentTab.Completed ? "active" : ""}
-          onClick={handleCompletedTab}
+          onClick={() => setActiveOrdersTab(CurrentTab.Completed)}
         >
           Completed <span>{contractsQuery.isLoading ? "" : completedContracts.length}</span>
         </button>
         <span className="glider" />
       </TabSwitch>
       <div className="flex flex-col items-center">
-        {activeOrdersTab === CurrentTab.Running &&
-          (runningContracts.length > 0 ? (
-            <>
-              <SortToolbar pageTitle="Running Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
-              <RunningContracts
-                sortType={runningSortType}
-                contracts={runningContractsCards}
-                web3Gateway={web3Gateway}
-              />
-            </>
-          ) : (
-            contractsQuery.isSuccess && <p className="text-2xl text-white">You have no running contracts.</p>
-          ))}
-        {activeOrdersTab === CurrentTab.Completed &&
-          (completedContracts.length > 0 ? (
-            <>
-              <SortToolbar
-                pageTitle="Finished Contracts"
-                sortType={completedSortType}
-                setSortType={setCompletedSortType}
-              />
-              <FinishedContracts contracts={completedContractsCards} sortType={completedSortType} />
-            </>
-          ) : (
-            contractsQuery.isSuccess && <p className="text-2xl text-white">You have no completed contracts.</p>
-          ))}
+        {activeOrdersTab === CurrentTab.Running && (
+          <>
+            <SortToolbar pageTitle="Running Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
+            <ContractCards>
+              {runningContractsCards.length === 0 && (
+                <p className="text-2xl text-white">You have no active contracts.</p>
+              )}
+              {runningContractsCards.map((item) => {
+                return <Card key={`${item.contractAddr}-${item.startTime}`} card={item} />;
+              })}
+            </ContractCards>
+          </>
+        )}
+        {activeOrdersTab === CurrentTab.Completed && (
+          <>
+            <SortToolbar
+              pageTitle="Finished Contracts"
+              sortType={completedSortType}
+              setSortType={setCompletedSortType}
+            />
+            <ContractCards>
+              {completedContractsCards.length === 0 && (
+                <p className="text-2xl text-white">You have no finished contracts.</p>
+              )}
+              {completedContractsCards.map((item) => {
+                return <Card key={`${item.contractAddr}-${item.startTime}`} card={item} />;
+              })}
+            </ContractCards>
+          </>
+        )}
         {contractsQuery.isLoading && (
           <div className="spinner">
             <Spinner />

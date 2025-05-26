@@ -54,6 +54,13 @@ export const ResponsiveNavigation = (prop: {
       inactiveIcon: SellerIconInactive,
       current: location.pathname === PathName.SellerHub,
     },
+    {
+      name: "Validator Hub",
+      to: PathName.ValidatorHub,
+      activeIcon: SellerIconActive,
+      inactiveIcon: SellerIconInactive,
+      current: location.pathname === PathName.ValidatorHub,
+    },
   ];
 
   const drawer = (

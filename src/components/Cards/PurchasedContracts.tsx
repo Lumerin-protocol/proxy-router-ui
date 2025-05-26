@@ -1,5 +1,5 @@
-import { AddressLength } from "../../types/types";
-import { getReadableDate, truncateAddress } from "../../utils/utils";
+import { AddressLength, ContractState } from "../../types/types";
+import { getProgressPercentage, truncateAddress } from "../../utils/utils";
 import "react-circular-progressbar/dist/styles.css";
 import CancelIcon from "@mui/icons-material/CancelOutlined";
 import DoneIcon from "@mui/icons-material/Done";
@@ -11,19 +11,20 @@ import Time from "../../images/icons/time-icon-white.png";
 import IDCard from "../../images/id-card-white.png";
 import Pickaxe from "../../images/pickaxe-white.png";
 import { ContractCards } from "./PurchasedContracts.styled";
-
 import styled from "@emotion/styled";
-import { DateTime } from "luxon";
-import { useState } from "react";
-import { EditForm as BuyerEditForm } from "../../components/Forms/BuyerForms/EditForm";
+import { FC, useState } from "react";
 import type { EthereumGateway } from "../../gateway/ethereum";
 import { useModal } from "../../hooks/useModal";
-import { formatFeePrice, formatPaymentPrice, formatTHPS } from "../../lib/units";
+import { formatFeePrice, formatPaymentPrice, formatHashrateTHPS } from "../../lib/units";
 import { ButtonGroup } from "../ButtonGroup";
-import { CancelForm } from "../Forms/BuyerForms/CancelForm";
-import { CancelButton } from "../Forms/FormButtons/CancelButton";
-import { EditButton } from "../Forms/FormButtons/EditButton";
 import { ModalItem } from "../Modal";
+import { getContractUrl } from "../../lib/indexer";
+import { formatDate, formatDateTime } from "../../lib/date";
+import { formatDuration } from "../../lib/duration";
+import { CancelButton, EditButton } from "../Forms/FormButtons/ActionButton";
+import { BuyerEditForm } from "../Forms/BuyerEditForm";
+import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
+import { CancelForm } from "../Forms/CancelForm";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -37,18 +38,17 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const getIcon = (contract: Card, isCompleted = false) => {
-  const isGoodCloseout = contract.progressPercentage === 100;
-  if (isCompleted) {
-    if (isGoodCloseout) {
-      return <DoneIcon sx={{ color: "white" }} />;
-    }
-    return <CancelIcon sx={{ color: "white" }} />;
+const getIcon = (icon: "inprogress" | "completed" | "closed-early") => {
+  if (icon === "inprogress") {
+    return <img src={PickaxeAnimated} alt="" />;
   }
-  return <img src={PickaxeAnimated} alt="" />;
+  if (icon === "completed") {
+    return <DoneIcon sx={{ color: "white" }} />;
+  }
+  return <CancelIcon sx={{ color: "white" }} />;
 };
 
-export type Card = {
+export type CardData = {
   startTime: number;
   endTime: number;
   progressPercentage: number;
@@ -63,40 +63,45 @@ export type Card = {
 };
 
 interface CardProps {
-  card: Card;
+  card: CardData;
   key?: string;
   editClickHandler?: (contractId: string) => void;
   cancelClickHandler?: (contractId: string) => void;
 }
 
-const Card = (props: CardProps) => {
+export const Card: FC<CardProps> = (props) => {
   const { card: item, editClickHandler, cancelClickHandler } = props;
+  const now = new Date().getTime() / 1000;
+  const startDate = formatDateTime(item.startTime);
+  const endDate = formatDateTime(item.endTime);
 
-  const startDate = DateTime.fromSeconds(item.startTime).toFormat("MM/dd/yyyy");
-  const endDate = DateTime.fromSeconds(item.endTime).toFormat("MM/dd/yyyy");
-  const isCompleted = item.progressPercentage >= 100;
+  const progressPercentage = Math.round(((Math.min(item.endTime, now) - item.startTime) * 100) / Number(item.length));
+
+  const isCompleted = now > Number(item.endTime);
+  const isClosedEarly = item.endTime - item.startTime < Number(item.length);
+  const icon = isClosedEarly ? "closed-early" : progressPercentage === 100 ? "completed" : "inprogress";
 
   return (
     <div className="card">
       <div className="progress">
-        <div className="pickaxe">{getIcon(item, isCompleted)}</div>
+        <div className="pickaxe">{getIcon(icon)}</div>
         <div className="utils">
           <div className="percentage-and-actions">
-            <h2>{item.progressPercentage.toFixed()}% complete</h2>
+            <h2>{progressPercentage}% complete</h2>
             {editClickHandler && cancelClickHandler && (
               <div className="status">
                 <div>
                   <ButtonGroup
                     button1={
                       <EditButton
-                        onEdit={() => {
+                        onClick={() => {
                           editClickHandler(item.contractAddr);
                         }}
                       />
                     }
                     button2={
                       <CancelButton
-                        onCancel={() => {
+                        onClick={() => {
                           cancelClickHandler(item.contractAddr);
                         }}
                       />
@@ -106,7 +111,7 @@ const Card = (props: CardProps) => {
               </div>
             )}
           </div>
-          <BorderLinearProgress variant="determinate" value={item.progressPercentage} />
+          <BorderLinearProgress variant="determinate" value={progressPercentage} />
         </div>
       </div>
       <div className="grid">
@@ -127,7 +132,7 @@ const Card = (props: CardProps) => {
         <div className="item-value address">
           <div>
             <h3>CONTRACT ADDRESS</h3>
-            <a href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.contractAddr}`} target="_blank" rel="noreferrer">
+            <a href={getContractUrl(item.contractAddr as `0x${string}`)} target="_blank" rel="noreferrer">
               {item.contractAddr ? truncateAddress(item.contractAddr, AddressLength.LONG) : "…"}
             </a>
           </div>
@@ -158,7 +163,7 @@ const Card = (props: CardProps) => {
             <img src={Time} alt="" />
             <div>
               <h3>DURATION</h3>
-              <p>{formatDuration(item.length)}</p>
+              <p>{formatDuration(BigInt(item.length))}</p>
             </div>
           </div>
         </div>
@@ -193,67 +198,9 @@ const Card = (props: CardProps) => {
   );
 };
 
-export const RunningContracts = (props: {
-  contracts: Card[];
-  sortType: string;
-  web3Gateway: EthereumGateway;
-}) => {
-  const editModal = useModal();
-  const cancelModal = useModal();
-  const [contractId, setContractId] = useState<string | null>(null);
-
-  const progressAscending = [...props.contracts].sort((a, b) => a.progressPercentage! - b.progressPercentage!);
-
-  const purchasedContracts = props.sortType ? props.contracts : progressAscending;
-
-  return (
-    <ContractCards>
-      <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contractId}`}>
-        <BuyerEditForm contractId={contractId!} web3Gateway={props.web3Gateway} closeForm={() => editModal.close()} />
-      </ModalItem>
-      <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen} key={`cancel-${contractId}`}>
-        <CancelForm contractId={contractId!} web3Gateway={props.web3Gateway} closeForm={() => cancelModal.close()} />
-      </ModalItem>
-      {purchasedContracts.map((item) => {
-        return (
-          <Card
-            key={item.contractAddr}
-            card={item}
-            editClickHandler={() => {
-              setContractId(item.contractAddr);
-              editModal.open();
-            }}
-            cancelClickHandler={() => {
-              setContractId(item.contractAddr);
-              cancelModal.open();
-            }}
-          />
-        );
-      })}
-    </ContractCards>
-  );
-};
-
-export const FinishedContracts = (props: { contracts: Card[]; sortType: string }) => {
-  const purchastTimeAscending = [...props.contracts].sort((a, b) => +b.startTime! - +a.startTime!);
-  const purchasedContracts = props.sortType ? props.contracts : purchastTimeAscending;
-
-  return (
-    <ContractCards>
-      {purchasedContracts.map((item) => {
-        return <Card key={item.contractAddr} card={item} />;
-      })}
-    </ContractCards>
-  );
-};
-
 function formatSpeed(speedHps: string) {
   if (speedHps === undefined || speedHps === null) {
     return "…";
   }
-  return formatTHPS(speedHps).full;
-}
-
-function formatDuration(length: string) {
-  return getReadableDate(String(Number(length) / 3600));
+  return formatHashrateTHPS(speedHps).full;
 }

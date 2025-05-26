@@ -1,3 +1,5 @@
+import "./wdyr";
+
 import React from "react";
 import { ErrorBoundary, type ErrorBoundaryPropsWithRender } from "react-error-boundary";
 import { BrowserRouter } from "react-router";

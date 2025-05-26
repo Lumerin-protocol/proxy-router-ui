@@ -1,15 +1,15 @@
-import { sortContractsList } from "../utils/utils";
-import type { IndexerContractEntry } from "./interfaces";
+import type { GetResponse, IndexerContractEntry, ValidatorHistoryEntry } from "./interfaces";
 
-export async function getContractsV2(walletAddr?: string): Promise<IndexerContractEntry[]> {
+// Get contracts from indexer. Set walletAddr to exclude contracts  you are selling (you cannot buy your own contracts)
+export async function getContractsV2(walletAddr?: string): Promise<GetResponse<IndexerContractEntry[]>> {
   try {
     const url = new URL("/api/contracts", process.env.REACT_APP_INDEXER_URL);
     if (walletAddr) {
       url.searchParams.append("walletAddr", walletAddr);
     }
     const data = await fetch(url);
-    const json = (await data.json()) as IndexerContractEntry[];
-    return sortContractsList(json, (c) => Number(c.stats.successCount), "asc");
+    const json = (await data.json()) as GetResponse<IndexerContractEntry[]>;
+    return json;
   } catch (e) {
     const err = new Error(`Error calling contract indexer: ${(e as Error)?.message}`, {
       cause: e,
@@ -17,4 +17,11 @@ export async function getContractsV2(walletAddr?: string): Promise<IndexerContra
     console.error(err);
     throw err;
   }
+}
+
+export async function getValidatorHistory(validatorAddr: string): Promise<GetResponse<ValidatorHistoryEntry[]>> {
+  const url = new URL(`/api/validator/${validatorAddr}`, process.env.REACT_APP_INDEXER_URL);
+  const data = await fetch(url);
+  const json = (await data.json()) as GetResponse<ValidatorHistoryEntry[]>;
+  return json;
 }

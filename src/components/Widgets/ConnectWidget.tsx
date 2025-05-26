@@ -71,6 +71,7 @@ export const ConnectWidget = (props: Props) => {
 // The same avatar component as the one in the appkit
 const WuiAvatar = (props: { address: string }) => {
   const { address } = props;
+  // @ts-ignore
   return <wui-avatar alt={address} address={address} size="sm" />;
 };
 

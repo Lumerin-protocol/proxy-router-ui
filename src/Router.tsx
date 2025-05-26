@@ -9,6 +9,7 @@ import { Landing } from "./pages/landing/Landing";
 import { Marketplace } from "./pages/marketplace/Marketplace";
 import { PathName } from "./types/types";
 import { SellerHub } from "./pages/seller-hub/SellerHub";
+import { ValidatorHub } from "./pages/validator-hub/ValidatorHub";
 // import { Test } from "./pages/test/test";
 
 type Props = {
@@ -23,6 +24,7 @@ export const Router: React.FC<Props> = ({ web3Gateway }) => {
         <Route path={PathName.BuyerHub} element={<BuyerHub web3Gateway={web3Gateway} />} />
         <Route path={PathName.Marketplace} element={<Marketplace web3Gateway={web3Gateway} />} />
         <Route path={PathName.SellerHub} element={<SellerHub web3Gateway={web3Gateway} />} />
+        <Route path={PathName.ValidatorHub} element={<ValidatorHub web3Gateway={web3Gateway} />} />
         {/* <Route path={"test"} element={<Test />} /> */}
       </Routes>
     </Suspense>

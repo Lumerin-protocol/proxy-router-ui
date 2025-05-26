@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FC } from "react";
 import { HeroHeadline, HeroWrapper } from "../landing/Landing.styled";
 import { useController, useForm } from "react-hook-form";
 import type { InputValuesBuyForm } from "../../types/types";
-import { isValidLightningUsername, isValidPoolAddress, isValidUsername } from "../../utils/utils";
+import { isValidLightningUsername, isValidHost, isValidUsername } from "../../utils/utils";
 import { InputWrapper } from "../../components/Forms/Forms.styled";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
@@ -91,7 +91,7 @@ export const TestChild: FC<{
     rules: {
       required: "Pool Address is required",
       validate: (poolAddress: string) => {
-        if (isValidPoolAddress(poolAddress)) {
+        if (isValidHost(poolAddress)) {
           return true;
         }
         console.log("Invalid pool address.");

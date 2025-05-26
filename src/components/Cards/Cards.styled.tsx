@@ -41,6 +41,9 @@ export const SmallWidget = styled(Card)`
     font-size: 0.65rem;
     border-top: 1px solid #eaf7fc;
     width: 100%;
+    display: flex;
+    justify-content: center;
+    height: 1.3rem;
   }
 `;
 

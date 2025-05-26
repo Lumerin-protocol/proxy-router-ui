@@ -1,16 +1,12 @@
 import { useBalance } from "wagmi";
+import { backgroundRefetchOpts } from "./config";
 
-export function useEthBalance(address?: string) {
-  const { data, isLoading, error } = useBalance({
-    address: address as `0x${string}`,
+export function useEthBalance(props: { address?: string }) {
+  return useBalance({
+    address: props.address as `0x${string}`,
     query: {
-      enabled: !!address,
+      ...backgroundRefetchOpts,
+      enabled: !!props.address,
     },
   });
-
-  return {
-    balance: data?.value,
-    isLoading,
-    error,
-  };
 }

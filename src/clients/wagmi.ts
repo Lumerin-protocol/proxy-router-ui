@@ -22,24 +22,22 @@ const chains = [chain];
 const wagmiAdapter = new WagmiAdapter({
   networks: chains,
   transports: {
-    [chain.id]: fallback([http(process.env.REACT_APP_READ_ONLY_ETH_NODE_URL), http()]),
+    [chain.id]: http(process.env.REACT_APP_READ_ONLY_ETH_NODE_URL, { retryCount: 0 }),
   },
   projectId,
   ssr: false,
 });
 
-const caipNetworkId: CaipNetworkId = `eip155:${chain.id}`;
-
 createAppKit({
   adapters: [wagmiAdapter],
   networks: chains as [AppKitNetwork],
   projectId,
-  tokens: {
-    [caipNetworkId]: {
-      address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
-      image: "https://s2.coinmarketcap.com/static/img/coins/128x128/19118.png",
-    },
-  },
+  // tokens: {
+  //   [`eip155:${chain.id}` as CaipNetworkId]: {
+  //     address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,
+  //     image: "https://s2.coinmarketcap.com/static/img/coins/128x128/19118.png",
+  //   },
+  // },
   metadata: {
     name: "Lumerin Marketplace",
     description: "Buy, sell, and own hashpower through your Web3 wallet",

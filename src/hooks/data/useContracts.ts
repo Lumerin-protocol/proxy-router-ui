@@ -1,21 +1,48 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { getContractsV2 } from "../../gateway/indexer";
 import type { HashRentalContract } from "../../types/types";
+import type { GetResponse } from "../../gateway/interfaces";
+import { backgroundRefetchOpts } from "./config";
 
+export const CONTRACTS_QK = "contracts";
 interface Props {
-  userAccount: string | undefined;
-  includeDeleted?: boolean;
+  select?: ((data: GetResponse<HashRentalContract[]>) => GetResponse<HashRentalContract[]>) | undefined;
+  refetch?: boolean;
 }
 
-export const useContracts = ({ userAccount, includeDeleted = false }: Props) => {
-  const queryClient = useQueryClient();
-  const [currentBlockTimestamp, setCurrentBlockTimestamp] = useState<number>(0);
+export const useSellerContracts = (props: { address?: `0x${string}` | undefined }) => {
+  return useContracts({
+    select: (data) => ({
+      ...data,
+      data: data.data.filter((c) => c.seller === props.address),
+    }),
+  });
+};
 
-  const fetchContractsAsync = async (): Promise<HashRentalContract[]> => {
-    const data = await getContractsV2(userAccount);
+export const useBuyerContracts = (props: { address?: `0x${string}` | undefined }) => {
+  return useContracts({
+    select: (data) => ({
+      ...data,
+      data: data.data.filter((c) => c.seller !== props.address && c.isDeleted === false),
+    }),
+  });
+};
 
-    return data.map((e) => {
+export const useContract = (props: { address: `0x${string}`; refetch?: boolean }) => {
+  const res = useContracts({ refetch: props.refetch });
+  return {
+    ...res,
+    data: res.data?.find((c) => c.id === props.address),
+  };
+};
+
+export const useContracts = (props?: Props) => {
+  const { select, refetch = true } = props || {};
+  const fetchContractsAsync = async (): Promise<GetResponse<HashRentalContract[]>> => {
+    console.log("fetching contracts");
+    const response = await getContractsV2();
+    const data = response.data.map((e) => {
       const { hasFutureTerms, futureTerms, state } = e;
       let { version, speed, length, price, fee } = e;
       if (hasFutureTerms && futureTerms && state === "0") {
@@ -32,6 +59,7 @@ export const useContracts = ({ userAccount, includeDeleted = false }: Props) => 
         length,
         buyer: e.buyer,
         seller: e.seller,
+        validator: e.validator,
         timestamp: e.startingBlockTimestamp,
         state: e.state,
         encryptedPoolData: e.encrValidatorUrl,
@@ -39,6 +67,7 @@ export const useContracts = ({ userAccount, includeDeleted = false }: Props) => 
         version,
         isDeleted: e.isDeleted,
         balance: e.balance,
+        feeBalance: e.feeBalance,
         history: e.history.map((h) => {
           return {
             id: e.id,
@@ -53,30 +82,48 @@ export const useContracts = ({ userAccount, includeDeleted = false }: Props) => 
         }),
       };
     });
+    return {
+      data,
+      blockNumber: response.blockNumber,
+    };
   };
 
   const query = useQuery({
-    queryKey: ["contracts", userAccount],
+    ...(refetch ? backgroundRefetchOpts : {}),
+    queryKey: [CONTRACTS_QK],
     queryFn: fetchContractsAsync,
-    refetchInterval: 30000, // 30 seconds
-    select: (data) => (includeDeleted ? data : data.filter((c) => !c.isDeleted)),
+    select: select,
   });
 
-  // Optionally update timestamp on refetch
-  useEffect(() => {
-    if (query.isFetching) {
-      setCurrentBlockTimestamp(Math.floor(new Date().getTime() / 1000));
-    }
-  }, [query.isFetching]);
-
-  // Manual force refetch/invalidate method
-  const forceRefetch = () => {
-    queryClient.invalidateQueries({ queryKey: ["contracts", userAccount] });
-  };
+  const { data, ...rest } = query;
 
   return {
-    ...query,
-    currentBlockTimestamp,
-    forceRefetch,
+    ...rest,
+    data: data?.data,
+    blockNumber: data?.blockNumber,
   };
+};
+
+/** Polls the indexer for new contracts until the block number is reached. Should be used to make sure mutations are reflected in the indexer cache. */
+export const waitForBlockNumber = async (blockNumber: bigint, qc: QueryClient) => {
+  const delay = 1000;
+  const maxAttempts = 30; // 30 attempts with 2s delay = max 1 minute wait
+
+  let attempts = 0;
+  while (attempts < maxAttempts) {
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    // Force a fresh fetch of the data
+    await qc.refetchQueries({ queryKey: [CONTRACTS_QK] });
+
+    const data = qc.getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK]);
+    const currentBlock = data?.blockNumber;
+
+    if (currentBlock !== undefined && currentBlock >= Number(blockNumber)) {
+      return;
+    }
+    // Wait 2 seconds before next attempt
+    attempts++;
+  }
+
+  throw new Error(`Timeout waiting for block number ${blockNumber}`);
 };

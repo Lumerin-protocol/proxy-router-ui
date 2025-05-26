@@ -6,7 +6,7 @@ import { getRateKucoin } from "./rate-kucoin";
 /**
  * Returns ETH and LMR prices in USD from exchanges api
  */
-export const getRate = async (): Promise<Rates | void> => {
+export const getRate = async (): Promise<Rates | undefined> => {
   const servicePriority = [getRateCoingecko, getRateCoinpaprika, getRateKucoin];
 
   for (const service of servicePriority) {

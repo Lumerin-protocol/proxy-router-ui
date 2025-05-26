@@ -11,18 +11,6 @@ export const InputWrapper = styled.div`
   label {
     font-size: 1rem;
   }
-  // input {
-  //   background: #eaf7fc;
-  //   border-radius: 12px;
-  //   padding: 12px 1.5rem;
-  //   margin-top: 0.25rem;
-  //   color: #000;
-  //   width: 100%;
-
-  //   ::placeholder {
-  //     color: grey;
-  //   }
-  // }
   .MuiTextField-root {
     width: 100%;
   }

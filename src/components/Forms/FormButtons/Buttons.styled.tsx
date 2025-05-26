@@ -1,51 +1,5 @@
 import styled from "@emotion/styled";
 
-export const ActionButtonWrapper = styled.div`
-  width: 30px;
-  button {
-    border-radius: 50px;
-    width: 30px;
-    height: 30px;
-    border: none;
-    background: #e2edfb;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    img {
-      width: 0.85rem;
-    }
-    .cancel {
-      width: 1rem;
-    }
-  }
-  p {
-    font-family: Inter, sans-serif;
-    font-size: 0.65rem;
-    text-align: center;
-    margin-bottom: 5px;
-  }
-`;
-
-export const ConnectButtonsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  button {
-    background-color: #eaf7fc;
-    border-radius: 20px;
-    margin-bottom: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    color: black;
-
-    span {
-      margin-right: 1rem;
-    }
-  }
-`;
-
 export const FormButtonsWrapper = styled.div`
   display: flex;
   flex-direction: row;

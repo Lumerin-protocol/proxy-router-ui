@@ -10,52 +10,6 @@ interface Web3Result {
 
 const ethereum = window.ethereum;
 
-// Get accounts, web3 and contract instances
-export const getWeb3ResultAsync = async (
-  onConnect: (info: ConnectInfo) => void,
-  onDisconnect: (err: Error) => void,
-  onChainChange: (chainId: string, pr: provider) => void,
-  onAccountsChange: (accounts: string[]) => void,
-  walletName: string,
-): Promise<Web3Result | null> => {
-  try {
-    const provider = await getProviderAsync(walletName);
-
-    if (!provider) {
-      console.error("Missing provider");
-      return null;
-    }
-
-    if (typeof provider === "string") {
-      console.error("Invalid string provider", provider);
-      return null;
-    }
-
-    if (walletName === WalletText.ConnectViaMetaMask) {
-      ethereum.on("connect", onConnect);
-      ethereum.on("disconnect", onDisconnect);
-      ethereum.on("chainChanged", (chainID: string) => onChainChange(chainID, ethereum));
-      ethereum.on("accountsChanged", onAccountsChange);
-      await ethereum.request({ method: "eth_requestAccounts" });
-      console.log("after request accounts");
-    } else {
-      provider.on("disconnect", onDisconnect);
-      provider.on("chainChanged", onChainChange);
-      provider.on("accountsChanged", onAccountsChange);
-      await WalletConnectProvider.enable();
-    }
-
-    const web3Gateway = new EthereumGateway(process.env.REACT_APP_CLONE_FACTORY!, process.env.REACT_APP_INDEXER_URL!);
-    await web3Gateway.init();
-
-    return { web3Gateway, accounts: await web3Gateway.getAccounts() };
-  } catch (error) {
-    const typedError = error as Error;
-    printError(typedError.message, typedError.stack as string);
-    return null;
-  }
-};
-
 // Wallet helpers
 // Allows user choose which account they want to use in MetaMask
 export const reconnectWalletAsync: () => void = async () => {

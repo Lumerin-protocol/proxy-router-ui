@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { getRate } from "../../gateway/rates/rate";
+import { backgroundRefetchOpts } from "./config";
+
+export const RATES_QK = "rates";
 
 export function useRates() {
   return useQuery({
-    queryKey: ["rates"],
+    ...backgroundRefetchOpts,
+    queryKey: [RATES_QK],
     queryFn: () => getRate(),
-    refetchInterval: 1000 * 60 * 5,
-    staleTime: 1000 * 60 * 5,
   });
 }

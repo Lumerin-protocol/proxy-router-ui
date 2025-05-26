@@ -1,9 +1,26 @@
 import styled from "@emotion/styled";
 
+export const SpinnerV2 = () => {
+  return (
+    <div
+      style={{
+        fontSize: "0.6em",
+        width: "3em",
+        height: "3em",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Spinner fontSize="0.3em" />
+    </div>
+  );
+};
+
 export const Spinner = styled.div<{ fontSize?: string }>`
   color: #53b1bd;
   font-size: ${({ fontSize }) => fontSize || "1.3em"};
-  margin: 4.5em auto;
+  margin: 4.5em;
   width: 1em;
   height: 1em;
   border-radius: 50%;

@@ -7,10 +7,9 @@ import { useModal } from "../../hooks/useModal";
 import PriceIcon from "../../images/icons/price-icon-white.png";
 import SpeedIcon from "../../images/icons/speed-icon-white.png";
 import TimeIcon from "../../images/icons/time-icon-white.png";
-import { formatFeePrice, formatPaymentPrice, formatTHPS } from "../../lib/units";
+import { formatFeePrice, formatPaymentPrice, formatHashrateTHPS } from "../../lib/units";
 import { AddressLength, type HashRentalContract, SortTypes } from "../../types/types";
-import { getReadableDate, truncateAddress } from "../../utils/utils";
-import { BuyForm } from "../Forms/BuyerForms/BuyForm";
+import { truncateAddress } from "../../utils/utils";
 import { PrimaryButton, SecondaryButton } from "../Forms/FormButtons/Buttons.styled";
 import { ModalItem } from "../Modal";
 import {
@@ -20,30 +19,9 @@ import {
   SkeletonWrap,
   TableHeader,
 } from "./AvailableContract.styled";
-
-const HeaderItem = styled.div`
-  display: flex;
-  gap: 5px;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-
-  p,
-  svg {
-    :hover {
-      cursor: pointer;
-    }
-  }
-`;
-
-const TradeButtonsGroup = styled.div`
-  display: flex;
-  justify-content: space-between;
-  flex: 1;
-  button {
-    width: 100%;
-  }
-`;
+import { getContractUrl } from "../../lib/indexer";
+import { formatDuration } from "../../lib/duration";
+import { BuyForm2 } from "../Forms/BuyForm2";
 
 export const AvailableContracts = (prop: {
   contracts: HashRentalContract[];
@@ -56,6 +34,7 @@ export const AvailableContracts = (prop: {
   const [buyContractId, setBuyContractId] = useState<string | null>(null);
   const [activeSort, setActiveSort] = useState<string>("");
   const [sortState, setSortState] = useState<number>(0);
+  // console.log("available contracts rendered", prop.contracts);
 
   useEffect(() => {
     if (activeSort === "speed") {
@@ -119,7 +98,7 @@ export const AvailableContracts = (prop: {
   function renderModal() {
     return (
       <ModalItem open={isOpen} setOpen={setOpen}>
-        <BuyForm contractId={buyContractId!} web3Gateway={prop.web3Gateway} setOpen={setOpen} />
+        <BuyForm2 key={buyContractId} contractId={buyContractId!} web3Gateway={prop.web3Gateway} setOpen={setOpen} />
       </ModalItem>
     );
   }
@@ -175,7 +154,7 @@ export const AvailableContracts = (prop: {
               {item.length && (
                 <div>
                   <img src={TimeIcon} alt="" />
-                  {formatDuration(item.length)}
+                  {formatDuration(BigInt(item.length))}
                 </div>
               )}
               <div>
@@ -186,7 +165,7 @@ export const AvailableContracts = (prop: {
             <div className="actions">
               <TradeButtonsGroup>
                 <SecondaryButton>
-                  <a href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.id}`} target="_blank" rel="noreferrer">
+                  <a href={getContractUrl(item.id as `0x${string}`)} target="_blank" rel="noreferrer">
                     View Contract
                   </a>
                 </SecondaryButton>
@@ -236,7 +215,7 @@ export const AvailableContracts = (prop: {
           <p>
             <a
               className="underline pb-0 font-Raleway cursor-pointer"
-              href={`${process.env.REACT_APP_ETHERSCAN_URL}${item.id}`}
+              href={getContractUrl(item.id as `0x${string}`)}
               target="_blank"
               rel="noreferrer"
             >
@@ -250,7 +229,7 @@ export const AvailableContracts = (prop: {
           {item.length && (
             <p>
               <img src={TimeIcon} alt="" />
-              {formatDuration(item.length)}
+              {formatDuration(BigInt(item.length))}
             </p>
           )}
           <p>
@@ -275,15 +254,13 @@ export const AvailableContracts = (prop: {
   );
 };
 
+// AvailableContracts.whyDidYouRender = true;
+
 function formatSpeed(speedHps: string) {
   if (speedHps === undefined || speedHps === null) {
     return "…";
   }
-  return formatTHPS(speedHps).full;
-}
-
-function formatDuration(length: string) {
-  return getReadableDate(String(Number(length) / 3600));
+  return formatHashrateTHPS(speedHps).full;
 }
 
 function formatAddress(address: string) {
@@ -292,3 +269,27 @@ function formatAddress(address: string) {
   }
   return truncateAddress(address, AddressLength.MEDIUM);
 }
+
+const HeaderItem = styled.div`
+  display: flex;
+  gap: 5px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  p,
+  svg {
+    :hover {
+      cursor: pointer;
+    }
+  }
+`;
+
+const TradeButtonsGroup = styled.div`
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  button {
+    width: 100%;
+  }
+`;
