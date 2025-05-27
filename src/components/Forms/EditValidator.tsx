@@ -6,7 +6,7 @@ import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { erc20Abi, parseUnits } from "viem";
 import { ContentState } from "../../types/types";
-import { FC, useRef } from "react";
+import { type FC, useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 import { InputWrapper } from "./Shared/Forms.styled";
 import { InputAdornment, TextField } from "@mui/material";

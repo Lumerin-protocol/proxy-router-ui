@@ -1,11 +1,9 @@
 import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import type { EthereumGateway } from "../../gateway/ethereum";
-import { CompletedContent } from "./SellerForms/CompletedContent";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { erc20Abi, formatUnits, parseUnits } from "viem";
-import { ContentState } from "../../types/types";
 import { useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 import { InputWrapper } from "./Shared/Forms.styled";

@@ -1,4 +1,4 @@
-import { EffectCallback, useEffect, useRef } from "react";
+import { type EffectCallback, useEffect, useRef } from "react";
 
 export function useOnMountUnsafe(effect: EffectCallback) {
   const initialized = useRef(false);
