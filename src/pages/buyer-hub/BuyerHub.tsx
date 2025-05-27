@@ -7,7 +7,7 @@ import { Spinner } from "../../components/Spinner.styled";
 import { TabSwitch } from "../../components/TabSwitch.Styled";
 import type { EthereumGateway } from "../../gateway/ethereum";
 import { useBuyerContracts } from "../../hooks/data/useContracts";
-import { ContractState, CurrentTab } from "../../types/types";
+import { ContractState, CurrentTab, SortTypes } from "../../types/types";
 import { getProgressPercentage, sortContracts } from "../../utils/utils";
 import { getPoolInfo } from "../../gateway/localStorage";
 import { useModal } from "../../hooks/useModal";
@@ -29,8 +29,8 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
   const [contractId, setContractId] = useState<string | null>(null);
 
   const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
-  const [runningSortType, setRunningSortType] = useState("");
-  const [completedSortType, setCompletedSortType] = useState("");
+  const [runningSortType, setRunningSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
+  const [completedSortType, setCompletedSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
   const currentBlockTimestamp = new Date().getTime() / 1000;
 
   const runningContracts = useMemo(() => {
@@ -54,12 +54,6 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
 
   const runningContractsCards: CardData[] = runningContracts.map((contract) => {
     const endTime = Number(contract.timestamp) + Number(contract.length);
-    const progressPercentage = getProgressPercentage(
-      contract.state,
-      contract.timestamp,
-      Number(contract.length),
-      Number(currentBlockTimestamp),
-    );
 
     const poolInfo = getPoolInfo({
       contractId: contract.id,
@@ -70,7 +64,6 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
       contractAddr: contract.id!,
       startTime: Number(contract.timestamp!),
       endTime: endTime,
-      progressPercentage: progressPercentage,
       speedHps: String(contract.speed!),
       price: contract.price!,
       fee: contract.fee!,
@@ -91,7 +84,6 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
       contractAddr: contract.id!,
       startTime: Number(contract.purchaseTime!),
       endTime: Number(contract.endTime!),
-      progressPercentage: 100,
       speedHps: String(contract.speed!),
       price: contract.price!,
       fee: "0",
@@ -132,32 +124,47 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
       <div className="flex flex-col items-center">
         {activeOrdersTab === CurrentTab.Running && (
           <>
-            <SortToolbar pageTitle="Running Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
-            <ContractCards>
-              {runningContractsCards.length === 0 && (
-                <p className="text-2xl text-white">You have no active contracts.</p>
-              )}
-              {runningContractsCards.map((item) => {
-                return <Card key={`${item.contractAddr}-${item.startTime}`} card={item} />;
-              })}
-            </ContractCards>
+            <SortToolbar pageTitle="Active Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
+            {runningContracts.length === 0 && <p className="text-2xl text-white">You have no active contracts.</p>}
+            {runningContracts.length > 0 && (
+              <ContractCards>
+                {runningContractsCards.map((item) => {
+                  return (
+                    <Card
+                      key={`${item.contractAddr}-${item.startTime}`}
+                      card={item}
+                      editClickHandler={() => {
+                        setContractId(item.contractAddr);
+                        editModal.open();
+                      }}
+                      cancelClickHandler={() => {
+                        setContractId(item.contractAddr);
+                        cancelModal.open();
+                      }}
+                    />
+                  );
+                })}
+              </ContractCards>
+            )}
           </>
         )}
         {activeOrdersTab === CurrentTab.Completed && (
           <>
             <SortToolbar
-              pageTitle="Finished Contracts"
+              pageTitle="Completed Contracts"
               sortType={completedSortType}
               setSortType={setCompletedSortType}
             />
-            <ContractCards>
-              {completedContractsCards.length === 0 && (
-                <p className="text-2xl text-white">You have no finished contracts.</p>
-              )}
-              {completedContractsCards.map((item) => {
-                return <Card key={`${item.contractAddr}-${item.startTime}`} card={item} />;
-              })}
-            </ContractCards>
+            {completedContractsCards.length === 0 && (
+              <p className="text-2xl text-white">You have no completed contracts.</p>
+            )}
+            {completedContractsCards.length > 0 && (
+              <ContractCards>
+                {completedContractsCards.map((item) => {
+                  return <Card key={`${item.contractAddr}-${item.startTime}`} card={item} />;
+                })}
+              </ContractCards>
+            )}
           </>
         )}
         {contractsQuery.isLoading && (

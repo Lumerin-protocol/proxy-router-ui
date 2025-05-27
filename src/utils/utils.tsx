@@ -12,6 +12,7 @@ import {
   type HashRentalContract,
   PathName,
   SortByType,
+  SortTypes,
   StatusText,
 } from "../types/types";
 
@@ -160,47 +161,38 @@ export const isNoCancel: (contract: HashRentalContract, userAccount: string) => 
   return userAccount !== contract.buyer || contract.state !== ContractState.Running;
 };
 
-export const sortByNumber: (rowA: string, rowB: string, sortByType: SortByType) => number = (
-  rowA,
-  rowB,
-  sortByType,
-) => {
-  let rowASortType;
-  let rowBSortType;
-  switch (sortByType) {
-    case SortByType.Int:
-      rowASortType = Number.parseInt(rowA);
-      rowBSortType = Number.parseInt(rowB);
-      break;
-    case SortByType.Float:
-      rowASortType = Number.parseFloat(rowA);
-      rowBSortType = Number.parseFloat(rowB);
-  }
-
-  if (rowASortType > rowBSortType) return -1;
-  if (rowBSortType > rowASortType) return 1;
-  return 0;
-};
-
-export const sortContracts = <T extends { id: string; price: string; length: string; speed: string }>(
-  sortType: string,
+export const sortContracts = <
+  T extends {
+    id: string;
+    price: string;
+    length: string;
+    speed: string;
+    timestamp?: string;
+    purchaseTime?: string;
+  },
+>(
+  sortType: SortTypes,
   contractData: T[],
 ): T[] => {
   switch (sortType) {
-    case "Price: Low to High":
+    case SortTypes.PurchaseTimeNewestToOldest:
+      return sortContractsList(contractData, (k) => Number(k.timestamp || k.purchaseTime), "desc");
+    case SortTypes.PurchaseTimeOldestToNewest:
+      return sortContractsList(contractData, (k) => Number(k.timestamp || k.purchaseTime), "asc");
+    case SortTypes.PriceLowToHigh:
       return sortContractsList(contractData, (k) => Number(k.price), "asc");
-    case "Price: High to Low":
+    case SortTypes.PriceHighToLow:
       return sortContractsList(contractData, (k) => Number(k.price), "desc");
-    case "Duration: Short to Long":
+    case SortTypes.DurationShortToLong:
       return sortContractsList(contractData, (k) => Number(k.length), "asc");
-    case "Duration: Long to Short":
+    case SortTypes.DurationLongToShort:
       return sortContractsList(contractData, (k) => Number(k.length), "desc");
-    case "Speed: Slow to Fast":
+    case SortTypes.SpeedSlowToFast:
       return sortContractsList(contractData, (k) => Number(k.speed), "asc");
-    case "Speed: Fast to Slow":
+    case SortTypes.SpeedFastToSlow:
       return sortContractsList(contractData, (k) => Number(k.speed), "desc");
     default:
-      return [...contractData];
+      return contractData;
   }
 };
 

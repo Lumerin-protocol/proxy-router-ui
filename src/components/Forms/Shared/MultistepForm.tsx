@@ -1,14 +1,14 @@
 import { type FC, type ReactNode, useState } from "react";
-import { FormButtonsWrapper, PrimaryButton, SecondaryButton } from "./FormButtons/Buttons.styled";
-import { truncateAddress } from "../../utils/utils";
+import { FormButtonsWrapper, PrimaryButton, SecondaryButton } from "../FormButtons/Buttons.styled";
+import { truncateAddress } from "../../../utils/utils";
 import Alert from "@mui/material/Alert";
 import { BaseError, ContractFunctionRevertedError, type PublicClient, UserRejectedRequestError } from "viem";
-import { type TransactionStep, type TxState, useMultistepTx } from "../../hooks/useTxForm";
+import { type TransactionStep, type TxState, useMultistepTx } from "../../../hooks/useTxForm";
 import { Button, styled } from "@mui/material";
-import { SpinnerV2 } from "../Spinner.styled";
+import { SpinnerV2 } from "../../Spinner.styled";
 import { CheckCircle, Error as ErrorIcon, SkipNext } from "@mui/icons-material";
 import { Link } from "react-router";
-import { getTxUrl } from "../../lib/indexer";
+import { getTxUrl } from "../../../lib/indexer";
 
 interface TransactionFormProps {
   title: string;
@@ -16,7 +16,7 @@ interface TransactionFormProps {
   inputForm?: FC<StepComponentProps>;
   validateInput?: () => Promise<boolean>;
   reviewForm: FC<StepComponentProps>;
-  resultForm: FC<StepComponentProps>;
+  resultForm?: FC<StepComponentProps>;
   transactionSteps: TransactionStep[];
   client: PublicClient;
   onCancel: () => void;
@@ -33,7 +33,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
       const success = await multistepTx.executeNextTransaction(i);
       if (!success) {
         console.error("transaction failed");
-        break;
+        return;
       }
       console.log("transaction success");
     }
@@ -95,22 +95,31 @@ export const TransactionForm = (props: TransactionFormProps) => {
                 txState={multistepTx.txState}
                 onRetry={handleExecuteTransaction}
               />
-              <MultistepFormActions primary={{ label: "Close", onClick: () => props.onCancel() }} />
-            </>
-          ),
-        },
-        {
-          label: props.title,
-          component: (p) => (
-            <>
-              {props.resultForm(p)}
               <MultistepFormActions
-                primary={{ label: "Next", onClick: () => p.goToStep(2) }}
-                secondary={{ label: "Prev", onClick: () => p.goToStep(-1) }}
+                primary={{
+                  label: props.resultForm ? "Next" : "Close",
+                  onClick: props.resultForm ? () => p.nextStep() : () => props.onCancel(),
+                }}
               />
             </>
           ),
         },
+        ...(props.resultForm
+          ? [
+              {
+                label: props.title,
+                component: (p) => (
+                  <>
+                    {props.resultForm!(p)}
+                    <MultistepFormActions
+                      primary={{ label: "Close", onClick: () => props.onCancel() }}
+                      secondary={{ label: "Back", onClick: () => p.prevStep() }}
+                    />
+                  </>
+                ),
+              },
+            ]
+          : []),
       ]}
     />
   );
@@ -299,20 +308,26 @@ export const MultistepFormActions = (props: {
   primary?: {
     label: string;
     onClick: () => void;
+    disabled?: boolean;
   };
   secondary?: {
     label: string;
     onClick: () => void;
+    disabled?: boolean;
   };
 }) => {
   return (
     <FormButtonsWrapper>
       {props.primary && (
-        <PrimaryButton type="submit" onClick={props.primary.onClick}>
+        <PrimaryButton type="submit" onClick={props.primary.onClick} disabled={props.primary.disabled}>
           {props.primary.label}
         </PrimaryButton>
       )}
-      {props.secondary && <SecondaryButton onClick={props.secondary.onClick}>{props.secondary.label}</SecondaryButton>}
+      {props.secondary && (
+        <SecondaryButton onClick={props.secondary.onClick} disabled={props.secondary.disabled}>
+          {props.secondary.label}
+        </SecondaryButton>
+      )}
     </FormButtonsWrapper>
   );
 };

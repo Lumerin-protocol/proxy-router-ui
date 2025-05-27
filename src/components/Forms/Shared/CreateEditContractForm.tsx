@@ -1,15 +1,14 @@
 import { useController, type UseFormReturn } from "react-hook-form";
-import { InputWrapper } from "../Forms.styled";
+import { InputWrapper } from "./Forms.styled";
 import type { InputValuesCreateForm } from "../CreateForm";
 import { InputAdornment, TextField } from "@mui/material";
 import type { FC } from "react";
 
-interface ReviewContentProps {
+interface Props {
   form: UseFormReturn<InputValuesCreateForm>;
-  isCreate?: boolean;
 }
 
-export const ReviewContent: FC<ReviewContentProps> = ({ form, isCreate }) => {
+export const CreateEditContractForm: FC<Props> = ({ form }) => {
   const walletAddressController = useController({
     name: "walletAddress",
     control: form.control,

@@ -40,9 +40,13 @@ export function useMultistepTx(props: { steps: TransactionStep[]; client: Public
           const receipt = await client!.waitForTransactionReceipt({
             hash: txhash as `0x${string}`,
           });
+          console.log("receipt", receipt);
           setTxState((prev) => ({
             ...prev,
-            [txNumber]: { state: "confirmed", txhash: txhash as `0x${string}` },
+            [txNumber]: {
+              state: receipt.status === "success" ? "confirmed" : "failed",
+              txhash: txhash as `0x${string}`,
+            },
           }));
           if (props.steps[txNumber].postConfirmation) {
             await props.steps[txNumber].postConfirmation(receipt);

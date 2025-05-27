@@ -1,5 +1,5 @@
-import { AddressLength, ContractState } from "../../types/types";
-import { getProgressPercentage, truncateAddress } from "../../utils/utils";
+import { AddressLength } from "../../types/types";
+import { truncateAddress } from "../../utils/utils";
 import "react-circular-progressbar/dist/styles.css";
 import CancelIcon from "@mui/icons-material/CancelOutlined";
 import DoneIcon from "@mui/icons-material/Done";
@@ -10,21 +10,14 @@ import Speed from "../../images/icons/speed-icon-white.png";
 import Time from "../../images/icons/time-icon-white.png";
 import IDCard from "../../images/id-card-white.png";
 import Pickaxe from "../../images/pickaxe-white.png";
-import { ContractCards } from "./PurchasedContracts.styled";
 import styled from "@emotion/styled";
-import { FC, useState } from "react";
-import type { EthereumGateway } from "../../gateway/ethereum";
-import { useModal } from "../../hooks/useModal";
+import type { FC } from "react";
 import { formatFeePrice, formatPaymentPrice, formatHashrateTHPS } from "../../lib/units";
 import { ButtonGroup } from "../ButtonGroup";
-import { ModalItem } from "../Modal";
 import { getContractUrl } from "../../lib/indexer";
-import { formatDate, formatDateTime } from "../../lib/date";
+import { formatDateTime } from "../../lib/date";
 import { formatDuration } from "../../lib/duration";
-import { CancelButton, EditButton } from "../Forms/FormButtons/ActionButton";
-import { BuyerEditForm } from "../Forms/BuyerEditForm";
-import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
-import { CancelForm } from "../Forms/CancelForm";
+import { CancelButton, EditButton } from "../ActionButton";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -51,7 +44,6 @@ const getIcon = (icon: "inprogress" | "completed" | "closed-early") => {
 export type CardData = {
   startTime: number;
   endTime: number;
-  progressPercentage: number;
   contractAddr: string;
   speedHps: string;
   price: string;
@@ -64,7 +56,6 @@ export type CardData = {
 
 interface CardProps {
   card: CardData;
-  key?: string;
   editClickHandler?: (contractId: string) => void;
   cancelClickHandler?: (contractId: string) => void;
 }

@@ -1,5 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
-import { FormControl, ToggleButtonGroup } from "@mui/material";
+import { FormControl, styled, ToggleButtonGroup } from "@mui/material";
 import { type FC, type HTMLProps, useEffect, useMemo, useRef, useState } from "react";
 import {
   useReactTable,
@@ -22,16 +22,10 @@ import { formatFeePrice, formatPaymentPrice } from "../../lib/units";
 import { CreateContract } from "../../components/Forms/CreateForm";
 import { EditForm } from "../../components/Forms/EditForm";
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
-import { ProgressBar } from "../../components/ProgressBar";
 import { ModalItem } from "../../components/Modal";
 import { ArchiveUnarchiveForm } from "../../components/Forms/ArchiveUnarchive";
 import { formatDuration } from "../../lib/duration";
-import {
-  ArchiveButton,
-  ClaimLmrButton,
-  EditButton,
-  UnarchiveButton,
-} from "../../components/Forms/FormButtons/ActionButton";
+import { ArchiveButton, ClaimLmrButton, EditButton, UnarchiveButton } from "../../components/ActionButton";
 import { faArchive, faSackDollar, faFileSignature } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Pickaxe } from "../../components/Icons/Pickaxe";
@@ -39,6 +33,7 @@ import { SellerActions, SellerFilters, SellerToolbar, ToggleButtonIcon } from ".
 import { ClaimForm } from "../../components/Forms/ClaimForm";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { SellerWidget } from "../../components/Widgets/SellerWidget";
+import { CircularProgress } from "../../components/CircularProgress";
 
 interface Props {
   web3Gateway: EthereumGateway;
@@ -144,7 +139,7 @@ export const SellerHub: FC<Props> = ({ web3Gateway }) => {
             return -1;
           }
           const timeElapsed = blockTime30s - BigInt(r.timestamp);
-          const percentage = (Number(timeElapsed) / Number(length)) * 100;
+          const percentage = Number(timeElapsed) / Number(r.length);
           return percentage;
         },
         {
@@ -155,16 +150,17 @@ export const SellerHub: FC<Props> = ({ web3Gateway }) => {
           cell: (r) => {
             const value = r.getValue();
             if (value === -2) {
-              return <div>Archived</div>;
+              return <ProgressCell>Archived</ProgressCell>;
             }
             if (value === -1) {
-              return <div>Available</div>;
+              return <ProgressCell>Available</ProgressCell>;
             }
+
             return (
-              <ProgressBarWithTime
-                startTime={BigInt(r.row.original.timestamp)}
-                duration={BigInt(r.row.original.length)}
-              />
+              <ProgressCell>
+                <ProgressBar progress={value} color="default" />
+                {(value * 100).toFixed(0)}%
+              </ProgressCell>
             );
           },
         },
@@ -402,3 +398,16 @@ function IndeterminateCheckbox({
 
   return <input type="checkbox" ref={ref} className={`${className} cursor-pointer`} {...rest} />;
 }
+
+const ProgressBar = styled(CircularProgress)`
+  width: 2em;
+  height: 2em;
+`;
+
+const ProgressCell = styled("div")`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+`;

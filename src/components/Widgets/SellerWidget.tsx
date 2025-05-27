@@ -9,9 +9,11 @@ import { ModalItem } from "../Modal";
 import { useModal } from "../../hooks/useModal";
 import { abi } from "contracts-js";
 import { truncateAddress } from "../../utils/utils";
-import { AddressLength } from "../../types/types";
+import { AddressLength, ContractState } from "../../types/types";
 import { RegisterSellerForm } from "../Forms/RegisterSeller";
 import { DeregisterSeller } from "../Forms/DeregisterSeller";
+import { useSellerContracts } from "../../hooks/data/useContracts";
+import { GenericNumberStatsWidget } from "./GenericNumberStatsWidget";
 const { cloneFactoryAbi } = abi;
 
 export const SellerWidget: FC = () => {
@@ -31,71 +33,110 @@ export const SellerWidget: FC = () => {
     },
   });
 
+  const contractsQuery = useSellerContracts({ address: address! });
+
+  const count = contractsQuery.data?.reduce<{
+    available: number;
+    running: number;
+    archived: number;
+  }>(
+    (acc, contract) => {
+      if (contract.state === ContractState.Running) {
+        acc.running++;
+      } else if (contract.isDeleted) {
+        acc.archived++;
+      } else if (contract.state === ContractState.Available) {
+        acc.available++;
+      }
+      return acc;
+    },
+    {
+      available: 0,
+      running: 0,
+      archived: 0,
+    },
+  );
+  const availableContracts = contractsQuery.data?.filter(
+    (contract) => contract.state === ContractState.Available && contract.isDeleted === false,
+  );
+  const runningContracts = contractsQuery.data?.filter((contract) => contract.state === ContractState.Running);
+  const archivedContracts = contractsQuery.data?.filter((contract) => contract.isDeleted);
+
   const [seller, isActive, isRegistered] = sellerQuery.isSuccess ? sellerQuery.data : [undefined, false, false];
 
   return (
-    <SmallWidget>
-      {registerSellerModal.isOpen && (
-        <ModalItem open={registerSellerModal.isOpen} setOpen={registerSellerModal.setOpen}>
-          <RegisterSellerForm
-            onClose={async () => {
-              await sellerQuery.refetch();
-              registerSellerModal.close();
-            }}
-          />
-        </ModalItem>
-      )}
-      {editSellerModal.isOpen && (
-        <ModalItem open={editSellerModal.isOpen} setOpen={editSellerModal.setOpen}>
-          {/* <EditValidatorForm
+    <>
+      <SmallWidget>
+        {registerSellerModal.isOpen && (
+          <ModalItem open={registerSellerModal.isOpen} setOpen={registerSellerModal.setOpen}>
+            <RegisterSellerForm
+              onClose={async () => {
+                await sellerQuery.refetch();
+                registerSellerModal.close();
+              }}
+            />
+          </ModalItem>
+        )}
+        {editSellerModal.isOpen && (
+          <ModalItem open={editSellerModal.isOpen} setOpen={editSellerModal.setOpen}>
+            {/* <EditValidatorForm
             web3Gateway={props.web3Gateway}
             setOpen={registerValidatorModal.setOpen}
             validatorHost={validator.data!.host}
             validatorStake={validator.data!.stake}
           /> */}
-        </ModalItem>
-      )}
-      {deregisterSellerModal.isOpen && (
-        <ModalItem open={deregisterSellerModal.isOpen} setOpen={deregisterSellerModal.setOpen}>
-          <DeregisterSeller
-            closeForm={async () => {
-              await sellerQuery.refetch();
-              deregisterSellerModal.close();
-            }}
-          />
-        </ModalItem>
-      )}
-      <h3>
-        {sellerQuery.isLoading && "Loading..."}
-        {sellerQuery.isSuccess && !isRegistered && "You are not registered as a Seller"}
-        {sellerQuery.isSuccess &&
-          isRegistered &&
-          !isActive &&
-          "You are registered as a Seller but you're not active. Please increase your stake."}
-        {sellerQuery.isSuccess && isActive && "You are registered as a Seller and you're active."}
-      </h3>
-      <WidgetContent>
-        {sellerQuery.isLoading && <Spinner fontSize="0.3em" />}
-        {sellerQuery.isSuccess && !isRegistered && (
-          <PrimaryButton onClick={registerSellerModal.open}>Become a seller</PrimaryButton>
+          </ModalItem>
         )}
-        {sellerQuery.isSuccess && isRegistered && !isActive && (
-          <PrimaryButton onClick={editSellerModal.open}>Increase your stake</PrimaryButton>
+        {deregisterSellerModal.isOpen && (
+          <ModalItem open={deregisterSellerModal.isOpen} setOpen={deregisterSellerModal.setOpen}>
+            <DeregisterSeller
+              closeForm={async () => {
+                await sellerQuery.refetch();
+                deregisterSellerModal.close();
+              }}
+            />
+          </ModalItem>
         )}
-        {sellerQuery.isSuccess && isActive && (
-          <SellerInfo>
-            <Key>Address</Key>
-            <Value>{truncateAddress(address!, AddressLength.MEDIUM)}</Value>
-            <Key>Stake</Key>
-            <Value>{formatFeePrice(seller!.stake).full}</Value>
-          </SellerInfo>
-        )}
-      </WidgetContent>
-      <div className="link">
-        <PrimaryButton onClick={editSellerModal.open}>Edit your seller</PrimaryButton>
-        <PrimaryButton onClick={deregisterSellerModal.open}>Remove yourself as a seller</PrimaryButton>
-      </div>
-    </SmallWidget>
+        <h3>
+          {sellerQuery.isLoading && "Loading..."}
+          {sellerQuery.isSuccess && !isRegistered && "You are not registered as a Seller"}
+          {sellerQuery.isSuccess &&
+            isRegistered &&
+            !isActive &&
+            "You are registered as a Seller but you're not active. Please increase your stake."}
+          {sellerQuery.isSuccess && isActive && "You are registered as a Seller and you're active."}
+        </h3>
+        <WidgetContent>
+          {sellerQuery.isLoading && <Spinner fontSize="0.3em" />}
+          {sellerQuery.isSuccess && !isRegistered && (
+            <PrimaryButton onClick={registerSellerModal.open}>Become a seller</PrimaryButton>
+          )}
+          {sellerQuery.isSuccess && isRegistered && !isActive && (
+            <PrimaryButton onClick={editSellerModal.open}>Increase your stake</PrimaryButton>
+          )}
+          {sellerQuery.isSuccess && isActive && (
+            <SellerInfo>
+              <Key>Address</Key>
+              <Value>{truncateAddress(address!, AddressLength.MEDIUM)}</Value>
+              <Key>Stake</Key>
+              <Value>{formatFeePrice(seller!.stake).full}</Value>
+            </SellerInfo>
+          )}
+        </WidgetContent>
+        <div className="link">
+          <PrimaryButton onClick={editSellerModal.open}>Edit your seller</PrimaryButton>
+          <PrimaryButton onClick={deregisterSellerModal.open}>Remove yourself as a seller</PrimaryButton>
+        </div>
+      </SmallWidget>
+      <GenericNumberStatsWidget
+        data={[
+          { title: "Available", value: count?.available.toString() ?? "0" },
+          { title: "Running", value: count?.running.toString() ?? "0" },
+          { title: "Archived", value: count?.archived.toString() ?? "0" },
+        ]}
+        title="Seller Contracts"
+      />
+    </>
   );
 };
 

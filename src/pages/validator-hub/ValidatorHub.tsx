@@ -25,7 +25,7 @@ import { formatFeePrice, formatPaymentPrice, formatHashrateTHPS } from "../../li
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { ModalItem } from "../../components/Modal";
 
-import { ClaimLmrButton } from "../../components/Forms/FormButtons/ActionButton";
+import { ClaimLmrButton } from "../../components/ActionButton";
 import { faSackDollar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Pickaxe } from "../../components/Icons/Pickaxe";

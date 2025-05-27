@@ -1,21 +1,20 @@
 import { MenuItem, TextField, Tooltip } from "@mui/material";
 import React, { useEffect } from "react";
 import {
-  Control,
+  type Control,
   useController,
-  UseFormResetField,
-  UseFormSetValue,
+  type UseFormResetField,
+  type UseFormSetValue,
   useFormState,
   useWatch,
-  type UseFormReturn,
 } from "react-hook-form";
 import { useValidators } from "../../../hooks/data/useValidators";
 import type { InputValuesBuyForm } from "../../../types/types";
 import { isValidLightningUsername, isValidHost, isValidUsername, validateLightningUrl } from "../../../utils/utils";
-import { InputWrapper } from "../Forms.styled";
+import { InputWrapper } from "./Forms.styled";
 import { DisabledButton } from "../FormButtons/Buttons.styled";
 import styled from "@emotion/styled";
-import { predefinedPools, type PoolData } from "./predefinedPools";
+import { predefinedPools, type PoolData } from "../BuyerForms/predefinedPools";
 
 interface Props {
   control: Control<InputValuesBuyForm>;
@@ -23,7 +22,7 @@ interface Props {
   setValue: UseFormSetValue<InputValuesBuyForm>;
 }
 
-export const ReviewContent: React.FC<Props> = ({ control, resetField, setValue }) => {
+export const CreateEditPurchaseForm: React.FC<Props> = ({ control, resetField, setValue }) => {
   const { data: validators, isLoading: isLoadingValidators } = useValidators({
     offset: 0,
     limit: 100,

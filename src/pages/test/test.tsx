@@ -3,7 +3,7 @@ import { HeroHeadline, HeroWrapper } from "../landing/Landing.styled";
 import { useController, useForm } from "react-hook-form";
 import type { InputValuesBuyForm } from "../../types/types";
 import { isValidLightningUsername, isValidHost, isValidUsername } from "../../utils/utils";
-import { InputWrapper } from "../../components/Forms/Forms.styled";
+import { InputWrapper } from "../../components/Forms/Shared/Forms.styled";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { useModal } from "../../hooks/useModal";

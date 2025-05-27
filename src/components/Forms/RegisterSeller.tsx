@@ -1,17 +1,19 @@
 import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useReadContract, useWalletClient } from "wagmi";
 import { CompletedContent } from "./SellerForms/CompletedContent";
-import { GenericConfirmContent } from "./SellerForms/ConfirmContent";
-import { TransactionForm } from "./MultistepForm";
+import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
+import { TransactionForm } from "./Shared/MultistepForm";
 import { erc20Abi, parseUnits } from "viem";
 import { ContentState } from "../../types/types";
-import { InputWrapper } from "./Forms.styled";
+import { InputWrapper } from "./Shared/Forms.styled";
 import { InputAdornment, TextField } from "@mui/material";
 import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 import { abi } from "contracts-js";
 import { readContract } from "@wagmi/core";
 import { config } from "../../clients/wagmi";
 import { formatFeePrice, sellerStakeToken } from "../../lib/units";
+import { truncateAddress } from "../../utils/utils";
+import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 
 const { cloneFactoryAbi } = abi;
 
@@ -101,11 +103,17 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
       reviewForm={(props) => (
         <GenericConfirmContent
           data={{
-            Stake: form.getValues().stake,
+            "Wallet Address": truncateAddress(address!),
+            Stake: `${form.getValues().stake} ${sellerStakeToken.symbol}`,
           }}
         />
       )}
-      resultForm={(props) => <CompletedContent contentState={ContentState.Complete} />}
+      resultForm={(props) => (
+        <GenericCompletedContent
+          title="Thank you for registering as a Seller"
+          description="Your now can start creating hashpower contracts on the Lumerin Marketplace."
+        />
+      )}
       transactionSteps={[
         {
           label: "Approve the stake",
@@ -119,7 +127,6 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
               functionName: "allowance",
               args: [address!, process.env.REACT_APP_CLONE_FACTORY],
             });
-            console.log(currentAllowance, stake);
             if (currentAllowance >= stake) {
               return;
             }

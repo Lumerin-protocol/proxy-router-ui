@@ -1,33 +1,29 @@
 import styled from "@emotion/styled";
 import { Box, FormControl, InputLabel, MenuItem, Select, Toolbar, useMediaQuery } from "@mui/material";
-import type React from "react";
-import type { SetStateAction } from "react";
 import { SortTypes } from "../types/types";
 
 const StyledToolbar = styled(Toolbar)`
-	justify-content: space-between;
-	align-items: flex-start;
-	margin-bottom: 1rem;
-	width: 100%;
-	padding: 0 !important;
-	select {
-		background-color: none;
-		border: none;
-	}
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  width: 100%;
+  padding: 0 !important;
+  select {
+    background-color: none;
+    border: none;
+  }
 `;
 
 export const SortToolbar = (props: {
   pageTitle: string;
   sortType: string;
-  setSortType: React.Dispatch<SetStateAction<string>>;
+  setSortType: (sortType: SortTypes) => void;
 }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <StyledToolbar>
-      <h2 className="text-lg text-white font-Raleway font-regular text-left mb-5">
-        {!isMobile ? props.pageTitle : ""}
-      </h2>
+      <h2 className="text-xl text-white font-Raleway font-regular text-left">{!isMobile ? props.pageTitle : ""}</h2>
 
       <Box sx={{ minWidth: 120 }}>
         <FormControl fullWidth>
@@ -37,10 +33,10 @@ export const SortToolbar = (props: {
             id="sort"
             value={props.sortType}
             label="Sort By"
-            onChange={(e) => props.setSortType(e.target.value)}
+            onChange={(e) => props.setSortType(e.target.value as SortTypes)}
           >
-            {Object.values(SortTypes).map((value, key) => (
-              <MenuItem value={value} key={key}>
+            {Object.values(SortTypes).map((value) => (
+              <MenuItem value={value} key={value}>
                 {value}
               </MenuItem>
             ))}

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { colors } from "../../styles/styles.config";
 import { useQueryClient } from "@tanstack/react-query";
-import { TransactionForm } from "./MultistepForm";
+import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import type { FC } from "react";
 

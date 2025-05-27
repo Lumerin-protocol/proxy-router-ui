@@ -120,7 +120,7 @@ const TokenBalanceWrapper = styled.div`
 
 const BalanceText = styled.span`
   font-size: 1.1rem;
-  margin-left: 0.65rem;
+  margin-left: 0.3rem;
   color: #fff;
 
   @media (max-width: 768px) {
@@ -155,7 +155,7 @@ const Balances = styled.div`
   width: 100%;
   flex-direction: column;
   padding: 0.4rem 0;
-  gap: 0.5rem 0;
+  gap: 0.6rem;
 
   @media (min-width: 1024px) {
     flex-direction: row;
