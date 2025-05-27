@@ -1,4 +1,4 @@
-import { EthereumGateway } from "../gateway/ethereum";
+import type { EthereumGateway } from "../gateway/ethereum";
 import lumerin from "../images/lumerin_metamask.png";
 import { type ConnectInfo, WalletText } from "../types/types";
 import { printError } from "../utils/utils";

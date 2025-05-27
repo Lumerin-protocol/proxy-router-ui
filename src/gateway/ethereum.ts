@@ -154,7 +154,7 @@ export class EthereumGateway {
   }
 
   async getPublicKey(from: `0x${string}`): Promise<`0x${string}`> {
-    const message = "";
+    const message = "Sign this message so we can obtain your Public Key";
     const signature = await this.wc.signMessage({ message, account: from });
     const publicKey = await recoverPublicKey({ hash: hashMessage(message), signature });
     return publicKey;
