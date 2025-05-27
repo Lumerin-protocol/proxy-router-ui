@@ -2,18 +2,19 @@ import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import type { EthereumGateway } from "../../gateway/ethereum";
 import { CompletedContent } from "./SellerForms/CompletedContent";
-import { GenericConfirmContent } from "./SellerForms/ConfirmContent";
-import { TransactionForm } from "./MultistepForm";
+import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
+import { TransactionForm } from "./Shared/MultistepForm";
 import { erc20Abi, parseUnits } from "viem";
 import { ContentState } from "../../types/types";
 import { FC, useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
-import { InputWrapper } from "./Forms.styled";
+import { InputWrapper } from "./Shared/Forms.styled";
 import { InputAdornment, TextField } from "@mui/material";
 import { formatFeePrice, parseValidatorStake, validatorStakeToken } from "../../lib/units";
 import { compressPublicKey } from "../../lib/pubkey";
 import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 import { isValidHost } from "../../utils/utils";
+import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 
 export interface EditValidatorInput {
   stake: string;
@@ -115,12 +116,12 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
       reviewForm={(props) => (
         <GenericConfirmContent
           data={{
-            Stake: form.getValues().stake,
+            Stake: `${form.getValues().stake} ${validatorStakeToken.symbol}`,
             Host: form.getValues().host,
           }}
         />
       )}
-      resultForm={(props) => <CompletedContent contentState={ContentState.Complete} />}
+      resultForm={(props) => <GenericCompletedContent title="Your validator record has been updated" />}
       transactionSteps={[
         {
           label: "Sign the message so we can retrieve your Public Key",

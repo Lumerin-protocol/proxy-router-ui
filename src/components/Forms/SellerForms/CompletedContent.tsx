@@ -8,7 +8,7 @@ import { truncateAddress } from "../../../utils/utils";
 
 const createText = {
   thankYou: "Thank you for creating a Hashpower Contract on Lumerin!",
-  view: "The hashpower contract you created will be available shortly.",
+  view: "The hashpower contract is already available.",
 };
 
 const editText = {

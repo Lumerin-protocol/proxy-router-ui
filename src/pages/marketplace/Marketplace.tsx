@@ -12,7 +12,7 @@ import { WalletBalanceWidget } from "../../components/Widgets/WalletBalanceWidge
 import type { EthereumGateway } from "../../gateway/ethereum";
 import { useBuyerContracts } from "../../hooks/data/useContracts";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { ContractState } from "../../types/types";
+import { ContractState, SortTypes } from "../../types/types";
 import { sortContracts } from "../../utils/utils";
 import { MobileWidgetsWrapper, WidgetsWrapper } from "./styled";
 
@@ -23,7 +23,7 @@ interface Props {
 export const Marketplace: React.FC<Props> = ({ web3Gateway }) => {
   const { address: userAccount } = useAccount();
   const contractsQuery = useBuyerContracts({ address: userAccount });
-  const [sortType, setSortType] = useState("");
+  const [sortType, setSortType] = useState<SortTypes>(SortTypes.None);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 

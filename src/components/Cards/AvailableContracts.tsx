@@ -21,13 +21,13 @@ import {
 } from "./AvailableContract.styled";
 import { getContractUrl } from "../../lib/indexer";
 import { formatDuration } from "../../lib/duration";
-import { BuyForm2 } from "../Forms/BuyForm2";
+import { BuyForm2 } from "../Forms/BuyForm";
 
 export const AvailableContracts = (prop: {
   contracts: HashRentalContract[];
   loading: boolean;
-  setSortType: (sortType: string) => void;
-  sortType?: string;
+  setSortType: (sortType: SortTypes) => void;
+  sortType?: SortTypes;
   web3Gateway: EthereumGateway;
 }) => {
   const { isOpen, setOpen } = useModal();
@@ -39,7 +39,7 @@ export const AvailableContracts = (prop: {
   useEffect(() => {
     if (activeSort === "speed") {
       if (sortState === 0) {
-        prop.setSortType("");
+        prop.setSortType(SortTypes.None);
       } else if (sortState === 1) {
         prop.setSortType(SortTypes.SpeedFastToSlow);
       } else if (sortState === 2) {
@@ -48,7 +48,7 @@ export const AvailableContracts = (prop: {
     }
     if (activeSort === "length") {
       if (sortState === 0) {
-        prop.setSortType("");
+        prop.setSortType(SortTypes.None);
       } else if (sortState === 1) {
         prop.setSortType(SortTypes.DurationLongToShort);
       } else if (sortState === 2) {
@@ -57,7 +57,7 @@ export const AvailableContracts = (prop: {
     }
     if (activeSort === "price") {
       if (sortState === 0) {
-        prop.setSortType("");
+        prop.setSortType(SortTypes.None);
       } else if (sortState === 1) {
         prop.setSortType(SortTypes.PriceHighToLow);
       } else if (sortState === 2) {
@@ -207,7 +207,7 @@ export const AvailableContracts = (prop: {
           {getSortFieldIcon("price")}
         </HeaderItem>
         <HeaderItem>
-          <p>Fee</p>
+          <p>Actions</p>
         </HeaderItem>
       </TableHeader>
       {prop.contracts.map((item) => (
@@ -234,12 +234,12 @@ export const AvailableContracts = (prop: {
           )}
           <p>
             <img src={PriceIcon} alt="" />
-            {formatPaymentPrice(item.price).full}
+            <div className="flex-column gap-1">
+              <div>{formatPaymentPrice(item.price).full}</div>
+              <div className="text-sm text-gray-300">{formatFeePrice(item.fee).full}</div>
+            </div>
           </p>
-          <p>
-            <img src={PriceIcon} alt="" />
-            {formatFeePrice(item.fee).full}
-          </p>
+
           <PrimaryButton
             onClick={() => {
               setBuyContractId(item.id);

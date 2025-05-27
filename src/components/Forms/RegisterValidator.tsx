@@ -2,22 +2,19 @@ import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import type { EthereumGateway } from "../../gateway/ethereum";
 import { CompletedContent } from "./SellerForms/CompletedContent";
-import { ConfirmContent, GenericConfirmContent } from "./SellerForms/ConfirmContent";
-import { ReviewContent } from "./SellerForms/ReviewContent";
-import { waitForBlockNumber } from "../../hooks/data/useContracts";
-import { useQueryClient } from "@tanstack/react-query";
-import { TransactionForm } from "./MultistepForm";
-import { erc20Abi, formatUnits, parseUnits, type TransactionReceipt } from "viem";
+import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
+import { TransactionForm } from "./Shared/MultistepForm";
+import { erc20Abi, formatUnits, parseUnits } from "viem";
 import { ContentState } from "../../types/types";
-import { FC, useRef } from "react";
+import { useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
-import { InputWrapper } from "./Forms.styled";
+import { InputWrapper } from "./Shared/Forms.styled";
 import { InputAdornment, TextField } from "@mui/material";
-import { feeToken, formatFeePrice, validatorStakeToken } from "../../lib/units";
+import { formatFeePrice, validatorStakeToken } from "../../lib/units";
 import { compressPublicKey } from "../../lib/pubkey";
-import { errorToPOJO, getErr, isErr } from "../../lib/error";
 import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 import { isValidHost } from "../../utils/utils";
+import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 
 export interface RegisterValidatorInput {
   stake: string;
@@ -130,12 +127,17 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
       reviewForm={(props) => (
         <GenericConfirmContent
           data={{
-            Stake: form.getValues().stake,
+            Stake: `${form.getValues().stake} ${validatorStakeToken.symbol}`,
             Host: form.getValues().host,
           }}
         />
       )}
-      resultForm={(props) => <CompletedContent contentState={ContentState.Complete} />}
+      resultForm={(props) => (
+        <GenericCompletedContent
+          title="Thank you for registering as a validator"
+          description="Your validator is now available for other sellers on the Lumerin Marketplace."
+        />
+      )}
       transactionSteps={[
         {
           label: "Sign the message so we can retrieve your Public Key",

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { useForm } from "react-hook-form";
-import { encryptMessage, formatStratumUrl } from "../../utils/utils";
+import { encryptMessage, formatStratumUrl, truncateAddress } from "../../utils/utils";
 import { useAccount, usePublicClient } from "wagmi";
 import { purchasedHashrate } from "../../analytics";
 import type { EthereumGateway } from "../../gateway/ethereum";
@@ -8,14 +8,15 @@ import { decompressPublicKey } from "../../gateway/utils";
 import { CONTRACTS_QK, useContract, waitForBlockNumber } from "../../hooks/data/useContracts";
 import { useValidators } from "../../hooks/data/useValidators";
 import { ContentState, type HashRentalContract, type InputValuesBuyForm } from "../../types/types";
-import { TransactionForm } from "./MultistepForm";
-import { ReviewContent } from "./BuyerForms/ReviewContent";
-import { ConfirmContent } from "./BuyerForms/ConfirmContent";
+import { TransactionForm } from "./Shared/MultistepForm";
+import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import { CompletedContent } from "./SellerForms/CompletedContent";
 import type { TransactionReceipt } from "viem/_types/types/transaction";
 import type { GetResponse } from "../../gateway/interfaces";
 import { setPoolInfo } from "../../gateway/localStorage";
 import { useQueryClient } from "@tanstack/react-query";
+import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
+import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 
 interface BuyFormProps {
   contractId: string;
@@ -53,13 +54,47 @@ export const BuyForm2 = memo(({ contractId, web3Gateway, setOpen }: BuyFormProps
       description="Enter the Pool Address, Port Number, and Username you are pointing the purchased
             hashpower to."
       inputForm={(props) => (
-        <ReviewContent control={form.control} resetField={form.resetField} setValue={form.setValue} />
+        <CreateEditPurchaseForm control={form.control} resetField={form.resetField} setValue={form.setValue} />
       )}
       validateInput={async () => {
         return await form.trigger();
       }}
-      reviewForm={(props) => <ConfirmContent data={form.getValues()} validator={validator} />}
-      resultForm={(props) => <CompletedContent contentState={ContentState.Complete} />}
+      reviewForm={(props) => {
+        const { validatorAddress, poolAddress, username, lightningAddress } = form.getValues();
+        return (
+          <GenericConfirmContent
+            data={{
+              "Validator Address": truncateAddress(validatorAddress),
+              "Pool Address": poolAddress,
+              ...(username && { Username: username }),
+              ...(lightningAddress && {
+                "Lightning Address": lightningAddress,
+              }),
+            }}
+          />
+        );
+      }}
+      resultForm={(props) => (
+        <GenericCompletedContent
+          title="Thank you for purchasing Hashpower from Lumerin!"
+          description={
+            <div className="flex flex-col">
+              Your will be receiving your hashpower shortly.
+              {form.getValues().lightningAddress !== "" && (
+                <a
+                  href={process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || "https://lightning.titan.io"}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ cursor: "pointer" }}
+                  className="font-light underline mb-4"
+                >
+                  Dashboard for Lightning users
+                </a>
+              )}
+            </div>
+          }
+        />
+      )}
       transactionSteps={[
         {
           label: "Approve Payment",
