@@ -94,7 +94,6 @@ export const TestChild: FC<{
         if (isValidHost(poolAddress)) {
           return true;
         }
-        console.log("Invalid pool address.");
         return "Invalid pool address.";
       },
     },

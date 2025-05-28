@@ -12,6 +12,9 @@ export const useValidators = ({ offset, limit }: Props) => {
     abi: abi.validatorRegistryAbi,
     functionName: "getActiveValidators",
     args: [BigInt(offset), limit],
+    query: {
+      refetchInterval: false,
+    },
   });
 
   const validatorsQuery = useReadContracts({
@@ -27,6 +30,7 @@ export const useValidators = ({ offset, limit }: Props) => {
     ),
     query: {
       enabled: activeValidatorsQuery.isSuccess,
+      refetchInterval: false,
     },
   });
 

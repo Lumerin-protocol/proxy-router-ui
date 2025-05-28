@@ -72,7 +72,7 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
           label: "Archive all contracts",
           action: async () => {
             if (contracts.data?.length === 0) {
-              return undefined;
+              return { isSkipped: true };
             }
             const req = await publicClient!.simulateContract({
               address: process.env.REACT_APP_CLONE_FACTORY,
@@ -80,7 +80,11 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
               functionName: "setContractsDeleted",
               args: [contracts.data!.map((c) => c.id as `0x${string}`), true],
             });
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
           postConfirmation: async (receipt) => {
             await waitForBlockNumber(receipt.blockNumber, qc);
@@ -95,7 +99,11 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
               functionName: "sellerDeregister",
               account: userAccount!,
             });
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
       ]}

@@ -128,7 +128,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
               args: [address!, process.env.REACT_APP_CLONE_FACTORY],
             });
             if (currentAllowance >= stake) {
-              return;
+              return { isSkipped: true };
             }
 
             const req = await publicClient!.simulateContract({
@@ -139,7 +139,11 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
               account: address,
             });
 
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
         {
@@ -156,7 +160,11 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
               account: address,
             });
 
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
       ]}

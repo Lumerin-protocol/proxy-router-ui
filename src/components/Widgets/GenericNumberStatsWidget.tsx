@@ -39,8 +39,9 @@ const Wrapper = styled(SmallWidget)`
   .stats {
     display: flex;
     justify-content: space-around;
-    width: 80%;
-    padding: 0.75rem;
+    padding: 0.75rem 0;
+    gap: 0rem 0.5rem;
+    width: 100%;
   }
 
   .active {

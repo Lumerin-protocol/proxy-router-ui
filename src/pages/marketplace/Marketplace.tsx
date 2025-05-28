@@ -10,7 +10,7 @@ import { MessageWidget } from "../../components/Widgets/MessageWidget";
 import { MobileWalletInfo } from "../../components/Widgets/MobileWalletInfo";
 import { WalletBalanceWidget } from "../../components/Widgets/WalletBalanceWidget";
 import type { EthereumGateway } from "../../gateway/ethereum";
-import { useBuyerContracts } from "../../hooks/data/useContracts";
+import { useAvailableContracts, useBuyerContracts } from "../../hooks/data/useContracts";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ContractState, SortTypes } from "../../types/types";
 import { sortContracts } from "../../utils/utils";
@@ -22,18 +22,16 @@ interface Props {
 
 export const Marketplace: React.FC<Props> = ({ web3Gateway }) => {
   const { address: userAccount } = useAccount();
-  const contractsQuery = useBuyerContracts({ address: userAccount });
+  const contractsQuery = useAvailableContracts();
   const [sortType, setSortType] = useState<SortTypes>(SortTypes.None);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const availableContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
-    const usersAvailableContracts = contractsQuery.data.filter((contract) => {
-      return contract.state === ContractState.Available && contract.seller !== userAccount;
-    });
-    return sortContracts(sortType, usersAvailableContracts);
-  }, [contractsQuery.data, userAccount, sortType]);
+
+    return sortContracts(sortType, contractsQuery.data);
+  }, [contractsQuery.data, sortType]);
 
   if (isMobile) {
     return (

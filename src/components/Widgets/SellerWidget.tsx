@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useAccount, useReadContract } from "wagmi";
 import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
-import { formatFeePrice } from "../../lib/units";
+import { formatFeePrice, formatHashrateTHPS } from "../../lib/units";
 import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
 import type { FC } from "react";
 import { ModalItem } from "../Modal";
@@ -39,21 +39,33 @@ export const SellerWidget: FC = () => {
     available: number;
     running: number;
     archived: number;
+    total: number;
+    totalHashrate: number;
+    availableHashrate: number;
+    runningHashrate: number;
   }>(
     (acc, contract) => {
       if (contract.state === ContractState.Running) {
         acc.running++;
+        acc.runningHashrate += Number(contract.speed);
       } else if (contract.isDeleted) {
         acc.archived++;
       } else if (contract.state === ContractState.Available) {
         acc.available++;
+        acc.availableHashrate += Number(contract.speed);
       }
+      acc.totalHashrate += Number(contract.speed);
+      acc.total++;
       return acc;
     },
     {
       available: 0,
       running: 0,
       archived: 0,
+      total: 0,
+      totalHashrate: 0,
+      availableHashrate: 0,
+      runningHashrate: 0,
     },
   );
   const availableContracts = contractsQuery.data?.filter(
@@ -132,9 +144,24 @@ export const SellerWidget: FC = () => {
         data={[
           { title: "Available", value: count?.available.toString() ?? "0" },
           { title: "Running", value: count?.running.toString() ?? "0" },
-          { title: "Archived", value: count?.archived.toString() ?? "0" },
+          { title: "Archived", value: count?.archived.toString() ?? "0", dim: true },
         ]}
         title="Seller Contracts"
+        contentUnderneath={<>Total contracts: {count?.total.toString() ?? "0"}</>}
+      />
+      <GenericNumberStatsWidget
+        data={[
+          {
+            title: "Running",
+            value: formatHashrateTHPS(count?.runningHashrate.toString() ?? "0").value,
+          },
+          {
+            title: "Available",
+            value: formatHashrateTHPS(count?.availableHashrate.toString() ?? "0").value,
+          },
+        ]}
+        title="Seller Hashrate, TH/s"
+        contentUnderneath={<>Total hashrate: {formatHashrateTHPS(count?.totalHashrate.toString() ?? "0").full}</>}
       />
     </>
   );

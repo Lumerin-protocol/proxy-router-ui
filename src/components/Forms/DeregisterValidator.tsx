@@ -2,7 +2,6 @@ import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { colors } from "../../styles/styles.config";
-import { useQueryClient } from "@tanstack/react-query";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 
@@ -56,7 +55,11 @@ export const DeregisterValidator: React.FC<CancelFormProps> = ({ closeForm }) =>
               functionName: "validatorDeregister",
               account: userAccount!,
             });
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
       ]}

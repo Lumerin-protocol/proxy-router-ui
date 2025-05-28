@@ -35,6 +35,31 @@ export const Button = styled.button`
 export const PrimaryButton = styled(Button)`
   color: #fff;
   background-color: #4c5a5f;
+  position: relative;
+  &:disabled {
+    background-color: rgb(84, 90, 92);
+    color: rgb(163, 163, 163);
+    cursor: not-allowed;
+  }
+  &:disabled:after {
+    content: "You cannot purchase your own contract";
+    position: absolute;
+    bottom: calc(100% + 0.5em);
+    left: 0;
+    width: 100%;
+    height: 4em;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    background-color: rgba(0, 0, 0, 0.9);
+    font-size: 0.8rem;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out;
+    opacity: 0;
+  }
+  &:disabled:hover:after {
+    visibility: visible;
+    opacity: 1;
+  }
 `;
 
 export const DisabledButton = styled(Button)`

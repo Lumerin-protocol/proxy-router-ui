@@ -55,6 +55,8 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
           predefinedPoolIndex: poolIndex,
           lightningAddress: poolInfo && isLightning ? poolInfo.username : "",
           validatorAddress: validatorAddress || "",
+          customValidatorPublicKey: "",
+          customValidatorHost: "",
         };
 
         return defaultValues;
@@ -139,7 +141,10 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
                 encrDestURL: encrDestURL.toString("hex"),
               });
 
-              return receipt.txHash as `0x${string}`;
+              return {
+                isSkipped: false,
+                txhash: receipt.txHash,
+              };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
               await waitForBlockNumber(receipt.blockNumber, qc);

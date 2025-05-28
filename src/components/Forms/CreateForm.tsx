@@ -49,7 +49,7 @@ export const CreateContract: React.FC<CreateFormProps> = memo(
         client={publicClient!}
         title="Create Hashrate contract"
         description="Sell your hashpower on the Lumerin Marketplace"
-        inputForm={(props) => <CreateEditContractForm form={form} isCreate />}
+        inputForm={(props) => <CreateEditContractForm form={form} />}
         validateInput={async () => {
           return await form.trigger();
         }}
@@ -70,7 +70,7 @@ export const CreateContract: React.FC<CreateFormProps> = memo(
             action: async () => {
               const pk = await web3Gateway.getPublicKey(userAccount!);
               pubKey.current = pk;
-              return undefined;
+              return { isSkipped: false, txhash: undefined };
             },
           },
           {
@@ -87,7 +87,10 @@ export const CreateContract: React.FC<CreateFormProps> = memo(
                 publicKey: pubKey.current!,
                 from: userAccount!,
               });
-              return receipt.txHash!;
+              return {
+                isSkipped: false,
+                txhash: receipt.txHash,
+              };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
               await waitForBlockNumber(receipt.blockNumber, qc);

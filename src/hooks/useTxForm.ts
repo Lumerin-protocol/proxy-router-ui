@@ -1,12 +1,14 @@
-import { type FC, type ReactNode, useState } from "react";
+import { useState } from "react";
 import type { PublicClient, TransactionReceipt } from "viem";
 import { usePublicClient } from "wagmi";
 
 export type TransactionStep = {
   label: string;
-  action: () => Promise<string | undefined>;
+  action: () => Promise<ActionResult>;
   postConfirmation?: (receipt: TransactionReceipt) => Promise<void>;
 };
+
+export type ActionResult = { isSkipped: false; txhash?: `0x${string}` } | { isSkipped: true };
 
 export type TxState = {
   state: "pending" | "sending" | "sent" | "confirmed" | "failed" | "skipped";
@@ -26,33 +28,37 @@ export function useMultistepTx(props: { steps: TransactionStep[]; client: Public
 
   const executeNextTransaction = async (txNumber: number) => {
     try {
-      const tx = props.steps[txNumber].action();
+      const actionPromise = props.steps[txNumber].action();
       setTxState((prev) => ({ ...prev, [txNumber]: { state: "sending" } }));
 
-      const txhash = await tx;
+      const actionResult = await actionPromise;
       setTxState((prev) => ({
         ...prev,
-        [txNumber]: { state: "sent", txhash: txhash as `0x${string}` },
+        [txNumber]: {
+          state: "sent",
+          txhash: actionResult.isSkipped ? undefined : actionResult.txhash,
+        },
       }));
 
       try {
-        if (txhash) {
+        if (!actionResult.isSkipped && actionResult.txhash) {
           const receipt = await client!.waitForTransactionReceipt({
-            hash: txhash as `0x${string}`,
+            hash: actionResult.txhash,
           });
-          console.log("receipt", receipt);
           setTxState((prev) => ({
             ...prev,
             [txNumber]: {
               state: receipt.status === "success" ? "confirmed" : "failed",
-              txhash: txhash as `0x${string}`,
+              txhash: actionResult.txhash,
             },
           }));
           if (props.steps[txNumber].postConfirmation) {
             await props.steps[txNumber].postConfirmation(receipt);
           }
-        } else {
+        } else if (actionResult.isSkipped) {
           setTxState((prev) => ({ ...prev, [txNumber]: { state: "skipped" } }));
+        } else {
+          setTxState((prev) => ({ ...prev, [txNumber]: { state: "confirmed" } }));
         }
         return true;
       } catch (error) {

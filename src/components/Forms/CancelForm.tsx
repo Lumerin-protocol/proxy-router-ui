@@ -52,7 +52,7 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
               contractAddress: contractId,
               from: userAccount!,
             });
-            return receipt.txHash!;
+            return receipt.txHash ? { txhash: receipt.txHash, isSkipped: false } : { isSkipped: true };
           },
           postConfirmation: async (receipt: TransactionReceipt) => {
             await waitForBlockNumber(receipt.blockNumber, qc);

@@ -131,6 +131,8 @@ export interface InputValuesBuyForm {
   username: string;
   predefinedPoolIndex: number | "";
   lightningAddress: string;
+  customValidatorPublicKey: string;
+  customValidatorHost: string;
 }
 
 export interface FormData extends InputValuesBuyForm {

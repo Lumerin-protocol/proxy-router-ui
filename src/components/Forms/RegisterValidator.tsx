@@ -142,7 +142,7 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
           action: async () => {
             const pk = await web3Gateway.getPublicKey(userAccount!);
             pubKey.current = pk;
-            return undefined;
+            return { isSkipped: false, txhash: undefined };
           },
         },
         {
@@ -160,7 +160,7 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
             });
 
             if (currentAllowance >= stake) {
-              return;
+              return { isSkipped: true };
             }
 
             const req = await publicClient!.simulateContract({
@@ -171,7 +171,11 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
               account: userAccount,
             });
 
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
         {
@@ -190,7 +194,11 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
               account: userAccount,
             });
 
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
       ]}

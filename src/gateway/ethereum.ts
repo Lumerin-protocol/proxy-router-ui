@@ -426,7 +426,6 @@ export class EthereumGateway {
   }
 
   async setContractDeleted(contractAddress: string, isDeleted: boolean, from: string): Promise<ActionStatus> {
-    console.log("setting contract deleted", contractAddress, isDeleted, from);
     const req = await this.cloneFactory!.simulate.setContractsDeleted([[contractAddress as `0x${string}`], isDeleted], {
       account: from as `0x${string}`,
     });

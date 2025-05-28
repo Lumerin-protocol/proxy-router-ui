@@ -18,7 +18,7 @@ import { useAccount } from "wagmi";
 import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
 import { useModal } from "../../hooks/useModal";
 import type { EthereumGateway } from "../../gateway/ethereum";
-import { formatFeePrice, formatPaymentPrice } from "../../lib/units";
+import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { CreateContract } from "../../components/Forms/CreateForm";
 import { EditForm } from "../../components/Forms/EditForm";
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
@@ -165,9 +165,15 @@ export const SellerHub: FC<Props> = ({ web3Gateway }) => {
           },
         },
       ),
+      ch.accessor("speed", {
+        id: "speed",
+        header: "Speed",
+        sortingFn: "alphanumeric",
+        cell: (r) => `${formatHashrateTHPS(r.getValue()).full}`,
+      }),
       ch.accessor("price", {
         id: "price",
-        header: "Price",
+        header: "Price / Fee",
         sortingFn: "alphanumeric",
         cell: (r) => (
           <div className="flex-column gap-1">
