@@ -44,7 +44,10 @@ export const ArchiveUnarchiveForm: FC<Props> = memo(
                 !isArchived,
                 userAccount!,
               );
-              return receipt.txHash!;
+              return {
+                isSkipped: false,
+                txhash: receipt.txHash,
+              };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
               await waitForBlockNumber(receipt.blockNumber, qc);

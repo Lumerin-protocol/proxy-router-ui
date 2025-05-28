@@ -22,6 +22,7 @@ import {
 import { getContractUrl } from "../../lib/indexer";
 import { formatDuration } from "../../lib/duration";
 import { BuyForm2 } from "../Forms/BuyForm";
+import { useAccount } from "wagmi";
 
 export const AvailableContracts = (prop: {
   contracts: HashRentalContract[];
@@ -30,11 +31,11 @@ export const AvailableContracts = (prop: {
   sortType?: SortTypes;
   web3Gateway: EthereumGateway;
 }) => {
+  const { address: userAccount } = useAccount();
   const { isOpen, setOpen } = useModal();
   const [buyContractId, setBuyContractId] = useState<string | null>(null);
   const [activeSort, setActiveSort] = useState<string>("");
   const [sortState, setSortState] = useState<number>(0);
-  // console.log("available contracts rendered", prop.contracts);
 
   useEffect(() => {
     if (activeSort === "speed") {
@@ -95,14 +96,6 @@ export const AvailableContracts = (prop: {
     return <ArrowsUpDownIcon className="h-4 w-4" />;
   };
 
-  function renderModal() {
-    return (
-      <ModalItem open={isOpen} setOpen={setOpen}>
-        <BuyForm2 key={buyContractId} contractId={buyContractId!} web3Gateway={prop.web3Gateway} setOpen={setOpen} />
-      </ModalItem>
-    );
-  }
-
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   if (prop.loading) {
@@ -125,9 +118,82 @@ export const AvailableContracts = (prop: {
   // Mobile view
   if (isMobile) {
     return (
+      <>
+        <ModalItem open={isOpen} setOpen={setOpen}>
+          <BuyForm2 key={buyContractId} contractId={buyContractId!} web3Gateway={prop.web3Gateway} setOpen={setOpen} />
+        </ModalItem>
+        <ul>
+          <MobileTableHeader key="header">
+            <HeaderItem onClick={() => onClickSort("speed")}>
+              <p>Speed</p>
+              {getSortFieldIcon("speed")}
+            </HeaderItem>
+            <HeaderItem onClick={() => onClickSort("length")}>
+              <p>Duration</p>
+              {getSortFieldIcon("length")}
+            </HeaderItem>
+            <HeaderItem onClick={() => onClickSort("price")}>
+              <p>Price</p>
+              {getSortFieldIcon("price")}
+            </HeaderItem>
+            <HeaderItem>
+              <p>Fee</p>
+            </HeaderItem>
+          </MobileTableHeader>
+          {prop.contracts.map((item, index) => (
+            <MobileAvailableContract key={item.id}>
+              <div className="stats">
+                <div>
+                  <img src={SpeedIcon} alt="" />
+                  {formatSpeed(item.speed)}
+                </div>
+                {item.length && (
+                  <div>
+                    <img src={TimeIcon} alt="" />
+                    {formatDuration(BigInt(item.length))}
+                  </div>
+                )}
+                <div>
+                  <img src={PriceIcon} alt="" />
+                  {formatPaymentPrice(item.price).full}
+                </div>
+              </div>
+              <div className="actions">
+                <TradeButtonsGroup>
+                  <SecondaryButton>
+                    <a href={getContractUrl(item.id as `0x${string}`)} target="_blank" rel="noreferrer">
+                      View Contract
+                    </a>
+                  </SecondaryButton>
+
+                  <PrimaryButton
+                    onClick={() => {
+                      setBuyContractId(item.id as string);
+                      setOpen(true);
+                    }}
+                  >
+                    Purchase
+                  </PrimaryButton>
+                </TradeButtonsGroup>
+              </div>
+            </MobileAvailableContract>
+          ))}
+        </ul>
+      </>
+    );
+  }
+
+  // Desktop view
+  return (
+    <>
+      <ModalItem open={isOpen} setOpen={setOpen}>
+        <BuyForm2 key={buyContractId} contractId={buyContractId!} web3Gateway={prop.web3Gateway} setOpen={setOpen} />
+      </ModalItem>
       <ul>
-        {renderModal()}
-        <MobileTableHeader key="header">
+        <TableHeader key="header">
+          <HeaderItem>
+            <p>Address</p>
+          </HeaderItem>
           <HeaderItem onClick={() => onClickSort("speed")}>
             <p>Speed</p>
             {getSortFieldIcon("speed")}
@@ -141,116 +207,52 @@ export const AvailableContracts = (prop: {
             {getSortFieldIcon("price")}
           </HeaderItem>
           <HeaderItem>
-            <p>Fee</p>
+            <p>Actions</p>
           </HeaderItem>
-        </MobileTableHeader>
-        {prop.contracts.map((item, index) => (
-          <MobileAvailableContract key={item.id}>
-            <div className="stats">
-              <div>
-                <img src={SpeedIcon} alt="" />
-                {formatSpeed(item.speed)}
+        </TableHeader>
+        {prop.contracts.map((item) => (
+          <AvailableContract key={item.id}>
+            <p>
+              <a
+                className="underline pb-0 font-Raleway cursor-pointer"
+                href={getContractUrl(item.id as `0x${string}`)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {formatAddress(item.id)}
+              </a>
+            </p>
+            <p>
+              <img src={SpeedIcon} alt="" />
+              {formatSpeed(item.speed)}
+            </p>
+            {item.length && (
+              <p>
+                <img src={TimeIcon} alt="" />
+                {formatDuration(BigInt(item.length))}
+              </p>
+            )}
+            <p>
+              <img src={PriceIcon} alt="" />
+              <div className="flex-column gap-1">
+                <div>{formatPaymentPrice(item.price).full}</div>
+                <div className="text-sm text-gray-300">{formatFeePrice(item.fee).full}</div>
               </div>
-              {item.length && (
-                <div>
-                  <img src={TimeIcon} alt="" />
-                  {formatDuration(BigInt(item.length))}
-                </div>
-              )}
-              <div>
-                <img src={PriceIcon} alt="" />
-                {formatPaymentPrice(item.price).full}
-              </div>
-            </div>
-            <div className="actions">
-              <TradeButtonsGroup>
-                <SecondaryButton>
-                  <a href={getContractUrl(item.id as `0x${string}`)} target="_blank" rel="noreferrer">
-                    View Contract
-                  </a>
-                </SecondaryButton>
+            </p>
 
-                <PrimaryButton
-                  onClick={() => {
-                    setBuyContractId(item.id as string);
-                    setOpen(true);
-                  }}
-                >
-                  Purchase
-                </PrimaryButton>
-              </TradeButtonsGroup>
-            </div>
-          </MobileAvailableContract>
+            <PrimaryButton
+              onClick={() => {
+                setBuyContractId(item.id);
+                setOpen(true);
+              }}
+              disabled={item.seller === userAccount}
+            >
+              Purchase
+            </PrimaryButton>
+          </AvailableContract>
         ))}
       </ul>
-    );
-  }
-
-  // Desktop view
-  return (
-    <ul>
-      {renderModal()}
-      <TableHeader key="header">
-        <HeaderItem>
-          <p>Address</p>
-        </HeaderItem>
-        <HeaderItem onClick={() => onClickSort("speed")}>
-          <p>Speed</p>
-          {getSortFieldIcon("speed")}
-        </HeaderItem>
-        <HeaderItem onClick={() => onClickSort("length")}>
-          <p>Duration</p>
-          {getSortFieldIcon("length")}
-        </HeaderItem>
-        <HeaderItem onClick={() => onClickSort("price")}>
-          <p>Price</p>
-          {getSortFieldIcon("price")}
-        </HeaderItem>
-        <HeaderItem>
-          <p>Actions</p>
-        </HeaderItem>
-      </TableHeader>
-      {prop.contracts.map((item) => (
-        <AvailableContract key={item.id}>
-          <p>
-            <a
-              className="underline pb-0 font-Raleway cursor-pointer"
-              href={getContractUrl(item.id as `0x${string}`)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {formatAddress(item.id)}
-            </a>
-          </p>
-          <p>
-            <img src={SpeedIcon} alt="" />
-            {formatSpeed(item.speed)}
-          </p>
-          {item.length && (
-            <p>
-              <img src={TimeIcon} alt="" />
-              {formatDuration(BigInt(item.length))}
-            </p>
-          )}
-          <p>
-            <img src={PriceIcon} alt="" />
-            <div className="flex-column gap-1">
-              <div>{formatPaymentPrice(item.price).full}</div>
-              <div className="text-sm text-gray-300">{formatFeePrice(item.fee).full}</div>
-            </div>
-          </p>
-
-          <PrimaryButton
-            onClick={() => {
-              setBuyContractId(item.id);
-              setOpen(true);
-            }}
-          >
-            Purchase
-          </PrimaryButton>
-        </AvailableContract>
-      ))}
-    </ul>
+    </>
   );
 };
 

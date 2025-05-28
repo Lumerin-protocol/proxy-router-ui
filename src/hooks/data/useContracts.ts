@@ -1,11 +1,11 @@
 import { type QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { getContractsV2 } from "../../gateway/indexer";
-import type { HashRentalContract } from "../../types/types";
-import type { GetResponse } from "../../gateway/interfaces";
+import { ContractState, type HashRentalContract } from "../../types/types";
+import type { GetResponse, IndexerContractEntry } from "../../gateway/interfaces";
 import { backgroundRefetchOpts } from "./config";
 
-export const CONTRACTS_QK = "contracts";
+export const [CONTRACTS_QK] = "contracts";
 interface Props {
   select?: ((data: GetResponse<HashRentalContract[]>) => GetResponse<HashRentalContract[]>) | undefined;
   refetch?: boolean;
@@ -20,6 +20,15 @@ export const useSellerContracts = (props: { address?: `0x${string}` | undefined 
   });
 };
 
+export const useAvailableContracts = () => {
+  return useContracts({
+    select: (data) => ({
+      ...data,
+      data: data.data.filter((c) => c.state === ContractState.Available && !c.isDeleted),
+    }),
+  });
+};
+
 export const useBuyerContracts = (props: { address?: `0x${string}` | undefined }) => {
   return useContracts({
     select: (data) => ({
@@ -29,59 +38,21 @@ export const useBuyerContracts = (props: { address?: `0x${string}` | undefined }
   });
 };
 
-export const useContract = (props: { address: `0x${string}`; refetch?: boolean }) => {
-  const res = useContracts({ refetch: props.refetch });
-  return {
-    ...res,
-    data: res.data?.find((c) => c.id === props.address),
-  };
+export const useContractV2 = (props: { address: `0x${string}`; refetch?: boolean }) => {
+  const query = useQuery({
+    queryKey: [CONTRACTS_QK, props.address],
+    queryFn: fetchContractsAsync,
+    select: (data) => data.data.find((c) => c.id === props.address),
+  });
+
+  return query;
 };
 
 export const useContracts = (props?: Props) => {
   const { select, refetch = true } = props || {};
   const fetchContractsAsync = async (): Promise<GetResponse<HashRentalContract[]>> => {
-    console.log("fetching contracts");
     const response = await getContractsV2();
-    const data = response.data.map((e) => {
-      const { hasFutureTerms, futureTerms, state } = e;
-      let { version, speed, length, price, fee } = e;
-      if (hasFutureTerms && futureTerms && state === "0") {
-        speed = futureTerms.speed;
-        length = futureTerms.length;
-        price = futureTerms.price;
-        version = futureTerms.version;
-      }
-      return {
-        id: e.id,
-        price,
-        fee,
-        speed,
-        length,
-        buyer: e.buyer,
-        seller: e.seller,
-        validator: e.validator,
-        timestamp: e.startingBlockTimestamp,
-        state: e.state,
-        encryptedPoolData: e.encrValidatorUrl,
-        profitTargetPercent: e.profitTarget,
-        version,
-        isDeleted: e.isDeleted,
-        balance: e.balance,
-        feeBalance: e.feeBalance,
-        history: e.history.map((h) => {
-          return {
-            id: e.id,
-            goodCloseout: h.isGoodCloseout,
-            buyer: h.buyer,
-            endTime: h.endTime,
-            purchaseTime: h.purchaseTime,
-            price: h.price,
-            speed: h.speed,
-            length: h.length,
-          };
-        }),
-      };
-    });
+    const data = response.data.map(mapContract);
     return {
       data,
       blockNumber: response.blockNumber,
@@ -126,4 +97,54 @@ export const waitForBlockNumber = async (blockNumber: bigint, qc: QueryClient) =
   }
 
   throw new Error(`Timeout waiting for block number ${blockNumber}`);
+};
+
+function mapContract(e: IndexerContractEntry): HashRentalContract {
+  const { hasFutureTerms, futureTerms, state } = e;
+  let { version, speed, length, price, fee } = e;
+  if (hasFutureTerms && futureTerms && state === "0") {
+    speed = futureTerms.speed;
+    length = futureTerms.length;
+    price = futureTerms.price;
+    version = futureTerms.version;
+  }
+  return {
+    id: e.id,
+    price,
+    fee,
+    speed,
+    length,
+    buyer: e.buyer,
+    seller: e.seller,
+    validator: e.validator,
+    timestamp: e.startingBlockTimestamp,
+    state: e.state,
+    encryptedPoolData: e.encrValidatorUrl,
+    profitTargetPercent: e.profitTarget,
+    version,
+    isDeleted: e.isDeleted,
+    balance: e.balance,
+    feeBalance: e.feeBalance,
+    history: e.history.map((h) => {
+      return {
+        id: e.id,
+        goodCloseout: h.isGoodCloseout,
+        buyer: h.buyer,
+        endTime: h.endTime,
+        purchaseTime: h.purchaseTime,
+        price: h.price,
+        speed: h.speed,
+        length: h.length,
+      };
+    }),
+  };
+}
+
+const fetchContractsAsync = async (): Promise<GetResponse<HashRentalContract[]>> => {
+  const response = await getContractsV2();
+  const data = response.data.map(mapContract);
+  return {
+    data,
+    blockNumber: response.blockNumber,
+  };
 };

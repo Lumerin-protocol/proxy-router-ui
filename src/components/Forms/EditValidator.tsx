@@ -128,7 +128,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
           action: async () => {
             const pk = await props.web3Gateway.getPublicKey(userAccount!);
             pubKey.current = pk;
-            return undefined;
+            return { isSkipped: false, txhash: undefined };
           },
         },
         {
@@ -136,7 +136,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
           action: async () => {
             const newValidatorStake = parseValidatorStake(form.getValues().stake);
             if (newValidatorStake === props.validatorStake) {
-              return undefined;
+              return { isSkipped: true };
             }
             const req = await publicClient!.simulateContract({
               address: feeTokenAddress.data!,
@@ -148,7 +148,11 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
               ],
             });
 
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
         {
@@ -168,7 +172,11 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
               account: userAccount,
             });
 
-            return await wc.data!.writeContract(req.request);
+            const txhash = await wc.data!.writeContract(req.request);
+            return {
+              isSkipped: false,
+              txhash: txhash,
+            };
           },
         },
       ]}

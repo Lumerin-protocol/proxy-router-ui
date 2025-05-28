@@ -73,7 +73,10 @@ export const EditForm: React.FC<EditFormProps> = memo(
                 durationSeconds: BigInt(durationSeconds),
                 from: userAccount!,
               });
-              return receipt.txHash!;
+              return {
+                isSkipped: false,
+                txhash: receipt.txHash,
+              };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
               await waitForBlockNumber(receipt.blockNumber, qc);
@@ -88,4 +91,4 @@ export const EditForm: React.FC<EditFormProps> = memo(
   },
 );
 
-EditForm.whyDidYouRender = true;
+// EditForm.whyDidYouRender = true;

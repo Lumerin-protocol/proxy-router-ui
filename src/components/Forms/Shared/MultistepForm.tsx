@@ -35,7 +35,6 @@ export const TransactionForm = (props: TransactionFormProps) => {
         console.error("transaction failed");
         return;
       }
-      console.log("transaction success");
     }
   }
 
@@ -108,7 +107,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
           ? [
               {
                 label: props.title,
-                component: (p) => (
+                component: (p: StepComponentProps) => (
                   <>
                     {props.resultForm!(p)}
                     <MultistepFormActions
@@ -143,7 +142,7 @@ export const MultipleTransactionProgress = (props: {
           <StepStyled key={index}>
             <StepLabel>{props.steps[Number(index)].label}</StepLabel>
             <StepProgressIcon>{getStepProgressIcon(tx.state)}</StepProgressIcon>
-            <StepProgressLabel>{getStepProgressLabel(tx.state)}</StepProgressLabel>
+            <StepProgressLabel>{getStepProgressLabel(tx)}</StepProgressLabel>
             {tx.txhash && (
               <StepTxHash>
                 TxHash: <TxLink to={getTxUrl(tx.txhash)}>{truncateAddress(tx.txhash)}</TxLink>
@@ -191,6 +190,9 @@ function knownError(error: BaseError): string | undefined {
 }
 
 function getStepProgressIcon(tx: TxState["state"]): ReactNode {
+  const style = {
+    fontSize: "1.2rem",
+  };
   switch (tx) {
     case "pending":
       return <></>;
@@ -199,26 +201,31 @@ function getStepProgressIcon(tx: TxState["state"]): ReactNode {
     case "sent":
       return <SpinnerV2 />;
     case "confirmed":
-      return <CheckCircle />;
+      return <CheckCircle style={style} />;
     case "failed":
-      return <ErrorIcon />;
+      return <ErrorIcon style={style} />;
     case "skipped":
-      return <SkipNext />;
+      return <SkipNext style={style} />;
   }
 }
 
-function getStepProgressLabel(tx: TxState["state"]): string {
-  switch (tx) {
+function getStepProgressLabel(tx: TxState): string {
+  switch (tx.state) {
     case "pending":
       return "pending";
     case "sending":
       return "Please confirm the transaction in your wallet";
     case "sent":
       return "Waiting for confirmation";
-    case "confirmed":
-      return "Transaction successful";
-    case "failed":
+    case "confirmed": {
+      if (tx.txhash) {
+        return "Transaction successful";
+      }
+      return "Success";
+    }
+    case "failed": {
       return "Failed";
+    }
     case "skipped":
       return "Skipped";
   }
@@ -245,7 +252,7 @@ const StepLabel = styled("div")`
 
 const StepProgressIcon = styled("div")`
   font-weight: normal;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
 `;
@@ -253,7 +260,6 @@ const StepProgressIcon = styled("div")`
 const StepProgressLabel = styled("div")`
   font-weight: normal;
   font-size: 1rem;
-  margin-bottom: 0.4em;
 `;
 
 const StepTxHash = styled("div")`

@@ -57,7 +57,7 @@ export const ClaimForm: FC<Props> = ({ contractIDs, web3Gateway, closeForm }) =>
           label: "Claim rewards",
           action: async () => {
             const receipt = await web3Gateway!.claimFundsBatch(contractIDs, userAccount!);
-            return receipt.txHash!;
+            return receipt.txHash ? { txhash: receipt.txHash, isSkipped: false } : { isSkipped: true };
           },
           postConfirmation: async (receipt: TransactionReceipt) => {
             await waitForBlockNumber(receipt.blockNumber, qc);
