@@ -1,9 +1,5 @@
-import { useAccount, usePublicClient, useReadContract, useWalletClient } from "wagmi";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
-import { colors } from "../../styles/styles.config";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { TransactionForm } from "./Shared/MultistepForm";
-import { abi } from "contracts-js";
 import { useContracts, waitForBlockNumber } from "../../hooks/data/useContracts";
 import { getContractUrl } from "../../lib/indexer";
 import { Link } from "react-router";
@@ -11,8 +7,7 @@ import { truncateAddress } from "../../utils/utils";
 import { AddressLength } from "../../types/types";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useQueryClient } from "@tanstack/react-query";
-
-const { cloneFactoryAbi } = abi;
+import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
 
 export interface CancelFormProps {
   closeForm: () => void;
@@ -35,7 +30,7 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
 
   return (
     <TransactionForm
-      onCancel={closeForm}
+      onClose={closeForm}
       client={publicClient!}
       title="Deregister yourself as a Seller"
       description="You are about to deregister yourself as a Seller."

@@ -1,62 +1,40 @@
 import type { ReactNode } from "react";
 import { flexRender, type Table as ReactTable } from "@tanstack/react-table";
-import { classNames } from "../utils/utils";
-
-import { faAngleDoubleLeft, faAngleDoubleRight, faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { colors } from "../styles/styles.config";
-import styled from "@emotion/styled";
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import { ArrowUpIcon } from "@heroicons/react/24/outline";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
-import { Checkbox } from "@mui/material";
+import styled from "@mui/material/styles/styled";
 interface TableProps<T> {
   tableInstance: ReactTable<T>;
   pagination?: boolean;
 }
 
 export const Table = <T,>({ tableInstance: table, pagination }: TableProps<T>): ReactNode => {
-  const { getHeaderGroups, getRowModel } = table;
+  const { getFlatHeaders, getRowModel } = table;
 
   return (
-    <div className="w-95 md:w-99">
-      <StyledTable className={classNames("relative w-full")}>
-        <thead className="bg-lumerin-dark-gray h-500 sm:h-16 text-xxs sm:text-xs">
-          {getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHeader
-                  key={header.id}
-                  canSort={header.column.getCanSort()}
-                  sortDirection={header.column.getIsSorted()}
-                  onClick={header.column.getToggleSortingHandler()}
-                >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHeader>
-              ))}
-            </tr>
+    <div>
+      <StyledTable>
+        <TableHeader2>
+          {getFlatHeaders().map((header) => (
+            <TableHeadingStyled key={header.id} onClick={header.column.getToggleSortingHandler()}>
+              {flexRender(header.column.columnDef.header, header.getContext())}
+              {getSortIcon(header.column.getCanSort(), header.column.getIsSorted())}
+            </TableHeadingStyled>
           ))}
-        </thead>
-        <tbody>
-          {getRowModel()?.rows.map((row) => (
-            <Tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
-              ))}
-            </Tr>
-          ))}
-        </tbody>
-        <tfoot>
-          {table.getFooterGroups().map((footerGroup) => (
-            <tr key={footerGroup.id}>
-              {footerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.footer, header.getContext())}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </tfoot>
+        </TableHeader2>
+        {getRowModel()?.rows.map((row) => (
+          <Tr key={row.id}>
+            {row.getVisibleCells().map((cell) => (
+              <Td key={cell.id}>
+                {!cell.column.columnDef.meta?.hideTitleMobile && (
+                  <ColumnTitleMobile>{cell.column.columnDef.header}</ColumnTitleMobile>
+                )}
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </Td>
+            ))}
+          </Tr>
+        ))}
       </StyledTable>
       {/* {pagination ? (
         <div>
@@ -110,22 +88,6 @@ export const Table = <T,>({ tableInstance: table, pagination }: TableProps<T>): 
   );
 };
 
-export const TableHeader = (props: {
-  children: ReactNode;
-  sortDirection: "asc" | "desc" | false;
-  canSort: boolean;
-  onClick?: undefined | ((event: unknown) => void);
-}) => {
-  return (
-    <Th onClick={props.onClick}>
-      <ThInner>
-        {props.children}
-        {getSortIcon(props.canSort, props.sortDirection)}
-      </ThInner>
-    </Th>
-  );
-};
-
 const getSortIcon = (canSort: boolean, sortDirection: "asc" | "desc" | false) => {
   if (!canSort) {
     return null;
@@ -141,70 +103,94 @@ const getSortIcon = (canSort: boolean, sortDirection: "asc" | "desc" | false) =>
   }
 };
 
-export const StyledTable = styled.table`
+export const StyledTable = styled("div")`
   border-collapse: separate;
   border-spacing: 0 1em;
+  width: 100%;
+  position: relative;
 `;
 
-export const Tr = styled.tr`
+const TableHeader2 = styled("div")`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-template-rows: 1fr;
+  height: 500px;
+  font-size: 0.625rem;
+  align-items: center;
+  border: 1px solid rgba(171, 171, 171, 1);
+  border-radius: 9px;
+  margin-bottom: 1rem;
+
+  @media (min-width: 640px) {
+    height: 4rem;
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 1024px) {
+    height: unset;
+    grid-template-rows: repeat(2, minmax(4em, 1fr));
+    grid-auto-flow: column;
+  }
+`;
+
+const Tr = styled("div")`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-template-rows: 1fr;
   background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
   border-radius: 9px;
   color: white;
   margin-bottom: 1rem;
   width: 100%;
   height: 100px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(171, 171, 171, 1);
 
-  p {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-
-    img {
-      margin-right: 1rem;
-      width: 20px;
-    }
+  @media (max-width: 1024px) {
+    grid-template-rows: 1fr 1fr;
+    grid-auto-flow: column;
+    height: unset;
   }
 `;
 
-export const Th = styled.th`
-  border-top: 1px solid rgba(171, 171, 171, 1);
-  border-bottom: 1px solid rgba(171, 171, 171, 1);
+const TableHeadingStyled = styled("div")`
   text-align: center;
   color: #fff;
   cursor: pointer;
   font-weight: normal;
   font-size: 1.3em;
-
-  &:first-of-type {
-    border-left: 1px solid rgba(171, 171, 171, 1);
-    border-radius: 9px 0 0 9px;
-  }
-
-  &:last-of-type {
-    border-right: 1px solid rgba(171, 171, 171, 1);
-    border-radius: 0 9px 9px 0;
-  }
-`;
-
-const ThInner = styled.div`
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 0.5em;
+  height: 100%;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 0.2em 0.5em;
+
+  svg {
+    flex-shrink: 0;
+  }
 `;
 
-export const Td = styled.td`
-  border-top: 1px solid rgba(171, 171, 171, 1);
-  border-bottom: 1px solid rgba(171, 171, 171, 1);
+const Td = styled("div")`
   text-align: center;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 0.2em;
+  padding: 0.2em 0;
+`;
 
-  &:first-of-type {
-    border-left: 1px solid rgba(171, 171, 171, 1);
-    border-radius: 9px 0 0 9px;
-  }
+const ColumnTitleMobile = styled("div")`
+  display: none;
+  font-size: 0.8em;
+  color: rgb(194, 194, 194);
 
-  &:last-of-type {
-    border-right: 1px solid rgba(171, 171, 171, 1);
-    border-radius: 0 9px 9px 0;
+  @media (max-width: 1024px) {
+    display: flex;
   }
 `;

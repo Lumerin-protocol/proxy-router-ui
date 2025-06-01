@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import { Card, MobileWidget } from "../Cards/Cards.styled";
 
 export const MessageWidget = (props: { isMobile: boolean }) => {

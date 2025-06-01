@@ -1,11 +1,11 @@
-import { abi } from "contracts-js";
 import { useReadContract } from "wagmi";
 import { backgroundRefetchOpts } from "./config";
+import { cloneFactoryAbi, usdcMockAbi } from "contracts-js/dist/abi/abi";
 
 export function useFeeTokenAddress() {
   return useReadContract({
     address: process.env.REACT_APP_CLONE_FACTORY,
-    abi: abi.cloneFactoryAbi,
+    abi: cloneFactoryAbi,
     functionName: "feeToken",
     query: {
       staleTime: Number.POSITIVE_INFINITY,
@@ -19,7 +19,7 @@ export function useFeeTokenBalance(address: `0x${string}` | undefined) {
 
   return useReadContract({
     address: feeTokenAddress,
-    abi: abi.usdcMockAbi,
+    abi: usdcMockAbi,
     functionName: "balanceOf",
     args: [address!],
     query: {

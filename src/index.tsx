@@ -1,12 +1,12 @@
 import "./wdyr";
+import "./fonts.css";
+import "./index.css";
 
 import React from "react";
 import { ErrorBoundary, type ErrorBoundaryPropsWithRender } from "react-error-boundary";
 import { BrowserRouter } from "react-router";
 import { App } from "./App";
 import { ErrorPage } from "./components/ErrorPage";
-import "./index.css";
-import "./fonts.css";
 import { createRoot } from "react-dom/client";
 
 // error handling logic

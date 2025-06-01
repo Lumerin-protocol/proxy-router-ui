@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import { useAccount, useReadContract } from "wagmi";
 import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
@@ -7,14 +7,14 @@ import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
 import type { FC } from "react";
 import { ModalItem } from "../Modal";
 import { useModal } from "../../hooks/useModal";
-import { abi } from "contracts-js";
 import { truncateAddress } from "../../utils/utils";
 import { AddressLength, ContractState } from "../../types/types";
 import { RegisterSellerForm } from "../Forms/RegisterSeller";
 import { DeregisterSeller } from "../Forms/DeregisterSeller";
 import { useSellerContracts } from "../../hooks/data/useContracts";
 import { GenericNumberStatsWidget } from "./GenericNumberStatsWidget";
-const { cloneFactoryAbi } = abi;
+import { EditSellerForm } from "../Forms/EditSeller";
+import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
 
 export const SellerWidget: FC = () => {
   const { address } = useAccount();
@@ -68,11 +68,6 @@ export const SellerWidget: FC = () => {
       runningHashrate: 0,
     },
   );
-  const availableContracts = contractsQuery.data?.filter(
-    (contract) => contract.state === ContractState.Available && contract.isDeleted === false,
-  );
-  const runningContracts = contractsQuery.data?.filter((contract) => contract.state === ContractState.Running);
-  const archivedContracts = contractsQuery.data?.filter((contract) => contract.isDeleted);
 
   const [seller, isActive, isRegistered] = sellerQuery.isSuccess ? sellerQuery.data : [undefined, false, false];
 
@@ -91,12 +86,13 @@ export const SellerWidget: FC = () => {
         )}
         {editSellerModal.isOpen && (
           <ModalItem open={editSellerModal.isOpen} setOpen={editSellerModal.setOpen}>
-            {/* <EditValidatorForm
-            web3Gateway={props.web3Gateway}
-            setOpen={registerValidatorModal.setOpen}
-            validatorHost={validator.data!.host}
-            validatorStake={validator.data!.stake}
-          /> */}
+            <EditSellerForm
+              sellerStake={seller!.stake}
+              onClose={async () => {
+                await sellerQuery.refetch();
+                editSellerModal.close();
+              }}
+            />
           </ModalItem>
         )}
         {deregisterSellerModal.isOpen && (
@@ -153,11 +149,11 @@ export const SellerWidget: FC = () => {
         data={[
           {
             title: "Running",
-            value: formatHashrateTHPS(count?.runningHashrate.toString() ?? "0").value,
+            value: formatHashrateTHPS(count?.runningHashrate.toString() ?? "0").valueRounded,
           },
           {
             title: "Available",
-            value: formatHashrateTHPS(count?.availableHashrate.toString() ?? "0").value,
+            value: formatHashrateTHPS(count?.availableHashrate.toString() ?? "0").valueRounded,
           },
         ]}
         title="Seller Hashrate, TH/s"
@@ -167,7 +163,7 @@ export const SellerWidget: FC = () => {
   );
 };
 
-const Value = styled.dd`
+const Value = styled("dd")`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,7 +173,7 @@ const Value = styled.dd`
   font-weight: 600;
 `;
 
-const Key = styled.dt`
+const Key = styled("dt")`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,7 +181,7 @@ const Key = styled.dt`
   font-size: 0.8em;
 `;
 
-const SellerInfo = styled.dl`
+const SellerInfo = styled("dl")`
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-auto-flow: column dense;
@@ -194,7 +190,7 @@ const SellerInfo = styled.dl`
   justify-content: space-evenly;
 `;
 
-const WidgetContent = styled.div`
+const WidgetContent = styled("div")`
   display: flex;
   align-items: center;
   justify-content: space-evenly;

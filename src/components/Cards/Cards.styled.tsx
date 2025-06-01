@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 
-export const Card = styled.div`
+export const Card = styled("div")`
   padding: 1.5rem;
   background-color: rgba(79, 126, 145, 0.04);
   background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
@@ -47,7 +47,7 @@ export const SmallWidget = styled(Card)`
   }
 `;
 
-export const MobileWidget = styled.div`
+export const MobileWidget = styled("div")`
   padding: 0.5rem;
   background-color: rgba(79, 126, 145, 0.04);
   background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);

@@ -1,5 +1,11 @@
-import styled from "@emotion/styled";
-import { Box, FormControl, InputLabel, MenuItem, Select, Toolbar, useMediaQuery } from "@mui/material";
+import styled from "@mui/material/styles/styled";
+import Box from "@mui/material/Box";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Toolbar from "@mui/material/Toolbar";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { SortTypes } from "../types/types";
 
 const StyledToolbar = styled(Toolbar)`

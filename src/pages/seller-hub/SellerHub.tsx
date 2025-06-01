@@ -1,5 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
-import { FormControl, styled, ToggleButtonGroup } from "@mui/material";
+import styled from "@mui/material/styles/styled";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { type FC, type HTMLProps, useEffect, useMemo, useRef, useState } from "react";
 import {
   useReactTable,
@@ -17,7 +18,6 @@ import { useSellerContracts } from "../../hooks/data/useContracts";
 import { useAccount } from "wagmi";
 import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
 import { useModal } from "../../hooks/useModal";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { CreateContract } from "../../components/Forms/CreateForm";
 import { EditForm } from "../../components/Forms/EditForm";
@@ -26,23 +26,19 @@ import { ModalItem } from "../../components/Modal";
 import { ArchiveUnarchiveForm } from "../../components/Forms/ArchiveUnarchive";
 import { formatDuration } from "../../lib/duration";
 import { ArchiveButton, ClaimLmrButton, EditButton, UnarchiveButton } from "../../components/ActionButton";
-import { faArchive, faSackDollar, faFileSignature } from "@fortawesome/free-solid-svg-icons";
+import { faArchive } from "@fortawesome/free-solid-svg-icons/faArchive";
+import { faSackDollar } from "@fortawesome/free-solid-svg-icons/faSackDollar";
+import { faFileSignature } from "@fortawesome/free-solid-svg-icons/faFileSignature";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Pickaxe } from "../../components/Icons/Pickaxe";
-import { SellerActions, SellerFilters, SellerToolbar, ToggleButtonIcon } from "./styled";
+import { SellerActions, SellerToolbar } from "./styled";
 import { ClaimForm } from "../../components/Forms/ClaimForm";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { SellerWidget } from "../../components/Widgets/SellerWidget";
 import { CircularProgress } from "../../components/CircularProgress";
+import { FiltersButtonGroup, FiltersSelect } from "./Filters";
 
-interface Props {
-  web3Gateway: EthereumGateway;
-}
-
-const QuickFilterValues = ["archived", "available", "running", "unclaimed", "unset"] as const;
-type QuickFilter = (typeof QuickFilterValues)[number];
-
-export const SellerHub: FC<Props> = ({ web3Gateway }) => {
+export const SellerHub: FC = () => {
   const { address: userAccount } = useAccount();
   const { data: contracts, isLoading } = useSellerContracts({ address: userAccount });
   const blockTime30s = useSimulatedBlockchainTime({ intervalSeconds: 30 });
@@ -57,6 +53,7 @@ export const SellerHub: FC<Props> = ({ web3Gateway }) => {
   const [contractIds, setContractIds] = useState<string[]>([]);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("unset");
   const [selectRowsColumnVisible, setSelectRowsColumnVisible] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 1024px)");
 
   function onCreate() {
     createModal.open();
@@ -99,6 +96,7 @@ export const SellerHub: FC<Props> = ({ web3Gateway }) => {
 
   const ch = createColumnHelper<HashRentalContract>();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const columns = useMemo(() => {
     return [
       ch.display({
@@ -237,73 +235,42 @@ export const SellerHub: FC<Props> = ({ web3Gateway }) => {
   });
 
   return (
-    <DefaultLayout>
+    <DefaultLayout pageTitle="Seller Hub">
       {createModal.isOpen && (
         <ModalItem open={createModal.isOpen} setOpen={createModal.setOpen}>
-          <CreateContract web3Gateway={web3Gateway} setOpen={createModal.setOpen} />
+          <CreateContract setOpen={createModal.setOpen} />
         </ModalItem>
       )}
       {editModal.isOpen && (
         <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen}>
-          <EditForm web3Gateway={web3Gateway} contract={contracts?.[0]!} closeForm={editModal.close} />
+          <EditForm contract={contracts?.[0]!} closeForm={editModal.close} />
         </ModalItem>
       )}
       {claimModal.isOpen && (
         <ModalItem open={claimModal.isOpen} setOpen={claimModal.setOpen}>
-          <ClaimForm
-            web3Gateway={web3Gateway}
-            contractIDs={contractIds as `0x${string}`[]}
-            closeForm={claimModal.close}
-          />
+          <ClaimForm contractIDs={contractIds as `0x${string}`[]} closeForm={claimModal.close} />
         </ModalItem>
       )}
       {archiveModal.isOpen && (
         <ModalItem open={archiveModal.isOpen} setOpen={archiveModal.setOpen}>
-          <ArchiveUnarchiveForm
-            web3Gateway={web3Gateway}
-            contractIds={contractIds}
-            isArchived={false}
-            closeForm={archiveModal.close}
-          />
+          <ArchiveUnarchiveForm contractIds={contractIds} isArchived={false} closeForm={archiveModal.close} />
         </ModalItem>
       )}
       {unarchiveModal.isOpen && (
         <ModalItem open={unarchiveModal.isOpen} setOpen={unarchiveModal.setOpen}>
-          <ArchiveUnarchiveForm
-            web3Gateway={web3Gateway}
-            contractIds={contractIds}
-            isArchived={true}
-            closeForm={unarchiveModal.close}
-          />
+          <ArchiveUnarchiveForm contractIds={contractIds} isArchived={true} closeForm={unarchiveModal.close} />
         </ModalItem>
       )}
       <WidgetsWrapper>
         <SellerWidget />
       </WidgetsWrapper>
       <SellerToolbar>
-        <SellerFilters>
-          <FormControl>
-            <ToggleButtonGroup
-              value={quickFilter}
-              exclusive
-              onChange={(_, qf: unknown) => {
-                if (!qf) {
-                  setQuickFilter("unset");
-                  return;
-                }
-                if (!QuickFilterValues.includes(qf as QuickFilter)) {
-                  throw new Error(`Invalid quick filter: ${qf}`);
-                }
-                setQuickFilter(qf as QuickFilter);
-              }}
-            >
-              <ToggleButtonIcon value="archived" icon={<FontAwesomeIcon icon={faArchive} />} text="Archived" />
-              <ToggleButtonIcon value="available" icon={<FontAwesomeIcon icon={faFileSignature} />} text="Available" />
-              <ToggleButtonIcon value="running" icon={<Pickaxe />} text="Running" />
-              <ToggleButtonIcon value="unclaimed" icon={<FontAwesomeIcon icon={faSackDollar} />} text="Unclaimed" />
-            </ToggleButtonGroup>
-          </FormControl>
-        </SellerFilters>
+        {isMobile ? (
+          <FiltersSelect values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+        ) : (
+          <FiltersButtonGroup values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+        )}
+
         <SellerActions>
           <PrimaryButton className="create-button" onClick={onCreate}>
             <AddIcon className="add-icon" />
@@ -344,27 +311,6 @@ export const SellerHub: FC<Props> = ({ web3Gateway }) => {
   );
 };
 
-export const ProgressBarWithTime = (props: { startTime: bigint; duration: bigint }) => {
-  const currentBlockTimestamp = useSimulatedBlockchainTime();
-  const { startTime, duration } = props;
-
-  if (duration === 0n || currentBlockTimestamp === 0n) {
-    return <div>0%</div>;
-  }
-
-  const timeElapsed = currentBlockTimestamp - startTime;
-  const percentage = (Number(timeElapsed) / Number(duration)) * 100;
-
-  return (
-    <div key={percentage.toFixed()} className="flex flex-col mt-3 sm:mt-0 sm:items-center sm:flex-row">
-      <div>{percentage.toFixed()}%</div>
-      <div className="w-1/2 sm:ml-4">
-        <ProgressBar width={percentage.toString()} />
-      </div>
-    </div>
-  );
-};
-
 const ArchiveUnarchiveButton = (props: {
   onArchive: () => void;
   onUnarchive: () => void;
@@ -396,6 +342,7 @@ function IndeterminateCheckbox({
 }: { indeterminate?: boolean } & HTMLProps<HTMLInputElement>) {
   const ref = useRef<HTMLInputElement>(null!);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (typeof indeterminate === "boolean") {
       ref.current.indeterminate = !rest.checked && indeterminate;
@@ -417,3 +364,28 @@ const ProgressCell = styled("div")`
   justify-content: center;
   gap: 0.5em;
 `;
+
+const QuickFilterValues = [
+  {
+    value: "archived",
+    icon: <FontAwesomeIcon icon={faArchive} />,
+    text: "Archived",
+  },
+  {
+    value: "available",
+    icon: <FontAwesomeIcon icon={faFileSignature} />,
+    text: "Available",
+  },
+  {
+    value: "running",
+    icon: <Pickaxe />,
+    text: "Running",
+  },
+  {
+    value: "unclaimed",
+    icon: <FontAwesomeIcon icon={faSackDollar} />,
+    text: "Unclaimed",
+  },
+] as const;
+
+type QuickFilter = (typeof QuickFilterValues)[number]["value"] | "unset";

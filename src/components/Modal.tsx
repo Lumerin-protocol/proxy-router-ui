@@ -1,5 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { IconButton, Modal } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import Modal from "@mui/material/Modal";
 import { ModalCard } from "./Modal.styled";
 
 interface ModalProps {

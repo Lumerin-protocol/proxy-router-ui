@@ -1,10 +1,11 @@
-import { type CaipNetworkId, createAppKit } from "@reown/appkit/react";
+import { createAppKit } from "@reown/appkit/react";
 import { chain } from "../config/chains";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import type { AppKitNetwork } from "@reown/appkit/networks";
-import { fallback, http } from "wagmi";
+import { http } from "viem";
+// import { /*fallback,*/ http } from "viem";
 // import { http, createConfig } from "wagmi";
-// import { injected, metaMask, safe, walletConnect } from "wagmi/connectors";
+// import { injected, /*safe,*/ walletConnect } from "wagmi/connectors";
 
 const projectId = process.env.REACT_APP_WALLET_CONNECT_ID;
 const chains = [chain];
@@ -32,6 +33,7 @@ createAppKit({
   adapters: [wagmiAdapter],
   networks: chains as [AppKitNetwork],
   projectId,
+
   // tokens: {
   //   [`eip155:${chain.id}` as CaipNetworkId]: {
   //     address: process.env.REACT_APP_LUMERIN_TOKEN_ADDRESS,

@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 
-export const InputWrapper = styled.div`
+export const InputWrapper = styled("div")`
   width: 100%;
   max-width: 300px;
   margin-top: 1.3rem;

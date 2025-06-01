@@ -1,28 +1,28 @@
 import { useAccount, usePublicClient } from "wagmi";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import { waitForBlockNumber } from "../../hooks/data/useContracts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { colors } from "../../styles/styles.config";
 import { useQueryClient } from "@tanstack/react-query";
 import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import type { FC } from "react";
+import { useClaimFundsBatch } from "../../hooks/data/useClaimFundsBatch";
 
 interface Props {
   contractIDs: `0x${string}`[];
-  web3Gateway?: EthereumGateway;
   closeForm: () => void;
 }
 
-export const ClaimForm: FC<Props> = ({ contractIDs, web3Gateway, closeForm }) => {
+export const ClaimForm: FC<Props> = ({ contractIDs, closeForm }) => {
   const { address: userAccount } = useAccount();
   const qc = useQueryClient();
   const pc = usePublicClient();
+  const { claimFundsBatchAsync } = useClaimFundsBatch();
 
   return (
     <TransactionForm
-      onCancel={closeForm}
+      onClose={closeForm}
       client={pc!}
       title="Claim rewards"
       description="This action will allow you to manually claim unpaid rewards for the contracts that run to completion. Remember that the same action will be performed automatically on the next purchase of the same contract."
@@ -56,8 +56,10 @@ export const ClaimForm: FC<Props> = ({ contractIDs, web3Gateway, closeForm }) =>
         {
           label: "Claim rewards",
           action: async () => {
-            const receipt = await web3Gateway!.claimFundsBatch(contractIDs, userAccount!);
-            return receipt.txHash ? { txhash: receipt.txHash, isSkipped: false } : { isSkipped: true };
+            const txhash = await claimFundsBatchAsync({
+              contractAddresses: contractIDs,
+            });
+            return { txhash, isSkipped: false };
           },
           postConfirmation: async (receipt: TransactionReceipt) => {
             await waitForBlockNumber(receipt.blockNumber, qc);

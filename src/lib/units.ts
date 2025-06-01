@@ -8,6 +8,7 @@ type Unit = {
 
 type Value = {
   value: string;
+  valueRounded: string;
   symbol: string;
   name: string;
   full: string;
@@ -63,13 +64,15 @@ export const parseValidatorStake = (stakeUnits: string): bigint => {
   return parseUnits(stakeUnits, validatorStakeToken.decimals);
 };
 
-const formatValue = (units: string | bigint, token: Unit) => {
+export const formatValue = (units: string | bigint, token: Unit) => {
   const value = _formatValue(units, token.decimals);
+  const valueRounded = limitSignificantDecimals(value, 3);
   return {
     value,
+    valueRounded,
     symbol: token.symbol,
     name: token.name,
-    full: `${value} ${token.symbol}`,
+    full: `${valueRounded} ${token.symbol}`,
   };
 };
 
@@ -77,7 +80,7 @@ const _formatValue = (units: string | bigint, decimals: number) => {
   if (units === undefined || units === null) {
     return "…";
   }
-  return limitSignificantDecimals(formatUnits(BigInt(units), decimals), 3);
+  return formatUnits(BigInt(units), decimals);
 };
 
 function limitSignificantDecimals(value: string, significantDecimals: number) {
@@ -94,3 +97,43 @@ function limitSignificantDecimals(value: string, significantDecimals: number) {
   const out = `${integer}.${"0".repeat(firstNonZero)}${roundedSignificantPart}`;
   return out;
 }
+
+// duplicates the effort of functions above
+// TODO: refactor
+export const formatCurrency: (param: {
+  value: number;
+  currency: string | undefined;
+  maxSignificantFractionDigits: number;
+}) => string = ({ value, currency, maxSignificantFractionDigits }) => {
+  let style = "currency" as "currency" | "decimal";
+
+  if (!currency) {
+    currency = undefined;
+    style = "decimal";
+  }
+
+  if (maxSignificantFractionDigits === 0) {
+    return Math.floor(value).toString();
+  }
+
+  if (value < 1) {
+    return new Intl.NumberFormat(navigator.language, {
+      style: style,
+      currency: currency,
+      maximumSignificantDigits: maxSignificantFractionDigits,
+    }).format(value);
+  }
+
+  const integerDigits = value.toFixed(0).toString().length;
+  let fractionDigits = maxSignificantFractionDigits - integerDigits;
+  if (fractionDigits < 0) {
+    fractionDigits = 0;
+  }
+
+  return new Intl.NumberFormat(navigator.language, {
+    style: style,
+    currency: currency,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+};

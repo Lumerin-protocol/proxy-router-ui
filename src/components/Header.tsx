@@ -1,28 +1,41 @@
-import styled from "@emotion/styled";
 import { Bars3BottomLeftIcon } from "@heroicons/react/24/outline";
-import { Toolbar, Typography, useMediaQuery } from "@mui/material";
-import { useLocation } from "react-router";
-import { LumerinIcon } from "../images";
-import { PathName } from "../types/types";
-import { ConnectWidget } from "./Widgets/ConnectWidget";
+import styled from "@mui/material/styles/styled";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import ButtonGroup from "@mui/material/ButtonGroup";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
 
-export const Header = (prop: { setSidebarOpen: (isOpen: boolean) => void }) => {
+import { AccountButton, ChainButton, ConnectorButton } from "./Widgets/ConnectWidget";
+import { AddressLength } from "../types/types";
+
+type Props = {
+  setSidebarOpen: (isOpen: boolean) => void;
+  pageTitle: string;
+};
+
+export const Header = (props: Props) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const location = useLocation();
-  const pageTitle = getPageTitle(location.pathname);
 
   return (
     <StyledToolbar>
       <button
         type="button"
-        className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden"
-        onClick={() => prop.setSidebarOpen(true)}
+        className="border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden"
+        onClick={() => props.setSidebarOpen(true)}
       >
         <span className="sr-only">Open sidebar</span>
         <Bars3BottomLeftIcon className="h-8 w-8" aria-hidden="true" />
       </button>
-      <PageTitle>{pageTitle}</PageTitle>
-      {isMobile ? <LumerinIcon /> : <ConnectWidget />}
+      <PageTitle>{props.pageTitle}</PageTitle>
+      <ButtonGroup>
+        <AccountButton addressLength={isMobile ? AddressLength.SHORT : AddressLength.MEDIUM} />
+        {!isMobile && (
+          <>
+            <ChainButton />
+            <ConnectorButton />
+          </>
+        )}
+      </ButtonGroup>
     </StyledToolbar>
   );
 };
@@ -38,12 +51,8 @@ const PageTitle = styled(Typography)`
   font-weight: 600;
   font-family: Raleway, sans-serif;
   font-size: 2rem;
-`;
 
-const getPageTitle = (pathName: string) => {
-  if (pathName === PathName.Marketplace) return "Marketplace";
-  if (pathName === PathName.BuyerHub) return "Buyer Hub";
-  if (pathName === PathName.SellerHub) return "Seller Hub";
-  if (pathName === PathName.Landing) return "";
-  return "";
-};
+  @media (max-width: 768px) {
+    font-size: 1.4rem;
+  }
+`;

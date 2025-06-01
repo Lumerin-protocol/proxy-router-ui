@@ -25,6 +25,14 @@ export function useMultistepTx(props: { steps: TransactionStep[]; client: Public
       return acc;
     }, {});
   });
+  const [currentStep, setCurrentStep] = useState(0);
+
+  // error on any step makes the whole transaction fail
+  const isError = Object.values(txState).some((state) => state.state === "failed");
+  // success if the last step is confirmed or skipped
+  const lastStepState = txState[props.steps.length - 1];
+  const isSuccess = lastStepState.state === "confirmed" || lastStepState.state === "skipped";
+  const isPending = !isSuccess && !isError;
 
   const executeNextTransaction = async (txNumber: number) => {
     try {
@@ -60,6 +68,7 @@ export function useMultistepTx(props: { steps: TransactionStep[]; client: Public
         } else {
           setTxState((prev) => ({ ...prev, [txNumber]: { state: "confirmed" } }));
         }
+        setCurrentStep((prev) => prev + 1);
         return true;
       } catch (error) {
         console.error(error);
@@ -76,5 +85,8 @@ export function useMultistepTx(props: { steps: TransactionStep[]; client: Public
   return {
     txState,
     executeNextTransaction,
+    isSuccess,
+    isError,
+    isPending,
   };
 }

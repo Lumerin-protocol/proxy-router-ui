@@ -1,18 +1,16 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import EastIcon from "@mui/icons-material/East";
-import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
 import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
 import { useRates } from "../../hooks/data/useRates";
 import { EtherIcon, LumerinIcon, UsdcIcon } from "../../images";
-import { formatCurrency } from "../../web3/helpers";
 import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
 import { chain } from "../../config/chains";
 import { ChainIcon } from "../../config/chains";
 import { useEthBalance } from "../../hooks/data/useEthBalance";
-import { feeToken, gasToken, paymentToken } from "../../lib/units";
+import { feeToken, formatCurrency, formatValue, gasToken, paymentToken } from "../../lib/units";
 
 export const WalletBalanceWidget = () => {
   const { address } = useAccount();
@@ -23,21 +21,24 @@ export const WalletBalanceWidget = () => {
 
   const tokens = [
     {
-      name: paymentToken.symbol,
+      name: paymentToken.name,
+      symbol: paymentToken.symbol,
       balance: paymentTokenBalance.data,
       rateUSD: 1,
       decimals: paymentToken.decimals,
       icon: <UsdcIcon style={{ width: "25px" }} />,
     },
     {
-      name: feeToken.symbol,
+      name: feeToken.name,
+      symbol: feeToken.symbol,
       balance: feeTokenBalance.data,
       rateUSD: ratesQuery.data?.LMR ?? 0,
       decimals: feeToken.decimals,
       icon: <LumerinIcon />,
     },
     {
-      name: gasToken.symbol,
+      name: gasToken.name,
+      symbol: gasToken.symbol,
       balance: ethBalance.data?.value,
       rateUSD: ratesQuery.data?.ETH ?? 0,
       decimals: gasToken.decimals,
@@ -60,19 +61,15 @@ export const WalletBalanceWidget = () => {
         {isSuccess &&
           address &&
           tokens.map((token) => {
-            const balanceFloat = Number.parseFloat(formatUnits(token.balance || 0n, Number(token.decimals)));
-            const rateUSD = token.rateUSD * balanceFloat;
+            const balanceValue = formatValue(token.balance || 0n, token);
+            const rateUSD = token.rateUSD * Number(balanceValue.value);
             return (
-              <TokenContainer key={token.name}>
+              <TokenContainer key={token.symbol}>
                 <TokenBalanceWrapper>
                   {token.icon}
                   <BalanceText>
-                    {formatCurrency({
-                      value: balanceFloat,
-                      maxSignificantFractionDigits: 4,
-                      currency: undefined,
-                    })}
-                    <TokenSymbol>{token.name}</TokenSymbol>
+                    {balanceValue.valueRounded}
+                    <TokenSymbol>{token.symbol}</TokenSymbol>
                   </BalanceText>
                 </TokenBalanceWrapper>
                 <RateWrapper>
@@ -100,7 +97,7 @@ export const WalletBalanceWidget = () => {
   );
 };
 
-const TokenContainer = styled.div`
+const TokenContainer = styled("div")`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -112,13 +109,13 @@ const TokenContainer = styled.div`
   }
 `;
 
-const TokenBalanceWrapper = styled.div`
+const TokenBalanceWrapper = styled("div")`
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
-const BalanceText = styled.span`
+const BalanceText = styled("span")`
   font-size: 1.1rem;
   margin-left: 0.3rem;
   color: #fff;
@@ -130,7 +127,7 @@ const BalanceText = styled.span`
   }
 `;
 
-const TokenSymbol = styled.span`
+const TokenSymbol = styled("span")`
   font-size: 0.8em;
   line-height: 1.75rem;
   margin-left: 0.3rem;
@@ -141,13 +138,13 @@ const TokenSymbol = styled.span`
   }
 `;
 
-const RateWrapper = styled.div`
+const RateWrapper = styled("div")`
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
-const Balances = styled.div`
+const Balances = styled("div")`
   display: flex;
   align-items: flex-start;
   justify-content: space-evenly;
@@ -162,7 +159,7 @@ const Balances = styled.div`
   }
 `;
 
-const Rate = styled.p`
+const Rate = styled("p")`
   font-size: 0.8rem;
   text-align: center;
   color: rgb(155, 155, 155);

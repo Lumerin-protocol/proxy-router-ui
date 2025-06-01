@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import { useAccount, usePublicClient } from "wagmi";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import { CompletedContent } from "./SellerForms/CompletedContent";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { CreateEditContractForm } from "./Shared/CreateEditContractForm";
@@ -11,6 +10,8 @@ import type { TransactionReceipt } from "viem";
 import { ContentState } from "../../types/types";
 import { memo, useRef } from "react";
 import { truncateAddress } from "../../utils/utils";
+import { useGetPublicKey } from "../../hooks/data/usePublicKey";
+import { useCreateNewRentalContract } from "../../hooks/data/useCreateNewRentalContract";
 
 export interface InputValuesCreateForm {
   walletAddress: string;
@@ -20,15 +21,15 @@ export interface InputValuesCreateForm {
 }
 
 interface CreateFormProps {
-  web3Gateway: EthereumGateway;
   setOpen: (isOpen: boolean) => void;
 }
 
 export const CreateContract: React.FC<CreateFormProps> = memo(
-  ({ web3Gateway, setOpen }) => {
+  ({ setOpen }) => {
     const { address: userAccount } = useAccount();
     const qc = useQueryClient();
     const publicClient = usePublicClient();
+    const { getPublicKeyAsync } = useGetPublicKey();
 
     // Input validation setup
     const form = useForm<InputValuesCreateForm>({
@@ -42,10 +43,11 @@ export const CreateContract: React.FC<CreateFormProps> = memo(
     });
 
     const pubKey = useRef<`0x${string}` | undefined>(undefined);
+    const { createNewRentalContractAsync } = useCreateNewRentalContract();
 
     return (
       <TransactionForm
-        onCancel={() => setOpen(false)}
+        onClose={() => setOpen(false)}
         client={publicClient!}
         title="Create Hashrate contract"
         description="Sell your hashpower on the Lumerin Marketplace"
@@ -68,7 +70,7 @@ export const CreateContract: React.FC<CreateFormProps> = memo(
           {
             label: "Sign the message so we can retrieve your Public Key",
             action: async () => {
-              const pk = await web3Gateway.getPublicKey(userAccount!);
+              const pk = await getPublicKeyAsync();
               pubKey.current = pk;
               return { isSkipped: false, txhash: undefined };
             },
@@ -80,16 +82,15 @@ export const CreateContract: React.FC<CreateFormProps> = memo(
               const durationSeconds = Number(data.durationHours) * 3600;
               const speedHPS = Number(data.speedTHPS) * 10 ** 12;
 
-              const receipt = await web3Gateway.createContract({
-                profitTargetPercent: BigInt(data.profitTargetPercent),
+              const receipt = await createNewRentalContractAsync({
+                profitTargetPercent: Number(data.profitTargetPercent),
                 speedHPS: BigInt(speedHPS),
                 durationSeconds: BigInt(durationSeconds),
                 publicKey: pubKey.current!,
-                from: userAccount!,
               });
               return {
                 isSkipped: false,
-                txhash: receipt.txHash,
+                txhash: receipt,
               };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {

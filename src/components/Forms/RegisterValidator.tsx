@@ -1,18 +1,19 @@
 import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
-import { erc20Abi, formatUnits, parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 import { InputWrapper } from "./Shared/Forms.styled";
-import { InputAdornment, TextField } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
 import { formatFeePrice, validatorStakeToken } from "../../lib/units";
 import { compressPublicKey } from "../../lib/pubkey";
-import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 import { isValidHost } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
+import { useGetPublicKey } from "../../hooks/data/usePublicKey";
+import { useApproveFee } from "../../hooks/data/useApproveFee";
 
 export interface RegisterValidatorInput {
   stake: string;
@@ -20,17 +21,16 @@ export interface RegisterValidatorInput {
 }
 
 interface CreateFormProps {
-  web3Gateway: EthereumGateway;
   onClose: () => Promise<void>;
 }
 
-export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, onClose }) => {
+export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ onClose }) => {
   const { address: userAccount } = useAccount();
-  const publicClient = usePublicClient();
-  const feeTokenAddress = useFeeTokenAddress();
-  const minStakeRef = useRef<bigint>(0n);
-
   const wc = useWalletClient();
+  const publicClient = usePublicClient();
+  const minStakeRef = useRef<bigint>(0n);
+  const { getPublicKeyAsync } = useGetPublicKey();
+  const { approveFeeAsync } = useApproveFee();
 
   // Input validation setup
   const form = useForm<RegisterValidatorInput>({
@@ -55,7 +55,7 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
 
   return (
     <TransactionForm
-      onCancel={onClose}
+      onClose={onClose}
       client={publicClient!}
       title="Register yourself as a validator"
       description="Register yourself as a validator to start validating on the Lumerin Marketplace"
@@ -140,7 +140,7 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
         {
           label: "Sign the message so we can retrieve your Public Key",
           action: async () => {
-            const pk = await web3Gateway.getPublicKey(userAccount!);
+            const pk = await getPublicKeyAsync();
             pubKey.current = pk;
             return { isSkipped: false, txhash: undefined };
           },
@@ -149,33 +149,14 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ web3Gateway, 
           label: "Approve the stake",
           action: async () => {
             const data = form.getValues();
-
             const stake = parseUnits(data.stake, validatorStakeToken.decimals);
 
-            const currentAllowance = await publicClient!.readContract({
-              address: feeTokenAddress.data!,
-              abi: erc20Abi,
-              functionName: "allowance",
-              args: [userAccount!, process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS],
+            const txhash = await approveFeeAsync({
+              spender: process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS,
+              amount: stake,
             });
 
-            if (currentAllowance >= stake) {
-              return { isSkipped: true };
-            }
-
-            const req = await publicClient!.simulateContract({
-              address: feeTokenAddress.data!,
-              abi: erc20Abi,
-              functionName: "approve",
-              args: [process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS, stake],
-              account: userAccount,
-            });
-
-            const txhash = await wc.data!.writeContract(req.request);
-            return {
-              isSkipped: false,
-              txhash: txhash,
-            };
+            return txhash ? { isSkipped: false, txhash } : { isSkipped: true };
           },
         },
         {

@@ -1,7 +1,8 @@
 import { useController, type UseFormReturn } from "react-hook-form";
 import { InputWrapper } from "./Forms.styled";
 import type { InputValuesCreateForm } from "../CreateForm";
-import { InputAdornment, TextField } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
 import type { FC } from "react";
 
 interface Props {

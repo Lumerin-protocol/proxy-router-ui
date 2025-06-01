@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@mui/material";
+import ThemeProvider from "@mui/material/styles/ThemeProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type React from "react";
 import ReactGA from "react-ga4";

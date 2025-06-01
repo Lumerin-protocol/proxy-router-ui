@@ -1,5 +1,8 @@
-import { MenuItem, TextField, Tooltip } from "@mui/material";
-import React, { FC, memo, useEffect, useRef } from "react";
+import { type FC, memo, useRef } from "react";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
+import styled from "@mui/material/styles/styled";
 import {
   type Control,
   useController,
@@ -13,9 +16,7 @@ import type { InputValuesBuyForm } from "../../../types/types";
 import { isValidLightningUsername, isValidHost, isValidUsername, validateLightningUrl } from "../../../utils/utils";
 import { InputWrapper } from "./Forms.styled";
 import { DisabledButton } from "../FormButtons/Buttons.styled";
-import styled from "@emotion/styled";
-import { predefinedPools, type PoolData } from "../BuyerForms/predefinedPools";
-import { useOnMountUnsafe } from "../../../hooks/useOnMountUnsafe";
+import { predefinedPools } from "../BuyerForms/predefinedPools";
 
 const uncompressedPublicKeyRegex = /^0x04[0-9a-fA-F]{128}$/;
 
@@ -295,7 +296,7 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
 
 // CreateEditPurchaseForm.whyDidYouRender = true;
 
-const ValidatorRow = styled.div`
+const ValidatorRow = styled("div")`
   display: flex;
   align-items: center;
   justify-content: space-between;

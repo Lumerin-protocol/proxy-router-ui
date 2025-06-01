@@ -1,21 +1,18 @@
 import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useReadContract, useWalletClient } from "wagmi";
-import { CompletedContent } from "./SellerForms/CompletedContent";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
-import { erc20Abi, parseUnits } from "viem";
-import { ContentState } from "../../types/types";
+import { parseUnits } from "viem";
 import { InputWrapper } from "./Shared/Forms.styled";
-import { InputAdornment, TextField } from "@mui/material";
-import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
-import { abi } from "contracts-js";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
 import { readContract } from "@wagmi/core";
 import { config } from "../../clients/wagmi";
 import { formatFeePrice, sellerStakeToken } from "../../lib/units";
 import { truncateAddress } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
-
-const { cloneFactoryAbi } = abi;
+import { useApproveFee } from "../../hooks/data/useApproveFee";
+import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
 
 export interface RegisterSellerInput {
   stake: string;
@@ -27,9 +24,9 @@ interface CreateFormProps {
 
 export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
   const publicClient = usePublicClient();
-  const feeTokenAddress = useFeeTokenAddress();
   const wc = useWalletClient();
   const { address } = useAccount();
+  const { approveFeeAsync } = useApproveFee();
 
   const minSellerStakeQuery = useReadContract({
     address: process.env.REACT_APP_CLONE_FACTORY,
@@ -60,7 +57,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
 
   return (
     <TransactionForm
-      onCancel={onClose}
+      onClose={onClose}
       client={publicClient!}
       title="Register yourself as a Seller"
       description="Register yourself as a Seller to start selling on the Lumerin Marketplace"
@@ -72,7 +69,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
             required: "Stake is required",
             min: {
               value: minStake?.value || "0",
-              message: `Stake must be at least ${minStake?.full || "0"}`,
+              message: `Stake must be at least ${minStake?.value || "0"} ${sellerStakeToken.symbol}`,
             },
           },
         });
@@ -121,29 +118,12 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
             const data = form.getValues();
             const stake = parseUnits(data.stake, sellerStakeToken.decimals);
 
-            const currentAllowance = await publicClient!.readContract({
-              address: feeTokenAddress.data!,
-              abi: erc20Abi,
-              functionName: "allowance",
-              args: [address!, process.env.REACT_APP_CLONE_FACTORY],
-            });
-            if (currentAllowance >= stake) {
-              return { isSkipped: true };
-            }
-
-            const req = await publicClient!.simulateContract({
-              address: feeTokenAddress.data!,
-              abi: erc20Abi,
-              functionName: "approve",
-              args: [process.env.REACT_APP_CLONE_FACTORY, stake],
-              account: address,
+            const txhash = await approveFeeAsync({
+              spender: process.env.REACT_APP_CLONE_FACTORY as `0x${string}`,
+              amount: stake,
             });
 
-            const txhash = await wc.data!.writeContract(req.request);
-            return {
-              isSkipped: false,
-              txhash: txhash,
-            };
+            return txhash ? { isSkipped: false, txhash } : { isSkipped: true };
           },
         },
         {

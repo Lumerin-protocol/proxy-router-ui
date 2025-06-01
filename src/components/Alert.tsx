@@ -1,4 +1,4 @@
-import { Dialog } from "@mui/material";
+import Dialog from "@mui/material/Dialog";
 import { ModalBox } from "./Modal.styled";
 
 interface AlertProps {

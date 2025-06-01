@@ -1,7 +1,11 @@
-import styled from "@emotion/styled";
 import type { FC, ReactNode } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArchive, faCircleXmark, faPencil, faRotateBack, faSackDollar } from "@fortawesome/free-solid-svg-icons";
+import { faArchive } from "@fortawesome/free-solid-svg-icons/faArchive";
+import { faCircleXmark } from "@fortawesome/free-solid-svg-icons/faCircleXmark";
+import { faPencil } from "@fortawesome/free-solid-svg-icons/faPencil";
+import { faRotateBack } from "@fortawesome/free-solid-svg-icons/faRotateBack";
+import { faSackDollar } from "@fortawesome/free-solid-svg-icons/faSackDollar";
+import styled from "@mui/material/styles/styled";
 
 export const CancelButton: FC<BaseProps> = (props) => (
   <ActionButton {...props} text="Cancel" icon={<FontAwesomeIcon icon={faCircleXmark} />} />
@@ -44,7 +48,7 @@ export const ActionButton: FC<Props> = ({ onClick, text, icon, disabled }) => {
   );
 };
 
-export const ActionButtonWrapper = styled.div`
+export const ActionButtonWrapper = styled("div")`
   width: 30px;
   padding: 10px 0 5px;
   button {

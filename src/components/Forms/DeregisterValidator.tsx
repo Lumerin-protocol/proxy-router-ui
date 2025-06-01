@@ -1,6 +1,6 @@
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { colors } from "../../styles/styles.config";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
@@ -16,7 +16,7 @@ export const DeregisterValidator: React.FC<CancelFormProps> = ({ closeForm }) =>
 
   return (
     <TransactionForm
-      onCancel={closeForm}
+      onClose={closeForm}
       client={publicClient!}
       title="Deregister yourself as a validator"
       description="You are about to deregister yourself as a validator, and your validator will no longer be
