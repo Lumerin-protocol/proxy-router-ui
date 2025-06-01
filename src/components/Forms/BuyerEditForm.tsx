@@ -1,14 +1,11 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
-import { useAccount, usePublicClient } from "wagmi";
-import type { EthereumGateway } from "./../../gateway/ethereum";
-import { ContentState, type HashRentalContract, type InputValuesBuyForm } from "./../../types/types";
+import { usePublicClient } from "wagmi";
+import type { HashRentalContract, InputValuesBuyForm } from "./../../types/types";
 import { encryptMessage, formatStratumUrl, truncateAddress } from "./../../utils/utils";
-import { CompletedContent } from "./BuyerForms/CompletedContent";
 import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import { decompressPublicKey } from "../../gateway/utils";
 import { useValidators } from "../../hooks/data/useValidators";
-import { abi } from "contracts-js";
+import { implementationAbi } from "contracts-js/dist/abi/abi";
 import { getPoolInfo, setPoolInfo } from "../../gateway/localStorage";
 import { predefinedPools } from "./BuyerForms/predefinedPools";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,28 +16,28 @@ import type { TransactionReceipt } from "viem";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { memo } from "react";
+import { useEditContractDestination } from "../../hooks/data/useEditContractDestination";
 
 interface EditFormProps {
   contractId: string;
-  web3Gateway?: EthereumGateway;
   closeForm: () => void;
 }
 
 export const BuyerEditForm: React.FC<EditFormProps> = memo(
-  ({ contractId, web3Gateway, closeForm }) => {
-    const { address: userAccount } = useAccount();
-    const { data: validators } = useValidators({ offset: 0, limit: 100 });
-    const client = usePublicClient();
+  ({ contractId, closeForm }) => {
+    const pc = usePublicClient();
     const qc = useQueryClient();
+    const { data: validators } = useValidators({ offset: 0, limit: 100 });
+    const { editContractDestinationAsync } = useEditContractDestination();
 
     // Input validation setup
     const form = useForm<InputValuesBuyForm>({
       mode: "onBlur",
       reValidateMode: "onBlur",
       defaultValues: async () => {
-        const startTime = await client!.readContract({
+        const startTime = await pc!.readContract({
           address: contractId as `0x${string}`,
-          abi: abi.implementationAbi,
+          abi: implementationAbi,
           functionName: "startingBlockTimestamp",
         });
 
@@ -67,8 +64,8 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
 
     return (
       <TransactionForm
-        onCancel={closeForm}
-        client={client!}
+        onClose={closeForm}
+        client={pc!}
         title="Edit purchase"
         description="Here you can edit the pool address and username you are pointing the purchased hashpower to."
         inputForm={(props) => (
@@ -131,11 +128,16 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
                 host: validator.host,
                 username: data.username,
               });
-              const pubKey = await web3Gateway!.getContractPublicKey(contractId);
-              const encrValidatorURL = await encryptMessage(pubKey, validatorURL);
 
-              const receipt = await web3Gateway!.editContractDestination({
-                from: userAccount!,
+              const sellerPublicKey = await pc!.readContract({
+                address: contractId as `0x${string}`,
+                abi: implementationAbi,
+                functionName: "pubKey",
+              });
+
+              const encrValidatorURL = await encryptMessage(sellerPublicKey, validatorURL);
+
+              const txhash = await editContractDestinationAsync({
                 contractAddress: contractId,
                 encrValidatorURL: encrValidatorURL.toString("hex"),
                 encrDestURL: encrDestURL.toString("hex"),
@@ -143,7 +145,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
 
               return {
                 isSkipped: false,
-                txhash: receipt.txHash,
+                txhash: txhash,
               };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {

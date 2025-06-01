@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
-import { Skeleton } from "@mui/material";
+import styled from "@mui/material/styles/styled";
+import Skeleton from "@mui/material/Skeleton";
+import EastIcon from "@mui/icons-material/East";
 import type { HashRentalContract } from "../../types/types";
 import { SmallWidget } from "../Cards/Cards.styled";
-import EastIcon from "@mui/icons-material/East";
 import { useWatchAsset } from "wagmi";
 import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 
@@ -15,7 +15,7 @@ export const MarketplaceStatistics = (props: {
 
   const activeContracts = props.contracts.filter((contract: HashRentalContract) => !contract.isDeleted);
 
-  const getContractEndTimestamp = (contract: any) => {
+  const getContractEndTimestamp = (contract: HashRentalContract) => {
     if (+contract.timestamp === 0) {
       return 0;
     }

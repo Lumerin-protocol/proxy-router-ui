@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 
 export const SpinnerV2 = () => {
   return (
@@ -17,7 +17,7 @@ export const SpinnerV2 = () => {
   );
 };
 
-export const Spinner = styled.div<{ fontSize?: string }>`
+export const Spinner = styled("div")<{ fontSize?: string }>`
   color: #53b1bd;
   font-size: ${({ fontSize }) => fontSize || "1.3em"};
   margin: 4.5em;

@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 
-export const ModalBox = styled.div`
+export const ModalBox = styled("div")`
   padding: 40px;
   max-width: 450px;
   text-align: left;
@@ -24,7 +24,7 @@ export const NetworkBox = styled(ModalBox)`
   }
 `;
 
-export const ModalCard = styled.div`
+export const ModalCard = styled("div")`
   background: black radial-gradient(circle, rgba(0, 0, 0, 0.1) 36%, rgba(255, 255, 255, 0.1) 100%);
   border: rgba(171, 171, 171, 1) 1px solid;
   color: #fff;
@@ -71,7 +71,7 @@ export const ModalCard = styled.div`
   }
 `;
 
-export const ContractLink = styled.a`
+export const ContractLink = styled("a")`
   font-size: 0.8rem;
   margin-bottom: 1rem;
   color: #fff;

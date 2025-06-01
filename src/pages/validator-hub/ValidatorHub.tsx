@@ -1,5 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
-import { FormControl, styled, ToggleButtonGroup } from "@mui/material";
+import FormControl from "@mui/material/FormControl";
+import styled from "@mui/material/styles/styled";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { type FC, type HTMLProps, useEffect, useMemo, useRef, useState } from "react";
 import {
   useReactTable,
@@ -19,14 +21,10 @@ import { AddressLength } from "../../types/types";
 import { useContracts } from "../../hooks/data/useContracts";
 import { useAccount } from "wagmi";
 import { useModal } from "../../hooks/useModal";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import { formatFeePrice, formatPaymentPrice, formatHashrateTHPS } from "../../lib/units";
-
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { ModalItem } from "../../components/Modal";
-
-import { ClaimLmrButton } from "../../components/ActionButton";
-import { faSackDollar } from "@fortawesome/free-solid-svg-icons";
+import { faSackDollar } from "@fortawesome/free-solid-svg-icons/faSackDollar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Pickaxe } from "../../components/Icons/Pickaxe";
 import { SellerActions, SellerFilters, SellerToolbar, ToggleButtonIcon } from "../seller-hub/styled";
@@ -39,14 +37,10 @@ import { ValidatorWidget } from "../../components/Widgets/ValidatorWidget";
 import { ClaimForm } from "../../components/Forms/ClaimForm";
 import { CircularProgress } from "../../components/CircularProgress";
 
-interface Props {
-  web3Gateway: EthereumGateway;
-}
-
 const QuickFilterValues = ["running", "unclaimed", "unset"] as const;
 type QuickFilter = (typeof QuickFilterValues)[number];
 
-export const ValidatorHub: FC<Props> = ({ web3Gateway }) => {
+export const ValidatorHub: FC = () => {
   const { address: userAccount } = useAccount();
   const validatorHistory = useValidatorHistory({ address: userAccount! });
   const contracts = useContracts();
@@ -60,6 +54,7 @@ export const ValidatorHub: FC<Props> = ({ web3Gateway }) => {
 
   const ch = createColumnHelper<ValidatorHistoryEntry>();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const columns = useMemo(() => {
     return [
       ch.display({
@@ -202,15 +197,14 @@ export const ValidatorHub: FC<Props> = ({ web3Gateway }) => {
   });
 
   return (
-    <DefaultLayout>
+    <DefaultLayout pageTitle="Validator Hub">
       <>
         <WidgetsWrapper>
-          <ValidatorWidget web3Gateway={web3Gateway} />
+          <ValidatorWidget />
         </WidgetsWrapper>
         {claimModal.isOpen && (
           <ModalItem open={claimModal.isOpen} setOpen={claimModal.setOpen}>
             <ClaimForm
-              web3Gateway={web3Gateway}
               contractIDs={Array.from(selectedContractAddresses) as `0x${string}`[]}
               closeForm={claimModal.close}
             />
@@ -298,6 +292,7 @@ function IndeterminateCheckbox({
 }: { indeterminate?: boolean } & HTMLProps<HTMLInputElement>) {
   const ref = useRef<HTMLInputElement>(null!);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (typeof indeterminate === "boolean") {
       ref.current.indeterminate = !rest.checked && indeterminate;

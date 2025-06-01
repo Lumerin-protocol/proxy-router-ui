@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 
-export const FormButtonsWrapper = styled.div`
+export const FormButtonsWrapper = styled("div")`
   display: flex;
   flex-direction: row;
   margin-top: 1.5rem;
@@ -13,7 +13,7 @@ export const FormButtonsWrapper = styled.div`
   }
 `;
 
-export const Button = styled.button`
+export const Button = styled("button")`
   border-radius: 8px;
   padding: 0.5rem 1rem;
   outline: none;
@@ -47,7 +47,6 @@ export const PrimaryButton = styled(Button)`
     bottom: calc(100% + 0.5em);
     left: 0;
     width: 100%;
-    height: 4em;
     padding: 0.5em;
     border-radius: 0.5em;
     background-color: rgba(0, 0, 0, 0.9);

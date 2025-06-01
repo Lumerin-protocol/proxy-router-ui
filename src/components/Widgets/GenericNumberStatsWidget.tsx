@@ -1,8 +1,5 @@
-import styled from "@emotion/styled";
-import EastIcon from "@mui/icons-material/East";
-import { Skeleton } from "@mui/material";
-import { useNavigate } from "react-router";
-import { useAccount } from "wagmi";
+import styled from "@mui/material/styles/styled";
+import Skeleton from "@mui/material/Skeleton";
 import { SmallWidget } from "../Cards/Cards.styled";
 import type { ReactNode } from "react";
 import { classNames } from "../../utils/utils";

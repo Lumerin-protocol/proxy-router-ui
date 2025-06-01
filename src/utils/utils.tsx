@@ -1,5 +1,5 @@
 import type React from "react";
-import { CircularProgress } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 import { encrypt } from "ecies-geth/dist/lib/src/typescript/browser";
 import { DisabledButton, PrimaryButton } from "../components/Forms/FormButtons/Buttons.styled";
 import { ProgressBar } from "../components/ProgressBar";
@@ -8,10 +8,8 @@ import {
   AlertMessage,
   ContentState,
   ContractState,
-  type FormData,
   type HashRentalContract,
   PathName,
-  SortByType,
   SortTypes,
   StatusText,
 } from "../types/types";

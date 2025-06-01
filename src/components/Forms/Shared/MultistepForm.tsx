@@ -1,12 +1,15 @@
 import { type FC, type ReactNode, useState } from "react";
+import Button from "@mui/material/Button";
+import Alert from "@mui/material/Alert";
+import styled from "@mui/material/styles/styled";
+import CheckCircle from "@mui/icons-material/CheckCircle";
+import SkipNext from "@mui/icons-material/SkipNext";
+import ErrorIcon from "@mui/icons-material/Error";
 import { FormButtonsWrapper, PrimaryButton, SecondaryButton } from "../FormButtons/Buttons.styled";
 import { truncateAddress } from "../../../utils/utils";
-import Alert from "@mui/material/Alert";
 import { BaseError, ContractFunctionRevertedError, type PublicClient, UserRejectedRequestError } from "viem";
 import { type TransactionStep, type TxState, useMultistepTx } from "../../../hooks/useTxForm";
-import { Button, styled } from "@mui/material";
 import { SpinnerV2 } from "../../Spinner.styled";
-import { CheckCircle, Error as ErrorIcon, SkipNext } from "@mui/icons-material";
 import { Link } from "react-router";
 import { getTxUrl } from "../../../lib/indexer";
 
@@ -19,7 +22,7 @@ interface TransactionFormProps {
   resultForm?: FC<StepComponentProps>;
   transactionSteps: TransactionStep[];
   client: PublicClient;
-  onCancel: () => void;
+  onClose: () => void;
 }
 
 export const TransactionForm = (props: TransactionFormProps) => {
@@ -28,8 +31,8 @@ export const TransactionForm = (props: TransactionFormProps) => {
     client: props.client,
   });
 
-  async function handleExecuteTransaction() {
-    for (let i = 0; i < props.transactionSteps.length; i++) {
+  async function handleExecuteTransaction(fromStep = 0) {
+    for (let i = fromStep; i < props.transactionSteps.length; i++) {
       const success = await multistepTx.executeNextTransaction(i);
       if (!success) {
         console.error("transaction failed");
@@ -59,7 +62,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
                           p.nextStep();
                         },
                       }}
-                      secondary={{ label: "Cancel", onClick: () => props.onCancel() }}
+                      secondary={{ label: "Cancel", onClick: () => props.onClose() }}
                     />
                   </>
                 ),
@@ -92,12 +95,13 @@ export const TransactionForm = (props: TransactionFormProps) => {
               <MultipleTransactionProgress
                 steps={props.transactionSteps}
                 txState={multistepTx.txState}
-                onRetry={handleExecuteTransaction}
+                onRetry={(stepNumber) => handleExecuteTransaction(stepNumber)}
               />
               <MultistepFormActions
                 primary={{
-                  label: props.resultForm ? "Next" : "Close",
-                  onClick: props.resultForm ? () => p.nextStep() : () => props.onCancel(),
+                  label: multistepTx.isSuccess && props.resultForm ? "Next" : "Close",
+                  onClick: multistepTx.isSuccess && props.resultForm ? () => p.nextStep() : () => props.onClose(),
+                  disabled: multistepTx.isPending,
                 }}
               />
             </>
@@ -111,7 +115,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
                   <>
                     {props.resultForm!(p)}
                     <MultistepFormActions
-                      primary={{ label: "Close", onClick: () => props.onCancel() }}
+                      primary={{ label: "Close", onClick: () => props.onClose() }}
                       secondary={{ label: "Back", onClick: () => p.prevStep() }}
                     />
                   </>

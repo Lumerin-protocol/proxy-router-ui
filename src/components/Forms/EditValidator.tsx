@@ -1,20 +1,19 @@
 import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import type { EthereumGateway } from "../../gateway/ethereum";
-import { CompletedContent } from "./SellerForms/CompletedContent";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
-import { erc20Abi, parseUnits } from "viem";
-import { ContentState } from "../../types/types";
 import { type FC, useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 import { InputWrapper } from "./Shared/Forms.styled";
-import { InputAdornment, TextField } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
 import { formatFeePrice, parseValidatorStake, validatorStakeToken } from "../../lib/units";
 import { compressPublicKey } from "../../lib/pubkey";
 import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 import { isValidHost } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
+import { useGetPublicKey } from "../../hooks/data/usePublicKey";
+import { useApproveFee } from "../../hooks/data/useApproveFee";
 
 export interface EditValidatorInput {
   stake: string;
@@ -22,7 +21,6 @@ export interface EditValidatorInput {
 }
 
 interface EditValidatorFormProps {
-  web3Gateway: EthereumGateway;
   validatorStake: bigint;
   validatorHost: string;
   onClose: () => Promise<void>;
@@ -34,6 +32,8 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
   const feeTokenAddress = useFeeTokenAddress();
 
   const wc = useWalletClient();
+  const { getPublicKeyAsync } = useGetPublicKey();
+  const { approveFeeAsync } = useApproveFee();
 
   // Input validation setup
   const form = useForm<EditValidatorInput>({
@@ -48,7 +48,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
 
   return (
     <TransactionForm
-      onCancel={props.onClose}
+      onClose={props.onClose}
       client={publicClient!}
       title="Edit your validator record"
       description="Edit your validator record to update your stake or host"
@@ -126,7 +126,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
         {
           label: "Sign the message so we can retrieve your Public Key",
           action: async () => {
-            const pk = await props.web3Gateway.getPublicKey(userAccount!);
+            const pk = await getPublicKeyAsync();
             pubKey.current = pk;
             return { isSkipped: false, txhash: undefined };
           },
@@ -138,21 +138,13 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
             if (newValidatorStake === props.validatorStake) {
               return { isSkipped: true };
             }
-            const req = await publicClient!.simulateContract({
-              address: feeTokenAddress.data!,
-              abi: erc20Abi,
-              functionName: "approve",
-              args: [
-                process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS as `0x${string}`,
-                BigInt(newValidatorStake - props.validatorStake),
-              ],
+
+            const txhash = await approveFeeAsync({
+              spender: process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS as `0x${string}`,
+              amount: newValidatorStake - props.validatorStake,
             });
 
-            const txhash = await wc.data!.writeContract(req.request);
-            return {
-              isSkipped: false,
-              txhash: txhash,
-            };
+            return txhash ? { isSkipped: false, txhash } : { isSkipped: true };
           },
         },
         {

@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import { useAccount, usePublicClient } from "wagmi";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import type { HashRentalContract } from "../../types/types";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { CreateEditContractForm } from "./Shared/CreateEditContractForm";
@@ -12,18 +11,19 @@ import type { TransactionReceipt } from "viem";
 import { truncateAddress } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { memo } from "react";
+import { useEditContractTerms } from "../../hooks/data/useEditContractTerms";
 
 export interface EditFormProps {
   contract: HashRentalContract;
-  web3Gateway: EthereumGateway;
   closeForm: () => void;
 }
 
 export const EditForm: React.FC<EditFormProps> = memo(
-  ({ web3Gateway, contract, closeForm }) => {
+  ({ contract, closeForm }) => {
     const { address: userAccount } = useAccount();
     const qc = useQueryClient();
     const publicClient = usePublicClient();
+    const { editContractTermsAsync } = useEditContractTerms();
 
     // Input validation setup
     const form = useForm<InputValuesCreateForm>({
@@ -38,7 +38,7 @@ export const EditForm: React.FC<EditFormProps> = memo(
 
     return (
       <TransactionForm
-        onCancel={closeForm}
+        onClose={closeForm}
         client={publicClient!}
         title="Edit Hashrate contract"
         description="Edit the terms of your Hashrate contract"
@@ -66,16 +66,16 @@ export const EditForm: React.FC<EditFormProps> = memo(
               const durationSeconds = Number(data.durationHours) * 3600;
               const speedHPS = Number(data.speedTHPS) * 10 ** 12;
 
-              const receipt = await web3Gateway.editContractTerms({
+              const txhash = await editContractTermsAsync({
                 contractAddress: contract.id,
                 profitTargetPercent: BigInt(data.profitTargetPercent),
                 speedHPS: BigInt(speedHPS),
                 durationSeconds: BigInt(durationSeconds),
-                from: userAccount!,
               });
+
               return {
                 isSkipped: false,
-                txhash: receipt.txHash,
+                txhash: txhash,
               };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
@@ -90,5 +90,3 @@ export const EditForm: React.FC<EditFormProps> = memo(
     return prevProps.contract.id === nextProps.contract.id;
   },
 );
-
-// EditForm.whyDidYouRender = true;

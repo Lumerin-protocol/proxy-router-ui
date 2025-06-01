@@ -1,6 +1,6 @@
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { colors } from "../../../styles/styles.config";
+// import { colors } from "../../../styles/styles.config";
 import type { FC, ReactNode } from "react";
 
 interface Props {
@@ -12,7 +12,7 @@ export const GenericCompletedContent: FC<Props> = ({ title, description }) => {
   return (
     <div className="flex flex-col items-center font-Inter">
       <div className="flex flex-col items-center">
-        <FontAwesomeIcon className="my-8" icon={faCheckCircle} size="5x" color={colors["lumerin-aqua"]} />
+        <FontAwesomeIcon className="my-8" icon={faCheckCircle} size="5x" color="#11B4BF" />
         <p className="w-4/6 text-center text-2xl mb-4">{title}</p>
         {description && <p className="w-5/6 text-center text-sm mb-4">{description}</p>}
       </div>

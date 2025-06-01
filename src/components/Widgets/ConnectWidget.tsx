@@ -1,5 +1,5 @@
 import { useAccount } from "wagmi";
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import { AddressLength } from "../../types/types";
 import { truncateAddress } from "../../utils/utils";
 import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
@@ -9,13 +9,24 @@ import { useEffect, useRef } from "react";
 
 type Props = {
   onConnect?: () => void;
+  addressLength?: AddressLength;
   hideChain?: boolean;
   hideConnector?: boolean;
 };
 
 export const ConnectWidget = (props: Props) => {
-  const { onConnect } = props;
-  const { address, connector, chain, isConnected } = useAccount();
+  return (
+    <ButtonGroup>
+      <AccountButton onConnect={props.onConnect} />
+      {!props.hideChain && <ChainButton />}
+      {!props.hideConnector && <ConnectorButton />}
+    </ButtonGroup>
+  );
+};
+
+export const AccountButton = (props: Props) => {
+  const { onConnect, addressLength = AddressLength.MEDIUM } = props;
+  const { address, isConnected } = useAccount();
   const { open } = useAppKit();
 
   const shouldRedirect = useRef(false);
@@ -26,45 +37,58 @@ export const ConnectWidget = (props: Props) => {
     }
   }, [isConnected, onConnect]);
 
+  if (address) {
+    return (
+      <Button type="button" onClick={() => open({ view: "Account" })}>
+        {/* <Avatar
+        size="24px"
+        name={address}
+        variant="marble"
+        colors={["#1876D1", "#9A5AF7", "#CF9893", "#849483", "#4E937A"]}
+        style={{ marginRight: "0.5rem" }}
+      /> */}
+        <WuiAvatar address={address} />
+        {truncateAddress(address, addressLength)}
+      </Button>
+    );
+  }
   return (
-    <ButtonGroup>
-      {address ? (
-        <>
-          <Button type="button" onClick={() => open({ view: "Account" })}>
-            {/* <Avatar
-              size="24px"
-              name={address}
-              variant="marble"
-              colors={["#1876D1", "#9A5AF7", "#CF9893", "#849483", "#4E937A"]}
-              style={{ marginRight: "0.5rem" }}
-            /> */}
-            <WuiAvatar address={address} />
-            {truncateAddress(address, AddressLength.MEDIUM)}
-          </Button>
-        </>
-      ) : (
-        <Button
-          type="button"
-          onClick={() => {
-            open({ view: "Connect" });
-            shouldRedirect.current = true;
-          }}
-        >
-          Connect wallet
-        </Button>
-      )}
-      {!props.hideChain && ChainIcon && (
-        <Button type="button" onClick={() => open({ view: "Networks" })}>
-          <ChainIcon width="1.5rem" height="1.5rem" />
-          {chain?.name}
-        </Button>
-      )}
-      {!props.hideConnector && connector?.icon && (
-        <Button type="button" onClick={() => open({ view: "Connect" })}>
-          <ConnectorIcon src={connector?.icon} alt="connector icon" />
-        </Button>
-      )}
-    </ButtonGroup>
+    <Button
+      type="button"
+      onClick={() => {
+        open({ view: "Connect" });
+        shouldRedirect.current = true;
+      }}
+    >
+      Connect wallet
+    </Button>
+  );
+};
+
+export const ChainButton = (props?: { hideName?: boolean }) => {
+  const { chain } = useAccount();
+  const { open } = useAppKit();
+
+  return (
+    ChainIcon && (
+      <Button type="button" onClick={() => open({ view: "Networks" })}>
+        <ChainIcon width="1.5rem" height="1.5rem" />
+        {!props?.hideName && chain?.name}
+      </Button>
+    )
+  );
+};
+
+export const ConnectorButton = () => {
+  const { connector } = useAccount();
+  const { open } = useAppKit();
+
+  return (
+    connector?.icon && (
+      <Button type="button" onClick={() => open({ view: "Connect" })}>
+        <ConnectorIcon src={connector?.icon} alt="connector icon" />
+      </Button>
+    )
   );
 };
 

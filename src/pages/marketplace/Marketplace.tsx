@@ -1,74 +1,124 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import type React from "react";
-import { useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
-import { AvailableContracts } from "../../components/Cards/AvailableContracts";
+import Skeleton from "@mui/material/Skeleton";
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { BuyerOrdersWidget } from "../../components/Widgets/BuyerOrdersWidget";
 import { MarketplaceStatistics } from "../../components/Widgets/MarketplaceStatistics";
 import { MessageWidget } from "../../components/Widgets/MessageWidget";
-import { MobileWalletInfo } from "../../components/Widgets/MobileWalletInfo";
 import { WalletBalanceWidget } from "../../components/Widgets/WalletBalanceWidget";
-import type { EthereumGateway } from "../../gateway/ethereum";
-import { useAvailableContracts, useBuyerContracts } from "../../hooks/data/useContracts";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { ContractState, SortTypes } from "../../types/types";
-import { sortContracts } from "../../utils/utils";
-import { MobileWidgetsWrapper, WidgetsWrapper } from "./styled";
+import type { HashRentalContract } from "../../types/types";
+import { useModal } from "../../hooks/useModal";
+import { Table } from "../../components/Table";
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { ModalItem } from "../../components/Modal";
+import { BuyForm2 } from "../../components/Forms/BuyForm";
+import { SkeletonWrap } from "../../components/Skeleton.styled";
+import { createColumnHelper } from "@tanstack/react-table";
+import { getSortedRowModel } from "@tanstack/react-table";
+import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled";
+import { TableIcon } from "../../components/TableIcon";
+import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
+import { formatDuration } from "../../lib/duration";
+import { useAvailableContracts } from "../../hooks/data/useContracts";
+import { WidgetsWrapper } from "./styled";
 
-interface Props {
-  web3Gateway: EthereumGateway;
-}
-
-export const Marketplace: React.FC<Props> = ({ web3Gateway }) => {
+export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
   const contractsQuery = useAvailableContracts();
-  const [sortType, setSortType] = useState<SortTypes>(SortTypes.None);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const buyModal = useModal();
+  const [buyContractId, setBuyContractId] = useState<string | null>(null);
+  const data = useMemo(() => contractsQuery.data || [], [contractsQuery.data]);
 
-  const availableContracts = useMemo(() => {
-    if (!contractsQuery.data) return [];
-
-    return sortContracts(sortType, contractsQuery.data);
-  }, [contractsQuery.data, sortType]);
-
-  if (isMobile) {
-    return (
-      <DefaultLayout>
-        <MobileWidgetsWrapper>
-          <div className="widget-row">
-            <MobileWalletInfo walletAddress={userAccount || ""} isMobile={isMobile} />
-            <WalletBalanceWidget />
+  const ch = createColumnHelper<HashRentalContract>();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  const columns = useMemo(() => {
+    return [
+      ch.accessor("id", {
+        header: "Address",
+        sortingFn: "text",
+        cell: (r) => <TableIcon icon={null} text={r.getValue()} hasLink justify="center" />,
+      }),
+      ch.accessor("speed", {
+        id: "speed",
+        header: "Speed",
+        sortingFn: "alphanumeric",
+        cell: (r) => `${formatHashrateTHPS(r.getValue()).full}`,
+      }),
+      ch.accessor("length", {
+        header: "Duration",
+        sortingFn: "alphanumeric",
+        cell: (r) => formatDuration(BigInt(r.getValue())),
+      }),
+      ch.accessor("price", {
+        id: "price",
+        header: "Price / Fee",
+        sortingFn: "alphanumeric",
+        cell: (r) => (
+          <div className="flex-column gap-1">
+            <div>{formatPaymentPrice(r.getValue()).full}</div>
+            <div className="text-sm text-gray-300">{formatFeePrice(r.row.original.fee).full}</div>
           </div>
-        </MobileWidgetsWrapper>
-        <MessageWidget isMobile={isMobile} />
-        <AvailableContracts
-          web3Gateway={web3Gateway}
-          contracts={availableContracts}
-          loading={contractsQuery.isLoading}
-          setSortType={setSortType}
-          sortType={sortType}
-        />
-      </DefaultLayout>
+        ),
+      }),
+      ch.display({
+        header: "Actions",
+        enableSorting: false,
+        meta: {
+          hideTitleMobile: true,
+        },
+        cell: (r) => (
+          <div className="flex flex-row gap-2 justify-center">
+            <PrimaryButton
+              onClick={() => {
+                setBuyContractId(r.row.original.id);
+                buyModal.open();
+              }}
+              disabled={r.row.original.seller === userAccount}
+            >
+              Purchase
+            </PrimaryButton>
+          </div>
+        ),
+      }),
+    ];
+  }, []);
+
+  const tableInstance = useReactTable<HashRentalContract>({
+    columns,
+    data,
+    getRowId: (row) => row.id,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  if (contractsQuery.isLoading) {
+    return (
+      <>
+        {[...Array(10)].map((_, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: this list is a placeholder
+          <SkeletonWrap key={index}>
+            <Skeleton variant="rectangular" width={"100%"} height={100} />
+          </SkeletonWrap>
+        ))}
+      </>
     );
   }
 
   return (
-    <DefaultLayout>
+    <DefaultLayout pageTitle="Marketplace">
       <WidgetsWrapper>
         <MessageWidget isMobile={isMobile} />
         <WalletBalanceWidget />
         <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
         <MarketplaceStatistics isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
       </WidgetsWrapper>
-      <AvailableContracts
-        contracts={availableContracts}
-        loading={contractsQuery.isLoading}
-        setSortType={setSortType}
-        sortType={sortType}
-        web3Gateway={web3Gateway}
-      />
+      <ModalItem open={buyModal.isOpen} setOpen={buyModal.setOpen}>
+        <BuyForm2 key={buyContractId} contractId={buyContractId!} setOpen={buyModal.setOpen} />
+      </ModalItem>
+      <Table tableInstance={tableInstance} />
     </DefaultLayout>
   );
 };

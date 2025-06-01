@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import EastIcon from "@mui/icons-material/East";
-import { Skeleton } from "@mui/material";
+import Skeleton from "@mui/material/Skeleton";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
 import { ContractState, type HashRentalContract, PathName } from "../../types/types";

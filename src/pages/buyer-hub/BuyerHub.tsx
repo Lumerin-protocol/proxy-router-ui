@@ -5,10 +5,9 @@ import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { SortToolbar } from "../../components/SortToolbar";
 import { Spinner } from "../../components/Spinner.styled";
 import { TabSwitch } from "../../components/TabSwitch.Styled";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import { useBuyerContracts } from "../../hooks/data/useContracts";
 import { ContractState, CurrentTab, SortTypes } from "../../types/types";
-import { getProgressPercentage, sortContracts } from "../../utils/utils";
+import { sortContracts } from "../../utils/utils";
 import { getPoolInfo } from "../../gateway/localStorage";
 import { useModal } from "../../hooks/useModal";
 import { ModalItem } from "../../components/Modal";
@@ -16,11 +15,7 @@ import { BuyerEditForm } from "../../components/Forms/BuyerEditForm";
 import { CancelForm } from "../../components/Forms/CancelForm";
 import { ContractCards } from "../../components/Cards/PurchasedContracts.styled";
 
-type Props = {
-  web3Gateway: EthereumGateway;
-};
-
-export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
+export const BuyerHub: FC = () => {
   const { address: userAccount } = useAccount();
   const contractsQuery = useBuyerContracts({ address: userAccount });
 
@@ -33,6 +28,7 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
   const [completedSortType, setCompletedSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
   const currentBlockTimestamp = new Date().getTime() / 1000;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const runningContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
     const buyerOrders = contractsQuery.data.filter(
@@ -42,6 +38,7 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
     return sortContracts(runningSortType, buyerOrders);
   }, [contractsQuery.data, runningSortType]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const completedContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
 
@@ -95,12 +92,12 @@ export const BuyerHub: FC<Props> = ({ web3Gateway }) => {
   });
 
   return (
-    <DefaultLayout>
+    <DefaultLayout pageTitle="Buyer Hub">
       <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contractId}`}>
-        <BuyerEditForm contractId={contractId!} web3Gateway={web3Gateway} closeForm={() => editModal.close()} />
+        <BuyerEditForm contractId={contractId!} closeForm={() => editModal.close()} />
       </ModalItem>
       <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen} key={`cancel-${contractId}`}>
-        <CancelForm contractId={contractId!} web3Gateway={web3Gateway} closeForm={() => cancelModal.close()} />
+        <CancelForm contractId={contractId!} closeForm={() => cancelModal.close()} />
       </ModalItem>
       <TabSwitch>
         <button

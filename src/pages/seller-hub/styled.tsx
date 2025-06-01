@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
-import { ToggleButton } from "@mui/material";
+import styled from "@mui/material/styles/styled";
+import ToggleButton from "@mui/material/ToggleButton";
 import type { ReactNode } from "react";
 
 export const ToggleButtonIcon = (props: {
@@ -26,12 +26,12 @@ const ToggleButtonStyled = styled(ToggleButton)`
   }
 `;
 
-export const SellerFilters = styled.div`
+export const SellerFilters = styled("div")`
   display: flex;
   width: 100%;
 `;
 
-export const SellerActions = styled.div`
+export const SellerActions = styled("div")`
   display: flex;
   justify-content: flex-end;
   width: 100%;
@@ -50,7 +50,7 @@ export const SellerActions = styled.div`
   }
 `;
 
-export const SellerToolbar = styled.div`
+export const SellerToolbar = styled("div")`
   display: flex;
   justify-content: space-between;
   width: 100%;

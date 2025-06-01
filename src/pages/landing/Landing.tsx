@@ -1,19 +1,13 @@
 import EastIcon from "@mui/icons-material/East";
 import type { FC } from "react";
 import { useNavigate } from "react-router";
-import { useAccount, useDisconnect } from "wagmi";
-import { ModalItem } from "../../components/Modal";
-import { useModal } from "../../hooks/useModal";
 import Prototype from "../../images/landing-hero.png";
 import { PathName } from "../../types/types";
 import { ButtonsWrapper, ConnectBtn, HeroHeadline, HeroSubheadline, HeroWrapper, Steps } from "./Landing.styled";
 import { ConnectWidget } from "../../components/Widgets/ConnectWidget";
 
 export const Landing: FC = () => {
-  const connectWalletModal = useModal();
   const navigate = useNavigate();
-  const { address } = useAccount();
-  const { disconnect } = useDisconnect();
 
   const instructions = [
     {

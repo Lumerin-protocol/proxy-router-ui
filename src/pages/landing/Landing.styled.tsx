@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled";
 import BackgroundDots from "../../images/landing-bg-dots.png";
 // import HeroBubble from '../images/hero-bubble-round.png';
@@ -7,7 +7,7 @@ import BackgroundDots from "../../images/landing-bg-dots.png";
 import BackgroundGradient from "../../images/landing-gradient.png";
 import Grid from "../../images/landing-grid.png";
 
-export const HeroWrapper = styled.div`
+export const HeroWrapper = styled("div")`
   min-height: 100vh;
   padding-top: 5rem;
   width: 100%;
@@ -77,7 +77,7 @@ export const HeroWrapper = styled.div`
   }
 `;
 
-export const HeroHeadline = styled.h1`
+export const HeroHeadline = styled("h1")`
   font-size: 4rem;
   font-weight: 700;
   color: #fff;
@@ -89,14 +89,14 @@ export const HeroHeadline = styled.h1`
   }
 `;
 
-export const HeroSubheadline = styled.div`
+export const HeroSubheadline = styled("div")`
   font-size: 1.5rem;
   max-width: 400px;
   margin-bottom: 1.5rem;
   color: #fff;
 `;
 
-export const Steps = styled.ul`
+export const Steps = styled("ul")`
   display: flex;
   flex-direction: row;
   margin-top: 2rem;
@@ -145,7 +145,7 @@ export const ConnectBtn = styled(PrimaryButton)`
   padding: 0.75rem 1.75rem;
 `;
 
-export const ButtonsWrapper = styled.div`
+export const ButtonsWrapper = styled("div")`
   display: flex;
   gap: 1rem;
 `;

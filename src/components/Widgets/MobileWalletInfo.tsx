@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import { AddressLength } from "../../types/types";
 import { truncateAddress } from "../../utils/utils";
 import { MobileWidget } from "../Cards/Cards.styled";

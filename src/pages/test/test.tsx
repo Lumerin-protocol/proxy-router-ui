@@ -7,8 +7,7 @@ import { InputWrapper } from "../../components/Forms/Shared/Forms.styled";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { useModal } from "../../hooks/useModal";
-import { ModalItem } from "../../components/Modal";
-import { Button } from "@mui/material";
+import Button from "@mui/material/Button";
 
 export const Test: FC = () => {
   const editModal = useModal();
@@ -81,6 +80,8 @@ export const TestChild: FC<{
         username: "shev",
         predefinedPoolIndex: 0,
         lightningAddress: "",
+        customValidatorPublicKey: "",
+        customValidatorHost: "",
       };
     },
   });

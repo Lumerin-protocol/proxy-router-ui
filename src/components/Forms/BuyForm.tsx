@@ -1,9 +1,8 @@
-import { memo, useCallback } from "react";
+import { type FC, memo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { encryptMessage, formatStratumUrl, truncateAddress } from "../../utils/utils";
 import { useAccount, usePublicClient } from "wagmi";
 import { purchasedHashrate } from "../../analytics";
-import type { EthereumGateway } from "../../gateway/ethereum";
 import { decompressPublicKey } from "../../gateway/utils";
 import { CONTRACTS_QK, useContractV2, waitForBlockNumber } from "../../hooks/data/useContracts";
 import { useValidators } from "../../hooks/data/useValidators";
@@ -17,22 +16,27 @@ import { useQueryClient } from "@tanstack/react-query";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { publicKeyToAddress } from "viem/utils";
+import { usePurchaseContract } from "../../hooks/data/usePurchaseContract";
+import { useApprovePayment } from "../../hooks/data/useApprovePayment";
+import { useApproveFee } from "../../hooks/data/useApproveFee";
+import { implementationAbi } from "contracts-js/dist/abi/abi";
 
 interface BuyFormProps {
   contractId: string;
-  web3Gateway?: EthereumGateway;
   setOpen: (isOpen: boolean) => void;
 }
 
-export const BuyForm2 = memo(
-  ({ contractId, web3Gateway, setOpen }: BuyFormProps) => {
-    const { address: userAccount } = useAccount();
-    const publicClient = usePublicClient();
+export const BuyForm2: FC<BuyFormProps> = memo(
+  ({ contractId, setOpen }) => {
+    const { approvePaymentAsync } = useApprovePayment();
+    const { approveFeeAsync } = useApproveFee();
+    const { purchaseContractAsync } = usePurchaseContract();
+
+    const qc = useQueryClient();
+    const pc = usePublicClient();
 
     const { data: validators } = useValidators({ offset: 0, limit: 100 });
     const contract = useContractV2({ address: contractId as `0x${string}` });
-
-    const qc = useQueryClient();
 
     // form setup
     const form = useForm<InputValuesBuyForm>({
@@ -58,13 +62,13 @@ export const BuyForm2 = memo(
           key="form"
         />
       ),
-      [],
+      [form.control, form.resetField, form.setValue],
     );
 
     return (
       <TransactionForm
-        onCancel={() => setOpen(false)}
-        client={publicClient!}
+        onClose={() => setOpen(false)}
+        client={pc!}
         title="Purchase Hashpower"
         description="Enter the Pool Address, Port Number, and Username you are pointing the purchased
             hashpower to."
@@ -113,12 +117,13 @@ export const BuyForm2 = memo(
             label: "Approve Payment",
             action: async () => {
               try {
-                const receipt = await web3Gateway!.approvePayment(contract.data!.price, userAccount!);
-                return receipt.transactionHash
-                  ? { txhash: receipt.transactionHash, isSkipped: false }
-                  : { isSkipped: true };
+                const receipt = await approvePaymentAsync({
+                  spender: contract.data!.id as `0x${string}`,
+                  amount: BigInt(contract.data!.price),
+                });
+                return receipt ? { txhash: receipt, isSkipped: false } : { isSkipped: true };
               } catch (error) {
-                console.error("herer", error);
+                console.error("Error approving payment:", error);
                 throw error;
               }
             },
@@ -126,10 +131,11 @@ export const BuyForm2 = memo(
           {
             label: "Approve Fee",
             action: async () => {
-              const receipt = await web3Gateway!.approveFee(contract.data!.fee, userAccount!);
-              return receipt.transactionHash
-                ? { txhash: receipt.transactionHash, isSkipped: false }
-                : { isSkipped: true };
+              const receipt = await approveFeeAsync({
+                spender: contract.data!.id as `0x${string}`,
+                amount: BigInt(contract.data!.fee),
+              });
+              return receipt ? { txhash: receipt, isSkipped: false } : { isSkipped: true };
             },
           },
           {
@@ -141,11 +147,6 @@ export const BuyForm2 = memo(
                 host: data.poolAddress,
                 username: data.username,
               });
-
-              // const validator = validators?.find((v) => v.addr === data.validatorAddress)!;
-              // if (!validator) {
-              //   throw new Error("Validator is not set");
-              // }
 
               let validatorPublicKey: `0x${string}`;
               let validatorAddr: `0x${string}`;
@@ -169,20 +170,23 @@ export const BuyForm2 = memo(
                 username: data.username,
               });
 
-              const pubKey = await web3Gateway!.getContractPublicKey(contract.data!.id);
+              const pubKey = await pc!.readContract({
+                address: contract.data!.id as `0x${string}`,
+                abi: implementationAbi,
+                functionName: "pubKey",
+              });
               const encrValidatorURL = await encryptMessage(pubKey, validatorURL);
 
-              const receipt2 = await web3Gateway!.purchaseContract({
+              const txhash = await purchaseContractAsync({
                 contractAddress: contract.data!.id,
                 validatorAddress: validatorAddr,
                 encrValidatorURL: encrValidatorURL.toString("hex"),
                 encrDestURL: encrDestURL.toString("hex"),
-                buyer: userAccount!,
                 termsVersion: contract.data!.version,
               });
 
               purchasedHashrate(Number(contract.data!.speed) * Number(contract.data!.length));
-              return receipt2.txHash ? { txhash: receipt2.txHash, isSkipped: false } : { isSkipped: true };
+              return { txhash, isSkipped: false };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
               await waitForBlockNumber(receipt.blockNumber, qc);
@@ -213,5 +217,3 @@ export const BuyForm2 = memo(
     return prevProps.contractId === nextProps.contractId;
   },
 );
-
-// BuyForm2.whyDidYouRender = true;

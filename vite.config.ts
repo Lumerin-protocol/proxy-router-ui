@@ -1,10 +1,12 @@
-import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 import svgr from "vite-plugin-svgr";
 import { type Env, EnvSchema } from "./env.schema";
 import { version } from "./package.json";
 import { newAjv } from "./validator";
+import mkcert from "vite-plugin-mkcert";
+// import { analyzer } from "vite-bundle-analyzer";
+import { imagetools } from "vite-imagetools";
 
 declare global {
   namespace NodeJS {
@@ -52,18 +54,55 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react({
-        // jsxImportSource: "@emotion/react",
-        jsxImportSource: "@welldone-software/why-did-you-render",
+        jsxImportSource: "@emotion/react",
+        // jsxImportSource: "@welldone-software/why-did-you-render",
         babel: {
           plugins: ["@emotion/babel-plugin"],
         },
       }),
+      imagetools({
+        defaultDirectives: (url) => {
+          return new URLSearchParams({ format: "webp", quality: "80" });
+        },
+      }),
       svgr(),
-      tailwindcss(),
+      mkcert(),
+      // analyzer({
+      //   openAnalyzer: false,
+      //   fileName: "bundle-analyzer.html",
+      //   analyzerPort: 1234,
+      // }),
     ],
     build: {
+      rollupOptions: {
+        treeshake: "recommended",
+      },
       outDir: "build", // CRA's default build output
+      // rollupOptions: {
+      // output: {
+      // manualChunks: {
+      //   // Separate MUI into its own chunk
+      //   "mui-core": ["@mui/material", "@emotion/styled"],
+      //   // Separate MUI icons into its own chunk
+      //   // "mui-icons": ["@mui/icons-material"],
+      //   // Vendor chunk for other large dependencies
+      //   vendor: [
+      //     "react",
+      //     "react-dom",
+      //     "react-router",
+      //     "@tanstack/react-query",
+      //     "@tanstack/react-table",
+      //   ],
+      //   // Web3 related libraries
+      //   web3: ["wagmi", "viem", "@reown/appkit", "@reown/appkit-adapter-wagmi"],
+      // },
+      // },
+      // },
     },
     define: processEnvDefineMap,
+    // Optimize dependencies
+    optimizeDeps: {
+      include: ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
+    },
   };
 });

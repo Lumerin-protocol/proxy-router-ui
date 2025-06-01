@@ -1,27 +1,26 @@
-import { useAccount, usePublicClient } from "wagmi";
-import type { EthereumGateway } from "../../gateway/ethereum";
+import { usePublicClient } from "wagmi";
 import { waitForBlockNumber } from "../../hooks/data/useContracts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { colors } from "../../styles/styles.config";
 import { useQueryClient } from "@tanstack/react-query";
 import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
+import { useCloseContract } from "../../hooks/data/useCloseContract";
 
 export interface CancelFormProps {
   contractId: string;
-  web3Gateway?: EthereumGateway;
   closeForm: () => void;
 }
 
-export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway, closeForm }) => {
-  const { address: userAccount } = useAccount();
+export const CancelForm: React.FC<CancelFormProps> = ({ contractId, closeForm }) => {
   const qc = useQueryClient();
   const publicClient = usePublicClient();
+  const { closeContractAsync } = useCloseContract();
 
   return (
     <TransactionForm
-      onCancel={closeForm}
+      onClose={closeForm}
       client={publicClient!}
       title="Cancel purchase"
       description="You are about to cancel your purchase. The hashpower will no longer be delivered."
@@ -48,11 +47,10 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, web3Gateway,
         {
           label: "Cancel contract",
           action: async () => {
-            const receipt = await web3Gateway!.closeContract({
-              contractAddress: contractId,
-              from: userAccount!,
+            const txhash = await closeContractAsync({
+              contractAddress: contractId as `0x${string}`,
             });
-            return receipt.txHash ? { txhash: receipt.txHash, isSkipped: false } : { isSkipped: true };
+            return { txhash, isSkipped: false };
           },
           postConfirmation: async (receipt: TransactionReceipt) => {
             await waitForBlockNumber(receipt.blockNumber, qc);

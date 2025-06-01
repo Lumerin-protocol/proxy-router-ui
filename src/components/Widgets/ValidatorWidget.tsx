@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "@mui/material/styles/styled";
 import { zeroAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { SmallWidget } from "../Cards/Cards.styled";
@@ -11,16 +11,9 @@ import { RegisterValidatorForm } from "../Forms/RegisterValidator";
 import { useModal } from "../../hooks/useModal";
 import { EditValidatorForm } from "../Forms/EditValidator";
 import { DeregisterValidator } from "../Forms/DeregisterValidator";
-import { abi } from "contracts-js";
-import type { EthereumGateway } from "../../gateway/ethereum";
+import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 
-const { validatorRegistryAbi, cloneFactoryAbi } = abi;
-
-interface ValidatorWidgetProps {
-  web3Gateway: EthereumGateway;
-}
-
-export const ValidatorWidget: FC<ValidatorWidgetProps> = (props) => {
+export const ValidatorWidget: FC = () => {
   const { address } = useAccount();
   const registerValidatorModal = useModal();
   const editValidatorModal = useModal();
@@ -46,7 +39,6 @@ export const ValidatorWidget: FC<ValidatorWidgetProps> = (props) => {
       {registerValidatorModal.isOpen && (
         <ModalItem open={registerValidatorModal.isOpen} setOpen={registerValidatorModal.setOpen}>
           <RegisterValidatorForm
-            web3Gateway={props.web3Gateway}
             onClose={async () => {
               await validatorQuery.refetch();
               registerValidatorModal.close();
@@ -57,7 +49,6 @@ export const ValidatorWidget: FC<ValidatorWidgetProps> = (props) => {
       {editValidatorModal.isOpen && (
         <ModalItem open={editValidatorModal.isOpen} setOpen={editValidatorModal.setOpen}>
           <EditValidatorForm
-            web3Gateway={props.web3Gateway}
             validatorHost={validator!.host}
             validatorStake={validator!.stake}
             onClose={async () => {
@@ -107,7 +98,7 @@ export const ValidatorWidget: FC<ValidatorWidgetProps> = (props) => {
   );
 };
 
-const Value = styled.dd`
+const Value = styled("dd")`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,7 +108,7 @@ const Value = styled.dd`
   font-weight: 600;
 `;
 
-const Key = styled.dt`
+const Key = styled("dt")`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -125,7 +116,7 @@ const Key = styled.dt`
   font-size: 0.8em;
 `;
 
-const ValidatorInfo = styled.dl`
+const ValidatorInfo = styled("dl")`
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-auto-flow: column dense;
@@ -134,7 +125,7 @@ const ValidatorInfo = styled.dl`
   justify-content: space-evenly;
 `;
 
-const WidgetContent = styled.div`
+const WidgetContent = styled("div")`
   display: flex;
   align-items: center;
   justify-content: space-evenly;
