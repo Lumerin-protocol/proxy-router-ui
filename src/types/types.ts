@@ -99,8 +99,10 @@ export interface ContractHistory {
   endTime: string;
   purchaseTime: string;
   price: string;
+  fee: string;
   speed: string;
   length: string;
+  validator: string;
 }
 
 export interface HashRentalContract {

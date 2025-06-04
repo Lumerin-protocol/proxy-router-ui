@@ -30,7 +30,7 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ onClose }) =>
   const publicClient = usePublicClient();
   const minStakeRef = useRef<bigint>(0n);
   const { getPublicKeyAsync } = useGetPublicKey();
-  const { approveFeeAsync } = useApproveFee();
+  const fee = useApproveFee();
 
   // Input validation setup
   const form = useForm<RegisterValidatorInput>({
@@ -151,7 +151,7 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ onClose }) =>
             const data = form.getValues();
             const stake = parseUnits(data.stake, validatorStakeToken.decimals);
 
-            const txhash = await approveFeeAsync({
+            const txhash = await fee.approveAsync({
               spender: process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS,
               amount: stake,
             });

@@ -42,6 +42,8 @@ interface ContractHistory {
   length: string;
   purchaseTime: string;
   isGoodCloseout: boolean;
+  fee: string;
+  validator: string;
 }
 
 interface FutureTerms {

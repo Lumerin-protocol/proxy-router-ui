@@ -13,7 +13,7 @@ import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled
 import { Spinner } from "../../components/Spinner.styled";
 import { Table } from "../../components/Table";
 import { TableIcon } from "../../components/TableIcon";
-import { ContractState, type HashRentalContract } from "../../types/types";
+import type { HashRentalContract } from "../../types/types";
 import { useSellerContracts } from "../../hooks/data/useContracts";
 import { useAccount } from "wagmi";
 import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
@@ -35,8 +35,10 @@ import { SellerActions, SellerToolbar } from "./styled";
 import { ClaimForm } from "../../components/Forms/ClaimForm";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { SellerWidget } from "../../components/Widgets/SellerWidget";
-import { CircularProgress } from "../../components/CircularProgress";
-import { FiltersButtonGroup, FiltersSelect } from "./Filters";
+import { FiltersButtonGroup, FiltersSelect } from "../../components/Filters";
+import { ProgressCell } from "./ProgressCell";
+import { StatusAccessor } from "./ProgressCell";
+import { TableToolbarButton } from "../../components/TableToolbarButton";
 
 export const SellerHub: FC = () => {
   const { address: userAccount } = useAccount();
@@ -128,41 +130,13 @@ export const SellerHub: FC = () => {
         sortingFn: "alphanumeric",
         cell: (r) => <TableIcon icon={null} text={r.getValue()} hasLink justify="center" />,
       }),
-      ch.accessor(
-        (r) => {
-          if (r.isDeleted) {
-            return -2;
-          }
-          if (r.state === ContractState.Available) {
-            return -1;
-          }
-          const timeElapsed = blockTime30s - BigInt(r.timestamp);
-          const percentage = Number(timeElapsed) / Number(r.length);
-          return percentage;
-        },
-        {
-          id: "status",
-          header: "Status",
-          sortingFn: "alphanumeric",
-          filterFn: "inNumberRange",
-          cell: (r) => {
-            const value = r.getValue();
-            if (value === -2) {
-              return <ProgressCell>Archived</ProgressCell>;
-            }
-            if (value === -1) {
-              return <ProgressCell>Available</ProgressCell>;
-            }
-
-            return (
-              <ProgressCell>
-                <ProgressBar progress={value} color="default" />
-                {(value * 100).toFixed(0)}%
-              </ProgressCell>
-            );
-          },
-        },
-      ),
+      ch.accessor((r) => StatusAccessor(r, Number(blockTime30s)), {
+        id: "status",
+        header: "Status",
+        sortingFn: "alphanumeric",
+        filterFn: "inNumberRange",
+        cell: (r) => <ProgressCell contract={r.row.original} />,
+      }),
       ch.accessor("speed", {
         id: "speed",
         header: "Speed",
@@ -176,28 +150,51 @@ export const SellerHub: FC = () => {
         cell: (r) => (
           <div className="flex-column gap-1">
             <div>{formatPaymentPrice(r.getValue()).full}</div>
-            <div className="text-sm text-gray-300">{formatFeePrice(r.row.original.fee).full}</div>
+            <div className="text-xs text-gray-400">{formatFeePrice(r.row.original.fee).full}</div>
           </div>
         ),
       }),
       ch.accessor("length", {
         header: "Duration",
         sortingFn: "alphanumeric",
-        cell: (r) => formatDuration(BigInt(r.getValue())),
+        cell: (r) => {
+          return formatDuration(BigInt(r.getValue()));
+        },
       }),
       ch.accessor("profitTargetPercent", {
         header: "Profit",
         sortingFn: "alphanumeric",
         cell: (r) => `${r.getValue()}%`,
       }),
-      ch.accessor((r) => formatPaymentPrice(r.balance).full, {
-        id: "balance",
-        header: "Unclaimed",
-        sortingFn: "alphanumeric",
-      }),
+      ch.accessor(
+        (r) => {
+          // the unclaimed balance is not equal 0 only in two cases:
+          // 1. the contract is running and the balance is equal to the price of a whole contract
+          //  - in this case we can claim partially, return the balance multiplied by progress
+          //
+          // 2. the contract auto-closed and is available and the balance is equal to the real unclaimed balance
+          //  - in this case we can claim full amount, return the balance
+
+          const progress = StatusAccessor(r, Number(blockTime30s));
+          if (progress < 0) {
+            return BigInt(r.balance);
+          }
+
+          return BigInt(Math.floor(Number(r.balance) * progress));
+        },
+        {
+          id: "balance",
+          header: "Unclaimed",
+          sortingFn: "alphanumeric",
+          cell: (r) => formatPaymentPrice(r.cell.getValue()).full,
+        },
+      ),
       ch.display({
         header: "Actions",
         enableSorting: false,
+        meta: {
+          hideTitleMobile: true,
+        },
         cell: (r) => (
           <div className="flex flex-row gap-2 justify-center">
             <ClaimLmrButton onClick={() => onClaim(r.row.original.id)} disabled={r.row.original.balance === "0"} />
@@ -226,6 +223,9 @@ export const SellerHub: FC = () => {
         select: selectRowsColumnVisible,
       },
     },
+    initialState: {
+      sorting: [{ id: "status", desc: true }],
+    },
     getRowId: (row) => row.id,
     onRowSelectionChange: setSelectedRows,
     // onColumnFiltersChange: setColumnFilters,
@@ -243,7 +243,7 @@ export const SellerHub: FC = () => {
       )}
       {editModal.isOpen && (
         <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen}>
-          <EditForm contract={contracts?.[0]!} closeForm={editModal.close} />
+          <EditForm contract={tableInstance.getRow(contractIds[0])?.original} closeForm={editModal.close} />
         </ModalItem>
       )}
       {claimModal.isOpen && (
@@ -266,36 +266,40 @@ export const SellerHub: FC = () => {
       </WidgetsWrapper>
       <SellerToolbar>
         {isMobile ? (
-          <FiltersSelect values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+          !selectRowsColumnVisible && (
+            <FiltersSelect values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+          )
         ) : (
           <FiltersButtonGroup values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
         )}
 
         <SellerActions>
-          <PrimaryButton className="create-button" onClick={onCreate}>
-            <AddIcon className="add-icon" />
-            Create Contract
-          </PrimaryButton>
-          {!selectRowsColumnVisible && (
-            <PrimaryButton onClick={() => setSelectRowsColumnVisible(true)}>
+          {!(isMobile && selectRowsColumnVisible) && (
+            <TableToolbarButton onClick={onCreate}>
               <AddIcon className="add-icon" />
-              Select columns
-            </PrimaryButton>
+              Create Contract
+            </TableToolbarButton>
+          )}
+          {!selectRowsColumnVisible && (
+            <TableToolbarButton onClick={() => setSelectRowsColumnVisible(true)}>
+              <AddIcon className="add-icon" />
+              Batch actions
+            </TableToolbarButton>
           )}
           {selectRowsColumnVisible && (
             <>
-              <PrimaryButton onClick={() => setSelectRowsColumnVisible(false)}>
+              <TableToolbarButton onClick={() => setSelectRowsColumnVisible(false)}>
                 <AddIcon className="add-icon" />
-                Cancel selection
-              </PrimaryButton>
-              <PrimaryButton onClick={onBatchClaim}>
+                Cancel
+              </TableToolbarButton>
+              <TableToolbarButton onClick={onBatchClaim}>
                 <AddIcon className="add-icon" />
                 Claim
-              </PrimaryButton>
-              <PrimaryButton onClick={() => setSelectRowsColumnVisible(false)}>
+              </TableToolbarButton>
+              <TableToolbarButton onClick={() => setSelectRowsColumnVisible(false)}>
                 <AddIcon className="add-icon" />
                 Archive
-              </PrimaryButton>
+              </TableToolbarButton>
             </>
           )}
         </SellerActions>
@@ -352,19 +356,6 @@ function IndeterminateCheckbox({
   return <input type="checkbox" ref={ref} className={`${className} cursor-pointer`} {...rest} />;
 }
 
-const ProgressBar = styled(CircularProgress)`
-  width: 2em;
-  height: 2em;
-`;
-
-const ProgressCell = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-`;
-
 const QuickFilterValues = [
   {
     value: "archived",
@@ -378,7 +369,7 @@ const QuickFilterValues = [
   },
   {
     value: "running",
-    icon: <Pickaxe />,
+    icon: <Pickaxe fill="#fff" />,
     text: "Running",
   },
   {

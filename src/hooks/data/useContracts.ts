@@ -4,6 +4,7 @@ import { getContractsV2 } from "../../gateway/indexer";
 import { ContractState, type HashRentalContract } from "../../types/types";
 import type { GetResponse, IndexerContractEntry } from "../../gateway/interfaces";
 import { backgroundRefetchOpts } from "./config";
+import { isAddressEqual } from "viem";
 
 export const [CONTRACTS_QK] = "contracts";
 interface Props {
@@ -15,7 +16,9 @@ export const useSellerContracts = (props: { address?: `0x${string}` | undefined 
   return useContracts({
     select: (data) => ({
       ...data,
-      data: data.data.filter((c) => c.seller === props.address),
+      data: data.data.filter((c) => {
+        return isAddressEqual(c.seller as `0x${string}`, props.address!);
+      }),
     }),
   });
 };
@@ -42,7 +45,7 @@ export const useContractV2 = (props: { address: `0x${string}`; refetch?: boolean
   const query = useQuery({
     queryKey: [CONTRACTS_QK, props.address],
     queryFn: fetchContractsAsync,
-    select: (data) => data.data.find((c) => c.id === props.address),
+    select: (data) => data.data.find((c) => isAddressEqual(c.id, props.address)),
   });
 
   return query;
@@ -132,6 +135,8 @@ function mapContract(e: IndexerContractEntry): HashRentalContract {
         buyer: h.buyer,
         endTime: h.endTime,
         purchaseTime: h.purchaseTime,
+        fee: h.fee,
+        validator: h.validator,
         price: h.price,
         speed: h.speed,
         length: h.length,

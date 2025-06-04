@@ -29,11 +29,10 @@ interface EditValidatorFormProps {
 export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
   const { address: userAccount } = useAccount();
   const publicClient = usePublicClient();
-  const feeTokenAddress = useFeeTokenAddress();
 
   const wc = useWalletClient();
   const { getPublicKeyAsync } = useGetPublicKey();
-  const { approveFeeAsync } = useApproveFee();
+  const fee = useApproveFee();
 
   // Input validation setup
   const form = useForm<EditValidatorInput>({
@@ -139,7 +138,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
               return { isSkipped: true };
             }
 
-            const txhash = await approveFeeAsync({
+            const txhash = await fee.approveAsync({
               spender: process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS as `0x${string}`,
               amount: newValidatorStake - props.validatorStake,
             });

@@ -1,3 +1,15 @@
+export const storeLastPurchaseDestination = (poolAddress: string, username: string) => {
+  localStorage.setItem("lastPurchaseDestination", JSON.stringify({ poolAddress, username }));
+};
+
+export const getLastPurchaseDestination = (): { poolAddress: string; username: string } | null => {
+  const lastPurchaseDestination = localStorage.getItem("lastPurchaseDestination");
+  if (lastPurchaseDestination === null) {
+    return null;
+  }
+  return JSON.parse(lastPurchaseDestination);
+};
+
 export const getPoolInfo = (query: PoolInfoQuery): PoolInfo | null => {
   const poolInfoString = localStorage.getItem(poolInfoKey(query));
   if (poolInfoString === null) {

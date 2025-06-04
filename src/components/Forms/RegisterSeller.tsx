@@ -26,7 +26,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
   const publicClient = usePublicClient();
   const wc = useWalletClient();
   const { address } = useAccount();
-  const { approveFeeAsync } = useApproveFee();
+  const fee = useApproveFee();
 
   const minSellerStakeQuery = useReadContract({
     address: process.env.REACT_APP_CLONE_FACTORY,
@@ -118,8 +118,8 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
             const data = form.getValues();
             const stake = parseUnits(data.stake, sellerStakeToken.decimals);
 
-            const txhash = await approveFeeAsync({
-              spender: process.env.REACT_APP_CLONE_FACTORY as `0x${string}`,
+            const txhash = await fee.approveAsync({
+              spender: process.env.REACT_APP_CLONE_FACTORY,
               amount: stake,
             });
 

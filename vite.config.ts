@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => {
         },
       }),
       svgr(),
-      mkcert(),
+      env.DEV_SERVER_HTTPS ? mkcert() : null,
       // analyzer({
       //   openAnalyzer: false,
       //   fileName: "bundle-analyzer.html",

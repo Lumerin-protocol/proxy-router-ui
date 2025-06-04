@@ -243,29 +243,24 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
           </InputWrapper>
         )}
 
-        <ValidatorRow>
-          <InputWrapper>
-            <TextField
-              id="validatorAddress"
-              {...validatorAddressController.field}
-              label="Validators"
-              select
-              error={!!validatorAddressController.fieldState.error}
-              helperText={validatorAddressController.fieldState.error?.message}
-            >
-              {validators?.map((o) => (
-                <MenuItem value={o.addr} key={o.addr}>
-                  {o.host}
-                </MenuItem>
-              ))}
-              <MenuItem value="custom">Custom Validator</MenuItem>
-            </TextField>
-          </InputWrapper>
+        <InputWrapper>
+          <TextField
+            id="validatorAddress"
+            {...validatorAddressController.field}
+            label="Validators"
+            select
+            error={!!validatorAddressController.fieldState.error}
+            helperText={validatorAddressController.fieldState.error?.message}
+          >
+            {validators?.map((o) => (
+              <MenuItem value={o.addr} key={o.addr}>
+                {o.host}
+              </MenuItem>
+            ))}
+            <MenuItem value="custom">Custom Validator</MenuItem>
+          </TextField>
+        </InputWrapper>
 
-          <Tooltip title="Temporary Unavailable" placement="top">
-            <BecomeValidatorButton>Become Validator</BecomeValidatorButton>
-          </Tooltip>
-        </ValidatorRow>
         {isCustomValidator && (
           <>
             <InputWrapper>
@@ -293,25 +288,6 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
     return true;
   },
 );
-
-// CreateEditPurchaseForm.whyDidYouRender = true;
-
-const ValidatorRow = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0 1em;
-`;
-
-const BecomeValidatorButton = styled(DisabledButton)`
-  height: unset;
-  padding: 16.5px 1em;
-  margin-top: 1.3rem;
-  font-size: 0.8rem;
-  background: rgb(52, 52, 52);
-  color: rgb(225, 225, 225);
-  opacity: 0.5;
-`;
 
 function getPoolType(predefinedPoolIndex: number) {
   if (predefinedPoolIndex === -1) {

@@ -19,6 +19,7 @@ import { getContractUrl } from "../../lib/indexer";
 import { formatDateTime } from "../../lib/date";
 import { formatDuration } from "../../lib/duration";
 import { CancelButton, EditButton } from "../ActionButton";
+import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -63,7 +64,7 @@ interface CardProps {
 
 export const Card: FC<CardProps> = (props) => {
   const { card: item, editClickHandler, cancelClickHandler } = props;
-  const now = new Date().getTime() / 1000;
+  const now = Number(useSimulatedBlockchainTime());
   const startDate = formatDateTime(item.startTime);
   const endDate = formatDateTime(item.endTime);
 

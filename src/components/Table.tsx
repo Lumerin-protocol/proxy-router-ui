@@ -4,6 +4,7 @@ import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import { ArrowUpIcon } from "@heroicons/react/24/outline";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
 import styled from "@mui/material/styles/styled";
+
 interface TableProps<T> {
   tableInstance: ReactTable<T>;
   pagination?: boolean;
@@ -114,22 +115,25 @@ const TableHeader2 = styled("div")`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   grid-template-rows: 1fr;
-  height: 500px;
   font-size: 0.625rem;
   align-items: center;
   border: 1px solid rgba(171, 171, 171, 1);
   border-radius: 9px;
   margin-bottom: 1rem;
+  div {
+    height: 3rem;
+  }
 
   @media (min-width: 640px) {
-    height: 4rem;
     font-size: 0.75rem;
   }
 
   @media (max-width: 1024px) {
     height: unset;
-    grid-template-rows: repeat(2, minmax(4em, 1fr));
-    grid-auto-flow: column;
+    grid-template-columns: repeat(3, 1fr);
+    div {
+      height: 2rem;
+    }
   }
 `;
 
@@ -148,8 +152,8 @@ const Tr = styled("div")`
   border: 1px solid rgba(171, 171, 171, 1);
 
   @media (max-width: 1024px) {
-    grid-template-rows: 1fr 1fr;
-    grid-auto-flow: column;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-flow: row;
     height: unset;
   }
 `;

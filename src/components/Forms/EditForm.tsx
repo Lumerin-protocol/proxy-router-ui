@@ -7,7 +7,7 @@ import type { InputValuesCreateForm } from "./CreateForm";
 import { useQueryClient } from "@tanstack/react-query";
 import { waitForBlockNumber } from "../../hooks/data/useContracts";
 import { TransactionForm } from "./Shared/MultistepForm";
-import type { TransactionReceipt } from "viem";
+import { isAddressEqual, type TransactionReceipt } from "viem";
 import { truncateAddress } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { memo } from "react";
@@ -20,7 +20,6 @@ export interface EditFormProps {
 
 export const EditForm: React.FC<EditFormProps> = memo(
   ({ contract, closeForm }) => {
-    const { address: userAccount } = useAccount();
     const qc = useQueryClient();
     const publicClient = usePublicClient();
     const { editContractTermsAsync } = useEditContractTerms();
@@ -87,6 +86,6 @@ export const EditForm: React.FC<EditFormProps> = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.contract.id === nextProps.contract.id;
+    return isAddressEqual(prevProps.contract.id, nextProps.contract.id);
   },
 );

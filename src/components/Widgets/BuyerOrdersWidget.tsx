@@ -1,10 +1,10 @@
-import styled from "@mui/material/styles/styled";
 import EastIcon from "@mui/icons-material/East";
-import Skeleton from "@mui/material/Skeleton";
 import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
 import { ContractState, type HashRentalContract, PathName } from "../../types/types";
-import { SmallWidget } from "../Cards/Cards.styled";
+import { GenericNumberStatsWidget } from "./GenericNumberStatsWidget";
+import { formatHashrateTHPS, formatValue } from "../../lib/units";
+import { formatUnits, isAddressEqual } from "viem";
 
 export const BuyerOrdersWidget = (props: {
   contracts: HashRentalContract[];
@@ -15,66 +15,49 @@ export const BuyerOrdersWidget = (props: {
 
   let runningContracts = 0;
   let completedContracts = 0;
+  let runningHashrate = 0;
+  let totalHashes = 0;
 
   for (const contract of props.contracts) {
-    if (contract.buyer === userAccount) {
-      if (contract.state === ContractState.Running) {
-        runningContracts++;
+    if (isAddressEqual(contract.buyer, userAccount) && contract.state === ContractState.Running) {
+      runningContracts++;
+      runningHashrate += Number(contract.speed);
+    }
+    for (const history of contract.history ?? []) {
+      if (isAddressEqual(history.buyer, userAccount)) {
+        totalHashes += Number(history.speed) * Number(history.length);
+        completedContracts++;
       }
-      completedContracts += contract.history?.length ?? 0;
     }
   }
 
   return (
-    <BuyerOrdersWrapper>
-      <h3>Purchased Contracts</h3>
-      <div className="stats">
-        <div className="stat active">
-          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : runningContracts}</h4>
-          <p>ACTIVE</p>
-        </div>
-        <div className="stat completed">
-          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : completedContracts}</h4>
-          <p>FINISHED</p>
-        </div>
-      </div>
-      <div className="link">
-        <button type="button" onClick={() => navigate(PathName.BuyerHub)}>
-          View purchased contracts <EastIcon style={{ fontSize: "0.75rem" }} />
-        </button>
-      </div>
-    </BuyerOrdersWrapper>
+    <>
+      <GenericNumberStatsWidget
+        title="Purchased Contracts"
+        data={[
+          { title: "ACTIVE", value: runningContracts.toString() },
+          { title: "FINISHED", value: completedContracts.toString(), dim: true },
+        ]}
+      />
+      <GenericNumberStatsWidget
+        title="Purchased Hashrate"
+        data={[
+          {
+            title: "Current Hashrate, Th/s",
+            value: formatHashrateTHPS(BigInt(runningHashrate)).valueRounded,
+          },
+          {
+            title: "Total Purchased, Th/s * hours",
+            value: formatValue(BigInt(Math.round(totalHashes / 3600)), {
+              decimals: 12,
+              name: "Terahashes/s*hours",
+              symbol: "Th/s*h",
+            }).valueRounded,
+            dim: true,
+          },
+        ]}
+      />
+    </>
   );
 };
-
-const BuyerOrdersWrapper = styled(SmallWidget)`
-  .stats {
-    display: flex;
-    justify-content: space-around;
-    width: 80%;
-    padding: 0.75rem;
-  }
-
-  .active {
-    color: #fff;
-  }
-  .completed {
-    color: #a7a9b6;
-  }
-
-  .stat {
-    h4 {
-      font-size: 1.85rem;
-      line-height: 1.75rem;
-      text-align: center;
-      flex: 1 1 0%;
-      margin-bottom: 0.15rem;
-      display: flex;
-      justify-content: center;
-    }
-    p {
-      font-size: 0.625rem;
-      text-align: center;
-    }
-  }
-`;

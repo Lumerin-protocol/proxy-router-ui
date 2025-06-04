@@ -1,3 +1,4 @@
+import type { FC } from "react";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
@@ -9,7 +10,7 @@ export interface CancelFormProps {
   closeForm: () => void;
 }
 
-export const DeregisterValidator: React.FC<CancelFormProps> = ({ closeForm }) => {
+export const DeregisterValidator: FC<CancelFormProps> = ({ closeForm }) => {
   const { address: userAccount } = useAccount();
   const publicClient = usePublicClient();
   const wc = useWalletClient();

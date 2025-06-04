@@ -22,6 +22,7 @@ import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../li
 import { formatDuration } from "../../lib/duration";
 import { useAvailableContracts } from "../../hooks/data/useContracts";
 import { WidgetsWrapper } from "./styled";
+import { isAddressEqual } from "viem";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
@@ -59,7 +60,7 @@ export const Marketplace: FC = () => {
         cell: (r) => (
           <div className="flex-column gap-1">
             <div>{formatPaymentPrice(r.getValue()).full}</div>
-            <div className="text-sm text-gray-300">{formatFeePrice(r.row.original.fee).full}</div>
+            <div className="text-xs text-gray-400">{formatFeePrice(r.row.original.fee).full}</div>
           </div>
         ),
       }),
@@ -76,7 +77,8 @@ export const Marketplace: FC = () => {
                 setBuyContractId(r.row.original.id);
                 buyModal.open();
               }}
-              disabled={r.row.original.seller === userAccount}
+              $disabledText="You cannot purchase your own contract"
+              disabled={isAddressEqual(r.row.original.seller, userAccount)}
             >
               Purchase
             </PrimaryButton>
@@ -112,7 +114,6 @@ export const Marketplace: FC = () => {
       <WidgetsWrapper>
         <MessageWidget isMobile={isMobile} />
         <WalletBalanceWidget />
-        <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
         <MarketplaceStatistics isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
       </WidgetsWrapper>
       <ModalItem open={buyModal.isOpen} setOpen={buyModal.setOpen}>
