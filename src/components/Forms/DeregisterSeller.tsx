@@ -8,6 +8,7 @@ import { AddressLength } from "../../types/types";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useQueryClient } from "@tanstack/react-query";
 import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
+import { isAddressEqual } from "viem";
 
 export interface CancelFormProps {
   closeForm: () => void;
@@ -23,7 +24,7 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
     select: (data) => {
       return {
         ...data,
-        data: data.data.filter((c) => c.seller === userAccount && c.isDeleted === false),
+        data: data.data.filter((c) => isAddressEqual(c.seller, userAccount) && c.isDeleted === false),
       };
     },
   });

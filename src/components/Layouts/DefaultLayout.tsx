@@ -36,8 +36,6 @@ export const DefaultLayout: FC<Props> = ({ children, pageTitle }) => {
 
 const BodyWrapper = styled("div")`
   display: flex;
-  min-height: 100vh;
-  background: #1e1e1e;
 `;
 
 const drawerWidth = 240;

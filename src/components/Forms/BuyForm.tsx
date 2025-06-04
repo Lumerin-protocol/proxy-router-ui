@@ -11,11 +11,11 @@ import { TransactionForm } from "./Shared/MultistepForm";
 import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import type { TransactionReceipt } from "viem/_types/types/transaction";
 import type { GetResponse } from "../../gateway/interfaces";
-import { setPoolInfo } from "../../gateway/localStorage";
+import { getLastPurchaseDestination, setPoolInfo, storeLastPurchaseDestination } from "../../gateway/localStorage";
 import { useQueryClient } from "@tanstack/react-query";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
-import { publicKeyToAddress } from "viem/utils";
+import { isAddressEqual, publicKeyToAddress } from "viem/utils";
 import { usePurchaseContract } from "../../hooks/data/usePurchaseContract";
 import { useApprovePayment } from "../../hooks/data/useApprovePayment";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
@@ -28,8 +28,8 @@ interface BuyFormProps {
 
 export const BuyForm2: FC<BuyFormProps> = memo(
   ({ contractId, setOpen }) => {
-    const { approvePaymentAsync } = useApprovePayment();
-    const { approveFeeAsync } = useApproveFee();
+    const payment = useApprovePayment();
+    const fee = useApproveFee();
     const { purchaseContractAsync } = usePurchaseContract();
 
     const qc = useQueryClient();
@@ -38,15 +38,17 @@ export const BuyForm2: FC<BuyFormProps> = memo(
     const { data: validators } = useValidators({ offset: 0, limit: 100 });
     const contract = useContractV2({ address: contractId as `0x${string}` });
 
+    const lastPurchaseDestination = getLastPurchaseDestination();
+
     // form setup
     const form = useForm<InputValuesBuyForm>({
       mode: "onBlur",
       reValidateMode: "onBlur",
       defaultValues: {
-        poolAddress: "",
-        username: "",
+        poolAddress: lastPurchaseDestination?.poolAddress || "",
+        username: lastPurchaseDestination?.username || "",
         validatorAddress: "",
-        predefinedPoolIndex: "",
+        predefinedPoolIndex: lastPurchaseDestination?.poolAddress ? -1 : "",
         lightningAddress: "",
         customValidatorHost: "",
         customValidatorPublicKey: "",
@@ -117,8 +119,8 @@ export const BuyForm2: FC<BuyFormProps> = memo(
             label: "Approve Payment",
             action: async () => {
               try {
-                const receipt = await approvePaymentAsync({
-                  spender: contract.data!.id as `0x${string}`,
+                const receipt = await payment.approveAsync({
+                  spender: process.env.REACT_APP_CLONE_FACTORY,
                   amount: BigInt(contract.data!.price),
                 });
                 return receipt ? { txhash: receipt, isSkipped: false } : { isSkipped: true };
@@ -131,8 +133,8 @@ export const BuyForm2: FC<BuyFormProps> = memo(
           {
             label: "Approve Fee",
             action: async () => {
-              const receipt = await approveFeeAsync({
-                spender: contract.data!.id as `0x${string}`,
+              const receipt = await fee.approveAsync({
+                spender: process.env.REACT_APP_CLONE_FACTORY,
                 amount: BigInt(contract.data!.fee),
               });
               return receipt ? { txhash: receipt, isSkipped: false } : { isSkipped: true };
@@ -192,7 +194,7 @@ export const BuyForm2: FC<BuyFormProps> = memo(
               await waitForBlockNumber(receipt.blockNumber, qc);
               const startTime = qc
                 .getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK])
-                ?.data.find((c) => c.id === contractId)?.timestamp;
+                ?.data.find((c) => isAddressEqual(c.id, contractId))?.timestamp;
 
               if (!startTime) {
                 throw new Error("Start time not found");
@@ -207,6 +209,7 @@ export const BuyForm2: FC<BuyFormProps> = memo(
                 startedAt: BigInt(startTime),
                 validatorAddress: data.validatorAddress,
               });
+              storeLastPurchaseDestination(data.poolAddress, data.username);
             },
           },
         ]}

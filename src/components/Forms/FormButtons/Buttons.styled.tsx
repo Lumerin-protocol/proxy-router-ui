@@ -1,3 +1,4 @@
+import { css } from "@mui/material/styles";
 import styled from "@mui/material/styles/styled";
 
 export const FormButtonsWrapper = styled("div")`
@@ -32,7 +33,9 @@ export const Button = styled("button")`
   }
 `;
 
-export const PrimaryButton = styled(Button)`
+export const PrimaryButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "$disabledText",
+})<{ $disabledText?: string }>`
   color: #fff;
   background-color: #4c5a5f;
   position: relative;
@@ -41,8 +44,15 @@ export const PrimaryButton = styled(Button)`
     color: rgb(163, 163, 163);
     cursor: not-allowed;
   }
+  ${({ $disabledText }) =>
+    $disabledText &&
+    `
+      &:disabled:after {
+        content: "${$disabledText}";
+      }
+    `}
+
   &:disabled:after {
-    content: "You cannot purchase your own contract";
     position: absolute;
     bottom: calc(100% + 0.5em);
     left: 0;

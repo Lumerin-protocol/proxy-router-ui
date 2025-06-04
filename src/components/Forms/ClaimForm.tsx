@@ -8,6 +8,10 @@ import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import type { FC } from "react";
 import { useClaimFundsBatch } from "../../hooks/data/useClaimFundsBatch";
+import { truncateAddress } from "../../utils/utils";
+import { AddressLength } from "../../types/types";
+import { getContractUrl } from "../../lib/indexer";
+import { Alert } from "@mui/material";
 
 interface Props {
   contractIDs: `0x${string}`[];
@@ -15,7 +19,6 @@ interface Props {
 }
 
 export const ClaimForm: FC<Props> = ({ contractIDs, closeForm }) => {
-  const { address: userAccount } = useAccount();
   const qc = useQueryClient();
   const pc = usePublicClient();
   const { claimFundsBatchAsync } = useClaimFundsBatch();
@@ -25,31 +28,25 @@ export const ClaimForm: FC<Props> = ({ contractIDs, closeForm }) => {
       onClose={closeForm}
       client={pc!}
       title="Claim rewards"
-      description="This action will allow you to manually claim unpaid rewards for the contracts that run to completion. Remember that the same action will be performed automatically on the next purchase of the same contract."
+      description="This action will allow you to manually claim unpaid rewards for the contracts that run to completion."
       reviewForm={(props) => (
         <>
-          You are about to claim rewards for the following contracts:
-          {contractIDs.map((c) => (
-            <p key={c}>{c}</p>
-          ))}
-        </>
-      )}
-      resultForm={(props) => (
-        <>
-          <FontAwesomeIcon className="mb-8" icon={faCheckCircle} size="5x" color={colors["lumerin-aqua"]} />
-          <h2 className="w-6/6 text-left font-semibold mb-3">The order has been cancelled successfully.</h2>
-          <p className="w-6/6 text-left font-normal text-s">The status of the order will update shortly.</p>
-          <br />
-          {/* {txHash && (
-            <a
-              href={getTxUrl(txHash as `0x${string}`)}
-              target="_blank"
-              rel="noreferrer"
-              className="font-light underline mb-4"
-            >
-              View Transaction: {truncateAddress(txHash, AddressLength.LONG)}
-            </a>
-          )} */}
+          <p className="mt-4">
+            <Alert severity="info">
+              <span className="font-semibold">Remember:</span> this action is performed automatically when these
+              contracts are purchased again.
+            </Alert>
+          </p>
+          <p className="mt-4 mb-2">You are about to claim rewards for the following contracts:</p>
+          <ul className="list-disc list-inside mb-6">
+            {contractIDs.map((c) => (
+              <li key={c}>
+                <a href={getContractUrl(c)} target="_blank" rel="noreferrer" className="underline">
+                  {truncateAddress(c, AddressLength.LONG)}
+                </a>
+              </li>
+            ))}
+          </ul>
         </>
       )}
       transactionSteps={[

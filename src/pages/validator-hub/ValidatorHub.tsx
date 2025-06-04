@@ -1,7 +1,4 @@
 import AddIcon from "@mui/icons-material/Add";
-import FormControl from "@mui/material/FormControl";
-import styled from "@mui/material/styles/styled";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { type FC, type HTMLProps, useEffect, useMemo, useRef, useState } from "react";
 import {
   useReactTable,
@@ -13,7 +10,6 @@ import {
   type Row,
   type FilterMeta,
 } from "@tanstack/react-table";
-import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled";
 import { Spinner } from "../../components/Spinner.styled";
 import { Table } from "../../components/Table";
 import { TableIcon } from "../../components/TableIcon";
@@ -27,7 +23,7 @@ import { ModalItem } from "../../components/Modal";
 import { faSackDollar } from "@fortawesome/free-solid-svg-icons/faSackDollar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Pickaxe } from "../../components/Icons/Pickaxe";
-import { SellerActions, SellerFilters, SellerToolbar, ToggleButtonIcon } from "../seller-hub/styled";
+import { SellerActions, SellerToolbar } from "../seller-hub/styled";
 import { useValidatorHistory } from "../../hooks/data/useValidatorHistory";
 import type { ValidatorHistoryEntry } from "../../gateway/interfaces";
 import { truncateAddress } from "../../utils/utils";
@@ -35,10 +31,11 @@ import { formatDateTime } from "../../lib/date";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { ValidatorWidget } from "../../components/Widgets/ValidatorWidget";
 import { ClaimForm } from "../../components/Forms/ClaimForm";
-import { CircularProgress } from "../../components/CircularProgress";
-
-const QuickFilterValues = ["running", "unclaimed", "unset"] as const;
-type QuickFilter = (typeof QuickFilterValues)[number];
+import { getStatus, ProgressCell } from "./ProgressCell";
+import { isAddressEqual } from "viem";
+import { TableToolbarButton } from "../../components/TableToolbarButton";
+import { useMediaQuery } from "@mui/material";
+import { FiltersButtonGroup, FiltersSelect } from "../../components/Filters";
 
 export const ValidatorHub: FC = () => {
   const { address: userAccount } = useAccount();
@@ -51,6 +48,8 @@ export const ValidatorHub: FC = () => {
   const claimModal = useModal();
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("unset");
   const [selectRowsColumnVisible, setSelectRowsColumnVisible] = useState(false);
+
+  const isMobile = useMediaQuery("(max-width: 1024px)");
 
   const ch = createColumnHelper<ValidatorHistoryEntry>();
 
@@ -82,7 +81,7 @@ export const ValidatorHub: FC = () => {
         ),
       }),
       ch.accessor("contract", {
-        header: "Contract Address",
+        header: "Contract",
         sortingFn: "text",
         cell: (r) => <TableIcon icon={null} text={r.cell.getValue()} hasLink justify="center" />,
       }),
@@ -98,7 +97,7 @@ export const ValidatorHub: FC = () => {
         cell: (r) => (
           <div className="flex-column gap-1">
             <div>{formatPaymentPrice(r.getValue()).full}</div>
-            <div className="text-sm text-gray-300">{formatFeePrice(r.row.original.fee).full}</div>
+            <div className="text-xs text-gray-400">{formatFeePrice(r.row.original.fee).full}</div>
           </div>
         ),
       }),
@@ -109,32 +108,20 @@ export const ValidatorHub: FC = () => {
       }),
 
       ch.accessor("purchaseTime", {
-        header: "Purchase Time",
+        header: "Purchased at",
         sortingFn: "alphanumeric",
         cell: (r) => formatDateTime(Number(r.cell.getValue())),
       }),
       ch.accessor(
         (r) => {
-          return getStatus(r).sortValue;
+          return getStatus(r, Number(new Date().getTime() / 1000)).sortValue;
         },
         {
           id: "status",
           header: "Status",
           sortingFn: "alphanumeric",
           filterFn: inNumberRangeInclusiveExclusive,
-          cell: (r) => {
-            const { progress, isRunning, isSuccess } = getStatus(r.row.original);
-
-            const color = isSuccess ? "success" : isRunning ? "default" : "error";
-            const text = isSuccess ? "Success" : isRunning ? `${Math.round(progress * 100)}%` : "Closed";
-
-            return (
-              <ProgressCell>
-                <ProgressBar progress={progress} color={color} />
-                {text}
-              </ProgressCell>
-            );
-          },
+          cell: (r) => <ProgressCell validatorHistoryEntry={r.row.original} />,
         },
       ),
       ch.accessor(
@@ -143,10 +130,10 @@ export const ValidatorHub: FC = () => {
           // 1. the contract is not reconciled
           // 2. the contract validator is the user's wallet
           // 3. this is the most recent validation for the contract
-          const contractIndex = contracts.data!.findIndex((c) => c.id === r.contract);
+          const contractIndex = contracts.data!.findIndex((c) => isAddressEqual(c.id, r.contract));
           const contractEntry = contracts.data![contractIndex];
           const isMostRecent = contractEntry.history?.[0].purchaseTime === r.purchaseTime;
-          const isValidator = contractEntry.validator === userAccount;
+          const isValidator = isAddressEqual(contractEntry.validator, userAccount);
           const isUnsettled = Number(contractEntry.feeBalance) > 0;
 
           if (isMostRecent && isValidator && isUnsettled) {
@@ -212,41 +199,27 @@ export const ValidatorHub: FC = () => {
         )}
 
         <SellerToolbar>
-          <SellerFilters>
-            <FormControl>
-              <ToggleButtonGroup
-                value={quickFilter}
-                exclusive
-                onChange={(_, qf: unknown) => {
-                  if (!qf) {
-                    setQuickFilter("unset");
-                    return;
-                  }
-                  if (!QuickFilterValues.includes(qf as QuickFilter)) {
-                    throw new Error(`Invalid quick filter: ${qf}`);
-                  }
-                  setQuickFilter(qf as QuickFilter);
-                }}
-              >
-                <ToggleButtonIcon value="running" icon={<Pickaxe />} text="Running" />
-                <ToggleButtonIcon value="unclaimed" icon={<FontAwesomeIcon icon={faSackDollar} />} text="Unclaimed" />
-              </ToggleButtonGroup>
-            </FormControl>
-          </SellerFilters>
+          {isMobile ? (
+            !selectRowsColumnVisible && (
+              <FiltersSelect values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+            )
+          ) : (
+            <FiltersButtonGroup values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+          )}
           <SellerActions>
             {!selectRowsColumnVisible && (
-              <PrimaryButton onClick={() => setSelectRowsColumnVisible(true)}>
+              <TableToolbarButton onClick={() => setSelectRowsColumnVisible(true)}>
                 <AddIcon className="add-icon" />
-                Select columns
-              </PrimaryButton>
+                Batch actions
+              </TableToolbarButton>
             )}
             {selectRowsColumnVisible && (
               <>
-                <PrimaryButton onClick={() => setSelectRowsColumnVisible(false)}>
+                <TableToolbarButton onClick={() => setSelectRowsColumnVisible(false)}>
                   <AddIcon className="add-icon" />
-                  Cancel selection
-                </PrimaryButton>
-                <PrimaryButton
+                  Cancel
+                </TableToolbarButton>
+                <TableToolbarButton
                   onClick={() => {
                     const selectedContracts = tableInstance.getSelectedRowModel().rows.map((r) => r.original.contract);
                     setSelectedContractAddresses(selectedContracts);
@@ -255,7 +228,7 @@ export const ValidatorHub: FC = () => {
                 >
                   <AddIcon className="add-icon" />
                   Claim
-                </PrimaryButton>
+                </TableToolbarButton>
               </>
             )}
           </SellerActions>
@@ -302,56 +275,6 @@ function IndeterminateCheckbox({
   return <input type="checkbox" ref={ref} className={`${className} cursor-pointer`} {...rest} />;
 }
 
-const ProgressBar = styled(CircularProgress)`
-  width: 2em;
-  height: 2em;
-`;
-
-const ProgressCell = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-`;
-
-function getStatus(r: ValidatorHistoryEntry) {
-  const purchaseTime = Number(r.purchaseTime);
-  const endTime = Number(r.endTime);
-  const length = Number(r.length);
-
-  const now = new Date().getTime() / 1000;
-
-  const expectedEndTime = purchaseTime + length;
-  const isRunning = endTime > now;
-  const isClosedEarly = expectedEndTime > endTime;
-
-  let progress = 1;
-  // table column is sorted by this value
-  // {-1;0} - closed early
-  // {0;1} - running
-  // 1 - success
-  let sortValue = 1;
-
-  if (isRunning) {
-    progress = (now - purchaseTime) / length;
-    sortValue = progress;
-  }
-
-  if (isClosedEarly) {
-    progress = (endTime - purchaseTime) / length;
-    sortValue = progress - 1;
-  }
-
-  return {
-    progress,
-    isRunning,
-    isClosedEarly,
-    isSuccess: progress === 1,
-    sortValue,
-  };
-}
-
 const inNumberRangeInclusiveExclusive = <TData extends RowData>(
   row: Row<TData>,
   columnId: string,
@@ -377,3 +300,18 @@ const inNumberRangeExclusive = <TData extends RowData>(
   // Include smaller value (>=) but exclude larger value (<)
   return cellValue > min && cellValue < max;
 };
+
+const QuickFilterValues = [
+  {
+    value: "running",
+    icon: <Pickaxe />,
+    text: "Running",
+  },
+  {
+    value: "unclaimed",
+    icon: <FontAwesomeIcon icon={faSackDollar} />,
+    text: "Unclaimed",
+  },
+] as const;
+
+type QuickFilter = (typeof QuickFilterValues)[number]["value"] | "unset";

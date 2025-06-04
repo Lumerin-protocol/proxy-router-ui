@@ -24,7 +24,7 @@ export function useClaimFundsBatch() {
       (addr) =>
         ({
           target: addr,
-          allowFailure: true,
+          allowFailure: false,
           callData: encodeFunctionData({
             abi: implementationAbi,
             functionName: "claimFunds",

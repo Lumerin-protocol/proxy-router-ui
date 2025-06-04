@@ -11,7 +11,7 @@ export const HeroWrapper = styled("div")`
   min-height: 100vh;
   padding-top: 5rem;
   width: 100%;
-  background-color: #1e1e1e;
+
   background-image: url(${BackgroundGradient}), url(${BackgroundDots}), url(${Grid});
   background-position: top right, top right, right 50px top 60px;
   background-repeat: no-repeat, no-repeat, no-repeat;

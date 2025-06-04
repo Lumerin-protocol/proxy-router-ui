@@ -14,6 +14,9 @@ import { ModalItem } from "../../components/Modal";
 import { BuyerEditForm } from "../../components/Forms/BuyerEditForm";
 import { CancelForm } from "../../components/Forms/CancelForm";
 import { ContractCards } from "../../components/Cards/PurchasedContracts.styled";
+import { isAddressEqual } from "viem/utils";
+import { WidgetsWrapper } from "../marketplace/styled";
+import { BuyerOrdersWidget } from "../../components/Widgets/BuyerOrdersWidget";
 
 export const BuyerHub: FC = () => {
   const { address: userAccount } = useAccount();
@@ -32,7 +35,7 @@ export const BuyerHub: FC = () => {
   const runningContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
     const buyerOrders = contractsQuery.data.filter(
-      (contract) => contract.buyer === userAccount && contract.state === ContractState.Running,
+      (contract) => isAddressEqual(contract.buyer, userAccount) && contract.state === ContractState.Running,
     );
 
     return sortContracts(runningSortType, buyerOrders);
@@ -44,7 +47,7 @@ export const BuyerHub: FC = () => {
 
     const buyerOrders = contractsQuery.data
       .flatMap((c) => c.history!)
-      .filter((c) => Number(c.endTime) < currentBlockTimestamp);
+      .filter((c) => isAddressEqual(c.buyer, userAccount) && Number(c.endTime) < currentBlockTimestamp);
 
     return sortContracts(completedSortType, buyerOrders);
   }, [contractsQuery.data, completedSortType]);
@@ -71,23 +74,23 @@ export const BuyerHub: FC = () => {
     };
   });
 
-  const completedContractsCards: CardData[] = completedContracts.map((contract) => {
+  const completedContractsCards: CardData[] = completedContracts.map((historyEntry) => {
     const poolInfo = getPoolInfo({
-      contractId: contract.id,
-      startedAt: BigInt(contract.purchaseTime),
+      contractId: historyEntry.id,
+      startedAt: BigInt(historyEntry.purchaseTime),
     });
 
     return {
-      contractAddr: contract.id!,
-      startTime: Number(contract.purchaseTime!),
-      endTime: Number(contract.endTime!),
-      speedHps: String(contract.speed!),
-      price: contract.price!,
-      fee: "0",
-      length: String(contract.length!),
+      contractAddr: historyEntry.id!,
+      startTime: Number(historyEntry.purchaseTime!),
+      endTime: Number(historyEntry.endTime!),
+      speedHps: String(historyEntry.speed!),
+      price: historyEntry.price!,
+      fee: historyEntry.fee!,
+      length: String(historyEntry.length!),
       poolAddress: poolInfo?.poolAddress || "",
       poolUsername: poolInfo?.username || "",
-      validatorAddress: poolInfo?.validatorAddress || "",
+      validatorAddress: historyEntry.validator || "",
     };
   });
 
@@ -99,6 +102,9 @@ export const BuyerHub: FC = () => {
       <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen} key={`cancel-${contractId}`}>
         <CancelForm contractId={contractId!} closeForm={() => cancelModal.close()} />
       </ModalItem>
+      <WidgetsWrapper>
+        <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
+      </WidgetsWrapper>
       <TabSwitch>
         <button
           type="button"

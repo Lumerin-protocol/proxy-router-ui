@@ -25,7 +25,7 @@ export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
   const { address: userAccount } = useAccount();
   const publicClient = usePublicClient();
   const wc = useWalletClient();
-  const { approveFeeAsync } = useApproveFee();
+  const fee = useApproveFee();
 
   // Input validation setup
   const form = useForm<EditSellerInput>({
@@ -92,8 +92,8 @@ export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
             const newSellerStake = parseUnits(form.getValues().stake, sellerStakeToken.decimals);
             const stakeToAdd = newSellerStake - props.sellerStake;
 
-            const txhash = await approveFeeAsync({
-              spender: process.env.REACT_APP_CLONE_FACTORY as `0x${string}`,
+            const txhash = await fee.approveAsync({
+              spender: process.env.REACT_APP_CLONE_FACTORY,
               amount: stakeToAdd,
             });
 

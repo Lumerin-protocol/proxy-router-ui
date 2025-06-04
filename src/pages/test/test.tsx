@@ -171,8 +171,6 @@ export const TestChild: FC<{
     }
   }, [isLightningPool, form]);
 
-  console.log("values", form.getValues());
-
   if (form.formState.isLoading) {
     return <div>Loading...</div>;
   }

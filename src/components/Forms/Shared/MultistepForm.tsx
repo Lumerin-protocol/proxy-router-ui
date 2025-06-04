@@ -43,6 +43,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
 
   return (
     <MultistepForm
+      onClose={props.onClose}
       steps={[
         ...(props.inputForm
           ? [
@@ -62,7 +63,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
                           p.nextStep();
                         },
                       }}
-                      secondary={{ label: "Cancel", onClick: () => props.onClose() }}
+                      secondary={{ label: "Cancel", onClick: () => p.prevStep() }}
                     />
                   </>
                 ),
@@ -137,9 +138,8 @@ export const MultipleTransactionProgress = (props: {
 }) => {
   return (
     <div>
-      <Alert severity="warning" sx={{ margin: "3px 0" }}>
-        You will be prompted to approve {Object.entries(props.txState).length} transactions through your wallet. Once
-        they are confirmed, you will be redirected to view your order.
+      <Alert severity="warning" sx={{ margin: "0 0 1em 0" }}>
+        You will be prompted to approve {Object.entries(props.txState).length} transactions through your wallet.
       </Alert>
       <Steps>
         {Object.entries(props.txState).map(([index, tx]) => (
@@ -288,6 +288,7 @@ export type StepComponentProps = {
   goToStep: (step: number) => void;
   nextStep: () => void;
   prevStep: () => void;
+  closeForm: () => void;
 };
 
 interface MultistepProps {
@@ -295,11 +296,26 @@ interface MultistepProps {
     label: string;
     component: FC<StepComponentProps>;
   }[];
+  onClose: () => void;
 }
 
 export const MultistepForm = (props: MultistepProps) => {
-  const [step, setStep] = useState(0);
+  const [step, _setStep] = useState(0);
   const StepComponent = props.steps[step].component;
+
+  function setStep(step: number) {
+    if (step < 0) {
+      props.onClose();
+      _setStep(0);
+      return;
+    }
+
+    if (step > props.steps.length - 1) {
+      props.onClose();
+      return;
+    }
+    _setStep(step);
+  }
 
   return (
     <>
@@ -309,6 +325,7 @@ export const MultistepForm = (props: MultistepProps) => {
         goToStep={setStep}
         nextStep={() => setStep(step + 1)}
         prevStep={() => setStep(step - 1)}
+        closeForm={props.onClose}
       />
     </>
   );
@@ -327,7 +344,7 @@ export const MultistepFormActions = (props: {
   };
 }) => {
   return (
-    <FormButtonsWrapper>
+    <ButtonGroup className="mt-6">
       {props.primary && (
         <PrimaryButton type="submit" onClick={props.primary.onClick} disabled={props.primary.disabled}>
           {props.primary.label}
@@ -338,6 +355,19 @@ export const MultistepFormActions = (props: {
           {props.secondary.label}
         </SecondaryButton>
       )}
-    </FormButtonsWrapper>
+    </ButtonGroup>
   );
 };
+
+const ButtonGroup = styled("div")`
+  display: flex;
+  flex-direction: row;
+  margin-top: 2rem;
+
+  button {
+    flex: auto;
+  }
+  & button:not(:last-child) {
+    margin-right: 1rem;
+  }
+`;

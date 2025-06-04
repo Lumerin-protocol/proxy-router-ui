@@ -12,6 +12,7 @@ export const TabSwitch = styled("div")`
   border-radius: 9px;
   margin-bottom: 3rem;
   margin-top: 2rem;
+  position: relative;
 
   @media (max-width: 900px) {
     margin: 2rem auto;

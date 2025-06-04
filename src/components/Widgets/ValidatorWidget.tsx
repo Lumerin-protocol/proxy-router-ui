@@ -1,5 +1,5 @@
 import styled from "@mui/material/styles/styled";
-import { zeroAddress } from "viem";
+import { isAddressEqual, zeroAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
@@ -86,7 +86,9 @@ export const ValidatorWidget: FC = () => {
             <Key>Complaints</Key>
             <Value>{validator?.complains}</Value>
             <Key>Last Complainer</Key>
-            <Value>{validator?.lastComplainer === zeroAddress ? "n/a" : validator?.lastComplainer}</Value>
+            <Value>
+              {validator && isAddressEqual(validator?.lastComplainer, zeroAddress) ? "n/a" : validator?.lastComplainer}
+            </Value>
           </ValidatorInfo>
         )}
       </WidgetContent>

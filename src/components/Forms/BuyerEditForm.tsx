@@ -6,13 +6,13 @@ import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import { decompressPublicKey } from "../../gateway/utils";
 import { useValidators } from "../../hooks/data/useValidators";
 import { implementationAbi } from "contracts-js/dist/abi/abi";
-import { getPoolInfo, setPoolInfo } from "../../gateway/localStorage";
+import { getPoolInfo, setPoolInfo, storeLastPurchaseDestination } from "../../gateway/localStorage";
 import { predefinedPools } from "./BuyerForms/predefinedPools";
 import { useQueryClient } from "@tanstack/react-query";
 import { CONTRACTS_QK, waitForBlockNumber } from "../../hooks/data/useContracts";
 import type { GetResponse } from "../../gateway/interfaces";
 import { TransactionForm } from "./Shared/MultistepForm";
-import type { TransactionReceipt } from "viem";
+import { isAddressEqual, type TransactionReceipt } from "viem";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { memo } from "react";
@@ -153,7 +153,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
 
               const startTime = qc
                 .getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK])
-                ?.data.find((c) => c.id === contractId)?.timestamp;
+                ?.data.find((c) => isAddressEqual(c.id, contractId))?.timestamp;
 
               if (!startTime) {
                 throw new Error("Start time not found");
@@ -168,6 +168,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
                 startedAt: BigInt(startTime),
                 validatorAddress: data.validatorAddress,
               });
+              storeLastPurchaseDestination(data.poolAddress, data.username);
             },
           },
         ]}

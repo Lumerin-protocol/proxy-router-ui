@@ -13,8 +13,8 @@ export const GenericCompletedContent: FC<Props> = ({ title, description }) => {
     <div className="flex flex-col items-center font-Inter">
       <div className="flex flex-col items-center">
         <FontAwesomeIcon className="my-8" icon={faCheckCircle} size="5x" color="#11B4BF" />
-        <p className="w-4/6 text-center text-2xl mb-4">{title}</p>
-        {description && <p className="w-5/6 text-center text-sm mb-4">{description}</p>}
+        <h1 className="w-4/6 text-center text-2xl mb-4">{title}</h1>
+        {description && <div className="w-5/6 text-center text-sm mb-4">{description}</div>}
       </div>
     </div>
   );
