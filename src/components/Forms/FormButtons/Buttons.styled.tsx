@@ -1,17 +1,9 @@
-import { css } from "@mui/material/styles";
 import styled from "@mui/material/styles/styled";
 
 export const FormButtonsWrapper = styled("div")`
   display: flex;
   flex-direction: row;
-  margin-top: 1.5rem;
-
-  button {
-    flex: auto;
-  }
-  & button:not(:last-child) {
-    margin-right: 1rem;
-  }
+  gap: 0.5rem;
 `;
 
 export const Button = styled("button")`
@@ -34,8 +26,8 @@ export const Button = styled("button")`
 `;
 
 export const PrimaryButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== "$disabledText",
-})<{ $disabledText?: string }>`
+  shouldForwardProp: (prop) => typeof prop === "string" && !prop.startsWith("$"),
+})<{ $disabledText?: string; $hoverText?: string }>`
   color: #fff;
   background-color: #4c5a5f;
   position: relative;
@@ -44,6 +36,15 @@ export const PrimaryButton = styled(Button, {
     color: rgb(163, 163, 163);
     cursor: not-allowed;
   }
+
+  ${({ $hoverText }) =>
+    $hoverText &&
+    `
+      &:hover:after {
+        content: "${$hoverText}";
+      }
+    `}
+
   ${({ $disabledText }) =>
     $disabledText &&
     `
@@ -52,20 +53,20 @@ export const PrimaryButton = styled(Button, {
       }
     `}
 
-  &:disabled:after {
+  &:after {
     position: absolute;
     bottom: calc(100% + 0.5em);
-    left: 0;
-    width: 100%;
+    width: max-content;
     padding: 0.5em;
     border-radius: 0.5em;
     background-color: rgba(0, 0, 0, 0.9);
+    color: #ccc;
     font-size: 0.8rem;
     visibility: hidden;
     transition: opacity 0.2s ease-in-out;
     opacity: 0;
   }
-  &:disabled:hover:after {
+  &:hover:after {
     visibility: visible;
     opacity: 1;
   }

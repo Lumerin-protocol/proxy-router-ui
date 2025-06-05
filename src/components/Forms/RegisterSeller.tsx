@@ -13,6 +13,7 @@ import { truncateAddress } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
+import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
 
 export interface RegisterSellerInput {
   stake: string;
@@ -37,6 +38,8 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
     },
   });
 
+  const balance = useFeeTokenBalance(address!);
+
   // Input validation setup
   const form = useForm<RegisterSellerInput>({
     mode: "onBlur",
@@ -54,6 +57,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
   });
 
   const minStake = minSellerStakeQuery.isSuccess ? formatFeePrice(minSellerStakeQuery.data) : undefined;
+  const balanceValue = balance?.data ? formatFeePrice(balance.data) : undefined;
 
   return (
     <TransactionForm
@@ -70,6 +74,10 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
             min: {
               value: minStake?.value || "0",
               message: `Stake must be at least ${minStake?.value || "0"} ${sellerStakeToken.symbol}`,
+            },
+            max: {
+              value: balanceValue?.value || Number.POSITIVE_INFINITY,
+              message: `Not enough balance. You have ${balanceValue?.full} ${sellerStakeToken.symbol}`,
             },
           },
         });

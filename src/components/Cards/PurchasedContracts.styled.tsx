@@ -8,7 +8,7 @@ export const ContractCards = styled("div")`
   font-family: Inter, sans-serif;
 
   @media (min-width: 900px) {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   }
   .card {
     background-color: rgba(79, 126, 145, 0.04);
@@ -27,6 +27,10 @@ export const ContractCards = styled("div")`
     }
 
     .terms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.5rem;
+
       .item-value {
         display: flex;
         flex-direction: row;
@@ -52,14 +56,13 @@ export const ContractCards = styled("div")`
       margin-bottom: 1.5rem;
 
       .pickaxe {
-        background: rgb(128, 125, 125);
         background: linear-gradient(0deg, rgba(128, 125, 125, 1) 12%, rgba(26, 26, 26, 1) 100%);
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 75px;
-        height: 60px;
-        padding: 5px 10px;
+        width: 65px;
+        height: 65px;
+        padding: 5px 5px;
         border-radius: 200px;
         margin-right: 1rem;
       }
@@ -67,11 +70,13 @@ export const ContractCards = styled("div")`
         display: flex;
         flex-direction: column;
         width: 100%;
+        flex: 1 0;
 
         .percentage-and-actions {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          height: 3em;
         }
         h2 {
           font-size: 1.1rem;
@@ -82,6 +87,11 @@ export const ContractCards = styled("div")`
           text-decoration: underline;
         }
       }
+    }
+    .pool-connection {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(50px, auto));
+      gap: 0.5rem;
     }
     .grid {
       h3,
@@ -96,7 +106,8 @@ export const ContractCards = styled("div")`
         flex-direction: row;
         align-items: center;
         padding-bottom: 0.8rem;
-        img {
+        img,
+        svg {
           width: 20px;
           height: 20px;
           margin-right: 0.75rem;
@@ -104,6 +115,9 @@ export const ContractCards = styled("div")`
         p {
           font-weight: 400;
           font-size: 0.85rem;
+        }
+        h3 {
+          margin-bottom: 0.25em;
         }
       }
       .address {

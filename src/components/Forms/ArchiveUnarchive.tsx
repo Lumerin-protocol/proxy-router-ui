@@ -23,7 +23,7 @@ export const ArchiveUnarchiveForm: FC<Props> = memo(
       <TransactionForm
         onClose={closeForm}
         client={publicClient!}
-        title="Archive contract"
+        title={`${isArchived ? "Unarchive" : "Archive"} contract`}
         description={`You are about to ${isArchived ? "unarchive" : "archive"} following contracts:`}
         reviewForm={(props) => (
           <>
