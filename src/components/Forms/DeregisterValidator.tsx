@@ -20,13 +20,9 @@ export const DeregisterValidator: FC<CancelFormProps> = ({ closeForm }) => {
       onClose={closeForm}
       client={publicClient!}
       title="Deregister yourself as a validator"
-      description="You are about to deregister yourself as a validator, and your validator will no longer be
-            active. Your stake will be returned to your account."
+      description="You are about to deregister yourself as a Validator."
       reviewForm={(props) => (
-        <>
-          <p className="mb-2">Make sure you want to deregister yourself as a validator.</p>
-          <p>The deregistration is permanent.</p>
-        </>
+        <p className="mt-2">Your validator will no longer be active. Your stake will be returned to your account.</p>
       )}
       resultForm={(props) => (
         <>

@@ -60,7 +60,12 @@ export const ValidatorWidget: FC = () => {
       )}
       {removeValidatorModal.isOpen && (
         <ModalItem open={removeValidatorModal.isOpen} setOpen={removeValidatorModal.setOpen}>
-          <DeregisterValidator closeForm={() => removeValidatorModal.setOpen(false)} />
+          <DeregisterValidator
+            closeForm={async () => {
+              removeValidatorModal.close();
+              await validatorQuery.refetch();
+            }}
+          />
         </ModalItem>
       )}
       <h3>
@@ -79,26 +84,48 @@ export const ValidatorWidget: FC = () => {
         )}
         {validatorQuery.isSuccess && isRegistered && (
           <ValidatorInfo>
-            <Key>Host</Key>
-            <Value>{validator?.host}</Value>
-            <Key>Stake</Key>
-            <Value>{validator ? formatFeePrice(validator.stake).full : "0"}</Value>
-            <Key>Complaints</Key>
-            <Value>{validator?.complains}</Value>
-            <Key>Last Complainer</Key>
-            <Value>
-              {validator && isAddressEqual(validator?.lastComplainer, zeroAddress) ? "n/a" : validator?.lastComplainer}
-            </Value>
+            <Entry>
+              <Key>Host</Key>
+              <Value>{validator?.host}</Value>
+            </Entry>
+            <Entry>
+              <Key>Stake</Key>
+              <Value>{validator ? formatFeePrice(validator.stake).full : "0"}</Value>
+            </Entry>
+            <Entry>
+              <Key>Complaints</Key>
+              <Value>{validator?.complains}</Value>
+            </Entry>
+            <Entry>
+              <Key>Last Complainer</Key>
+              <Value>
+                {validator && isAddressEqual(validator?.lastComplainer, zeroAddress)
+                  ? "n/a"
+                  : validator?.lastComplainer}
+              </Value>
+            </Entry>
           </ValidatorInfo>
         )}
       </WidgetContent>
       <div className="link">
-        <PrimaryButton onClick={editValidatorModal.open}>Edit validator</PrimaryButton>
-        <PrimaryButton onClick={removeValidatorModal.open}>Remove yourself as a validator</PrimaryButton>
+        <PrimaryButton onClick={editValidatorModal.open} disabled={!isRegistered}>
+          Edit validator
+        </PrimaryButton>
+        <PrimaryButton onClick={removeValidatorModal.open} disabled={!isRegistered}>
+          Unregister
+        </PrimaryButton>
       </div>
     </SmallWidget>
   );
 };
+
+const Entry = styled("dl")`
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-auto-flow: column dense;
+  column-gap: 2rem;
+  align-items: flex-start;
+`;
 
 const Value = styled("dd")`
   display: flex;
@@ -118,13 +145,15 @@ const Key = styled("dt")`
   font-size: 0.8em;
 `;
 
-const ValidatorInfo = styled("dl")`
+const ValidatorInfo = styled("div")`
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  grid-auto-flow: column dense;
-  column-gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
   align-items: flex-start;
   justify-content: space-evenly;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 1rem;
 `;
 
 const WidgetContent = styled("div")`

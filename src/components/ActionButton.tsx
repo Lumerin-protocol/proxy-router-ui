@@ -6,6 +6,7 @@ import { faPencil } from "@fortawesome/free-solid-svg-icons/faPencil";
 import { faRotateBack } from "@fortawesome/free-solid-svg-icons/faRotateBack";
 import { faSackDollar } from "@fortawesome/free-solid-svg-icons/faSackDollar";
 import styled from "@mui/material/styles/styled";
+import { PrimaryButton } from "./Forms/FormButtons/Buttons.styled";
 
 export const CancelButton: FC<BaseProps> = (props) => (
   <ActionButton {...props} text="Cancel" icon={<FontAwesomeIcon icon={faCircleXmark} />} />
@@ -40,17 +41,15 @@ interface BaseProps {
 export const ActionButton: FC<Props> = ({ onClick, text, icon, disabled }) => {
   return (
     <ActionButtonWrapper>
-      <button type="button" onClick={onClick} disabled={disabled}>
+      <PrimaryButton type="button" onClick={onClick} disabled={disabled} $hoverText={text}>
         {icon}
-      </button>
-      <p className="text-white">{text}</p>
+      </PrimaryButton>
     </ActionButtonWrapper>
   );
 };
 
 export const ActionButtonWrapper = styled("div")`
   width: 30px;
-  padding: 10px 0 5px;
   button {
     border-radius: 50px;
     width: 30px;

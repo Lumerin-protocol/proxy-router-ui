@@ -99,8 +99,8 @@ export const SellerWidget: FC = () => {
           <ModalItem open={deregisterSellerModal.isOpen} setOpen={deregisterSellerModal.setOpen}>
             <DeregisterSeller
               closeForm={async () => {
-                await sellerQuery.refetch();
                 deregisterSellerModal.close();
+                await sellerQuery.refetch();
               }}
             />
           </ModalItem>
@@ -125,15 +125,19 @@ export const SellerWidget: FC = () => {
           {sellerQuery.isSuccess && isActive && (
             <SellerInfo>
               <Key>Address</Key>
-              <Value>{truncateAddress(address!, AddressLength.MEDIUM)}</Value>
+              <Value>{truncateAddress(address!, AddressLength.SHORT)}</Value>
               <Key>Stake</Key>
               <Value>{formatFeePrice(seller!.stake).full}</Value>
             </SellerInfo>
           )}
         </WidgetContent>
         <div className="link">
-          <PrimaryButton onClick={editSellerModal.open}>Edit your seller</PrimaryButton>
-          <PrimaryButton onClick={deregisterSellerModal.open}>Remove yourself as a seller</PrimaryButton>
+          <PrimaryButton onClick={editSellerModal.open} disabled={!isRegistered}>
+            Edit seller
+          </PrimaryButton>
+          <PrimaryButton onClick={deregisterSellerModal.open} disabled={!isRegistered}>
+            Unregister
+          </PrimaryButton>
         </div>
       </SmallWidget>
       <GenericNumberStatsWidget

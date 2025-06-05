@@ -5,12 +5,10 @@ import CancelIcon from "@mui/icons-material/CancelOutlined";
 import DoneIcon from "@mui/icons-material/Done";
 import Divider from "@mui/material/Divider";
 import LinearProgress, { linearProgressClasses } from "@mui/material/LinearProgress";
-import PickaxeAnimated from "../../images/icons/pickaxe-animated.gif";
 import PriceTag from "../../images/icons/price-icon-white.png";
 import Speed from "../../images/icons/speed-icon-white.png";
 import Time from "../../images/icons/time-icon-white.png";
 import IDCard from "../../images/id-card-white.png";
-import Pickaxe from "../../images/pickaxe-white.png";
 import styled from "@mui/material/styles/styled";
 import type { FC } from "react";
 import { formatFeePrice, formatPaymentPrice, formatHashrateTHPS } from "../../lib/units";
@@ -20,6 +18,7 @@ import { formatDateTime } from "../../lib/date";
 import { formatDuration } from "../../lib/duration";
 import { CancelButton, EditButton } from "../ActionButton";
 import { useSimulatedBlockchainTime } from "../../hooks/data/useSimulatedBlockchainTime";
+import { Pickaxe } from "../Icons/Pickaxe";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
@@ -35,12 +34,12 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 
 const getIcon = (icon: "inprogress" | "completed" | "closed-early") => {
   if (icon === "inprogress") {
-    return <img src={PickaxeAnimated} alt="" />;
+    return <Pickaxe animate fill="white" width="2em" height="2em" />;
   }
   if (icon === "completed") {
     return <DoneIcon sx={{ color: "white" }} />;
   }
-  return <CancelIcon sx={{ color: "white" }} />;
+  return <CancelIcon sx={{ color: "#ff3b3b" }} />;
 };
 
 export type CardData = {
@@ -138,6 +137,13 @@ export const Card: FC<CardProps> = (props) => {
               <p>{formatSpeed(item.speedHps)}</p>
             </div>
           </div>
+          <div className="item-value duration">
+            <img src={Time} alt="" />
+            <div>
+              <h3>DURATION</h3>
+              <p>{formatDuration(BigInt(item.length))}</p>
+            </div>
+          </div>
           <div className="item-value price">
             <img src={PriceTag} alt="" />
             <div>
@@ -152,33 +158,30 @@ export const Card: FC<CardProps> = (props) => {
               <p>{formatFeePrice(item.fee).full}</p>
             </div>
           </div>
-          <div className="item-value duration">
-            <img src={Time} alt="" />
-            <div>
-              <h3>DURATION</h3>
-              <p>{formatDuration(BigInt(item.length))}</p>
-            </div>
-          </div>
         </div>
         {!isCompleted && (
           <>
-            <Divider variant="middle" sx={{ my: 2 }} />
+            <Divider variant="fullWidth" sx={{ mt: 1, mb: 2 }} />
             <h3 className="sm-header">POOL CONNECTION</h3>
-            <div className="item-value username">
-              <img src={IDCard} alt="" />
-              <div>
-                <p>{item.poolAddress} </p>
+            <div className="pool-connection">
+              <div className="item-value username">
+                <img src={IDCard} alt="" />
+                <div>
+                  <h3>HOST</h3>
+                  <p>{item.poolAddress} </p>
+                </div>
               </div>
-            </div>
-            <div className="item-value address">
-              <img src={Pickaxe} alt="" />
-              <div>
-                <p>{item.poolUsername}</p>
+              <div className="item-value address">
+                <Pickaxe fill="#aaa" width="1em" height="1em" />
+                <div>
+                  <h3>USERNAME</h3>
+                  <p>{item.poolUsername}</p>
+                </div>
               </div>
             </div>
           </>
         )}
-        <Divider variant="middle" sx={{ my: 2 }} />
+        <Divider variant="fullWidth" sx={{ mt: 0, mb: 2 }} />
         <h3 className="sm-header">VALIDATOR</h3>
         <div className="item-value username">
           <img src={IDCard} alt="" />

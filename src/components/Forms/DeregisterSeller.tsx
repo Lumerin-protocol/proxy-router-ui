@@ -75,6 +75,7 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
               abi: cloneFactoryAbi,
               functionName: "setContractsDeleted",
               args: [contracts.data!.map((c) => c.id as `0x${string}`), true],
+              account: userAccount!,
             });
             const txhash = await wc.data!.writeContract(req.request);
             return {

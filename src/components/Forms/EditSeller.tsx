@@ -11,6 +11,7 @@ import { formatFeePrice, sellerStakeToken } from "../../lib/units";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
+import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
 
 export interface EditSellerInput {
   stake: string;
@@ -27,6 +28,8 @@ export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
   const wc = useWalletClient();
   const fee = useApproveFee();
 
+  const balance = useFeeTokenBalance(userAccount!);
+
   // Input validation setup
   const form = useForm<EditSellerInput>({
     mode: "onBlur",
@@ -34,6 +37,8 @@ export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
       stake: formatFeePrice(props.sellerStake).value,
     },
   });
+
+  const maxStakeValue = balance.data ? balance.data + props.sellerStake : undefined;
 
   return (
     <TransactionForm
@@ -50,6 +55,12 @@ export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
             min: {
               value: formatFeePrice(props.sellerStake).value,
               message: "You cannot reduce your stake. Unregister if you want to exit.",
+            },
+            max: {
+              value: maxStakeValue ? formatFeePrice(maxStakeValue).value : Number.POSITIVE_INFINITY,
+              message: `Not enough balance. The maximum stake you can have is ${
+                formatFeePrice(maxStakeValue!).valueRounded
+              } ${sellerStakeToken.symbol}`,
             },
           },
         });

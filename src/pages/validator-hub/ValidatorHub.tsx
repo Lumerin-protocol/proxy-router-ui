@@ -130,8 +130,11 @@ export const ValidatorHub: FC = () => {
           // 1. the contract is not reconciled
           // 2. the contract validator is the user's wallet
           // 3. this is the most recent validation for the contract
-          const contractIndex = contracts.data!.findIndex((c) => isAddressEqual(c.id, r.contract));
-          const contractEntry = contracts.data![contractIndex];
+          if (!contracts.data) {
+            return "0";
+          }
+          const contractIndex = contracts.data.findIndex((c) => isAddressEqual(c.id, r.contract));
+          const contractEntry = contracts.data[contractIndex];
           const isMostRecent = contractEntry.history?.[0].purchaseTime === r.purchaseTime;
           const isValidator = isAddressEqual(contractEntry.validator, userAccount);
           const isUnsettled = Number(contractEntry.feeBalance) > 0;

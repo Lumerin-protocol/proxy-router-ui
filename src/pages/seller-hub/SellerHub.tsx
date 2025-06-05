@@ -44,7 +44,13 @@ export const SellerHub: FC = () => {
   const { address: userAccount } = useAccount();
   const { data: contracts, isLoading } = useSellerContracts({ address: userAccount });
   const blockTime30s = useSimulatedBlockchainTime({ intervalSeconds: 30 });
-  const [selectedRows, setSelectedRows] = useState<Record<`0x${string}`, boolean>>({});
+  const [_selectedRows, _setSelectedRows] = useState<Record<`0x${string}`, boolean>>({});
+  const selectedRows = Object.entries(_selectedRows).reduce((acc, [key, value]) => {
+    if (value) {
+      acc.push(key);
+    }
+    return acc;
+  }, [] as string[]);
 
   const createModal = useModal();
   const editModal = useModal();
@@ -82,17 +88,17 @@ export const SellerHub: FC = () => {
   }
 
   function onBatchClaim() {
-    setContractIds(Object.keys(selectedRows));
+    setContractIds(selectedRows);
     claimModal.open();
   }
 
   function onBatchArchive() {
-    setContractIds(Object.keys(selectedRows));
+    setContractIds(selectedRows);
     archiveModal.open();
   }
 
   function onBatchUnarchive() {
-    setContractIds(Object.keys(selectedRows));
+    setContractIds(selectedRows);
     unarchiveModal.open();
   }
 
@@ -217,7 +223,7 @@ export const SellerHub: FC = () => {
     columns,
     data,
     state: {
-      rowSelection: selectedRows,
+      rowSelection: _selectedRows,
       columnFilters: columnFilters,
       columnVisibility: {
         select: selectRowsColumnVisible,
@@ -227,12 +233,19 @@ export const SellerHub: FC = () => {
       sorting: [{ id: "status", desc: true }],
     },
     getRowId: (row) => row.id,
-    onRowSelectionChange: setSelectedRows,
+    onRowSelectionChange: _setSelectedRows,
     // onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+
+  const isAnyRowSelected = selectedRows.length > 0;
+  const isSelectedRowsDeleted =
+    isAnyRowSelected && selectedRows.every((rowId) => tableInstance.getRow(rowId)?.original.isDeleted);
+  const isSelectedRowsUndeleted =
+    isAnyRowSelected && selectedRows.every((rowId) => !tableInstance.getRow(rowId)?.original.isDeleted);
+  const isSelectedMixedDeleted = !isSelectedRowsDeleted && !isSelectedRowsUndeleted && isAnyRowSelected;
 
   return (
     <DefaultLayout pageTitle="Seller Hub">
@@ -292,14 +305,34 @@ export const SellerHub: FC = () => {
                 <AddIcon className="add-icon" />
                 Cancel
               </TableToolbarButton>
-              <TableToolbarButton onClick={onBatchClaim}>
+              <TableToolbarButton onClick={onBatchClaim} disabled={!isAnyRowSelected}>
                 <AddIcon className="add-icon" />
                 Claim
               </TableToolbarButton>
-              <TableToolbarButton onClick={() => setSelectRowsColumnVisible(false)}>
-                <AddIcon className="add-icon" />
-                Archive
-              </TableToolbarButton>
+              {isSelectedRowsDeleted && (
+                <TableToolbarButton onClick={onBatchUnarchive}>
+                  <AddIcon className="add-icon" />
+                  Unarchive
+                </TableToolbarButton>
+              )}
+              {isSelectedRowsUndeleted && (
+                <TableToolbarButton onClick={onBatchArchive}>
+                  <AddIcon className="add-icon" />
+                  Archive
+                </TableToolbarButton>
+              )}
+              {isSelectedMixedDeleted && (
+                <TableToolbarButton disabled $disabledText="Please select only archived or unarchived contracts">
+                  <AddIcon className="add-icon" />
+                  Archive
+                </TableToolbarButton>
+              )}
+              {!isAnyRowSelected && (
+                <TableToolbarButton disabled $disabledText="Please select at least one contract">
+                  <AddIcon className="add-icon" />
+                  Archive
+                </TableToolbarButton>
+              )}
             </>
           )}
         </SellerActions>
