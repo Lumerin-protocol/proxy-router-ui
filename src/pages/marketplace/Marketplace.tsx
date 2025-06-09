@@ -22,7 +22,7 @@ import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../li
 import { formatDuration } from "../../lib/duration";
 import { useAvailableContracts } from "../../hooks/data/useContracts";
 import { WidgetsWrapper } from "./styled";
-import { isAddressEqual } from "viem";
+import { isAddressEqual, zeroAddress } from "viem";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
@@ -78,7 +78,7 @@ export const Marketplace: FC = () => {
                 buyModal.open();
               }}
               $disabledText="You cannot purchase your own contract"
-              disabled={isAddressEqual(r.row.original.seller, userAccount)}
+              disabled={isAddressEqual(r.row.original.seller, userAccount || zeroAddress)}
             >
               Purchase
             </PrimaryButton>

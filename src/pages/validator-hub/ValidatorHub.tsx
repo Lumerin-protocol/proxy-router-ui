@@ -42,8 +42,15 @@ export const ValidatorHub: FC = () => {
   const validatorHistory = useValidatorHistory({ address: userAccount! });
   const contracts = useContracts();
 
-  const [selectedRows, setSelectedRows] = useState<Record<`0x${string}`, boolean>>({});
+  const [_selectedRows, setSelectedRows] = useState<Record<`0x${string}`, boolean>>({});
   const [selectedContractAddresses, setSelectedContractAddresses] = useState<`0x${string}`[]>([]);
+
+  const selectedRows = Object.entries(_selectedRows).reduce((acc, [key, value]) => {
+    if (value) {
+      acc.push(key);
+    }
+    return acc;
+  }, [] as string[]);
 
   const claimModal = useModal();
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("unset");
@@ -165,7 +172,7 @@ export const ValidatorHub: FC = () => {
     columns,
     data: tableData,
     state: {
-      rowSelection: selectedRows,
+      rowSelection: _selectedRows,
       columnFilters: columnFilters,
       columnVisibility: {
         select: selectRowsColumnVisible,
@@ -186,6 +193,14 @@ export const ValidatorHub: FC = () => {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const isAnyRowSelected = selectedRows.length > 0;
+  const areAllSelectedRowsClaimable =
+    isAnyRowSelected &&
+    selectedRows.every((rowId) => {
+      const data = tableInstance.getRow(rowId)?.getValue<string>("balance");
+      return data !== "0";
+    });
+
   return (
     <DefaultLayout pageTitle="Validator Hub">
       <>
@@ -194,10 +209,7 @@ export const ValidatorHub: FC = () => {
         </WidgetsWrapper>
         {claimModal.isOpen && (
           <ModalItem open={claimModal.isOpen} setOpen={claimModal.setOpen}>
-            <ClaimForm
-              contractIDs={Array.from(selectedContractAddresses) as `0x${string}`[]}
-              closeForm={claimModal.close}
-            />
+            <ClaimForm contractIDs={selectedContractAddresses} closeForm={claimModal.close} />
           </ModalItem>
         )}
 
@@ -223,6 +235,8 @@ export const ValidatorHub: FC = () => {
                   Cancel
                 </TableToolbarButton>
                 <TableToolbarButton
+                  disabled={!areAllSelectedRowsClaimable}
+                  $disabledText="All selected contracts must have a balance to claim"
                   onClick={() => {
                     const selectedContracts = tableInstance.getSelectedRowModel().rows.map((r) => r.original.contract);
                     setSelectedContractAddresses(selectedContracts);

@@ -146,26 +146,31 @@ export const MultipleTransactionProgress = (props: {
           <StepStyled key={index}>
             <StepLabel>{props.steps[Number(index)].label}</StepLabel>
             <StepProgressIcon>{getStepProgressIcon(tx.state)}</StepProgressIcon>
-            <StepProgressLabel>{getStepProgressLabel(tx)}</StepProgressLabel>
+            <StepProgressRow>
+              <StepProgressLabel>{getStepProgressLabel(tx)}</StepProgressLabel>
+              {tx.error && (
+                <RetryButton size="small" type="button" color="error" onClick={() => props.onRetry(Number(index))}>
+                  Retry
+                </RetryButton>
+              )}
+            </StepProgressRow>
             {tx.txhash && (
               <StepTxHash>
                 TxHash: <TxLink to={getTxUrl(tx.txhash)}>{truncateAddress(tx.txhash)}</TxLink>
               </StepTxHash>
             )}
-            {tx.error && (
-              <>
-                <StepError>{mapErrorToString(tx.error)}</StepError>
-                <Button type="button" color="error" onClick={() => props.onRetry(Number(index))}>
-                  Retry
-                </Button>
-              </>
-            )}
+            {tx.error && <StepError>{mapErrorToString(tx.error)}</StepError>}
           </StepStyled>
         ))}
       </Steps>
     </div>
   );
 };
+
+const RetryButton = styled(Button)`
+  padding: 0.1em 0.1em;
+  background-color: rgba(106, 0, 0, 0.44);
+`;
 
 function mapErrorToString(error: Error): string {
   if (error instanceof BaseError) {
@@ -276,6 +281,13 @@ const StepError = styled("div")`
   font-weight: normal;
   color: red;
   grid-column-start: 2;
+`;
+
+const StepProgressRow = styled("div")`
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+  align-items: center;
 `;
 
 const TxLink = styled(Link)`
