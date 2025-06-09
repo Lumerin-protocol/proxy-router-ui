@@ -1,5 +1,5 @@
 import { useController, useForm } from "react-hook-form";
-import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { custom, injected, useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { type FC, useRef } from "react";
@@ -14,6 +14,7 @@ import { isValidHost } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
+import { createPublicClient } from "viem";
 
 export interface EditValidatorInput {
   stake: string;
@@ -28,9 +29,10 @@ interface EditValidatorFormProps {
 
 export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
   const { address: userAccount } = useAccount();
-  const publicClient = usePublicClient();
 
   const wc = useWalletClient();
+  const wcData = wc.data!;
+  const pc = createPublicClient({ chain: wcData.chain, transport: wcData.transport });
   const { getPublicKeyAsync } = useGetPublicKey();
   const fee = useApproveFee();
 

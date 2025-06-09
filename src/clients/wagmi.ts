@@ -3,6 +3,7 @@ import { chain } from "../config/chains";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import type { AppKitNetwork } from "@reown/appkit/networks";
 import { http } from "viem";
+import { injected } from "wagmi";
 // import { /*fallback,*/ http } from "viem";
 // import { http, createConfig } from "wagmi";
 // import { injected, /*safe,*/ walletConnect } from "wagmi/connectors";

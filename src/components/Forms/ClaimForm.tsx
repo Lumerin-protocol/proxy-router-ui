@@ -1,8 +1,5 @@
-import { useAccount, usePublicClient } from "wagmi";
+import { usePublicClient } from "wagmi";
 import { waitForBlockNumber } from "../../hooks/data/useContracts";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
-import { colors } from "../../styles/styles.config";
 import { useQueryClient } from "@tanstack/react-query";
 import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";

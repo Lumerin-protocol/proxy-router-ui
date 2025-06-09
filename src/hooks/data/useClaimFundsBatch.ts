@@ -1,6 +1,7 @@
 import { useWriteContract, usePublicClient, useWalletClient } from "wagmi";
 import { getContract, encodeFunctionData } from "viem";
 import { implementationAbi, multicall3Abi } from "contracts-js/dist/abi/abi";
+import { chain } from "../../config/chains";
 
 interface ClaimFundsBatchProps {
   contractAddresses: `0x${string}`[];
@@ -13,9 +14,13 @@ export function useClaimFundsBatch() {
 
   const claimFundsBatchAsync = async (props: ClaimFundsBatchProps) => {
     if (!writeContractAsync || !publicClient || !walletClient) return;
+    const multicallAddress = process.env.REACT_APP_MULTICALL_ADDRESS || chain.contracts?.multicall3?.address;
+    if (!multicallAddress) {
+      throw new Error("Multicall address not found");
+    }
 
     const multicall = getContract({
-      address: process.env.REACT_APP_MULTICALL_ADDRESS as `0x${string}`,
+      address: multicallAddress,
       abi: multicall3Abi,
       client: publicClient,
     });

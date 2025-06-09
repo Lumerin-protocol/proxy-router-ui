@@ -247,6 +247,13 @@ export const SellerHub: FC = () => {
     isAnyRowSelected && selectedRows.every((rowId) => !tableInstance.getRow(rowId)?.original.isDeleted);
   const isSelectedMixedDeleted = !isSelectedRowsDeleted && !isSelectedRowsUndeleted && isAnyRowSelected;
 
+  const areAllSelectedRowsClaimable =
+    isAnyRowSelected &&
+    selectedRows.every((rowId) => {
+      const data = tableInstance.getRow(rowId)?.getValue<bigint>("balance");
+      return data !== 0n;
+    });
+
   return (
     <DefaultLayout pageTitle="Seller Hub">
       {createModal.isOpen && (
@@ -305,7 +312,11 @@ export const SellerHub: FC = () => {
                 <AddIcon className="add-icon" />
                 Cancel
               </TableToolbarButton>
-              <TableToolbarButton onClick={onBatchClaim} disabled={!isAnyRowSelected}>
+              <TableToolbarButton
+                onClick={onBatchClaim}
+                disabled={!areAllSelectedRowsClaimable}
+                $disabledText="All selected contracts must have a balance to claim"
+              >
                 <AddIcon className="add-icon" />
                 Claim
               </TableToolbarButton>

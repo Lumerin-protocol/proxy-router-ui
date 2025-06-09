@@ -77,7 +77,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
             },
             max: {
               value: balanceValue?.value || Number.POSITIVE_INFINITY,
-              message: `Not enough balance. You have ${balanceValue?.full} ${sellerStakeToken.symbol}`,
+              message: `Not enough balance. You have ${balanceValue?.value || 0} ${sellerStakeToken.symbol}`,
             },
           },
         });
