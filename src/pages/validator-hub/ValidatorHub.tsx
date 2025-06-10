@@ -148,7 +148,7 @@ export const ValidatorHub: FC = () => {
 
           if (isMostRecent && isValidator && isUnsettled) {
             const progress = getStatus(r, Number(new Date().getTime() / 1000)).progress;
-            const feeToBePaidTillEnd = (1 - progress) * Number(contractEntry.length) * Number(contractEntry.fee);
+            const feeToBePaidTillEnd = (1 - progress) * Number(contractEntry.fee);
             const unpaidFee = Number(contractEntry.feeBalance) - feeToBePaidTillEnd;
             return BigInt(Math.floor(unpaidFee));
           }
