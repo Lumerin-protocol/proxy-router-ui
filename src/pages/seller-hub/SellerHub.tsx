@@ -186,7 +186,7 @@ export const SellerHub: FC = () => {
             return BigInt(r.balance);
           }
 
-          const toBePaidTillTheEnd = (1 - progress) * Number(r.length) * Number(r.price);
+          const toBePaidTillTheEnd = (1 - progress) * Number(r.price);
           const unpaidBalance = Number(r.balance) - toBePaidTillTheEnd;
 
           return BigInt(Math.floor(unpaidBalance));
