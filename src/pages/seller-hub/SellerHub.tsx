@@ -186,7 +186,10 @@ export const SellerHub: FC = () => {
             return BigInt(r.balance);
           }
 
-          return BigInt(Math.floor(Number(r.balance) * progress));
+          const toBePaidTillTheEnd = (1 - progress) * Number(r.length) * Number(r.price);
+          const unpaidBalance = Number(r.balance) - toBePaidTillTheEnd;
+
+          return BigInt(Math.floor(unpaidBalance));
         },
         {
           id: "balance",

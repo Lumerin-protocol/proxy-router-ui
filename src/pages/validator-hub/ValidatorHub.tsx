@@ -138,19 +138,22 @@ export const ValidatorHub: FC = () => {
           // 2. the contract validator is the user's wallet
           // 3. this is the most recent validation for the contract
           if (!contracts.data) {
-            return "0";
+            return 0n;
           }
-          const contractIndex = contracts.data.findIndex((c) => isAddressEqual(c.id, r.contract));
+          const contractIndex = contracts.data.findIndex((c) => isAddressEqual(c.id as `0x${string}`, r.contract));
           const contractEntry = contracts.data[contractIndex];
           const isMostRecent = contractEntry.history?.[0].purchaseTime === r.purchaseTime;
-          const isValidator = isAddressEqual(contractEntry.validator, userAccount);
+          const isValidator = isAddressEqual(contractEntry.validator as `0x${string}`, userAccount);
           const isUnsettled = Number(contractEntry.feeBalance) > 0;
 
           if (isMostRecent && isValidator && isUnsettled) {
-            return contractEntry.feeBalance;
+            const progress = getStatus(r, Number(new Date().getTime() / 1000)).progress;
+            const feeToBePaidTillEnd = (1 - progress) * Number(contractEntry.length) * Number(contractEntry.fee);
+            const unpaidFee = Number(contractEntry.feeBalance) - feeToBePaidTillEnd;
+            return BigInt(Math.floor(unpaidFee));
           }
 
-          return "0";
+          return 0n;
         },
         {
           id: "balance",
