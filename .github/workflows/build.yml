@@ -221,11 +221,11 @@ jobs:
     name: Deploy Marketplace to GitLab
     if: |
       (
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'))
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/cicd/*'))
       )
     needs:
       - Generate-Tag
-      - GHCR-Build-and-Push
+      # - GHCR-Build-and-Push
     runs-on: ubuntu-latest
     steps:
       - name: Clone
@@ -245,7 +245,9 @@ jobs:
           FULLTAG=${{ needs.Generate-Tag.outputs.vfull }}       
           echo "Triggering GitLab Deploy for branch ${{ github.ref_name }} with tag $BUILDTAG"
           # Determine branch
-          if [ "${{ github.ref_name }}" == "dev" ]; then
+          if [ "${{ github.ref_name }}" == "cicd/*" ]; then
+            GITLABBRANCH="dev"
+          elif [ "${{ github.ref_name }}" == "dev" ]; then
             GITLABBRANCH="dev"
           elif [ "${{ github.ref_name }}" == "main" ]; then
             GITLABBRANCH="main"
