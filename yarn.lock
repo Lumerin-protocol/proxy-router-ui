@@ -6111,6 +6111,11 @@ react-router@^7.5.3:
     set-cookie-parser "^2.6.0"
     turbo-stream "2.4.0"
 
+react-safe-lazy@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/react-safe-lazy/-/react-safe-lazy-0.1.0.tgz#f7a3f9a3fa0ffa5cb7811e2453dd423e4ab4b1c3"
+  integrity sha512-CZSaQHlNVG8OuSRaLkBGe5cP+qjZtW+fJA/PRNTyCIVkH3F7GQO0aBu+jIrm2PFrTVs4xjSvuDFVyzlX6OL0oQ==
+
 react-timer-hook@^4.0.5:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/react-timer-hook/-/react-timer-hook-4.0.5.tgz#887447dda64da9c9bd1bf13a116951bc37bf0ee4"
