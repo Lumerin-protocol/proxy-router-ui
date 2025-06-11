@@ -148,7 +148,7 @@ jobs:
     if: |
       (
         (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')) ||
-        (github.event_name == 'workflow_dispatch' && (github.event.inputs.build_container == 'true')) 
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/cicd/'))
       )
     needs:
       - Generate-Tag
