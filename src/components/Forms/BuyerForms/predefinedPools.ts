@@ -15,3 +15,26 @@ export const predefinedPools: PoolData[] = [
     isLightning: true,
   },
 ];
+
+export function getPredefinedPoolByAddress(
+  address: string | undefined | null | "",
+): { data: PoolData; index: number } | undefined {
+  if (!address) {
+    return undefined;
+  }
+  const index = predefinedPools.findIndex((p) => p.address === address);
+  if (index < 0) {
+    return undefined;
+  }
+  return { data: predefinedPools[index], index };
+}
+
+export function getPredefinedPoolByIndex(index: number | ""): PoolData | undefined {
+  if (index === "") {
+    return undefined;
+  }
+  if (index < 0) {
+    return undefined;
+  }
+  return predefinedPools[index];
+}

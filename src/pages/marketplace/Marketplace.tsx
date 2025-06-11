@@ -2,7 +2,6 @@ import { type FC, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import Skeleton from "@mui/material/Skeleton";
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
-import { BuyerOrdersWidget } from "../../components/Widgets/BuyerOrdersWidget";
 import { MarketplaceStatistics } from "../../components/Widgets/MarketplaceStatistics";
 import { MessageWidget } from "../../components/Widgets/MessageWidget";
 import { WalletBalanceWidget } from "../../components/Widgets/WalletBalanceWidget";
