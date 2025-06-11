@@ -51,7 +51,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
                 label: props.title,
                 component: (p: StepComponentProps) => (
                   <>
-                    <p>{props.description}</p>
+                    <p className="mb-2">{props.description}</p>
                     {props.inputForm!(p)}
                     <MultistepFormActions
                       primary={{
@@ -74,7 +74,6 @@ export const TransactionForm = (props: TransactionFormProps) => {
           label: props.title,
           component: (p) => (
             <>
-              <p>{props.description}</p>
               {props.reviewForm(p)}
               <MultistepFormActions
                 primary={{
@@ -357,15 +356,15 @@ export const MultistepFormActions = (props: {
 }) => {
   return (
     <ButtonGroup className="mt-6">
-      {props.primary && (
-        <PrimaryButton type="submit" onClick={props.primary.onClick} disabled={props.primary.disabled}>
-          {props.primary.label}
-        </PrimaryButton>
-      )}
       {props.secondary && (
         <SecondaryButton onClick={props.secondary.onClick} disabled={props.secondary.disabled}>
           {props.secondary.label}
         </SecondaryButton>
+      )}
+      {props.primary && (
+        <PrimaryButton type="submit" onClick={props.primary.onClick} disabled={props.primary.disabled}>
+          {props.primary.label}
+        </PrimaryButton>
       )}
     </ButtonGroup>
   );

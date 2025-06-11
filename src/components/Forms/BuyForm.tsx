@@ -20,6 +20,8 @@ import { usePurchaseContract } from "../../hooks/data/usePurchaseContract";
 import { useApprovePayment } from "../../hooks/data/useApprovePayment";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { implementationAbi } from "contracts-js/dist/abi/abi";
+import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
+import { formatDuration } from "../../lib/duration";
 
 interface BuyFormProps {
   contractId: string;
@@ -83,6 +85,11 @@ export const BuyForm2: FC<BuyFormProps> = memo(
           return (
             <GenericConfirmContent
               data={{
+                Hashrate: formatHashrateTHPS(contract.data!.speed).full,
+                Duration: formatDuration(BigInt(contract.data!.length)),
+                "Price / Fee": `${formatPaymentPrice(contract.data!.price).full} / ${
+                  formatFeePrice(contract.data!.fee).full
+                }`,
                 "Validator Address": truncateAddress(validatorAddress),
                 "Pool Address": poolAddress,
                 ...(username && { Username: username }),
