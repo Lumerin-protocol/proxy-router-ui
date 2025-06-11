@@ -12,7 +12,6 @@ const StyledToolbar = styled(Toolbar)`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  width: 100%;
   padding: 0 !important;
   select {
     background-color: none;
@@ -25,12 +24,8 @@ export const SortToolbar = (props: {
   sortType: string;
   setSortType: (sortType: SortTypes) => void;
 }) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
-
   return (
     <StyledToolbar>
-      <h2 className="text-xl text-white font-Raleway font-regular text-left">{!isMobile ? props.pageTitle : ""}</h2>
-
       <Box sx={{ minWidth: 120 }}>
         <FormControl fullWidth>
           <InputLabel id="sort-label">Sort By</InputLabel>

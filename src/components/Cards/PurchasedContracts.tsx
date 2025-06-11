@@ -164,18 +164,17 @@ export const Card: FC<CardProps> = (props) => {
             <Divider variant="fullWidth" sx={{ mt: 1, mb: 2 }} />
             <h3 className="sm-header">POOL CONNECTION</h3>
             <div className="pool-connection">
-              <div className="item-value username">
+              <div className="item-value item-value-inline pool-host">
                 <img src={IDCard} alt="" />
                 <div>
-                  <h3>HOST</h3>
-                  <p>{item.poolAddress} </p>
-                </div>
-              </div>
-              <div className="item-value address">
-                <Pickaxe fill="#aaa" width="1em" height="1em" />
-                <div>
-                  <h3>USERNAME</h3>
-                  <p>{item.poolUsername}</p>
+                  <div>
+                    <h3>HOST</h3>
+                    <p>{item.poolAddress} </p>
+                  </div>
+                  <div>
+                    <h3>USERNAME</h3>
+                    <p>{item.poolUsername}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -183,7 +182,7 @@ export const Card: FC<CardProps> = (props) => {
         )}
         <Divider variant="fullWidth" sx={{ mt: 0, mb: 2 }} />
         <h3 className="sm-header">VALIDATOR</h3>
-        <div className="item-value username">
+        <div className="item-value validator-address">
           <img src={IDCard} alt="" />
           <div>
             <p>{truncateAddress(item.validatorAddress, AddressLength.LONG)} </p>

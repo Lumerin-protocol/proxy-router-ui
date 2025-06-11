@@ -105,29 +105,40 @@ export const BuyerHub: FC = () => {
       <WidgetsWrapper>
         <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
       </WidgetsWrapper>
-      <TabSwitch>
-        <button
-          type="button"
-          id="running"
-          className={activeOrdersTab === CurrentTab.Running ? "active" : ""}
-          onClick={() => setActiveOrdersTab(CurrentTab.Running)}
-        >
-          Active <span>{contractsQuery.isLoading ? "" : runningContracts.length}</span>
-        </button>
-        <button
-          type="button"
-          id="completed"
-          className={activeOrdersTab === CurrentTab.Completed ? "active" : ""}
-          onClick={() => setActiveOrdersTab(CurrentTab.Completed)}
-        >
-          Completed <span>{contractsQuery.isLoading ? "" : completedContracts.length}</span>
-        </button>
-        <span className="glider" />
-      </TabSwitch>
+      <div className="flex justify-between">
+        <TabSwitch>
+          <button
+            type="button"
+            id="running"
+            className={activeOrdersTab === CurrentTab.Running ? "active" : ""}
+            onClick={() => setActiveOrdersTab(CurrentTab.Running)}
+          >
+            Active <span>{contractsQuery.isLoading ? "" : runningContracts.length}</span>
+          </button>
+          <button
+            type="button"
+            id="completed"
+            className={activeOrdersTab === CurrentTab.Completed ? "active" : ""}
+            onClick={() => setActiveOrdersTab(CurrentTab.Completed)}
+          >
+            Completed <span>{contractsQuery.isLoading ? "" : completedContracts.length}</span>
+          </button>
+          <span className="glider" />
+        </TabSwitch>
+        {activeOrdersTab === CurrentTab.Running && (
+          <SortToolbar pageTitle="Active Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
+        )}
+        {activeOrdersTab === CurrentTab.Completed && (
+          <SortToolbar
+            pageTitle="Completed Contracts"
+            sortType={completedSortType}
+            setSortType={setCompletedSortType}
+          />
+        )}
+      </div>
       <div className="flex flex-col items-center">
         {activeOrdersTab === CurrentTab.Running && (
           <>
-            <SortToolbar pageTitle="Active Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
             {runningContracts.length === 0 && <p className="text-2xl text-white">You have no active contracts.</p>}
             {runningContracts.length > 0 && (
               <ContractCards>
@@ -153,11 +164,6 @@ export const BuyerHub: FC = () => {
         )}
         {activeOrdersTab === CurrentTab.Completed && (
           <>
-            <SortToolbar
-              pageTitle="Completed Contracts"
-              sortType={completedSortType}
-              setSortType={setCompletedSortType}
-            />
             {completedContractsCards.length === 0 && (
               <p className="text-2xl text-white">You have no completed contracts.</p>
             )}

@@ -114,7 +114,7 @@ export const Marketplace: FC = () => {
       <WidgetsWrapper>
         <MessageWidget isMobile={isMobile} />
         <WalletBalanceWidget />
-        <MarketplaceStatistics isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
+        <MarketplaceStatistics />
       </WidgetsWrapper>
       <ModalItem open={buyModal.isOpen} setOpen={buyModal.setOpen}>
         <BuyForm2 key={buyContractId} contractId={buyContractId!} setOpen={buyModal.setOpen} />

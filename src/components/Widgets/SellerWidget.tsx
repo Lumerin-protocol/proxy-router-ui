@@ -11,10 +11,11 @@ import { truncateAddress } from "../../utils/utils";
 import { AddressLength, ContractState } from "../../types/types";
 import { RegisterSellerForm } from "../Forms/RegisterSeller";
 import { DeregisterSeller } from "../Forms/DeregisterSeller";
-import { useSellerContracts } from "../../hooks/data/useContracts";
+import { useContracts, useSellerContracts } from "../../hooks/data/useContracts";
 import { GenericNumberStatsWidget } from "./GenericNumberStatsWidget";
 import { EditSellerForm } from "../Forms/EditSeller";
 import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
+import { isAddressEqual } from "viem";
 
 export const SellerWidget: FC = () => {
   const { address } = useAccount();
@@ -33,7 +34,14 @@ export const SellerWidget: FC = () => {
     },
   });
 
-  const contractsQuery = useSellerContracts({ address: address! });
+  const contractsQuery = useContracts({
+    select: (data) => {
+      return {
+        ...data,
+        data: data.data?.filter((c) => isAddressEqual(c.seller as `0x${string}`, address!)),
+      };
+    },
+  });
 
   const count = contractsQuery.data?.reduce<{
     available: number;
@@ -45,15 +53,24 @@ export const SellerWidget: FC = () => {
     runningHashrate: number;
   }>(
     (acc, contract) => {
+      // if running but is deleted it is still running
       if (contract.state === ContractState.Running) {
         acc.running++;
         acc.runningHashrate += Number(contract.speed);
-      } else if (contract.isDeleted) {
-        acc.archived++;
-      } else if (contract.state === ContractState.Available) {
-        acc.available++;
-        acc.availableHashrate += Number(contract.speed);
+        acc.totalHashrate += Number(contract.speed);
+        acc.total++;
+        return acc;
       }
+
+      // not running, is deleted
+      if (contract.isDeleted) {
+        acc.archived++;
+        return acc;
+      }
+
+      // not running, not deleted - available
+      acc.available++;
+      acc.availableHashrate += Number(contract.speed);
       acc.totalHashrate += Number(contract.speed);
       acc.total++;
       return acc;
@@ -147,20 +164,20 @@ export const SellerWidget: FC = () => {
           { title: "Archived", value: count?.archived.toString() ?? "0", dim: true },
         ]}
         title="Seller Contracts"
-        contentUnderneath={<>Total contracts: {count?.total.toString() ?? "0"}</>}
+        contentUnderneath={<>Total offered contracts: {count?.total.toString() ?? "0"}</>}
       />
       <GenericNumberStatsWidget
         data={[
           {
-            title: "Running",
+            title: "Running, TH/s",
             value: formatHashrateTHPS(count?.runningHashrate.toString() ?? "0").valueRounded,
           },
           {
-            title: "Available",
+            title: "Available, TH/s",
             value: formatHashrateTHPS(count?.availableHashrate.toString() ?? "0").valueRounded,
           },
         ]}
-        title="Seller Hashrate, TH/s"
+        title="Seller Hashrate"
         contentUnderneath={<>Total hashrate: {formatHashrateTHPS(count?.totalHashrate.toString() ?? "0").full}</>}
       />
     </>

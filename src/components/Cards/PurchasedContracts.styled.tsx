@@ -36,6 +36,7 @@ export const ContractCards = styled("div")`
         flex-direction: row;
         align-items: center;
         padding-bottom: 0.8rem;
+
         div {
           display: flex;
           flex-direction: row;
@@ -92,6 +93,21 @@ export const ContractCards = styled("div")`
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(50px, auto));
       gap: 0.5rem;
+
+      .item-value-inline div {
+        display: flex;
+        flex-direction: column;
+      }
+      .item-value-inline div div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+
+        h3 {
+          margin-bottom: 0;
+        }
+      }
     }
     .grid {
       h3,

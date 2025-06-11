@@ -1,53 +1,59 @@
 import styled from "@mui/material/styles/styled";
 import Skeleton from "@mui/material/Skeleton";
 import EastIcon from "@mui/icons-material/East";
-import type { HashRentalContract } from "../../types/types";
+import { ContractState } from "../../types/types";
 import { SmallWidget } from "../Cards/Cards.styled";
 import { useWatchAsset } from "wagmi";
 import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
+import { useContracts } from "../../hooks/data/useContracts";
 
-export const MarketplaceStatistics = (props: {
-  contracts: Array<HashRentalContract>;
-  isLoading: boolean;
-}) => {
+export const MarketplaceStatistics = () => {
   const { watchAsset } = useWatchAsset();
   const { data: feeTokenAddress } = useFeeTokenAddress();
+  const contractsQuery = useContracts();
 
-  const activeContracts = props.contracts.filter((contract: HashRentalContract) => !contract.isDeleted);
+  const stats2 = {
+    count: 0,
+    rented: 0,
+    expiresSoon: 0,
+  };
 
-  const getContractEndTimestamp = (contract: HashRentalContract) => {
-    if (+contract.timestamp === 0) {
-      return 0;
+  for (const contract of contractsQuery.data ?? []) {
+    if (contract.isDeleted) {
+      continue;
     }
-    return (+contract.timestamp + +contract.length) * 1000; // in ms
-  };
+    stats2.count++;
 
-  const stats = {
-    count: activeContracts.length ?? 0,
-    rented: activeContracts?.filter((x) => Number(x.state) === 1)?.length ?? 0,
-    expiresInHour:
-      activeContracts?.filter((c) => {
-        const endDate = getContractEndTimestamp(c);
-        const utcNow = new Date();
-        const limit = utcNow.setHours(utcNow.getHours() + 1);
-        return endDate > Date.now() && endDate < limit;
-      })?.length ?? 0,
-  };
+    if (contract.state === ContractState.Running) {
+      stats2.rented++;
+
+      const endTimeSeconds = Number(contract.timestamp) + Number(contract.length);
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const expiresInSeconds = 1 * 60 * 60; // 1 hour
+      if (endTimeSeconds - nowSeconds < expiresInSeconds) {
+        stats2.expiresSoon++;
+      }
+    }
+  }
 
   return (
     <MarketplaceStatisticsWrapper>
       <h3>Marketplace Contracts</h3>
       <div className="stats">
         <div className="stat active">
-          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats.count}</h4>
+          <h4>{contractsQuery.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats2.count}</h4>
           <p>TOTAL</p>
         </div>
         <div className="stat active">
-          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats.rented}</h4>
+          <h4>
+            {contractsQuery.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats2.rented}
+          </h4>
           <p>RENTED</p>
         </div>
         <div className="stat active">
-          <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats.expiresInHour}</h4>
+          <h4>
+            {contractsQuery.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : stats2.expiresSoon}
+          </h4>
           <p>EXPIRING</p>
         </div>
       </div>
