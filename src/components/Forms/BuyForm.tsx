@@ -1,7 +1,7 @@
 import { type FC, memo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { encryptMessage, formatStratumUrl, truncateAddress } from "../../utils/utils";
-import { useAccount, usePublicClient } from "wagmi";
+import { usePublicClient } from "wagmi";
 import { purchasedHashrate } from "../../analytics";
 import { decompressPublicKey } from "../../gateway/utils";
 import { CONTRACTS_QK, useContractV2, waitForBlockNumber } from "../../hooks/data/useContracts";
@@ -22,6 +22,7 @@ import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { implementationAbi } from "contracts-js/dist/abi/abi";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { formatDuration } from "../../lib/duration";
+import { getPredefinedPoolByAddress, getPredefinedPoolByIndex, predefinedPools } from "./BuyerForms/predefinedPools";
 
 interface BuyFormProps {
   contractId: string;
@@ -41,6 +42,9 @@ export const BuyForm2: FC<BuyFormProps> = memo(
     const contract = useContractV2({ address: contractId as `0x${string}` });
 
     const lastPurchaseDestination = getLastPurchaseDestination();
+    const lastPool = getPredefinedPoolByAddress(lastPurchaseDestination?.poolAddress);
+    const lastPoolIsLightning = lastPool?.data.isLightning || false;
+    const lastPoolIndex = lastPool ? lastPool.index : -1;
 
     // form setup
     const form = useForm<InputValuesBuyForm>({
@@ -48,10 +52,10 @@ export const BuyForm2: FC<BuyFormProps> = memo(
       reValidateMode: "onBlur",
       defaultValues: {
         poolAddress: lastPurchaseDestination?.poolAddress || "",
-        username: lastPurchaseDestination?.username || "",
+        username: (!lastPoolIsLightning && lastPurchaseDestination?.username) || "",
         validatorAddress: "",
-        predefinedPoolIndex: lastPurchaseDestination?.poolAddress ? -1 : "",
-        lightningAddress: "",
+        predefinedPoolIndex: lastPoolIndex,
+        lightningAddress: lastPoolIsLightning ? lastPurchaseDestination?.username : "",
         customValidatorHost: "",
         customValidatorPublicKey: "",
       },
@@ -81,7 +85,8 @@ export const BuyForm2: FC<BuyFormProps> = memo(
           return await form.trigger();
         }}
         reviewForm={(props) => {
-          const { validatorAddress, poolAddress, username, lightningAddress } = form.getValues();
+          const { validatorAddress, poolAddress, username, lightningAddress, predefinedPoolIndex } = form.getValues();
+          const isLightning = getPredefinedPoolByIndex(predefinedPoolIndex)?.isLightning;
           return (
             <GenericConfirmContent
               data={{
@@ -92,35 +97,41 @@ export const BuyForm2: FC<BuyFormProps> = memo(
                 }`,
                 "Validator Address": truncateAddress(validatorAddress),
                 "Pool Address": poolAddress,
-                ...(username && { Username: username }),
-                ...(lightningAddress && {
-                  "Lightning Address": lightningAddress,
-                }),
+                ...(isLightning
+                  ? {
+                      "Lightning Address": lightningAddress,
+                    }
+                  : { Username: username }),
               }}
             />
           );
         }}
-        resultForm={(props) => (
-          <GenericCompletedContent
-            title="Thank you for purchasing Hashpower from Lumerin!"
-            description={
-              <div className="flex flex-col">
-                Your will be receiving your hashpower shortly.
-                {form.getValues().lightningAddress !== "" && (
-                  <a
-                    href={process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || "https://lightning.titan.io"}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ cursor: "pointer" }}
-                    className="font-light underline mb-4"
-                  >
-                    Dashboard for Lightning users
-                  </a>
-                )}
-              </div>
-            }
-          />
-        )}
+        resultForm={(props) => {
+          const { predefinedPoolIndex } = form.getValues();
+          const isLightning = getPredefinedPoolByIndex(predefinedPoolIndex)?.isLightning;
+
+          return (
+            <GenericCompletedContent
+              title="Thank you for purchasing Hashpower from Lumerin!"
+              description={
+                <div className="flex flex-col">
+                  Your will be receiving your hashpower shortly.
+                  {isLightning && (
+                    <a
+                      href={process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || "https://lightning.titan.io"}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ cursor: "pointer" }}
+                      className="font-light underline mb-4"
+                    >
+                      Dashboard for Lightning users
+                    </a>
+                  )}
+                </div>
+              }
+            />
+          );
+        }}
         transactionSteps={[
           {
             label: "Approve Payment",
@@ -151,10 +162,13 @@ export const BuyForm2: FC<BuyFormProps> = memo(
             label: "Purchase Contract",
             action: async () => {
               const data = form.getValues();
+              const { predefinedPoolIndex } = data;
+
+              const isLightning = getPredefinedPoolByIndex(predefinedPoolIndex)?.isLightning;
 
               const buyerDest = formatStratumUrl({
                 host: data.poolAddress,
-                username: data.username,
+                username: isLightning ? data.lightningAddress : data.username,
               });
 
               let validatorPublicKey: `0x${string}`;
@@ -201,22 +215,24 @@ export const BuyForm2: FC<BuyFormProps> = memo(
               await waitForBlockNumber(receipt.blockNumber, qc);
               const startTime = qc
                 .getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK])
-                ?.data.find((c) => isAddressEqual(c.id, contractId))?.timestamp;
+                ?.data.find((c) => isAddressEqual(c.id as `0x${string}`, contractId as `0x${string}`))?.timestamp;
 
               if (!startTime) {
                 throw new Error("Start time not found");
               }
 
               const data = form.getValues();
+              const isLightning = getPredefinedPoolByIndex(data.predefinedPoolIndex)?.isLightning;
+              const username = isLightning ? data.lightningAddress : data.username;
 
               setPoolInfo({
                 contractId,
                 poolAddress: data.poolAddress,
-                username: data.username || data.lightningAddress,
+                username,
                 startedAt: BigInt(startTime),
                 validatorAddress: data.validatorAddress,
               });
-              storeLastPurchaseDestination(data.poolAddress, data.username);
+              storeLastPurchaseDestination(data.poolAddress, username);
             },
           },
         ]}
