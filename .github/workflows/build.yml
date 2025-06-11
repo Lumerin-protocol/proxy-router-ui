@@ -221,7 +221,8 @@ jobs:
     name: Deploy Marketplace to GitLab
     if: |
       (
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/cicd/*'))
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'))||
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/cicd/'))
       )
     needs:
       - Generate-Tag
