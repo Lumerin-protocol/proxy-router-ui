@@ -24,15 +24,15 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
     select: (data) => {
       return {
         ...data,
-        data: data.data.filter((c) => isAddressEqual(c.seller, userAccount) && c.isDeleted === false),
+        data: data.data.filter((c) => isAddressEqual(c.seller as `0x${string}`, userAccount!) && c.isDeleted === false),
       };
     },
+    enabled: !!userAccount,
   });
 
   return (
     <TransactionForm
       onClose={closeForm}
-      client={publicClient!}
       title="Deregister yourself as a Seller"
       description="You are about to deregister yourself as a Seller."
       reviewForm={(props) => (

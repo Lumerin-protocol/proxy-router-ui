@@ -10,7 +10,6 @@ export const BuyerOrdersWidget = (props: {
   contracts: HashRentalContract[];
   isLoading: boolean;
 }) => {
-  const navigate = useNavigate();
   const { address: userAccount } = useAccount();
 
   let runningContracts = 0;
@@ -18,15 +17,17 @@ export const BuyerOrdersWidget = (props: {
   let runningHashrate = 0;
   let totalHashes = 0;
 
-  for (const contract of props.contracts) {
-    if (isAddressEqual(contract.buyer, userAccount) && contract.state === ContractState.Running) {
-      runningContracts++;
-      runningHashrate += Number(contract.speed);
-    }
-    for (const history of contract.history ?? []) {
-      if (isAddressEqual(history.buyer, userAccount)) {
-        totalHashes += Number(history.speed) * Number(history.length);
-        completedContracts++;
+  if (userAccount) {
+    for (const contract of props.contracts) {
+      if (isAddressEqual(contract.buyer as `0x${string}`, userAccount) && contract.state === ContractState.Running) {
+        runningContracts++;
+        runningHashrate += Number(contract.speed);
+      }
+      for (const history of contract.history ?? []) {
+        if (isAddressEqual(history.buyer as `0x${string}`, userAccount)) {
+          totalHashes += Number(history.speed) * Number(history.length);
+          completedContracts++;
+        }
       }
     }
   }
@@ -35,6 +36,8 @@ export const BuyerOrdersWidget = (props: {
     <>
       <GenericNumberStatsWidget
         title="Purchased Contracts"
+        isConnected={!!userAccount}
+        disconnectedMessage="Connect wallet to start buying hashrate"
         data={[
           { title: "ACTIVE", value: runningContracts.toString() },
           { title: "FINISHED", value: completedContracts.toString(), dim: true },

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import type { PublicClient, TransactionReceipt } from "viem";
-import { useWalletClient } from "wagmi";
-import { waitForTransactionReceipt } from "viem/actions";
+import type { TransactionReceipt } from "viem";
+import { useCustomWalletClient } from "./data/useCustomWalletClient";
 
 export type TransactionStep = {
   label: string;
@@ -17,15 +16,8 @@ export type TxState = {
   txhash?: `0x${string}`;
 };
 
-export function useMultistepTx(props: { steps: TransactionStep[]; client: PublicClient }) {
-  // using waitForTransactionReceipt with wallet client tranport
-  // sometimes when calling transactions that depend on ERC20 approve fail
-  // because the wallet client node state hasn't been updated yet
-  const wc = useWalletClient().data?.extend((client) => {
-    return {
-      waitForTransactionReceipt: (args: any) => waitForTransactionReceipt(client, args),
-    };
-  });
+export function useMultistepTx(props: { steps: TransactionStep[] }) {
+  const wc = useCustomWalletClient();
 
   const [txState, setTxState] = useState(() => {
     return props.steps.reduce<Record<number, TxState>>((acc, _, index) => {

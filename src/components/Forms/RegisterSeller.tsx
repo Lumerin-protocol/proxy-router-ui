@@ -62,7 +62,6 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
   return (
     <TransactionForm
       onClose={onClose}
-      client={publicClient!}
       title="Register yourself as a Seller"
       description="Register yourself as a Seller to start selling on the Lumerin Marketplace"
       inputForm={(props) => {

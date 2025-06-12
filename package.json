@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3001",
+    "dev:host": "DEV_SERVER_HTTPS=true vite --port 3001 --host",
     "build": "vite build",
     "build:analyze": "vite build --mode analyze && vite-bundle-analyzer build/bundle-analyzer.html",
     "preview": "vite preview",

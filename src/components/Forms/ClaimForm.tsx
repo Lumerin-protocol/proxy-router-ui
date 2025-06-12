@@ -23,7 +23,6 @@ export const ClaimForm: FC<Props> = ({ contractIDs, closeForm }) => {
   return (
     <TransactionForm
       onClose={closeForm}
-      client={pc!}
       title="Claim rewards"
       description="This action will allow you to manually claim unpaid rewards for the contracts that run to completion."
       reviewForm={(props) => (

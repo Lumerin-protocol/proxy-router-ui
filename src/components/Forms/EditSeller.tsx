@@ -24,10 +24,9 @@ interface EditSellerFormProps {
 
 export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
   const { address: userAccount } = useAccount();
-  const publicClient = usePublicClient();
+  const pc = usePublicClient();
   const wc = useWalletClient();
   const fee = useApproveFee();
-
   const balance = useFeeTokenBalance(userAccount!);
 
   // Input validation setup
@@ -43,7 +42,6 @@ export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
   return (
     <TransactionForm
       onClose={props.onClose}
-      client={publicClient!}
       title="Edit your seller record"
       description="Edit your seller record to update your stake"
       inputForm={() => {
@@ -117,7 +115,7 @@ export const EditSellerForm: FC<EditSellerFormProps> = (props) => {
             const newSellerStake = parseUnits(form.getValues().stake, sellerStakeToken.decimals);
             const stakeToAdd = newSellerStake - props.sellerStake;
 
-            const req = await publicClient!.simulateContract({
+            const req = await pc!.simulateContract({
               address: process.env.REACT_APP_CLONE_FACTORY as `0x${string}`,
               abi: cloneFactoryAbi,
               functionName: "sellerRegister",

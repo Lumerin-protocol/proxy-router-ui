@@ -70,14 +70,14 @@ export enum SortByType {
 
 export enum SortTypes {
   None = "None",
-  PurchaseTimeNewestToOldest = "Purchase Time: Newest to Oldest",
-  PurchaseTimeOldestToNewest = "Purchase Time: Oldest to Newest",
-  PriceLowToHigh = "Price: Low to High",
-  PriceHighToLow = "Price: High to Low",
-  DurationShortToLong = "Duration: Short to Long",
-  DurationLongToShort = "Duration: Long to Short",
-  SpeedSlowToFast = "Speed: Slow to Fast",
-  SpeedFastToSlow = "Speed: Fast to Slow",
+  PurchaseTimeNewestToOldest = "Purchase Time: Newest",
+  PurchaseTimeOldestToNewest = "Purchase Time: Oldest",
+  PriceLowToHigh = "Price: Low",
+  PriceHighToLow = "Price: High",
+  DurationShortToLong = "Duration: Short",
+  DurationLongToShort = "Duration: Long",
+  SpeedSlowToFast = "Speed: Slow",
+  SpeedFastToSlow = "Speed: Fast",
 }
 
 export enum CloseOutType {

@@ -15,13 +15,11 @@ export interface CancelFormProps {
 
 export const CancelForm: React.FC<CancelFormProps> = ({ contractId, closeForm }) => {
   const qc = useQueryClient();
-  const publicClient = usePublicClient();
   const { closeContractAsync } = useCloseContract();
 
   return (
     <TransactionForm
       onClose={closeForm}
-      client={publicClient!}
       title="Cancel purchase"
       description="You are about to cancel your purchase. The hashpower will no longer be delivered."
       reviewForm={(props) => <></>}

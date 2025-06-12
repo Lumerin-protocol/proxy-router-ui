@@ -56,7 +56,7 @@ export const WalletBalanceWidget = () => {
         <ChainIcon style={{ width: "15px", display: "inline", marginTop: "-3px" }} /> Wallet Balance ({chain.name})
       </h3>
       <Balances>
-        {!address && <div>Connect your wallet to view your balance</div>}
+        {!address && <div>Connect wallet to purchase hashrate</div>}
         {isLoading && <Spinner fontSize="0.3em" />}
         {isSuccess &&
           address &&
@@ -146,7 +146,7 @@ const RateWrapper = styled("div")`
 
 const Balances = styled("div")`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-evenly;
   flex: 1;
   width: 100%;

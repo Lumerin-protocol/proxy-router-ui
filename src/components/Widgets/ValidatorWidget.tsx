@@ -69,6 +69,7 @@ export const ValidatorWidget: FC = () => {
         </ModalItem>
       )}
       <h3>
+        {!address && "You are not registered as a Validator"}
         {validatorQuery.isLoading && "Loading..."}
         {validatorQuery.isSuccess && !isRegistered && "You are not registered as a Validator"}
         {validatorQuery.isSuccess &&
@@ -78,6 +79,7 @@ export const ValidatorWidget: FC = () => {
         {validatorQuery.isSuccess && isRegistered && isActive && "You are registered as a Validator"}
       </h3>
       <WidgetContent>
+        {!address && "Connect wallet to become a Validator"}
         {validatorQuery.isLoading && <Spinner fontSize="0.3em" />}
         {validatorQuery.isSuccess && !isRegistered && (
           <PrimaryButton onClick={registerValidatorModal.open}>Become a validator</PrimaryButton>
@@ -135,6 +137,11 @@ const Value = styled("dd")`
   grid-row: 1;
   font-size: 1em;
   font-weight: 600;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  text-align: center;
 `;
 
 const Key = styled("dt")`
@@ -147,7 +154,7 @@ const Key = styled("dt")`
 
 const ValidatorInfo = styled("div")`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.5rem;
   align-items: flex-start;
   justify-content: space-evenly;
