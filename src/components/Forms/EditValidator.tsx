@@ -1,5 +1,5 @@
 import { useController, useForm } from "react-hook-form";
-import { custom, injected, useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { type FC, useRef } from "react";
@@ -9,12 +9,10 @@ import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import { formatFeePrice, parseValidatorStake, validatorStakeToken } from "../../lib/units";
 import { compressPublicKey } from "../../lib/pubkey";
-import { useFeeTokenAddress } from "../../hooks/data/useFeeTokenBalance";
 import { isValidHost } from "../../utils/utils";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
-import { createPublicClient } from "viem";
 
 export interface EditValidatorInput {
   stake: string;
@@ -30,9 +28,8 @@ interface EditValidatorFormProps {
 export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
   const { address: userAccount } = useAccount();
 
+  const pc = usePublicClient();
   const wc = useWalletClient();
-  const wcData = wc.data!;
-  const pc = createPublicClient({ chain: wcData.chain, transport: wcData.transport });
   const { getPublicKeyAsync } = useGetPublicKey();
   const fee = useApproveFee();
 
@@ -50,7 +47,6 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
   return (
     <TransactionForm
       onClose={props.onClose}
-      client={publicClient!}
       title="Edit your validator record"
       description="Edit your validator record to update your stake or host"
       inputForm={() => {
@@ -157,7 +153,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
             const newValidatorStake = parseValidatorStake(form.getValues().stake);
             const stakeToAdd = newValidatorStake - props.validatorStake;
 
-            const req = await publicClient!.simulateContract({
+            const req = await pc!.simulateContract({
               address: process.env.REACT_APP_VALIDATOR_REGISTRY_ADDRESS as `0x${string}`,
               abi: validatorRegistryAbi,
               functionName: "validatorRegister",

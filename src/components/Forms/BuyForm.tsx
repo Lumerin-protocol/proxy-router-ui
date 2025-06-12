@@ -76,7 +76,6 @@ export const BuyForm2: FC<BuyFormProps> = memo(
     return (
       <TransactionForm
         onClose={() => setOpen(false)}
-        client={pc!}
         title="Purchase Hashpower"
         description="Enter the Pool Address, Port Number, and Username you are pointing the purchased
             hashpower to."
@@ -115,7 +114,7 @@ export const BuyForm2: FC<BuyFormProps> = memo(
               title="Thank you for purchasing Hashpower from Lumerin!"
               description={
                 <div className="flex flex-col">
-                  Your will be receiving your hashpower shortly.
+                  You will be receiving hashpower shortly.
                   {isLightning && (
                     <a
                       href={process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || "https://lightning.titan.io"}

@@ -140,6 +140,9 @@ export const ValidatorHub: FC = () => {
           if (!contracts.data) {
             return 0n;
           }
+          if (!userAccount) {
+            return 0n;
+          }
           const contractIndex = contracts.data.findIndex((c) => isAddressEqual(c.id as `0x${string}`, r.contract));
           const contractEntry = contracts.data[contractIndex];
           const isMostRecent = contractEntry.history?.[0].purchaseTime === r.purchaseTime;

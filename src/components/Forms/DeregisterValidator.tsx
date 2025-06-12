@@ -18,7 +18,6 @@ export const DeregisterValidator: FC<CancelFormProps> = ({ closeForm }) => {
   return (
     <TransactionForm
       onClose={closeForm}
-      client={publicClient!}
       title="Deregister yourself as a validator"
       description="You are about to deregister yourself as a Validator."
       reviewForm={(props) => (
@@ -29,17 +28,6 @@ export const DeregisterValidator: FC<CancelFormProps> = ({ closeForm }) => {
           <FontAwesomeIcon className="mb-8" icon={faCheckCircle} size="5x" color={colors["lumerin-aqua"]} />
           <h2 className="w-6/6 text-left font-semibold mb-3">The order has been cancelled successfully.</h2>
           <p className="w-6/6 text-left font-normal text-s">The status of the order will update shortly.</p>
-          <br />
-          {/* {txHash && (
-            <a
-              href={getTxUrl(txHash as `0x${string}`)}
-              target="_blank"
-              rel="noreferrer"
-              className="font-light underline mb-4"
-            >
-              View Transaction: {truncateAddress(txHash, AddressLength.LONG)}
-            </a>
-          )} */}
         </>
       )}
       transactionSteps={[

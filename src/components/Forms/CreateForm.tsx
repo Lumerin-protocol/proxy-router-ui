@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useAccount, usePublicClient } from "wagmi";
+import { useAccount } from "wagmi";
 import { CompletedContent } from "./SellerForms/CompletedContent";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { CreateEditContractForm } from "./Shared/CreateEditContractForm";
@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import { ContentState } from "../../types/types";
-import { memo, useRef } from "react";
+import { type FC, memo, useRef } from "react";
 import { truncateAddress } from "../../utils/utils";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
 import { useCreateNewRentalContract } from "../../hooks/data/useCreateNewRentalContract";
@@ -24,11 +24,10 @@ interface CreateFormProps {
   setOpen: (isOpen: boolean) => void;
 }
 
-export const CreateContract: React.FC<CreateFormProps> = memo(
+export const CreateContract: FC<CreateFormProps> = memo(
   ({ setOpen }) => {
     const { address: userAccount } = useAccount();
     const qc = useQueryClient();
-    const publicClient = usePublicClient();
     const { getPublicKeyAsync } = useGetPublicKey();
 
     // Input validation setup
@@ -48,7 +47,6 @@ export const CreateContract: React.FC<CreateFormProps> = memo(
     return (
       <TransactionForm
         onClose={() => setOpen(false)}
-        client={publicClient!}
         title="Create Hashrate contract"
         description="Sell your hashpower on the Lumerin Marketplace"
         inputForm={(props) => <CreateEditContractForm form={form} />}

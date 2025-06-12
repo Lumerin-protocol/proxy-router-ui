@@ -1,4 +1,3 @@
-import { usePublicClient } from "wagmi";
 import { memo, type FC } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { waitForBlockNumber } from "../../hooks/data/useContracts";
@@ -16,13 +15,11 @@ interface Props {
 export const ArchiveUnarchiveForm: FC<Props> = memo(
   ({ contractIds, isArchived, closeForm }) => {
     const qc = useQueryClient();
-    const publicClient = usePublicClient();
     const { setContractsDeletedAsync } = useSetContractsDeleted();
 
     return (
       <TransactionForm
         onClose={closeForm}
-        client={publicClient!}
         title={`${isArchived ? "Unarchive" : "Archive"} contract`}
         description={`You are about to ${isArchived ? "unarchive" : "archive"} following contracts:`}
         reviewForm={(props) => (

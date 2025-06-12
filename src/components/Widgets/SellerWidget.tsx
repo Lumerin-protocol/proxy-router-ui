@@ -41,6 +41,7 @@ export const SellerWidget: FC = () => {
         data: data.data?.filter((c) => isAddressEqual(c.seller as `0x${string}`, address!)),
       };
     },
+    enabled: !!address,
   });
 
   const count = contractsQuery.data?.reduce<{
@@ -123,6 +124,7 @@ export const SellerWidget: FC = () => {
           </ModalItem>
         )}
         <h3>
+          {!address && "You are not registered as a Seller"}
           {sellerQuery.isLoading && "Loading..."}
           {sellerQuery.isSuccess && !isRegistered && "You are not registered as a Seller"}
           {sellerQuery.isSuccess &&
@@ -132,6 +134,8 @@ export const SellerWidget: FC = () => {
           {sellerQuery.isSuccess && isActive && "You are registered as a Seller and you're active."}
         </h3>
         <WidgetContent>
+          {!address && "Connect wallet to become a seller"}
+
           {sellerQuery.isLoading && <Spinner fontSize="0.3em" />}
           {sellerQuery.isSuccess && !isRegistered && (
             <PrimaryButton onClick={registerSellerModal.open}>Become a seller</PrimaryButton>

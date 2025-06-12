@@ -13,6 +13,8 @@ type Props = {
   title: string;
   isLoading?: boolean;
   contentUnderneath?: ReactNode;
+  isConnected?: boolean;
+  disconnectedMessage?: ReactNode;
 };
 
 export const GenericNumberStatsWidget = (props: Props) => {
@@ -20,12 +22,15 @@ export const GenericNumberStatsWidget = (props: Props) => {
     <Wrapper>
       <h3>{props.title}</h3>
       <div className="stats">
-        {props.data.map((item) => (
-          <div className={classNames("stat", item.dim ? "completed" : "active")} key={item.title}>
-            <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : item.value}</h4>
-            <p>{item.title}</p>
-          </div>
-        ))}
+        {props.isConnected === false && <div>{props.disconnectedMessage}</div>}
+
+        {(props.isConnected === undefined || props.isConnected === true) &&
+          props.data.map((item) => (
+            <div className={classNames("stat", item.dim ? "completed" : "active")} key={item.title}>
+              <h4>{props.isLoading ? <Skeleton variant="rectangular" width={40} height={28} /> : item.value}</h4>
+              <p>{item.title}</p>
+            </div>
+          ))}
       </div>
       <div className="link">{props.contentUnderneath}</div>
     </Wrapper>

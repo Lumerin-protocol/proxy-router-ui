@@ -10,6 +10,7 @@ export const [CONTRACTS_QK] = "contracts";
 interface Props {
   select?: ((data: GetResponse<HashRentalContract[]>) => GetResponse<HashRentalContract[]>) | undefined;
   refetch?: boolean;
+  enabled?: boolean;
 }
 
 export const useSellerContracts = (props: { address?: `0x${string}` | undefined }) => {
@@ -20,6 +21,7 @@ export const useSellerContracts = (props: { address?: `0x${string}` | undefined 
         return isAddressEqual(c.seller as `0x${string}`, props.address!);
       }),
     }),
+    enabled: !!props.address,
   });
 };
 
@@ -32,12 +34,13 @@ export const useAvailableContracts = () => {
   });
 };
 
-export const useBuyerContracts = (props: { address?: `0x${string}` | undefined }) => {
+export const useBuyerContracts = (props: { address: `0x${string}` | undefined }) => {
   return useContracts({
     select: (data) => ({
       ...data,
       data: data.data.filter((c) => c.seller !== props.address && c.isDeleted === false),
     }),
+    enabled: !!props.address,
   });
 };
 
@@ -52,7 +55,7 @@ export const useContractV2 = (props: { address: `0x${string}`; refetch?: boolean
 };
 
 export const useContracts = (props?: Props) => {
-  const { select, refetch = true } = props || {};
+  const { select, refetch = true, enabled = true } = props || {};
   const fetchContractsAsync = async (): Promise<GetResponse<HashRentalContract[]>> => {
     const response = await getContractsV2();
     const data = response.data.map(mapContract);
@@ -67,6 +70,7 @@ export const useContracts = (props?: Props) => {
     queryKey: [CONTRACTS_QK],
     queryFn: fetchContractsAsync,
     select: select,
+    enabled: enabled,
   });
 
   const { data, ...rest } = query;

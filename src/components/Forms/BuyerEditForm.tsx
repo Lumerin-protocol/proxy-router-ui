@@ -65,7 +65,6 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
     return (
       <TransactionForm
         onClose={closeForm}
-        client={pc!}
         title="Edit purchase"
         description="Here you can edit the pool address and username you are pointing the purchased hashpower to."
         inputForm={(props) => (
@@ -153,7 +152,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
 
               const startTime = qc
                 .getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK])
-                ?.data.find((c) => isAddressEqual(c.id, contractId))?.timestamp;
+                ?.data.find((c) => isAddressEqual(c.id as `0x${string}`, contractId as `0x${string}`))?.timestamp;
 
               if (!startTime) {
                 throw new Error("Start time not found");

@@ -217,7 +217,7 @@ export const SellerHub: FC = () => {
         ),
       }),
     ];
-  }, [blockTime30s]);
+  }, [blockTime30s, userAccount]);
 
   const columnFilters = useMemo(() => getColumnFilters(quickFilter), [quickFilter]);
 
@@ -298,7 +298,11 @@ export const SellerHub: FC = () => {
 
         <SellerActions>
           {!(isMobile && selectRowsColumnVisible) && (
-            <TableToolbarButton onClick={onCreate}>
+            <TableToolbarButton
+              onClick={onCreate}
+              disabled={!userAccount}
+              $disabledText="Connect wallet to create a contract"
+            >
               <AddIcon className="add-icon" />
               Create Contract
             </TableToolbarButton>

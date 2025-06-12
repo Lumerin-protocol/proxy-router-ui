@@ -38,7 +38,6 @@ export const EditForm: React.FC<EditFormProps> = memo(
     return (
       <TransactionForm
         onClose={closeForm}
-        client={publicClient!}
         title="Edit Hashrate contract"
         description="Edit the terms of your Hashrate contract"
         inputForm={(props) => <CreateEditContractForm form={form} />}
@@ -86,6 +85,6 @@ export const EditForm: React.FC<EditFormProps> = memo(
     );
   },
   (prevProps, nextProps) => {
-    return isAddressEqual(prevProps.contract.id, nextProps.contract.id);
+    return isAddressEqual(prevProps.contract.id as `0x${string}`, nextProps.contract.id as `0x${string}`);
   },
 );

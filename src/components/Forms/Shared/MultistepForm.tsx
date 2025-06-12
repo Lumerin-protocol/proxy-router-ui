@@ -21,14 +21,12 @@ interface TransactionFormProps {
   reviewForm: FC<StepComponentProps>;
   resultForm?: FC<StepComponentProps>;
   transactionSteps: TransactionStep[];
-  client: PublicClient;
   onClose: () => void;
 }
 
 export const TransactionForm = (props: TransactionFormProps) => {
   const multistepTx = useMultistepTx({
     steps: props.transactionSteps,
-    client: props.client,
   });
 
   async function handleExecuteTransaction(fromStep = 0) {

@@ -19,10 +19,6 @@ export const Button = styled("button")`
   &:not(:last-child) {
     margin-right: 1rem;
   }
-  @media (max-width: 410px) {
-    font-size: 0.85rem;
-    padding: 1rem 1rem;
-  }
 `;
 
 export const PrimaryButton = styled(Button, {
@@ -31,6 +27,7 @@ export const PrimaryButton = styled(Button, {
   color: #fff;
   background-color: #4c5a5f;
   position: relative;
+
   &:disabled {
     background-color: rgb(84, 90, 92);
     color: rgb(163, 163, 163);
@@ -63,7 +60,7 @@ export const PrimaryButton = styled(Button, {
     color: #ccc;
     font-size: 0.8rem;
     visibility: hidden;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
     opacity: 0;
   }
   &:hover:after {

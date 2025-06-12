@@ -25,25 +25,23 @@ export const SortToolbar = (props: {
   setSortType: (sortType: SortTypes) => void;
 }) => {
   return (
-    <StyledToolbar>
-      <Box sx={{ minWidth: 120 }}>
-        <FormControl fullWidth>
-          <InputLabel id="sort-label">Sort By</InputLabel>
-          <Select
-            labelId="sort-label"
-            id="sort"
-            value={props.sortType}
-            label="Sort By"
-            onChange={(e) => props.setSortType(e.target.value as SortTypes)}
-          >
-            {Object.values(SortTypes).map((value) => (
-              <MenuItem value={value} key={value}>
-                {value}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-    </StyledToolbar>
+    <Box sx={{ minWidth: 120 }}>
+      <FormControl fullWidth>
+        <InputLabel id="sort-label">Sort By</InputLabel>
+        <Select
+          labelId="sort-label"
+          id="sort"
+          value={props.sortType}
+          label="Sort By"
+          onChange={(e) => props.setSortType(e.target.value as SortTypes)}
+        >
+          {Object.values(SortTypes).map((value) => (
+            <MenuItem value={value} key={value}>
+              {value}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Box>
   );
 };

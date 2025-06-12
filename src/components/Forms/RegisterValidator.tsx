@@ -56,7 +56,6 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ onClose }) =>
   return (
     <TransactionForm
       onClose={onClose}
-      client={publicClient!}
       title="Register yourself as a validator"
       description="Register yourself as a validator to start validating on the Lumerin Marketplace"
       inputForm={(props) => {

@@ -1,5 +1,6 @@
 import styled from "@mui/material/styles/styled";
 import { Card, MobileWidget } from "../Cards/Cards.styled";
+import { chain } from "../../config/chains";
 
 export const MessageWidget = (props: { isMobile: boolean }) => {
   const MessageWrapper = styled(Card)`
@@ -40,7 +41,7 @@ export const MessageWidget = (props: { isMobile: boolean }) => {
   const Content = () => {
     return (
       <p>
-        Welcome to the Lumerin Marketplace Open Beta on Arbitrum. Find detailed instructions in our{" "}
+        Welcome to the Lumerin Marketplace on {chain.name}. Find detailed instructions in our{" "}
         <a href={`${process.env.REACT_APP_GITBOOK_URL}`} target="_blank" rel="noreferrer">
           Gitbook
         </a>

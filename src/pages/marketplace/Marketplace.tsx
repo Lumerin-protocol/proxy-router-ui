@@ -22,6 +22,7 @@ import { formatDuration } from "../../lib/duration";
 import { useAvailableContracts } from "../../hooks/data/useContracts";
 import { WidgetsWrapper } from "./styled";
 import { isAddressEqual, zeroAddress } from "viem";
+import { css } from "@emotion/react";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
@@ -69,23 +70,32 @@ export const Marketplace: FC = () => {
         meta: {
           hideTitleMobile: true,
         },
-        cell: (r) => (
-          <div className="flex flex-row gap-2 justify-center">
-            <PrimaryButton
-              onClick={() => {
-                setBuyContractId(r.row.original.id);
-                buyModal.open();
-              }}
-              $disabledText="You cannot purchase your own contract"
-              disabled={isAddressEqual(r.row.original.seller, userAccount || zeroAddress)}
-            >
-              Purchase
-            </PrimaryButton>
-          </div>
-        ),
+        cell: (r) => {
+          const params = getBuyButtonParams(userAccount, r.row.original.seller as `0x${string}`);
+
+          return (
+            <div className="flex flex-row gap-2 justify-center">
+              <PrimaryButton
+                css={css`
+                  :after {
+                    max-width: 150%;
+                  }
+                `}
+                onClick={() => {
+                  setBuyContractId(r.row.original.id);
+                  buyModal.open();
+                }}
+                disabled={params.disabled}
+                $disabledText={params.disabledText}
+              >
+                Purchase
+              </PrimaryButton>
+            </div>
+          );
+        },
       }),
     ];
-  }, []);
+  }, [userAccount]);
 
   const tableInstance = useReactTable<HashRentalContract>({
     columns,
@@ -122,3 +132,22 @@ export const Marketplace: FC = () => {
     </DefaultLayout>
   );
 };
+
+function getBuyButtonParams(userAccount: `0x${string}` | undefined, seller: `0x${string}`) {
+  if (!userAccount) {
+    return {
+      disabled: true,
+      disabledText: "Connect wallet to purchase contract",
+    };
+  }
+  if (isAddressEqual(seller, userAccount)) {
+    return {
+      disabled: true,
+      disabledText: "Cannot purchase your own contract",
+    };
+  }
+  return {
+    disabled: false,
+    disabledText: undefined,
+  };
+}

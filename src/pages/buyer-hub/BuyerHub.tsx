@@ -4,7 +4,7 @@ import { Card, type CardData } from "../../components/Cards/PurchasedContracts";
 import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { SortToolbar } from "../../components/SortToolbar";
 import { Spinner } from "../../components/Spinner.styled";
-import { TabSwitch } from "../../components/TabSwitch.Styled";
+import { TabSwitch } from "../../components/TabSwitch";
 import { useBuyerContracts } from "../../hooks/data/useContracts";
 import { ContractState, CurrentTab, SortTypes } from "../../types/types";
 import { sortContracts } from "../../utils/utils";
@@ -27,15 +27,22 @@ export const BuyerHub: FC = () => {
   const [contractId, setContractId] = useState<string | null>(null);
 
   const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
-  const [runningSortType, setRunningSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
-  const [completedSortType, setCompletedSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
+  const [runningSortType, setRunningSortType] = useState<SortTypes>(
+    SortTypes.PurchaseTimeNewestToOldest
+  );
+  const [completedSortType, setCompletedSortType] = useState<SortTypes>(
+    SortTypes.PurchaseTimeNewestToOldest
+  );
   const currentBlockTimestamp = new Date().getTime() / 1000;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const runningContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
+    if (!userAccount) return [];
     const buyerOrders = contractsQuery.data.filter(
-      (contract) => isAddressEqual(contract.buyer, userAccount) && contract.state === ContractState.Running,
+      (contract) =>
+        isAddressEqual(contract.buyer as `0x${string}`, userAccount) &&
+        contract.state === ContractState.Running
     );
 
     return sortContracts(runningSortType, buyerOrders);
@@ -44,10 +51,15 @@ export const BuyerHub: FC = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const completedContracts = useMemo(() => {
     if (!contractsQuery.data) return [];
+    if (!userAccount) return [];
 
     const buyerOrders = contractsQuery.data
       .flatMap((c) => c.history!)
-      .filter((c) => isAddressEqual(c.buyer, userAccount) && Number(c.endTime) < currentBlockTimestamp);
+      .filter(
+        (c) =>
+          isAddressEqual(c.buyer as `0x${string}`, userAccount!) &&
+          Number(c.endTime) < currentBlockTimestamp
+      );
 
     return sortContracts(completedSortType, buyerOrders);
   }, [contractsQuery.data, completedSortType]);
@@ -99,34 +111,34 @@ export const BuyerHub: FC = () => {
       <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contractId}`}>
         <BuyerEditForm contractId={contractId!} closeForm={() => editModal.close()} />
       </ModalItem>
-      <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen} key={`cancel-${contractId}`}>
+      <ModalItem
+        open={cancelModal.isOpen}
+        setOpen={cancelModal.setOpen}
+        key={`cancel-${contractId}`}
+      >
         <CancelForm contractId={contractId!} closeForm={() => cancelModal.close()} />
       </ModalItem>
       <WidgetsWrapper>
-        <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
+        <BuyerOrdersWidget
+          isLoading={contractsQuery.isLoading}
+          contracts={contractsQuery.data || []}
+        />
       </WidgetsWrapper>
-      <div className="flex justify-between">
-        <TabSwitch>
-          <button
-            type="button"
-            id="running"
-            className={activeOrdersTab === CurrentTab.Running ? "active" : ""}
-            onClick={() => setActiveOrdersTab(CurrentTab.Running)}
-          >
-            Active <span>{contractsQuery.isLoading ? "" : runningContracts.length}</span>
-          </button>
-          <button
-            type="button"
-            id="completed"
-            className={activeOrdersTab === CurrentTab.Completed ? "active" : ""}
-            onClick={() => setActiveOrdersTab(CurrentTab.Completed)}
-          >
-            Completed <span>{contractsQuery.isLoading ? "" : completedContracts.length}</span>
-          </button>
-          <span className="glider" />
-        </TabSwitch>
+      <div className="flex flex-col flex-wrap justify-between items-center md:flex-row gap-y-6 mb-6">
+        <TabSwitch
+          values={[
+            { text: "Active", value: CurrentTab.Running, count: runningContracts.length },
+            { text: "Completed", value: CurrentTab.Completed, count: completedContracts.length },
+          ]}
+          value={activeOrdersTab}
+          setValue={setActiveOrdersTab}
+        />
         {activeOrdersTab === CurrentTab.Running && (
-          <SortToolbar pageTitle="Active Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
+          <SortToolbar
+            pageTitle="Active Contracts"
+            sortType={runningSortType}
+            setSortType={setRunningSortType}
+          />
         )}
         {activeOrdersTab === CurrentTab.Completed && (
           <SortToolbar
@@ -139,7 +151,9 @@ export const BuyerHub: FC = () => {
       <div className="flex flex-col items-center">
         {activeOrdersTab === CurrentTab.Running && (
           <>
-            {runningContracts.length === 0 && <p className="text-2xl text-white">You have no active contracts.</p>}
+            {runningContracts.length === 0 && (
+              <p className="text-2xl text-white">You have no active contracts.</p>
+            )}
             {runningContracts.length > 0 && (
               <ContractCards>
                 {runningContractsCards.map((item) => {
