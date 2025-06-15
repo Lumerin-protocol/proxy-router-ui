@@ -1,7 +1,9 @@
 import { useForm } from "react-hook-form";
 import { usePublicClient } from "wagmi";
 import type { HashRentalContract, InputValuesBuyForm } from "./../../types/types";
-import { encryptMessage, formatStratumUrl, truncateAddress } from "./../../utils/utils";
+import { encryptMessage } from "../../utils/encrypt";
+import { formatStratumUrl } from "../../utils/formatters";
+import { truncateAddress } from "../../utils/formatters";
 import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import { decompressPublicKey } from "../../gateway/utils";
 import { useValidators } from "../../hooks/data/useValidators";

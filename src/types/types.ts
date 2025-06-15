@@ -123,6 +123,10 @@ export interface HashRentalContract {
   isDeleted: boolean;
   validator: string;
   feeBalance: string;
+  stats: {
+    successCount: string;
+    failCount: string;
+  };
 }
 
 // Making fields optional bc a user might not have filled out the input fields

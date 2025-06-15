@@ -21,14 +21,22 @@ export const ArchiveUnarchiveForm: FC<Props> = memo(
       <TransactionForm
         onClose={closeForm}
         title={`${isArchived ? "Unarchive" : "Archive"} contract`}
-        description={`You are about to ${isArchived ? "unarchive" : "archive"} following contracts:`}
+        description={""}
         reviewForm={(props) => (
           <>
-            {contractIds.map((contractId) => (
-              <div key={contractId}>
-                <p>{contractId}</p>
-              </div>
-            ))}
+            <p className="mb-4">You are about to {isArchived ? "unarchive" : "archive"} following contracts:</p>
+            <ul className="mb-4">
+              {contractIds.map((contractId) => (
+                <li key={contractId}>
+                  <p>{contractId}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mb-2">
+              {isArchived
+                ? "These conracts will be available for purchase"
+                : "These contracts will not be available for purchase. You will be able to unarchive them at any time."}
+            </p>
           </>
         )}
         transactionSteps={[

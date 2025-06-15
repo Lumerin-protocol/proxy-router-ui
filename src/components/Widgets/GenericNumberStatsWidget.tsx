@@ -2,7 +2,8 @@ import styled from "@mui/material/styles/styled";
 import Skeleton from "@mui/material/Skeleton";
 import { SmallWidget } from "../Cards/Cards.styled";
 import type { ReactNode } from "react";
-import { classNames } from "../../utils/utils";
+import { classNames } from "../../utils/classNames";
+import { css, SerializedStyles } from "@emotion/react";
 
 type Props = {
   data: {
@@ -15,11 +16,12 @@ type Props = {
   contentUnderneath?: ReactNode;
   isConnected?: boolean;
   disconnectedMessage?: ReactNode;
+  maxWidth?: string;
 };
 
 export const GenericNumberStatsWidget = (props: Props) => {
   return (
-    <Wrapper>
+    <Wrapper $maxWidth={props.maxWidth}>
       <h3>{props.title}</h3>
       <div className="stats">
         {props.isConnected === false && <div>{props.disconnectedMessage}</div>}
@@ -37,7 +39,14 @@ export const GenericNumberStatsWidget = (props: Props) => {
   );
 };
 
-const Wrapper = styled(SmallWidget)`
+const Wrapper = styled(SmallWidget, {
+  shouldForwardProp: (prop) => typeof prop === "string" && !prop.startsWith("$"),
+})<{ $maxWidth?: string }>`
+  ${({ $maxWidth }) =>
+    $maxWidth &&
+    css`
+      max-width: ${$maxWidth};
+    `}
   .stats {
     display: flex;
     justify-content: space-around;

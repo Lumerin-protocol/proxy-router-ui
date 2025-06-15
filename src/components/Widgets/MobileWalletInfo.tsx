@@ -1,6 +1,6 @@
 import styled from "@mui/material/styles/styled";
 import { AddressLength } from "../../types/types";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import { MobileWidget } from "../Cards/Cards.styled";
 
 export const MobileWalletInfo = (props: { walletAddress: string; isMobile: boolean }) => {

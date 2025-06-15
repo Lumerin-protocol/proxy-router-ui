@@ -21,8 +21,8 @@ export const CancelForm: React.FC<CancelFormProps> = ({ contractId, closeForm })
     <TransactionForm
       onClose={closeForm}
       title="Cancel purchase"
-      description="You are about to cancel your purchase. The hashpower will no longer be delivered."
-      reviewForm={(props) => <></>}
+      description=""
+      reviewForm={(props) => <p>You are about to cancel your purchase. The hashpower will no longer be delivered</p>}
       resultForm={(props) => (
         <>
           <FontAwesomeIcon className="mb-8" icon={faCheckCircle} size="5x" color={colors["lumerin-aqua"]} />

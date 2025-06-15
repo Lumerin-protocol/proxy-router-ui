@@ -1,21 +1,21 @@
 import { Bars3BottomLeftIcon } from "@heroicons/react/24/outline";
 import styled from "@mui/material/styles/styled";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import ButtonGroup from "@mui/material/ButtonGroup";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-
-import { AccountButton, ChainButton, ConnectorButton } from "./Widgets/ConnectWidget";
-import { AddressLength } from "../types/types";
+import { safeLazy } from "../utils/safeLazy";
 
 type Props = {
   setSidebarOpen: (isOpen: boolean) => void;
   pageTitle: string;
 };
 
-export const Header = (props: Props) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+const HeaderConnectLazy = safeLazy(() =>
+  import("./HeaderConnect").then((module) => ({ default: module.HeaderConnect })),
+);
 
+const Web3ProviderLazy = safeLazy(() => import("../Web3Provider").then((module) => ({ default: module.Web3Provider })));
+
+export const Header = (props: Props) => {
   return (
     <StyledToolbar>
       <button
@@ -27,15 +27,9 @@ export const Header = (props: Props) => {
         <Bars3BottomLeftIcon className="h-8 w-8" aria-hidden="true" />
       </button>
       <PageTitle>{props.pageTitle}</PageTitle>
-      <ButtonGroup>
-        <AccountButton addressLength={isMobile ? AddressLength.SHORT : AddressLength.MEDIUM} />
-        {!isMobile && (
-          <>
-            <ChainButton />
-            <ConnectorButton />
-          </>
-        )}
-      </ButtonGroup>
+      <Web3ProviderLazy>
+        <HeaderConnectLazy />
+      </Web3ProviderLazy>
     </StyledToolbar>
   );
 };

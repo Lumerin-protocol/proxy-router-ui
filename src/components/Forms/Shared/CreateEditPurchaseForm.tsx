@@ -13,7 +13,8 @@ import {
 } from "react-hook-form";
 import { useValidators } from "../../../hooks/data/useValidators";
 import type { InputValuesBuyForm } from "../../../types/types";
-import { isValidLightningUsername, isValidHost, isValidUsername, validateLightningUrl } from "../../../utils/utils";
+import { validateLightningUrl } from "../../../utils/validators";
+import { isValidLightningUsername, isValidHost, isValidUsername } from "../../../utils/validators";
 import { InputWrapper } from "./Forms.styled";
 import { DisabledButton } from "../FormButtons/Buttons.styled";
 import { predefinedPools } from "../BuyerForms/predefinedPools";

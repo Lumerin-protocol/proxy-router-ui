@@ -1,5 +1,6 @@
 import type React from "react";
-import { classNames, getAddressDisplay } from "../utils/utils";
+import { classNames } from "../utils/classNames";
+import { getAddressDisplay } from "../utils/formatters";
 import { getContractUrl } from "../lib/indexer";
 
 interface TableIconProps {

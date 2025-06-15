@@ -52,6 +52,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    define: processEnvDefineMap,
     plugins: [
       react({
         jsxImportSource: "@emotion/react",
@@ -62,11 +63,17 @@ export default defineConfig(({ mode }) => {
       }),
       imagetools({
         defaultDirectives: (url) => {
-          return new URLSearchParams({ format: "webp", quality: "80" });
+          return new URLSearchParams({
+            format: "webp",
+            quality: "80",
+            effort: "6",
+            alphaQuality: "50",
+          });
         },
       }),
       svgr(),
       env.DEV_SERVER_HTTPS ? mkcert() : null,
+
       // analyzer({
       //   openAnalyzer: false,
       //   fileName: "bundle-analyzer.html",
@@ -74,8 +81,27 @@ export default defineConfig(({ mode }) => {
       // }),
     ],
     build: {
+      sourcemap: "hidden",
       rollupOptions: {
         treeshake: "recommended",
+        output: {
+          entryFileNames: (info) => {
+            return `assets/entry/${info.name}-[hash].js`;
+          },
+          // chunkFileNames: (chunkInfo) => {
+          //   return `assets/${chunkInfo.name}-${chunkInfo.type}-${chunkInfo.moduleIds.map((id) => {
+          //     const regex = /.*node_modules\/([^\/]+)/;
+          //     const match = id.match(regex);
+          //     if (match) {
+          //       return match[1];
+          //     }
+          //     const lastSlashIndex = id.lastIndexOf("/");
+          //     return id.slice(lastSlashIndex + 1);
+          //   })}-[hash].js`;
+          // },
+          chunkFileNames: "assets/chunks/[name]-[hash].js",
+          assetFileNames: "assets/[name]-[hash][extname]",
+        },
       },
       outDir: "build", // CRA's default build output
       // rollupOptions: {
@@ -98,11 +124,6 @@ export default defineConfig(({ mode }) => {
       // },
       // },
       // },
-    },
-    define: processEnvDefineMap,
-    // Optimize dependencies
-    optimizeDeps: {
-      include: ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
     },
   };
 });

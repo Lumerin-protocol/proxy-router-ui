@@ -1,7 +1,6 @@
-import { type FC, useMemo, useState } from "react";
+import { type FC, useCallback, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import Skeleton from "@mui/material/Skeleton";
-import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { MarketplaceStatistics } from "../../components/Widgets/MarketplaceStatistics";
 import { MessageWidget } from "../../components/Widgets/MessageWidget";
 import { WalletBalanceWidget } from "../../components/Widgets/WalletBalanceWidget";
@@ -11,7 +10,7 @@ import { useModal } from "../../hooks/useModal";
 import { Table } from "../../components/Table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ModalItem } from "../../components/Modal";
-import { BuyForm2 } from "../../components/Forms/BuyForm";
+import { BuyForm } from "../../components/Forms/BuyForm";
 import { SkeletonWrap } from "../../components/Skeleton.styled";
 import { createColumnHelper } from "@tanstack/react-table";
 import { getSortedRowModel } from "@tanstack/react-table";
@@ -21,8 +20,9 @@ import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../li
 import { formatDuration } from "../../lib/duration";
 import { useAvailableContracts } from "../../hooks/data/useContracts";
 import { WidgetsWrapper } from "./styled";
-import { isAddressEqual, zeroAddress } from "viem";
+import { isAddressEqual } from "viem";
 import { css } from "@emotion/react";
+import { PieChart } from "react-minimal-pie-chart";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
@@ -32,6 +32,11 @@ export const Marketplace: FC = () => {
   const buyModal = useModal();
   const [buyContractId, setBuyContractId] = useState<string | null>(null);
   const data = useMemo(() => contractsQuery.data || [], [contractsQuery.data]);
+
+  const onBuyFormClose = useCallback(async () => {
+    await contractsQuery.refetch();
+    buyModal.close();
+  }, []);
 
   const ch = createColumnHelper<HashRentalContract>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -64,6 +69,21 @@ export const Marketplace: FC = () => {
           </div>
         ),
       }),
+      ch.accessor(
+        (r) => {
+          const stats = r.stats;
+          const total = Number(stats.successCount) + Number(stats.failCount);
+          return Number(stats.successCount) / total;
+        },
+        {
+          header: "Stats",
+          sortingFn: "basic",
+          cell: (r) => {
+            const { successCount, failCount } = r.row.original.stats;
+            return <StatsChart successCount={Number(successCount)} failCount={Number(failCount)} />;
+          },
+        },
+      ),
       ch.display({
         header: "Actions",
         enableSorting: false,
@@ -119,17 +139,17 @@ export const Marketplace: FC = () => {
   }
 
   return (
-    <DefaultLayout pageTitle="Marketplace">
+    <>
       <WidgetsWrapper>
         <MessageWidget isMobile={isMobile} />
         <WalletBalanceWidget />
         <MarketplaceStatistics />
       </WidgetsWrapper>
       <ModalItem open={buyModal.isOpen} setOpen={buyModal.setOpen}>
-        <BuyForm2 key={buyContractId} contractId={buyContractId!} setOpen={buyModal.setOpen} />
+        <BuyForm key={buyContractId} contractId={buyContractId!} closeForm={onBuyFormClose} />
       </ModalItem>
       <Table tableInstance={tableInstance} />
-    </DefaultLayout>
+    </>
   );
 };
 
@@ -151,3 +171,70 @@ function getBuyButtonParams(userAccount: `0x${string}` | undefined, seller: `0x$
     disabledText: undefined,
   };
 }
+
+const StatsChart: FC<{ successCount: number; failCount: number }> = (props) => {
+  const stats = props;
+
+  const total = props.successCount + props.failCount;
+
+  return (
+    <div
+      css={css`
+        width: 3em;
+        height: 3em;
+        position: relative;
+        display: flex;
+        :after {
+          position: absolute;
+          bottom: 100%;
+          opacity: 0;
+          visibility: hidden;
+          width: max-content;
+          transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+          content: "Success: ${stats.successCount} / Fail: ${stats.failCount}";
+          background-color: rgba(0, 0, 0, 0.5);
+          color: #fff;
+          font-size: 0.75rem;
+          padding: 0.5rem;
+          border-radius: 8px;
+          transform: translateX(-25%);
+        }
+        :hover:after {
+          opacity: 1;
+          visibility: visible;
+        }
+      `}
+    >
+      <PieChart
+        data={[
+          {
+            label: "Success",
+            value: Number(stats.successCount),
+            color: "rgb(80, 158, 186)",
+          },
+          { label: "Fail", value: Number(stats.failCount), color: "rgb(42, 42, 42)" },
+          { label: "Total", value: total === 0 ? 1 : total, color: "rgb(42, 42, 42)" },
+        ]}
+        lineWidth={30}
+        rounded={false}
+        startAngle={-90}
+      />
+      <div
+        css={css`
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.7);
+        `}
+      >
+        {total === 0 ? "n/a" : total}
+      </div>
+    </div>
+  );
+};

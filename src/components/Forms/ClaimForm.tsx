@@ -5,7 +5,7 @@ import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import type { FC } from "react";
 import { useClaimFundsBatch } from "../../hooks/data/useClaimFundsBatch";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import { AddressLength } from "../../types/types";
 import { getContractUrl } from "../../lib/indexer";
 import { Alert } from "@mui/material";

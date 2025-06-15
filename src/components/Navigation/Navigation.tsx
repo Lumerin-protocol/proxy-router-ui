@@ -69,26 +69,30 @@ export const ResponsiveNavigation = (prop: {
 
   const drawer = (
     <DrawerContent>
-      <nav>
-        <img src={LogoIcon} alt="" className="menu-icon" style={{ width: "100%" }} />
-        {navigation.map((item) => (
-          <Link
-            key={item.name}
-            to={item.to}
-            // className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
-            onClick={() => {
-              prop.setSidebarOpen(false);
-              navigate(item.to);
-            }}
-          >
-            {/* <img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' /> */}
-            <img src={item.inactiveIcon} alt="" />
-            <span className="item-name" style={{ fontWeight: item.current ? 700 : 400 }}>
-              {item.name}
-            </span>
-          </Link>
-        ))}
-      </nav>
+      <div className="top">
+        <Link to={PathName.Landing}>
+          <img src={LogoIcon} alt="" className="menu-icon" style={{ width: "100%" }} />
+        </Link>
+        <nav>
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              to={item.to}
+              // className={item.current ? 'text-lumerin-dark-blue' : 'text-lumerin-inactive-text'}
+              onClick={() => {
+                prop.setSidebarOpen(false);
+                navigate(item.to);
+              }}
+            >
+              {/* <img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' /> */}
+              <img src={item.inactiveIcon} alt="" />
+              <span className="item-name" style={{ fontWeight: item.current ? 700 : 400 }}>
+                {item.name}
+              </span>
+            </Link>
+          ))}
+        </nav>
+      </div>
       <div className="bottom">
         <nav className="resources">
           <h3>Resources</h3>

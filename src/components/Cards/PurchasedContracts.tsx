@@ -1,5 +1,5 @@
 import { AddressLength } from "../../types/types";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import "react-circular-progressbar/dist/styles.css";
 import CancelIcon from "@mui/icons-material/CancelOutlined";
 import DoneIcon from "@mui/icons-material/Done";

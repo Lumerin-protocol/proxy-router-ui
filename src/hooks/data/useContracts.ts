@@ -48,7 +48,7 @@ export const useContractV2 = (props: { address: `0x${string}`; refetch?: boolean
   const query = useQuery({
     queryKey: [CONTRACTS_QK, props.address],
     queryFn: fetchContractsAsync,
-    select: (data) => data.data.find((c) => isAddressEqual(c.id, props.address)),
+    select: (data) => data.data.find((c) => isAddressEqual(c.id as `0x${string}`, props.address)),
   });
 
   return query;
@@ -132,6 +132,7 @@ function mapContract(e: IndexerContractEntry): HashRentalContract {
     isDeleted: e.isDeleted,
     balance: e.balance,
     feeBalance: e.feeBalance,
+    stats: e.stats,
     history: e.history.map((h) => {
       return {
         id: e.id,

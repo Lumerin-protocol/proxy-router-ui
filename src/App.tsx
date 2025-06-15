@@ -1,25 +1,18 @@
 import ThemeProvider from "@mui/material/styles/ThemeProvider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type React from "react";
-import ReactGA from "react-ga4";
-import { WagmiProvider } from "wagmi";
-import { State } from "./State";
-import { config } from "./clients/wagmi";
 import { darkTheme } from "./styles/themeOptions";
+import { Router } from "./Router";
+import useAnalytics from "./hooks/useAnalytics";
+import type { FC } from "react";
 
-const trackingId = "G-TN08K48RMS";
-ReactGA.initialize(trackingId);
-
-export const App: React.FC = () => {
-  const queryClient = new QueryClient();
-
+export const App: FC = () => {
+  useAnalytics({ loadOn: "idle" });
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={darkTheme}>
-          <State />
-        </ThemeProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    // <WagmiProvider config={config}>
+    // <QueryClientProvider client={queryClient}>
+    <ThemeProvider theme={darkTheme}>
+      <Router />
+    </ThemeProvider>
+    // </QueryClientProvider>
+    // </WagmiProvider>
   );
 };

@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { hashMessage } from "viem";
 import { recoverPublicKey } from "viem";
 import { useSignMessage } from "wagmi";

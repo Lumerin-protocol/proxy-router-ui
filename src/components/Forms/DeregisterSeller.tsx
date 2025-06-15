@@ -3,7 +3,7 @@ import { TransactionForm } from "./Shared/MultistepForm";
 import { useContracts, waitForBlockNumber } from "../../hooks/data/useContracts";
 import { getContractUrl } from "../../lib/indexer";
 import { Link } from "react-router";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import { AddressLength } from "../../types/types";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,11 +33,15 @@ export const DeregisterSeller: React.FC<CancelFormProps> = ({ closeForm }) => {
   return (
     <TransactionForm
       onClose={closeForm}
-      title="Deregister yourself as a Seller"
-      description="You are about to deregister yourself as a Seller."
-      reviewForm={(props) => (
+      title="Deregister as a Seller"
+      description=""
+      reviewForm={() => (
         <>
-          <div className="mt-2">
+          <p>
+            You are about to deregister yourself as a Seller. This will archive all your active contracts and return
+            your stake to your account balance.
+          </p>
+          <div className="mt-4">
             {contracts.data && contracts.data.length > 0 ? (
               <>
                 Following contracts will be archived:

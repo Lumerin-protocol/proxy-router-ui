@@ -5,7 +5,7 @@ import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
 import { formatFeePrice } from "../../lib/units";
 import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
-import type { FC } from "react";
+import { useCallback, type FC } from "react";
 import { ModalItem } from "../Modal";
 import { RegisterValidatorForm } from "../Forms/RegisterValidator";
 import { useModal } from "../../hooks/useModal";
@@ -34,16 +34,26 @@ export const ValidatorWidget: FC = () => {
     ? validatorQuery.data
     : [undefined, false, false];
 
+  const onRegisterValidatorClose = useCallback(async () => {
+    await validatorQuery.refetch();
+    registerValidatorModal.close();
+  }, []);
+
+  const onEditValidatorClose = useCallback(async () => {
+    await validatorQuery.refetch();
+    editValidatorModal.close();
+  }, []);
+
+  const onDeregisterValidatorClose = useCallback(async () => {
+    await validatorQuery.refetch();
+    removeValidatorModal.close();
+  }, []);
+
   return (
     <SmallWidget>
       {registerValidatorModal.isOpen && (
         <ModalItem open={registerValidatorModal.isOpen} setOpen={registerValidatorModal.setOpen}>
-          <RegisterValidatorForm
-            onClose={async () => {
-              await validatorQuery.refetch();
-              registerValidatorModal.close();
-            }}
-          />
+          <RegisterValidatorForm onClose={onRegisterValidatorClose} />
         </ModalItem>
       )}
       {editValidatorModal.isOpen && (
@@ -51,21 +61,13 @@ export const ValidatorWidget: FC = () => {
           <EditValidatorForm
             validatorHost={validator!.host}
             validatorStake={validator!.stake}
-            onClose={async () => {
-              await validatorQuery.refetch();
-              editValidatorModal.close();
-            }}
+            onClose={onEditValidatorClose}
           />
         </ModalItem>
       )}
       {removeValidatorModal.isOpen && (
         <ModalItem open={removeValidatorModal.isOpen} setOpen={removeValidatorModal.setOpen}>
-          <DeregisterValidator
-            closeForm={async () => {
-              removeValidatorModal.close();
-              await validatorQuery.refetch();
-            }}
-          />
+          <DeregisterValidator closeForm={onDeregisterValidatorClose} />
         </ModalItem>
       )}
       <h3>

@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { waitForBlockNumber } from "../../hooks/data/useContracts";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { isAddressEqual, type TransactionReceipt } from "viem";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { memo } from "react";
 import { useEditContractTerms } from "../../hooks/data/useEditContractTerms";

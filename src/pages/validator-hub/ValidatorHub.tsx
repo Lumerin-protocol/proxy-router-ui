@@ -18,7 +18,6 @@ import { useContracts } from "../../hooks/data/useContracts";
 import { useAccount } from "wagmi";
 import { useModal } from "../../hooks/useModal";
 import { formatFeePrice, formatPaymentPrice, formatHashrateTHPS } from "../../lib/units";
-import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { ModalItem } from "../../components/Modal";
 import { faSackDollar } from "@fortawesome/free-solid-svg-icons/faSackDollar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -26,7 +25,7 @@ import { Pickaxe } from "../../components/Icons/Pickaxe";
 import { SellerActions, SellerToolbar } from "../seller-hub/styled";
 import { useValidatorHistory } from "../../hooks/data/useValidatorHistory";
 import type { ValidatorHistoryEntry } from "../../gateway/interfaces";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import { formatDateTime } from "../../lib/date";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { ValidatorWidget } from "../../components/Widgets/ValidatorWidget";
@@ -208,63 +207,61 @@ export const ValidatorHub: FC = () => {
     });
 
   return (
-    <DefaultLayout pageTitle="Validator Hub">
-      <>
-        <WidgetsWrapper>
-          <ValidatorWidget />
-        </WidgetsWrapper>
-        {claimModal.isOpen && (
-          <ModalItem open={claimModal.isOpen} setOpen={claimModal.setOpen}>
-            <ClaimForm contractIDs={selectedContractAddresses} closeForm={claimModal.close} />
-          </ModalItem>
-        )}
+    <>
+      <WidgetsWrapper>
+        <ValidatorWidget />
+      </WidgetsWrapper>
+      {claimModal.isOpen && (
+        <ModalItem open={claimModal.isOpen} setOpen={claimModal.setOpen}>
+          <ClaimForm contractIDs={selectedContractAddresses} closeForm={claimModal.close} />
+        </ModalItem>
+      )}
 
-        <SellerToolbar>
-          {isMobile ? (
-            !selectRowsColumnVisible && (
-              <FiltersSelect values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
-            )
-          ) : (
-            <FiltersButtonGroup values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+      <SellerToolbar>
+        {isMobile ? (
+          !selectRowsColumnVisible && (
+            <FiltersSelect values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+          )
+        ) : (
+          <FiltersButtonGroup values={QuickFilterValues} quickFilter={quickFilter} setQuickFilter={setQuickFilter} />
+        )}
+        <SellerActions>
+          {!selectRowsColumnVisible && (
+            <TableToolbarButton onClick={() => setSelectRowsColumnVisible(true)}>
+              <AddIcon className="add-icon" />
+              Batch actions
+            </TableToolbarButton>
           )}
-          <SellerActions>
-            {!selectRowsColumnVisible && (
-              <TableToolbarButton onClick={() => setSelectRowsColumnVisible(true)}>
+          {selectRowsColumnVisible && (
+            <>
+              <TableToolbarButton onClick={() => setSelectRowsColumnVisible(false)}>
                 <AddIcon className="add-icon" />
-                Batch actions
+                Cancel
               </TableToolbarButton>
-            )}
-            {selectRowsColumnVisible && (
-              <>
-                <TableToolbarButton onClick={() => setSelectRowsColumnVisible(false)}>
-                  <AddIcon className="add-icon" />
-                  Cancel
-                </TableToolbarButton>
-                <TableToolbarButton
-                  disabled={!areAllSelectedRowsClaimable}
-                  $disabledText="All selected contracts must have a balance to claim"
-                  onClick={() => {
-                    const selectedContracts = tableInstance.getSelectedRowModel().rows.map((r) => r.original.contract);
-                    setSelectedContractAddresses(selectedContracts);
-                    claimModal.open();
-                  }}
-                >
-                  <AddIcon className="add-icon" />
-                  Claim
-                </TableToolbarButton>
-              </>
-            )}
-          </SellerActions>
-        </SellerToolbar>
-        {validatorHistory.isLoading ||
-          (contracts.isLoading && (
-            <div className="spinner">
-              <Spinner />
-            </div>
-          ))}
-        <Table tableInstance={tableInstance} />
-      </>
-    </DefaultLayout>
+              <TableToolbarButton
+                disabled={!areAllSelectedRowsClaimable}
+                $disabledText="All selected contracts must have a balance to claim"
+                onClick={() => {
+                  const selectedContracts = tableInstance.getSelectedRowModel().rows.map((r) => r.original.contract);
+                  setSelectedContractAddresses(selectedContracts);
+                  claimModal.open();
+                }}
+              >
+                <AddIcon className="add-icon" />
+                Claim
+              </TableToolbarButton>
+            </>
+          )}
+        </SellerActions>
+      </SellerToolbar>
+      {validatorHistory.isLoading ||
+        (contracts.isLoading && (
+          <div className="spinner">
+            <Spinner />
+          </div>
+        ))}
+      <Table tableInstance={tableInstance} />
+    </>
   );
 };
 

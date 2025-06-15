@@ -14,7 +14,7 @@ export function useFeeTokenAddress() {
   });
 }
 
-export function useFeeTokenBalance(address: `0x${string}` | undefined) {
+export function useFeeTokenBalance(address: `0x${string}` | undefined, refetch = true) {
   const { data: feeTokenAddress } = useFeeTokenAddress();
 
   return useReadContract({
@@ -23,7 +23,7 @@ export function useFeeTokenBalance(address: `0x${string}` | undefined) {
     functionName: "balanceOf",
     args: [address!],
     query: {
-      ...backgroundRefetchOpts,
+      ...(refetch ? backgroundRefetchOpts : {}),
       enabled: !!address && !!feeTokenAddress,
     },
   });

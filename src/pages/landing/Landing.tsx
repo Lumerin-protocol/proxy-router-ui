@@ -1,10 +1,23 @@
 import EastIcon from "@mui/icons-material/East";
-import type { FC } from "react";
+import { Suspense, type FC } from "react";
 import { useNavigate } from "react-router";
 import Prototype from "../../images/landing-hero.png";
 import { PathName } from "../../types/types";
 import { ButtonsWrapper, ConnectBtn, HeroHeadline, HeroSubheadline, HeroWrapper, Steps } from "./Landing.styled";
-import { ConnectWidget } from "../../components/Widgets/ConnectWidget";
+import { safeLazy } from "../../utils/safeLazy";
+import { Button as ConnectButton } from "../../components/Widgets/ConnectWidget";
+
+const ConnectWidgetLazy = safeLazy(() =>
+  import("../../components/Widgets/ConnectWidgetLazy").then((module) => ({
+    default: module.ConnectWidget,
+  })),
+);
+
+const Web3ProviderLazy = safeLazy(() =>
+  import("../../Web3Provider").then((module) => ({
+    default: module.Web3Provider,
+  })),
+);
 
 export const Landing: FC = () => {
   const navigate = useNavigate();
@@ -41,7 +54,15 @@ export const Landing: FC = () => {
               </HeroHeadline>
               <HeroSubheadline>Buy, sell, and own hashpower through your Web3 wallet</HeroSubheadline>
               <ButtonsWrapper>
-                <ConnectWidget hideChain={true} hideConnector={true} onConnect={() => navigate(PathName.Marketplace)} />
+                <Suspense fallback={<ConnectButton disabled>Connect wallet</ConnectButton>}>
+                  <Web3ProviderLazy>
+                    <ConnectWidgetLazy
+                      hideChain={true}
+                      hideConnector={true}
+                      onConnect={() => navigate(PathName.Marketplace)}
+                    />
+                  </Web3ProviderLazy>
+                </Suspense>
                 <ConnectBtn type="button" onClick={() => navigate(PathName.Marketplace)}>
                   Enter Marketplace
                 </ConnectBtn>

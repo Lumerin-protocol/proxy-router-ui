@@ -4,7 +4,7 @@ import { colors } from "../../../styles/styles.config";
 import { AddressLength, ContentState } from "../../../types/types";
 import { Spinner } from "../../Spinner.styled";
 import { getTxUrl } from "../../../lib/indexer";
-import { truncateAddress } from "../../../utils/utils";
+import { truncateAddress } from "../../../utils/formatters";
 
 const createText = {
   thankYou: "Thank you for creating a Hashpower Contract on Lumerin!",
