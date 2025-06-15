@@ -1,7 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
-import styled from "@mui/material/styles/styled";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { type FC, type HTMLProps, useEffect, useMemo, useRef, useState } from "react";
+import { type FC, type HTMLProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   useReactTable,
   createColumnHelper,
@@ -9,7 +8,6 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled";
 import { Spinner } from "../../components/Spinner.styled";
 import { Table } from "../../components/Table";
 import { TableIcon } from "../../components/TableIcon";
@@ -21,7 +19,6 @@ import { useModal } from "../../hooks/useModal";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { CreateContract } from "../../components/Forms/CreateForm";
 import { EditForm } from "../../components/Forms/EditForm";
-import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { ModalItem } from "../../components/Modal";
 import { ArchiveUnarchiveForm } from "../../components/Forms/ArchiveUnarchive";
 import { formatDuration } from "../../lib/duration";
@@ -42,7 +39,8 @@ import { TableToolbarButton } from "../../components/TableToolbarButton";
 
 export const SellerHub: FC = () => {
   const { address: userAccount } = useAccount();
-  const { data: contracts, isLoading } = useSellerContracts({ address: userAccount });
+  const contractsQuery = useSellerContracts({ address: userAccount });
+  const { data: contracts, isLoading } = contractsQuery;
   const blockTime30s = useSimulatedBlockchainTime({ intervalSeconds: 30 });
   const [_selectedRows, _setSelectedRows] = useState<Record<`0x${string}`, boolean>>({});
   const selectedRows = Object.entries(_selectedRows).reduce((acc, [key, value]) => {
@@ -194,7 +192,6 @@ export const SellerHub: FC = () => {
         {
           id: "balance",
           header: "Unclaimed",
-          sortingFn: "alphanumeric",
           cell: (r) => formatPaymentPrice(r.cell.getValue()).full,
         },
       ),
@@ -257,25 +254,45 @@ export const SellerHub: FC = () => {
       return data !== 0n;
     });
 
+  const onCreateFormClose = useCallback(async () => {
+    await contractsQuery.refetch();
+    createModal.close();
+  }, []);
+
+  const onEditFormClose = useCallback(async () => {
+    await contractsQuery.refetch();
+    editModal.close();
+  }, []);
+
+  const onClaimFormClose = useCallback(async () => {
+    await contractsQuery.refetch();
+    claimModal.close();
+  }, []);
+
+  const onArchiveFormClose = useCallback(async () => {
+    await contractsQuery.refetch();
+    archiveModal.close();
+  }, []);
+
   return (
-    <DefaultLayout pageTitle="Seller Hub">
+    <>
       {createModal.isOpen && (
         <ModalItem open={createModal.isOpen} setOpen={createModal.setOpen}>
-          <CreateContract setOpen={createModal.setOpen} />
+          <CreateContract closeForm={onCreateFormClose} />
         </ModalItem>
       )}
       {editModal.isOpen && (
         <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen}>
-          <EditForm contract={tableInstance.getRow(contractIds[0])?.original} closeForm={editModal.close} />
+          <EditForm contract={tableInstance.getRow(contractIds[0])?.original} closeForm={onEditFormClose} />
         </ModalItem>
       )}
       {claimModal.isOpen && (
         <ModalItem open={claimModal.isOpen} setOpen={claimModal.setOpen}>
-          <ClaimForm contractIDs={contractIds as `0x${string}`[]} closeForm={claimModal.close} />
+          <ClaimForm contractIDs={contractIds as `0x${string}`[]} closeForm={onClaimFormClose} />
         </ModalItem>
       )}
       {archiveModal.isOpen && (
-        <ModalItem open={archiveModal.isOpen} setOpen={archiveModal.setOpen}>
+        <ModalItem open={archiveModal.isOpen} setOpen={onArchiveFormClose}>
           <ArchiveUnarchiveForm contractIds={contractIds} isArchived={false} closeForm={archiveModal.close} />
         </ModalItem>
       )}
@@ -362,7 +379,7 @@ export const SellerHub: FC = () => {
       )}
       {data.length > 0 && <Table tableInstance={tableInstance} />}
       {!isLoading && data.length === 0 && <div className="text-center text-2xl">You have no contracts.</div>}
-    </DefaultLayout>
+    </>
   );
 };
 

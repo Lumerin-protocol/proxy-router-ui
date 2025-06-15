@@ -5,6 +5,7 @@ import { ContractState, type HashRentalContract, PathName } from "../../types/ty
 import { GenericNumberStatsWidget } from "./GenericNumberStatsWidget";
 import { formatHashrateTHPS, formatValue } from "../../lib/units";
 import { formatUnits, isAddressEqual } from "viem";
+import { css } from "@mui/material/styles";
 
 export const BuyerOrdersWidget = (props: {
   contracts: HashRentalContract[];
@@ -35,6 +36,7 @@ export const BuyerOrdersWidget = (props: {
   return (
     <>
       <GenericNumberStatsWidget
+        maxWidth="400px"
         title="Purchased Contracts"
         isConnected={!!userAccount}
         disconnectedMessage="Connect wallet to start buying hashrate"
@@ -44,6 +46,7 @@ export const BuyerOrdersWidget = (props: {
         ]}
       />
       <GenericNumberStatsWidget
+        maxWidth="500px"
         title="Purchased Hashrate"
         data={[
           {

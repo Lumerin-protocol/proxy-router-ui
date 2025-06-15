@@ -1,41 +1,65 @@
-import { type FC, Suspense, lazy } from "react";
+import { Suspense, type FC } from "react";
 import { Route, Routes } from "react-router";
-import { Spinner } from "./components/Spinner.styled";
 import { PathName } from "./types/types";
-import { safeLazy } from "react-safe-lazy";
+import { safeLazy } from "./utils/safeLazy";
 
-// biome-ignore lint/complexity/noBannedTypes: invalid typings for safeLazy
-type Empty = {};
-
-// Lazy loaded components
-// SafeLazy is a wrapper around lazy that will reload the html page if the component fails to load
-// the chunks, likely due to changed js asset filename
-const BuyerHub = safeLazy<Empty>(() =>
-  import("./pages/buyer-hub/BuyerHub").then((module) => ({ default: module.BuyerHub })),
-);
-const Landing = safeLazy<Empty>(() =>
-  import("./pages/landing/Landing").then((module) => ({ default: module.Landing })),
-);
-const Marketplace = safeLazy<Empty>(() =>
+const Landing = safeLazy(() => import("./pages/landing/Landing").then((module) => ({ default: module.Landing })));
+const Marketplace = safeLazy(() =>
   import("./pages/marketplace/Marketplace").then((module) => ({ default: module.Marketplace })),
 );
-const SellerHub = safeLazy<Empty>(() =>
+const SuspenseLayoutLazy = safeLazy(() =>
+  import("./components/Layouts/SuspenseLayout").then((module) => ({
+    default: module.SuspenseLayout,
+  })),
+);
+
+const BuyerHub = safeLazy(() => import("./pages/buyer-hub/BuyerHub").then((module) => ({ default: module.BuyerHub })));
+
+const SellerHub = safeLazy(() =>
   import("./pages/seller-hub/SellerHub").then((module) => ({ default: module.SellerHub })),
 );
-const ValidatorHub = safeLazy<Empty>(() =>
+const ValidatorHub = safeLazy(() =>
   import("./pages/validator-hub/ValidatorHub").then((module) => ({ default: module.ValidatorHub })),
 );
 
 export const Router: FC = () => {
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense>
       <Routes>
         <Route path={PathName.Landing} element={<Landing />} />
-        <Route path={PathName.Marketplace} element={<Marketplace />} />
-        <Route path={PathName.SellerHub} element={<SellerHub />} />
-        <Route path={PathName.BuyerHub} element={<BuyerHub />} />
-        <Route path={PathName.ValidatorHub} element={<ValidatorHub />} />
-        {/* <Route path={"test"} element={<Test />} /> */}
+        <Route
+          path={PathName.Marketplace}
+          element={
+            <SuspenseLayoutLazy pageTitle="Marketplace">
+              <Marketplace />
+            </SuspenseLayoutLazy>
+          }
+        />
+
+        <Route
+          path={PathName.SellerHub}
+          element={
+            <SuspenseLayoutLazy pageTitle="Seller Hub">
+              <SellerHub />
+            </SuspenseLayoutLazy>
+          }
+        />
+        <Route
+          path={PathName.BuyerHub}
+          element={
+            <SuspenseLayoutLazy pageTitle="Buyer Hub">
+              <BuyerHub />
+            </SuspenseLayoutLazy>
+          }
+        />
+        <Route
+          path={PathName.ValidatorHub}
+          element={
+            <SuspenseLayoutLazy pageTitle="Validator Hub">
+              <ValidatorHub />
+            </SuspenseLayoutLazy>
+          }
+        />
       </Routes>
     </Suspense>
   );

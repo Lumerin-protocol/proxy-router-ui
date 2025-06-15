@@ -1,27 +1,17 @@
 import { useAccount } from "wagmi";
 import styled from "@mui/material/styles/styled";
 import { AddressLength } from "../../types/types";
-import { truncateAddress } from "../../utils/utils";
 import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
 import { useAppKit } from "@reown/appkit/react";
 import { ChainIcon } from "../../config/chains";
 import { useEffect, useRef } from "react";
+import { truncateAddress } from "../../utils/formatters";
 
 type Props = {
   onConnect?: () => void;
   addressLength?: AddressLength;
   hideChain?: boolean;
   hideConnector?: boolean;
-};
-
-export const ConnectWidget = (props: Props) => {
-  return (
-    <ButtonGroup>
-      <AccountButton onConnect={props.onConnect} />
-      {!props.hideChain && <ChainButton />}
-      {!props.hideConnector && <ConnectorButton />}
-    </ButtonGroup>
-  );
 };
 
 export const AccountButton = (props: Props) => {
@@ -99,19 +89,12 @@ const WuiAvatar = (props: { address: string }) => {
   return <wui-avatar alt={address} address={address} size="sm" />;
 };
 
-const ButtonGroup = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0rem;
-`;
-
 const ConnectorIcon = styled("img")`
   width: 1.5rem;
   height: 1.5rem;
 `;
 
-const Button = styled(PrimaryButton)`
+export const Button = styled(PrimaryButton)`
   height: 48px;
   border-radius: 10px;
   color: #fff;
@@ -124,4 +107,7 @@ const Button = styled(PrimaryButton)`
   justify-content: space-evenly;
   gap: 0.5rem;
   border: rgba(171, 171, 171, 0.5) 1px solid;
+  &:not(:last-child) {
+    margin-right: 0;
+  }
 `;

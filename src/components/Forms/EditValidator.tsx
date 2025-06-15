@@ -2,14 +2,14 @@ import { useController, useForm } from "react-hook-form";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
-import { type FC, useRef } from "react";
+import { type FC, memo, useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 import { InputWrapper } from "./Shared/Forms.styled";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import { formatFeePrice, parseValidatorStake, validatorStakeToken } from "../../lib/units";
 import { compressPublicKey } from "../../lib/pubkey";
-import { isValidHost } from "../../utils/utils";
+import { isValidHost } from "../../utils/validators";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
@@ -25,7 +25,7 @@ interface EditValidatorFormProps {
   onClose: () => Promise<void>;
 }
 
-export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
+export const EditValidatorForm: FC<EditValidatorFormProps> = memo((props) => {
   const { address: userAccount } = useAccount();
 
   const pc = usePublicClient();
@@ -171,4 +171,4 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = (props) => {
       ]}
     />
   );
-};
+});

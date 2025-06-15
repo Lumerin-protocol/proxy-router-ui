@@ -6,7 +6,7 @@ import CheckCircle from "@mui/icons-material/CheckCircle";
 import SkipNext from "@mui/icons-material/SkipNext";
 import ErrorIcon from "@mui/icons-material/Error";
 import { FormButtonsWrapper, PrimaryButton, SecondaryButton } from "../FormButtons/Buttons.styled";
-import { truncateAddress } from "../../../utils/utils";
+import { truncateAddress } from "../../../utils/formatters";
 import { BaseError, ContractFunctionRevertedError, type PublicClient, UserRejectedRequestError } from "viem";
 import { type TransactionStep, type TxState, useMultistepTx } from "../../../hooks/useTxForm";
 import { SpinnerV2 } from "../../Spinner.styled";
@@ -16,7 +16,7 @@ import { getTxUrl } from "../../../lib/indexer";
 interface TransactionFormProps {
   title: string;
   description: ReactNode;
-  inputForm?: FC<StepComponentProps>;
+  inputForm?: FC<StepComponentProps> | ReactNode;
   validateInput?: () => Promise<boolean>;
   reviewForm: FC<StepComponentProps>;
   resultForm?: FC<StepComponentProps>;
@@ -50,7 +50,7 @@ export const TransactionForm = (props: TransactionFormProps) => {
                 component: (p: StepComponentProps) => (
                   <>
                     <p className="mb-2">{props.description}</p>
-                    {props.inputForm!(p)}
+                    {typeof props.inputForm === "function" ? props.inputForm!(p) : props.inputForm}
                     <MultistepFormActions
                       primary={{
                         label: "Review",

@@ -1,11 +1,11 @@
 import React from "react";
-// import whyDidYouRender from "@welldone-software/why-did-you-render";
 
-// if (process.env.NODE_ENV === "development") {
-//   whyDidYouRender(React, {
-//     // trackAllPureComponents: true,
-//     trackHooks: true,
-//     // trackAllPureComponents: true,
-//     logOnDifferentValues: true,
-//   });
-// }
+if (process.env.NODE_ENV === "development") {
+  const whyDidYouRender = await import("@welldone-software/why-did-you-render").then((m) => m.default);
+  whyDidYouRender(React, {
+    // trackAllPureComponents: true,
+    trackHooks: true,
+    trackAllPureComponents: true,
+    logOnDifferentValues: true,
+  });
+}

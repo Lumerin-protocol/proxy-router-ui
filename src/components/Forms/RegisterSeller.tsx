@@ -9,11 +9,14 @@ import TextField from "@mui/material/TextField";
 import { readContract } from "@wagmi/core";
 import { config } from "../../clients/wagmi";
 import { formatFeePrice, sellerStakeToken } from "../../lib/units";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
 import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
+import { useOnMountUnsafe } from "../../hooks/useOnMountUnsafe";
+import { memo, useCallback, useMemo } from "react";
+import { Input } from "@mui/material";
 
 export interface RegisterSellerInput {
   stake: string;
@@ -23,7 +26,7 @@ interface CreateFormProps {
   onClose: () => Promise<void>;
 }
 
-export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
+export const RegisterSellerForm: React.FC<CreateFormProps> = memo(({ onClose }) => {
   const publicClient = usePublicClient();
   const wc = useWalletClient();
   const { address } = useAccount();
@@ -38,11 +41,12 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
     },
   });
 
-  const balance = useFeeTokenBalance(address!);
+  const balance = useFeeTokenBalance(address!, false);
 
   // Input validation setup
   const form = useForm<RegisterSellerInput>({
     mode: "onBlur",
+    reValidateMode: "onBlur",
     defaultValues: async () => {
       const minStake = await readContract(config, {
         address: process.env.REACT_APP_CLONE_FACTORY,
@@ -59,48 +63,48 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
   const minStake = minSellerStakeQuery.isSuccess ? formatFeePrice(minSellerStakeQuery.data) : undefined;
   const balanceValue = balance?.data ? formatFeePrice(balance.data) : undefined;
 
+  const inputForm = () => {
+    const stakeController = useController({
+      name: "stake",
+      control: form.control,
+      rules: {
+        required: "Stake is required",
+        min: {
+          value: minStake?.value || "0",
+          message: `Stake must be at least ${minStake?.value || "0"} ${sellerStakeToken.symbol}`,
+        },
+        max: {
+          value: balanceValue?.value || Number.POSITIVE_INFINITY,
+          message: `Not enough balance. You have ${balanceValue?.value || 0} ${sellerStakeToken.symbol}`,
+        },
+      },
+    });
+
+    return (
+      <InputWrapper>
+        <TextField
+          {...stakeController.field}
+          id="stake"
+          type="number"
+          label="Stake"
+          error={!!stakeController.fieldState.error}
+          helperText={stakeController.fieldState.error?.message}
+          slotProps={{
+            input: {
+              endAdornment: <InputAdornment position="end">LMR</InputAdornment>,
+            },
+          }}
+        />
+      </InputWrapper>
+    );
+  };
+
   return (
     <TransactionForm
       onClose={onClose}
       title="Register yourself as a Seller"
       description="Register yourself as a Seller to start selling on the Lumerin Marketplace"
-      inputForm={(props) => {
-        const stakeController = useController({
-          name: "stake",
-          control: form.control,
-          rules: {
-            required: "Stake is required",
-            min: {
-              value: minStake?.value || "0",
-              message: `Stake must be at least ${minStake?.value || "0"} ${sellerStakeToken.symbol}`,
-            },
-            max: {
-              value: balanceValue?.value || Number.POSITIVE_INFINITY,
-              message: `Not enough balance. You have ${balanceValue?.value || 0} ${sellerStakeToken.symbol}`,
-            },
-          },
-        });
-
-        return (
-          <>
-            <InputWrapper>
-              <TextField
-                {...stakeController.field}
-                id="stake"
-                type="number"
-                label="Stake"
-                error={!!stakeController.fieldState.error}
-                helperText={stakeController.fieldState.error?.message}
-                slotProps={{
-                  input: {
-                    endAdornment: <InputAdornment position="end">LMR</InputAdornment>,
-                  },
-                }}
-              />
-            </InputWrapper>
-          </>
-        );
-      }}
+      inputForm={inputForm}
       validateInput={async () => {
         return await form.trigger();
       }}
@@ -157,4 +161,4 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = ({ onClose }) => {
       ]}
     />
   );
-};
+});

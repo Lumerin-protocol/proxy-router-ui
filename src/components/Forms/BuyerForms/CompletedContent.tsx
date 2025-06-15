@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
 import { colors } from "../../../styles/styles.config";
 import { AddressLength, ContentState } from "../../../types/types";
-import { truncateAddress } from "../../../utils/utils";
+import { truncateAddress } from "../../../utils/formatters";
 import { Spinner } from "../../Spinner.styled";
 import { getTxUrl } from "../../../lib/indexer";
 

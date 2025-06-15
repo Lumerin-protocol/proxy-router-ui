@@ -1,13 +1,12 @@
-import { useMemo, useState, type FC } from "react";
+import { useCallback, useMemo, useState, type FC } from "react";
 import { useAccount } from "wagmi";
 import { Card, type CardData } from "../../components/Cards/PurchasedContracts";
-import { DefaultLayout } from "../../components/Layouts/DefaultLayout";
 import { SortToolbar } from "../../components/SortToolbar";
 import { Spinner } from "../../components/Spinner.styled";
 import { TabSwitch } from "../../components/TabSwitch";
 import { useBuyerContracts } from "../../hooks/data/useContracts";
 import { ContractState, CurrentTab, SortTypes } from "../../types/types";
-import { sortContracts } from "../../utils/utils";
+import { sortContracts } from "../../utils/sortContracts";
 import { getPoolInfo } from "../../gateway/localStorage";
 import { useModal } from "../../hooks/useModal";
 import { ModalItem } from "../../components/Modal";
@@ -27,12 +26,8 @@ export const BuyerHub: FC = () => {
   const [contractId, setContractId] = useState<string | null>(null);
 
   const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
-  const [runningSortType, setRunningSortType] = useState<SortTypes>(
-    SortTypes.PurchaseTimeNewestToOldest
-  );
-  const [completedSortType, setCompletedSortType] = useState<SortTypes>(
-    SortTypes.PurchaseTimeNewestToOldest
-  );
+  const [runningSortType, setRunningSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
+  const [completedSortType, setCompletedSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
   const currentBlockTimestamp = new Date().getTime() / 1000;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -41,8 +36,7 @@ export const BuyerHub: FC = () => {
     if (!userAccount) return [];
     const buyerOrders = contractsQuery.data.filter(
       (contract) =>
-        isAddressEqual(contract.buyer as `0x${string}`, userAccount) &&
-        contract.state === ContractState.Running
+        isAddressEqual(contract.buyer as `0x${string}`, userAccount) && contract.state === ContractState.Running,
     );
 
     return sortContracts(runningSortType, buyerOrders);
@@ -56,9 +50,7 @@ export const BuyerHub: FC = () => {
     const buyerOrders = contractsQuery.data
       .flatMap((c) => c.history!)
       .filter(
-        (c) =>
-          isAddressEqual(c.buyer as `0x${string}`, userAccount!) &&
-          Number(c.endTime) < currentBlockTimestamp
+        (c) => isAddressEqual(c.buyer as `0x${string}`, userAccount!) && Number(c.endTime) < currentBlockTimestamp,
       );
 
     return sortContracts(completedSortType, buyerOrders);
@@ -106,23 +98,26 @@ export const BuyerHub: FC = () => {
     };
   });
 
+  const onEditFormClose = useCallback(async () => {
+    await contractsQuery.refetch();
+    editModal.close();
+  }, []);
+
+  const onCancelFormClose = useCallback(async () => {
+    await contractsQuery.refetch();
+    cancelModal.close();
+  }, []);
+
   return (
-    <DefaultLayout pageTitle="Buyer Hub">
+    <>
       <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contractId}`}>
-        <BuyerEditForm contractId={contractId!} closeForm={() => editModal.close()} />
+        <BuyerEditForm contractId={contractId!} closeForm={onEditFormClose} />
       </ModalItem>
-      <ModalItem
-        open={cancelModal.isOpen}
-        setOpen={cancelModal.setOpen}
-        key={`cancel-${contractId}`}
-      >
-        <CancelForm contractId={contractId!} closeForm={() => cancelModal.close()} />
+      <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen}>
+        <CancelForm contractId={contractId!} closeForm={onCancelFormClose} />
       </ModalItem>
       <WidgetsWrapper>
-        <BuyerOrdersWidget
-          isLoading={contractsQuery.isLoading}
-          contracts={contractsQuery.data || []}
-        />
+        <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
       </WidgetsWrapper>
       <div className="flex flex-col flex-wrap justify-between items-center md:flex-row gap-y-6 mb-6">
         <TabSwitch
@@ -134,11 +129,7 @@ export const BuyerHub: FC = () => {
           setValue={setActiveOrdersTab}
         />
         {activeOrdersTab === CurrentTab.Running && (
-          <SortToolbar
-            pageTitle="Active Contracts"
-            sortType={runningSortType}
-            setSortType={setRunningSortType}
-          />
+          <SortToolbar pageTitle="Active Contracts" sortType={runningSortType} setSortType={setRunningSortType} />
         )}
         {activeOrdersTab === CurrentTab.Completed && (
           <SortToolbar
@@ -151,9 +142,7 @@ export const BuyerHub: FC = () => {
       <div className="flex flex-col items-center">
         {activeOrdersTab === CurrentTab.Running && (
           <>
-            {runningContracts.length === 0 && (
-              <p className="text-2xl text-white">You have no active contracts.</p>
-            )}
+            {runningContracts.length === 0 && <p className="text-2xl text-white">You have no active contracts.</p>}
             {runningContracts.length > 0 && (
               <ContractCards>
                 {runningContractsCards.map((item) => {
@@ -196,6 +185,6 @@ export const BuyerHub: FC = () => {
           </div>
         )}
       </div>
-    </DefaultLayout>
+    </>
   );
 };

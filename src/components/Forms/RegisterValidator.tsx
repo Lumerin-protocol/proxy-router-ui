@@ -3,14 +3,14 @@ import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { formatUnits, parseUnits } from "viem";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
 import { InputWrapper } from "./Shared/Forms.styled";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import { formatFeePrice, validatorStakeToken } from "../../lib/units";
 import { compressPublicKey } from "../../lib/pubkey";
-import { isValidHost } from "../../utils/utils";
+import { isValidHost } from "../../utils/validators";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
@@ -24,7 +24,7 @@ interface CreateFormProps {
   onClose: () => Promise<void>;
 }
 
-export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ onClose }) => {
+export const RegisterValidatorForm: React.FC<CreateFormProps> = memo(({ onClose }) => {
   const { address: userAccount } = useAccount();
   const wc = useWalletClient();
   const publicClient = usePublicClient();
@@ -41,6 +41,8 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ onClose }) =>
         abi: validatorRegistryAbi,
         functionName: "stakeRegister",
       });
+
+      console.log("minStake", minStake);
 
       minStakeRef.current = minStake;
 
@@ -184,4 +186,4 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = ({ onClose }) =>
       ]}
     />
   );
-};
+});

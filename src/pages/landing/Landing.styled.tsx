@@ -1,10 +1,6 @@
 import styled from "@mui/material/styles/styled";
 import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled";
-import BackgroundDots from "../../images/landing-bg-dots.png";
-// import HeroBubble from '../images/hero-bubble-round.png';
-// import HeroVase from '../images/hero-bubble-vase.png';
-// import HeroBubbleLines from '../images/hero-bubble-lines.png';
-import BackgroundGradient from "../../images/landing-gradient.png";
+import BackgroundDots from "../../images/landing-bg-dots.png?quality=40&alphaQuality=40&w=1000";
 import Grid from "../../images/landing-grid.png";
 
 export const HeroWrapper = styled("div")`
@@ -12,17 +8,19 @@ export const HeroWrapper = styled("div")`
   padding-top: 5rem;
   width: 100%;
 
-  background-image: url(${BackgroundGradient}), url(${BackgroundDots}), url(${Grid});
-  background-position: top right, top right, right 50px top 60px;
+  background-image: url(${Grid}), url(${BackgroundDots}),
+    radial-gradient(ellipse 90% 350% at 82% 50%, rgb(41, 50, 54) 15%, #1e1e1e 35%);
+  background-position: right 50px top 60px, top right, top right;
   background-repeat: no-repeat, no-repeat, no-repeat;
-  background-size: contain, 40%, 65%;
+  background-size: 65%, 40%, contain;
 
   @media (max-width: 650px) {
-    background-image: url(${BackgroundGradient}), url(${BackgroundDots});
-    background-size: 60%, 70%;
-    background-position: bottom right, right;
+    background-image: url(${BackgroundDots}),
+      radial-gradient(ellipse 100% 80% at 50% 20%, rgb(41, 50, 54) 50%, #1e1e1e 75%);
+    background-size: 70%, 60%;
+    background-position: top right, top right;
     background-repeat: no-repeat, no-repeat;
-    background-size: cover, contain;
+    background-size: contain, cover;
   }
 
   .content-wrapper {
@@ -143,9 +141,11 @@ export const ConnectBtn = styled(PrimaryButton)`
   color: #fff;
   font-weight: 500;
   padding: 0.75rem 1.75rem;
+  flex-shrink: 0;
 `;
 
 export const ButtonsWrapper = styled("div")`
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 `;

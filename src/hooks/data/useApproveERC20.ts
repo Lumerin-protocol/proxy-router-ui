@@ -1,5 +1,6 @@
 import { useWriteContract, usePublicClient, useWalletClient } from "wagmi";
 import { erc20Abi, getContract } from "viem";
+import { useCallback } from "react";
 
 interface ApproveProps {
   spender: `0x${string}`;
@@ -11,29 +12,32 @@ export function useApproveERC20(tokenAddress: `0x${string}`) {
   const pc = usePublicClient();
   const { data: wc } = useWalletClient();
 
-  const approveAsync = async (props: ApproveProps) => {
-    if (!writeContractAsync || !pc || !wc) return;
+  const approveAsync = useCallback(
+    async (props: ApproveProps) => {
+      if (!writeContractAsync || !pc || !wc) return;
 
-    const token = getContract({
-      address: tokenAddress,
-      abi: erc20Abi,
-      client: pc,
-    });
+      const token = getContract({
+        address: tokenAddress,
+        abi: erc20Abi,
+        client: pc,
+      });
 
-    // Check current allowance
-    const currentAllowance = await token.read.allowance([wc.account.address, props.spender]);
+      // Check current allowance
+      const currentAllowance = await token.read.allowance([wc.account.address, props.spender]);
 
-    // If current allowance is sufficient, return undefined
-    if (currentAllowance >= props.amount) {
-      return undefined;
-    }
+      // If current allowance is sufficient, return undefined
+      if (currentAllowance >= props.amount) {
+        return undefined;
+      }
 
-    const req = await token.simulate.approve([props.spender, props.amount], {
-      account: wc.account.address,
-    });
+      const req = await token.simulate.approve([props.spender, props.amount], {
+        account: wc.account.address,
+      });
 
-    return writeContractAsync(req.request);
-  };
+      return writeContractAsync(req.request);
+    },
+    [writeContractAsync, pc, wc],
+  );
 
   return {
     ...rest,

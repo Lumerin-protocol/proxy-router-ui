@@ -1,6 +1,8 @@
 import { type FC, memo, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { encryptMessage, formatStratumUrl, truncateAddress } from "../../utils/utils";
+import { encryptMessage } from "../../utils/encrypt";
+import { formatStratumUrl } from "../../utils/formatters";
+import { truncateAddress } from "../../utils/formatters";
 import { usePublicClient } from "wagmi";
 import { purchasedHashrate } from "../../analytics";
 import { decompressPublicKey } from "../../gateway/utils";
@@ -26,11 +28,11 @@ import { getPredefinedPoolByAddress, getPredefinedPoolByIndex, predefinedPools }
 
 interface BuyFormProps {
   contractId: string;
-  setOpen: (isOpen: boolean) => void;
+  closeForm: () => void;
 }
 
-export const BuyForm2: FC<BuyFormProps> = memo(
-  ({ contractId, setOpen }) => {
+export const BuyForm: FC<BuyFormProps> = memo(
+  ({ contractId, closeForm }) => {
     const payment = useApprovePayment();
     const fee = useApproveFee();
     const { purchaseContractAsync } = usePurchaseContract();
@@ -75,7 +77,7 @@ export const BuyForm2: FC<BuyFormProps> = memo(
 
     return (
       <TransactionForm
-        onClose={() => setOpen(false)}
+        onClose={closeForm}
         title="Purchase Hashpower"
         description="Enter the Pool Address, Port Number, and Username you are pointing the purchased
             hashpower to."

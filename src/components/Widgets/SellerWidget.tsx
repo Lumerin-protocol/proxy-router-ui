@@ -4,10 +4,10 @@ import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
 import { formatFeePrice, formatHashrateTHPS } from "../../lib/units";
 import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
-import type { FC } from "react";
+import { useCallback, type FC } from "react";
 import { ModalItem } from "../Modal";
 import { useModal } from "../../hooks/useModal";
-import { truncateAddress } from "../../utils/utils";
+import { truncateAddress } from "../../utils/formatters";
 import { AddressLength, ContractState } from "../../types/types";
 import { RegisterSellerForm } from "../Forms/RegisterSeller";
 import { DeregisterSeller } from "../Forms/DeregisterSeller";
@@ -89,38 +89,37 @@ export const SellerWidget: FC = () => {
 
   const [seller, isActive, isRegistered] = sellerQuery.isSuccess ? sellerQuery.data : [undefined, false, false];
 
+  const onRegisterSellerClose = useCallback(async () => {
+    await sellerQuery.refetch();
+    registerSellerModal.close();
+  }, []);
+
+  const onEditSellerClose = useCallback(async () => {
+    await sellerQuery.refetch();
+    editSellerModal.close();
+  }, []);
+
+  const onDeregisterSellerClose = useCallback(async () => {
+    await sellerQuery.refetch();
+    deregisterSellerModal.close();
+  }, []);
+
   return (
     <>
       <SmallWidget>
         {registerSellerModal.isOpen && (
           <ModalItem open={registerSellerModal.isOpen} setOpen={registerSellerModal.setOpen}>
-            <RegisterSellerForm
-              onClose={async () => {
-                await sellerQuery.refetch();
-                registerSellerModal.close();
-              }}
-            />
+            <RegisterSellerForm onClose={onRegisterSellerClose} />
           </ModalItem>
         )}
         {editSellerModal.isOpen && (
           <ModalItem open={editSellerModal.isOpen} setOpen={editSellerModal.setOpen}>
-            <EditSellerForm
-              sellerStake={seller!.stake}
-              onClose={async () => {
-                await sellerQuery.refetch();
-                editSellerModal.close();
-              }}
-            />
+            <EditSellerForm sellerStake={seller!.stake} onClose={onEditSellerClose} />
           </ModalItem>
         )}
         {deregisterSellerModal.isOpen && (
           <ModalItem open={deregisterSellerModal.isOpen} setOpen={deregisterSellerModal.setOpen}>
-            <DeregisterSeller
-              closeForm={async () => {
-                deregisterSellerModal.close();
-                await sellerQuery.refetch();
-              }}
-            />
+            <DeregisterSeller closeForm={onDeregisterSellerClose} />
           </ModalItem>
         )}
         <h3>
