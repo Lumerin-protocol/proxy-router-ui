@@ -90,17 +90,17 @@ export const SellerWidget: FC = () => {
   const [seller, isActive, isRegistered] = sellerQuery.isSuccess ? sellerQuery.data : [undefined, false, false];
 
   const onRegisterSellerClose = useCallback(async () => {
-    await sellerQuery.refetch();
+    sellerQuery.refetch();
     registerSellerModal.close();
   }, []);
 
   const onEditSellerClose = useCallback(async () => {
-    await sellerQuery.refetch();
+    sellerQuery.refetch();
     editSellerModal.close();
   }, []);
 
   const onDeregisterSellerClose = useCallback(async () => {
-    await sellerQuery.refetch();
+    sellerQuery.refetch();
     deregisterSellerModal.close();
   }, []);
 

@@ -35,17 +35,17 @@ export const ValidatorWidget: FC = () => {
     : [undefined, false, false];
 
   const onRegisterValidatorClose = useCallback(async () => {
-    await validatorQuery.refetch();
+    validatorQuery.refetch();
     registerValidatorModal.close();
   }, []);
 
   const onEditValidatorClose = useCallback(async () => {
-    await validatorQuery.refetch();
+    validatorQuery.refetch();
     editValidatorModal.close();
   }, []);
 
   const onDeregisterValidatorClose = useCallback(async () => {
-    await validatorQuery.refetch();
+    validatorQuery.refetch();
     removeValidatorModal.close();
   }, []);
 
