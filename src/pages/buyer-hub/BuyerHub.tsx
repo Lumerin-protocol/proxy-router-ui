@@ -99,12 +99,12 @@ export const BuyerHub: FC = () => {
   });
 
   const onEditFormClose = useCallback(async () => {
-    await contractsQuery.refetch();
+    contractsQuery.refetch();
     editModal.close();
   }, []);
 
   const onCancelFormClose = useCallback(async () => {
-    await contractsQuery.refetch();
+    contractsQuery.refetch();
     cancelModal.close();
   }, []);
 

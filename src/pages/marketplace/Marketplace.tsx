@@ -34,7 +34,7 @@ export const Marketplace: FC = () => {
   const data = useMemo(() => contractsQuery.data || [], [contractsQuery.data]);
 
   const onBuyFormClose = useCallback(async () => {
-    await contractsQuery.refetch();
+    contractsQuery.refetch();
     buyModal.close();
   }, []);
 

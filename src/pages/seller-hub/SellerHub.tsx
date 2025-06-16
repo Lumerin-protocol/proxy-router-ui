@@ -255,22 +255,22 @@ export const SellerHub: FC = () => {
     });
 
   const onCreateFormClose = useCallback(async () => {
-    await contractsQuery.refetch();
+    contractsQuery.refetch();
     createModal.close();
   }, []);
 
   const onEditFormClose = useCallback(async () => {
-    await contractsQuery.refetch();
+    contractsQuery.refetch();
     editModal.close();
   }, []);
 
   const onClaimFormClose = useCallback(async () => {
-    await contractsQuery.refetch();
+    contractsQuery.refetch();
     claimModal.close();
   }, []);
 
   const onArchiveFormClose = useCallback(async () => {
-    await contractsQuery.refetch();
+    contractsQuery.refetch();
     archiveModal.close();
   }, []);
 
