@@ -31,17 +31,12 @@ export const ModalCard = styled("div")`
   border-radius: 20px;
   display: flex;
   flex-direction: column;
-  margin: auto;
-  margin-top: 3rem;
-  margin-bottom: 3rem;
+  margin: 3rem auto;
   max-width: 600px;
-  max-height: calc(100vh - 6rem);
-  overflow-y: auto;
-  padding: 4rem;
-  padding-top: 2rem;
+  padding: 2rem 4rem 4rem;
 
   @media (max-width: 600px) {
-    padding: 2rem;
+    padding: 1rem 2rem 2rem;
     padding-top: 1rem;
     margin-top: 1rem;
     p {
