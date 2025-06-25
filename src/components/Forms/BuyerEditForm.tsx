@@ -9,7 +9,7 @@ import { decompressPublicKey } from "../../gateway/utils";
 import { useValidators } from "../../hooks/data/useValidators";
 import { implementationAbi } from "contracts-js/dist/abi/abi";
 import { getPoolInfo, setPoolInfo, storeLastPurchaseDestination } from "../../gateway/localStorage";
-import { predefinedPools } from "./BuyerForms/predefinedPools";
+import { getPredefinedPoolByIndex, predefinedPools } from "./BuyerForms/predefinedPools";
 import { useQueryClient } from "@tanstack/react-query";
 import { CONTRACTS_QK, waitForBlockNumber } from "../../hooks/data/useContracts";
 import type { GetResponse } from "../../gateway/interfaces";
@@ -19,6 +19,7 @@ import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { memo } from "react";
 import { useEditContractDestination } from "../../hooks/data/useEditContractDestination";
+import { publicKeyToAddress } from "viem/accounts";
 
 interface EditFormProps {
   contractId: string;
@@ -76,16 +77,34 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
           return await form.trigger();
         }}
         reviewForm={(props) => {
-          const { validatorAddress, poolAddress, username, lightningAddress } = form.getValues();
+          const {
+            validatorAddress,
+            poolAddress,
+            username,
+            lightningAddress,
+            customValidatorHost,
+            customValidatorPublicKey,
+            predefinedPoolIndex,
+          } = form.getValues();
+          const isLightning = getPredefinedPoolByIndex(predefinedPoolIndex)?.isLightning;
+          const isCustomValidator = validatorAddress === "custom";
           return (
             <GenericConfirmContent
               data={{
-                "Validator Address": truncateAddress(validatorAddress),
+                ...(isCustomValidator
+                  ? {
+                      "Custom Validator Host": customValidatorHost,
+                      "Custom Validator Public Key": truncateAddress(customValidatorPublicKey),
+                    }
+                  : {
+                      "Validator Address": truncateAddress(validatorAddress),
+                    }),
                 "Pool Address": poolAddress,
-                ...(username && { Username: username }),
-                ...(lightningAddress && {
-                  "Lightning Address": lightningAddress,
-                }),
+                ...(isLightning
+                  ? {
+                      "Lightning Address": lightningAddress,
+                    }
+                  : { Username: username }),
               }}
             />
           );
@@ -121,14 +140,30 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
                 username: data.username,
               });
 
-              const validatorPublicKey = decompressPublicKey(validator.pubKeyYparity, validator.pubKeyX);
+              let validatorPublicKey: `0x${string}`;
+              let validatorAddr: `0x${string}`;
+              let validatorHost: string;
+
+              console.log("validator address", data);
+              if (data.validatorAddress === "custom") {
+                validatorPublicKey = data.customValidatorPublicKey as `0x${string}`;
+                validatorAddr = publicKeyToAddress(validatorPublicKey);
+                validatorHost = data.customValidatorHost;
+              } else {
+                const validator = validators?.find((v) => v.addr === data.validatorAddress)!;
+                validatorPublicKey = decompressPublicKey(validator.pubKeyYparity, validator.pubKeyX);
+                validatorAddr = publicKeyToAddress(validatorPublicKey);
+                validatorHost = validator.host;
+              }
 
               const encrDestURL = await encryptMessage(validatorPublicKey.slice(2), buyerDest);
 
               const validatorURL = formatStratumUrl({
-                host: validator.host,
+                host: validatorHost,
                 username: data.username,
               });
+
+              console.log("validatorURL", validatorURL);
 
               const sellerPublicKey = await pc!.readContract({
                 address: contractId as `0x${string}`,

@@ -86,8 +86,17 @@ export const BuyForm: FC<BuyFormProps> = memo(
           return await form.trigger();
         }}
         reviewForm={(props) => {
-          const { validatorAddress, poolAddress, username, lightningAddress, predefinedPoolIndex } = form.getValues();
+          const {
+            validatorAddress,
+            poolAddress,
+            username,
+            lightningAddress,
+            predefinedPoolIndex,
+            customValidatorHost,
+            customValidatorPublicKey,
+          } = form.getValues();
           const isLightning = getPredefinedPoolByIndex(predefinedPoolIndex)?.isLightning;
+          const isCustomValidator = validatorAddress === "custom";
           return (
             <GenericConfirmContent
               data={{
@@ -96,7 +105,14 @@ export const BuyForm: FC<BuyFormProps> = memo(
                 "Price / Fee": `${formatPaymentPrice(contract.data!.price).full} / ${
                   formatFeePrice(contract.data!.fee).full
                 }`,
-                "Validator Address": truncateAddress(validatorAddress),
+                ...(isCustomValidator
+                  ? {
+                      "Custom Validator Host": customValidatorHost,
+                      "Custom Validator Public Key": truncateAddress(customValidatorPublicKey),
+                    }
+                  : {
+                      "Validator Address": truncateAddress(validatorAddress),
+                    }),
                 "Pool Address": poolAddress,
                 ...(isLightning
                   ? {
