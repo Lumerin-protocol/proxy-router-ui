@@ -12,6 +12,7 @@ import { type FC, memo, useCallback, useRef } from "react";
 import { truncateAddress } from "../../utils/formatters";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
 import { useCreateNewRentalContract } from "../../hooks/data/useCreateNewRentalContract";
+import { useContractDurationInterval } from "../../hooks/data/useContractDurationInterval";
 
 export interface InputValuesCreateForm {
   walletAddress: string;
@@ -29,6 +30,9 @@ export const CreateContract: FC<CreateFormProps> = memo(({ closeForm }) => {
   const qc = useQueryClient();
   const { getPublicKeyAsync } = useGetPublicKey();
 
+  const durationIntervalQuery = useContractDurationInterval();
+  const durationInterval = durationIntervalQuery.data || [0, 0];
+
   // Input validation setup
   const form = useForm<InputValuesCreateForm>({
     mode: "onBlur",
@@ -44,8 +48,13 @@ export const CreateContract: FC<CreateFormProps> = memo(({ closeForm }) => {
   const { createNewRentalContractAsync } = useCreateNewRentalContract();
 
   const inputForm = useCallback(() => {
-    return <CreateEditContractForm form={form} />;
-  }, [form]);
+    return (
+      <CreateEditContractForm
+        form={form}
+        durationIntervalHours={[Math.ceil(durationInterval[0] / 3600), Math.floor(durationInterval[1] / 3600)]}
+      />
+    );
+  }, [form, durationInterval[0], durationInterval[1]]);
 
   return (
     <TransactionForm

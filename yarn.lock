@@ -3343,9 +3343,9 @@ content-disposition@0.5.2:
   resolved "https://registry.yarnpkg.com/content-disposition/-/content-disposition-0.5.2.tgz#0cf68bb9ddf5f2be7961c3a85178cb85dba78cb4"
   integrity sha512-kRGRZw3bLlFISDBgwTSA1TMBFN6J6GWDeubmDE3AF+3+yXL8hTWv8r5rkLbqYXY4RjPk/EzHnClI3zQf1cFmHA==
 
-"contracts-js@github:Lumerin-protocol/contracts-js#v2.0.6":
-  version "2.0.6"
-  resolved "https://codeload.github.com/Lumerin-protocol/contracts-js/tar.gz/7f8e8f28fb2fcc3394bcf04c09d14c174269ef1c"
+"contracts-js@github:Lumerin-protocol/contracts-js#v2.0.7":
+  version "2.0.7"
+  resolved "https://codeload.github.com/Lumerin-protocol/contracts-js/tar.gz/e19cd0301992bf1717ccb2315e02ade3b1337079"
   dependencies:
     ethereum-abi-types-generator "^1.3.4"
 

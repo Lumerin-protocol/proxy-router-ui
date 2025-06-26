@@ -1,5 +1,4 @@
 import { useForm } from "react-hook-form";
-import { useAccount, usePublicClient } from "wagmi";
 import type { HashRentalContract } from "../../types/types";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { CreateEditContractForm } from "./Shared/CreateEditContractForm";
@@ -12,6 +11,7 @@ import { truncateAddress } from "../../utils/formatters";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { memo } from "react";
 import { useEditContractTerms } from "../../hooks/data/useEditContractTerms";
+import { useContractDurationInterval } from "../../hooks/data/useContractDurationInterval";
 
 export interface EditFormProps {
   contract: HashRentalContract;
@@ -21,8 +21,12 @@ export interface EditFormProps {
 export const EditForm: React.FC<EditFormProps> = memo(
   ({ contract, closeForm }) => {
     const qc = useQueryClient();
-    const publicClient = usePublicClient();
     const { editContractTermsAsync } = useEditContractTerms();
+
+    const durationIntervalQuery = useContractDurationInterval();
+    const durationIntervalHours = durationIntervalQuery.isSuccess
+      ? ([Math.ceil(durationIntervalQuery.data[0] / 3600), Math.floor(durationIntervalQuery.data[1] / 3600)] as const)
+      : ([0, 0] as const);
 
     // Input validation setup
     const form = useForm<InputValuesCreateForm>({
@@ -40,11 +44,11 @@ export const EditForm: React.FC<EditFormProps> = memo(
         onClose={closeForm}
         title="Edit Hashrate contract"
         description="Edit the terms of your Hashrate contract"
-        inputForm={(props) => <CreateEditContractForm form={form} />}
+        inputForm={() => <CreateEditContractForm form={form} durationIntervalHours={durationIntervalHours} />}
         validateInput={async () => {
           return await form.trigger();
         }}
-        reviewForm={(props) => (
+        reviewForm={() => (
           <GenericConfirmContent
             data={{
               "Wallet Address": truncateAddress(form.getValues().walletAddress),
@@ -54,7 +58,7 @@ export const EditForm: React.FC<EditFormProps> = memo(
             }}
           />
         )}
-        resultForm={(props) => <GenericCompletedContent title="Your hashrate contract terms have been updated" />}
+        resultForm={() => <GenericCompletedContent title="Your hashrate contract terms have been updated" />}
         transactionSteps={[
           {
             label: "Edit Hashrate Contract",
