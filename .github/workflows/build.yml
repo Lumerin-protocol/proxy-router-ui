@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main
+      - stg
       - dev
       - cicd/*
 
@@ -101,7 +102,7 @@ jobs:
     name: Deploy Marketplace to GitLab
     if: |
       (
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'))
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/stg'))
       )
     needs:
       - Generate-Tag
@@ -129,6 +130,8 @@ jobs:
             GITLABBRANCH="dev"
           elif [ "${{ github.ref_name }}" == "dev" ]; then
             GITLABBRANCH="dev"
+          elif [ "${{ github.ref_name }}" == "stg" ]; then
+            GITLABBRANCH="stg"
           elif [ "${{ github.ref_name }}" == "main" ]; then
             GITLABBRANCH="main"
           else
