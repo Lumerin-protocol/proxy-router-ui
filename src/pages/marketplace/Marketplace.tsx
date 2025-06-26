@@ -213,7 +213,7 @@ const StatsChart: FC<{ successCount: number; failCount: number }> = (props) => {
             color: "rgb(80, 158, 186)",
           },
           { label: "Fail", value: Number(stats.failCount), color: "rgb(42, 42, 42)" },
-          { label: "Total", value: total === 0 ? 1 : total, color: "rgb(42, 42, 42)" },
+          { label: "Total", value: total === 0 ? 1 : 0, color: "rgb(42, 42, 42)" },
         ]}
         lineWidth={30}
         rounded={false}
