@@ -7,10 +7,11 @@ import { memo, type FC } from "react";
 
 interface Props {
   form: UseFormReturn<InputValuesCreateForm>;
+  durationIntervalHours: readonly [number, number];
 }
 
 export const CreateEditContractForm: FC<Props> = memo(
-  ({ form }) => {
+  ({ form, durationIntervalHours }) => {
     const walletAddressController = useController({
       name: "walletAddress",
       control: form.control,
@@ -24,7 +25,14 @@ export const CreateEditContractForm: FC<Props> = memo(
       control: form.control,
       rules: {
         required: "Contract Duration is required",
-        min: { value: 24, message: "Contract Duration must be at least 24 hours" },
+        min: {
+          value: durationIntervalHours[0],
+          message: `Contract Duration must be at least ${durationIntervalHours[0]} hours`,
+        },
+        max: {
+          value: durationIntervalHours[1],
+          message: `Contract Duration must be at most ${durationIntervalHours[1]} hours`,
+        },
       },
     });
 
