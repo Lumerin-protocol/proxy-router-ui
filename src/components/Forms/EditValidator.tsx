@@ -118,9 +118,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = memo((props) => {
           }}
         />
       )}
-      resultForm={(props) => (
-        <GenericCompletedContent title="Your validator record has been updated" />
-      )}
+      resultForm={(props) => <GenericCompletedContent title="Your validator record has been updated" />}
       transactionSteps={[
         {
           label: "Sign the message so we can retrieve your Public Key",

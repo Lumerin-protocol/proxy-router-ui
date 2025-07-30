@@ -13,11 +13,7 @@ import { TransactionForm } from "./Shared/MultistepForm";
 import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import type { TransactionReceipt } from "viem/_types/types/transaction";
 import type { GetResponse } from "../../gateway/interfaces";
-import {
-  getLastPurchaseDestination,
-  setPoolInfo,
-  storeLastPurchaseDestination,
-} from "../../gateway/localStorage";
+import { getLastPurchaseDestination, setPoolInfo, storeLastPurchaseDestination } from "../../gateway/localStorage";
 import { useQueryClient } from "@tanstack/react-query";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
@@ -28,11 +24,7 @@ import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { implementationAbi } from "contracts-js/dist/abi/abi";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { formatDuration } from "../../lib/duration";
-import {
-  getPredefinedPoolByAddress,
-  getPredefinedPoolByIndex,
-  predefinedPools,
-} from "./BuyerForms/predefinedPools";
+import { getPredefinedPoolByAddress, getPredefinedPoolByIndex, predefinedPools } from "./BuyerForms/predefinedPools";
 
 interface BuyFormProps {
   contractId: string;
@@ -50,11 +42,9 @@ export const BuyForm: FC<BuyFormProps> = memo(
 
     const { data: validators } = useValidators({ offset: 0, limit: 100 });
     const contract = useContractV2({ address: contractId as `0x${string}` });
-
     const slippagePercent = process.env.REACT_APP_PAYMENT_SLIPPAGE_PERCENT;
-    const priceWSlippage =
-      (BigInt(contract.data!.price) * BigInt(100 + slippagePercent)) / BigInt(100);
-    const feeWSlippage = (BigInt(contract.data!.fee) * BigInt(100 + slippagePercent)) / BigInt(100);
+    const priceWSlippage = adjustForSlippage(contract.data?.price, slippagePercent);
+    const feeWSlippage = adjustForSlippage(contract.data?.fee, slippagePercent);
 
     const lastPurchaseDestination = getLastPurchaseDestination();
     const lastPool = getPredefinedPoolByAddress(lastPurchaseDestination?.poolAddress);
@@ -85,7 +75,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
           key="form"
         />
       ),
-      [form.control, form.resetField, form.setValue]
+      [form.control, form.resetField, form.setValue],
     );
 
     return (
@@ -148,10 +138,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
                   You will be receiving hashpower shortly.
                   {isLightning && (
                     <a
-                      href={
-                        process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD ||
-                        "https://lightning.titan.io"
-                      }
+                      href={process.env.REACT_APP_TITAN_LIGHTNING_DASHBOARD || "https://lightning.titan.io"}
                       target="_blank"
                       rel="noreferrer"
                       style={{ cursor: "pointer" }}
@@ -214,10 +201,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
                 validatorHost = data.customValidatorHost;
               } else {
                 const validator = validators?.find((v) => v.addr === data.validatorAddress)!;
-                validatorPublicKey = decompressPublicKey(
-                  validator.pubKeyYparity,
-                  validator.pubKeyX
-                );
+                validatorPublicKey = decompressPublicKey(validator.pubKeyYparity, validator.pubKeyX);
                 validatorAddr = publicKeyToAddress(validatorPublicKey);
                 validatorHost = validator.host;
               }
@@ -251,9 +235,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
               await waitForBlockNumber(receipt.blockNumber, qc);
               const startTime = qc
                 .getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK])
-                ?.data.find((c) =>
-                  isAddressEqual(c.id as `0x${string}`, contractId as `0x${string}`)
-                )?.timestamp;
+                ?.data.find((c) => isAddressEqual(c.id as `0x${string}`, contractId as `0x${string}`))?.timestamp;
 
               if (!startTime) {
                 throw new Error("Start time not found");
@@ -279,5 +261,13 @@ export const BuyForm: FC<BuyFormProps> = memo(
   },
   (prevProps, nextProps) => {
     return prevProps.contractId === nextProps.contractId;
-  }
+  },
 );
+
+function adjustForSlippage(amountInput: bigint | string | undefined, slippagePercent: number) {
+  if (!amountInput) {
+    return 0n;
+  }
+  const amount = BigInt(amountInput);
+  return (amount * BigInt(100 + slippagePercent)) / BigInt(100);
+}

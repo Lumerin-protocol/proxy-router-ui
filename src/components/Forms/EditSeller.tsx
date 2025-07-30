@@ -56,9 +56,7 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
                 message: "You cannot reduce your stake. Unregister if you want to exit.",
               },
               max: {
-                value: maxStakeValue
-                  ? formatFeePrice(maxStakeValue).value
-                  : Number.POSITIVE_INFINITY,
+                value: maxStakeValue ? formatFeePrice(maxStakeValue).value : Number.POSITIVE_INFINITY,
                 message: `Not enough balance. The maximum stake you can have is ${
                   formatFeePrice(maxStakeValue!).valueRounded
                 } ${sellerStakeToken.symbol}`,
@@ -96,9 +94,7 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
             }}
           />
         )}
-        resultForm={(props) => (
-          <GenericCompletedContent title="Your seller record has been updated" />
-        )}
+        resultForm={(props) => <GenericCompletedContent title="Your seller record has been updated" />}
         transactionSteps={[
           {
             label: "Approve the stake",
@@ -141,5 +137,5 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
   },
   (prevProps, nextProps) => {
     return prevProps.sellerStake === nextProps.sellerStake;
-  }
+  },
 );

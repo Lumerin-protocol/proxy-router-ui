@@ -61,9 +61,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = memo(({ onClose }) 
     },
   });
 
-  const minStake = minSellerStakeQuery.isSuccess
-    ? formatFeePrice(minSellerStakeQuery.data)
-    : undefined;
+  const minStake = minSellerStakeQuery.isSuccess ? formatFeePrice(minSellerStakeQuery.data) : undefined;
   const balanceValue = balance?.data ? formatFeePrice(balance.data) : undefined;
 
   const inputForm = () => {
@@ -78,9 +76,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = memo(({ onClose }) 
         },
         max: {
           value: balanceValue?.value || Number.POSITIVE_INFINITY,
-          message: `Not enough balance. You have ${balanceValue?.value || 0} ${
-            sellerStakeToken.symbol
-          }`,
+          message: `Not enough balance. You have ${balanceValue?.value || 0} ${sellerStakeToken.symbol}`,
         },
       },
     });
