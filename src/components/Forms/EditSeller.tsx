@@ -9,9 +9,9 @@ import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import { formatFeePrice, sellerStakeToken } from "../../lib/units";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
-import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
 import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
+import { useApproveStaking } from "../../hooks/data/useApproveStaking";
 
 export interface EditSellerInput {
   stake: string;
@@ -27,7 +27,7 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
     const { address: userAccount } = useAccount();
     const pc = usePublicClient();
     const wc = useWalletClient();
-    const fee = useApproveFee();
+    const fee = useApproveStaking();
     const balance = useFeeTokenBalance(userAccount!);
 
     // Input validation setup
@@ -56,7 +56,9 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
                 message: "You cannot reduce your stake. Unregister if you want to exit.",
               },
               max: {
-                value: maxStakeValue ? formatFeePrice(maxStakeValue).value : Number.POSITIVE_INFINITY,
+                value: maxStakeValue
+                  ? formatFeePrice(maxStakeValue).value
+                  : Number.POSITIVE_INFINITY,
                 message: `Not enough balance. The maximum stake you can have is ${
                   formatFeePrice(maxStakeValue!).valueRounded
                 } ${sellerStakeToken.symbol}`,
@@ -94,7 +96,9 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
             }}
           />
         )}
-        resultForm={(props) => <GenericCompletedContent title="Your seller record has been updated" />}
+        resultForm={(props) => (
+          <GenericCompletedContent title="Your seller record has been updated" />
+        )}
         transactionSteps={[
           {
             label: "Approve the stake",
@@ -137,5 +141,5 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
   },
   (prevProps, nextProps) => {
     return prevProps.sellerStake === nextProps.sellerStake;
-  },
+  }
 );
