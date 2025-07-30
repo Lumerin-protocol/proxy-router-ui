@@ -17,6 +17,7 @@ import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
 import { useOnMountUnsafe } from "../../hooks/useOnMountUnsafe";
 import { memo, useCallback, useMemo } from "react";
 import { Input } from "@mui/material";
+import { useApproveStaking } from "../../hooks/data/useApproveStaking";
 
 export interface RegisterSellerInput {
   stake: string;
@@ -30,7 +31,7 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = memo(({ onClose }) 
   const publicClient = usePublicClient();
   const wc = useWalletClient();
   const { address } = useAccount();
-  const fee = useApproveFee();
+  const fee = useApproveStaking();
 
   const minSellerStakeQuery = useReadContract({
     address: process.env.REACT_APP_CLONE_FACTORY,
@@ -60,7 +61,9 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = memo(({ onClose }) 
     },
   });
 
-  const minStake = minSellerStakeQuery.isSuccess ? formatFeePrice(minSellerStakeQuery.data) : undefined;
+  const minStake = minSellerStakeQuery.isSuccess
+    ? formatFeePrice(minSellerStakeQuery.data)
+    : undefined;
   const balanceValue = balance?.data ? formatFeePrice(balance.data) : undefined;
 
   const inputForm = () => {
@@ -75,7 +78,9 @@ export const RegisterSellerForm: React.FC<CreateFormProps> = memo(({ onClose }) 
         },
         max: {
           value: balanceValue?.value || Number.POSITIVE_INFINITY,
-          message: `Not enough balance. You have ${balanceValue?.value || 0} ${sellerStakeToken.symbol}`,
+          message: `Not enough balance. You have ${balanceValue?.value || 0} ${
+            sellerStakeToken.symbol
+          }`,
         },
       },
     });

@@ -13,6 +13,7 @@ export const EnvSchema = Type.Object({
   REACT_APP_GITBOOK_URL: Type.String({ format: "uri" }),
   REACT_APP_INDEXER_URL: Type.String({ format: "uri" }),
   REACT_APP_MULTICALL_ADDRESS: Type.Optional(TypeEthAddress()),
+  REACT_APP_PAYMENT_SLIPPAGE_PERCENT: Type.Integer({ minimum: 0, maximum: 100, default: 1 }),
   REACT_APP_READ_ONLY_ETH_NODE_URL: Type.String({ format: "uri" }),
   REACT_APP_TITAN_LIGHTNING_POOL: Type.String({ default: "pplp.titan.io:4141" }),
   REACT_APP_URL: Type.String({ format: "uri" }),
