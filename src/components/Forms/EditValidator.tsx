@@ -12,7 +12,7 @@ import { compressPublicKey } from "../../lib/pubkey";
 import { isValidHost } from "../../utils/validators";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
-import { useApproveFee } from "../../hooks/data/useApproveFee";
+import { useApproveStaking } from "../../hooks/data/useApproveStaking";
 
 export interface EditValidatorInput {
   stake: string;
@@ -31,7 +31,7 @@ export const EditValidatorForm: FC<EditValidatorFormProps> = memo((props) => {
   const pc = usePublicClient();
   const wc = useWalletClient();
   const { getPublicKeyAsync } = useGetPublicKey();
-  const fee = useApproveFee();
+  const fee = useApproveStaking();
 
   // Input validation setup
   const form = useForm<EditValidatorInput>({

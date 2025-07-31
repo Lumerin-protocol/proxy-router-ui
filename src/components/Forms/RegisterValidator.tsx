@@ -13,7 +13,7 @@ import { compressPublicKey } from "../../lib/pubkey";
 import { isValidHost } from "../../utils/validators";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { useGetPublicKey } from "../../hooks/data/usePublicKey";
-import { useApproveFee } from "../../hooks/data/useApproveFee";
+import { useApproveStaking } from "../../hooks/data/useApproveStaking";
 
 export interface RegisterValidatorInput {
   stake: string;
@@ -30,7 +30,7 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = memo(({ onClose 
   const publicClient = usePublicClient();
   const minStakeRef = useRef<bigint>(0n);
   const { getPublicKeyAsync } = useGetPublicKey();
-  const fee = useApproveFee();
+  const fee = useApproveStaking();
 
   // Input validation setup
   const form = useForm<RegisterValidatorInput>({

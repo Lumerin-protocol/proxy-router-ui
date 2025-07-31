@@ -9,9 +9,9 @@ import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import { formatFeePrice, sellerStakeToken } from "../../lib/units";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
-import { useApproveFee } from "../../hooks/data/useApproveFee";
 import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
 import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
+import { useApproveStaking } from "../../hooks/data/useApproveStaking";
 
 export interface EditSellerInput {
   stake: string;
@@ -27,7 +27,7 @@ export const EditSellerForm: FC<EditSellerFormProps> = memo(
     const { address: userAccount } = useAccount();
     const pc = usePublicClient();
     const wc = useWalletClient();
-    const fee = useApproveFee();
+    const fee = useApproveStaking();
     const balance = useFeeTokenBalance(userAccount!);
 
     // Input validation setup

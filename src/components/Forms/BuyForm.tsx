@@ -42,6 +42,9 @@ export const BuyForm: FC<BuyFormProps> = memo(
 
     const { data: validators } = useValidators({ offset: 0, limit: 100 });
     const contract = useContractV2({ address: contractId as `0x${string}` });
+    const slippagePercent = process.env.REACT_APP_PAYMENT_SLIPPAGE_PERCENT;
+    const priceWSlippage = adjustForSlippage(contract.data?.price, slippagePercent);
+    const feeWSlippage = adjustForSlippage(contract.data?.fee, slippagePercent);
 
     const lastPurchaseDestination = getLastPurchaseDestination();
     const lastPool = getPredefinedPoolByAddress(lastPurchaseDestination?.poolAddress);
@@ -104,7 +107,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
                 Duration: formatDuration(BigInt(contract.data!.length)),
                 "Price / Fee": `${formatPaymentPrice(contract.data!.price).full} / ${
                   formatFeePrice(contract.data!.fee).full
-                }`,
+                } ± ${slippagePercent}% slippage`,
                 ...(isCustomValidator
                   ? {
                       "Custom Validator Host": customValidatorHost,
@@ -156,7 +159,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
               try {
                 const receipt = await payment.approveAsync({
                   spender: process.env.REACT_APP_CLONE_FACTORY,
-                  amount: BigInt(contract.data!.price),
+                  amount: priceWSlippage,
                 });
                 return receipt ? { txhash: receipt, isSkipped: false } : { isSkipped: true };
               } catch (error) {
@@ -170,7 +173,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
             action: async () => {
               const receipt = await fee.approveAsync({
                 spender: process.env.REACT_APP_CLONE_FACTORY,
-                amount: BigInt(contract.data!.fee),
+                amount: feeWSlippage,
               });
               return receipt ? { txhash: receipt, isSkipped: false } : { isSkipped: true };
             },
@@ -260,3 +263,11 @@ export const BuyForm: FC<BuyFormProps> = memo(
     return prevProps.contractId === nextProps.contractId;
   },
 );
+
+function adjustForSlippage(amountInput: bigint | string | undefined, slippagePercent: number) {
+  if (!amountInput) {
+    return 0n;
+  }
+  const amount = BigInt(amountInput);
+  return (amount * BigInt(100 + slippagePercent)) / BigInt(100);
+}
