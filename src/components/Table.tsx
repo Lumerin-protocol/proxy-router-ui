@@ -10,6 +10,10 @@ interface TableProps<T> {
   pagination?: boolean;
 }
 
+type ColumnMeta = {
+  hideTitleMobile?: boolean;
+};
+
 export const Table = <T,>({ tableInstance: table, pagination }: TableProps<T>): ReactNode => {
   const { getFlatHeaders, getRowModel } = table;
 
@@ -28,8 +32,8 @@ export const Table = <T,>({ tableInstance: table, pagination }: TableProps<T>): 
           <Tr key={row.id}>
             {row.getVisibleCells().map((cell) => (
               <Td key={cell.id}>
-                {!cell.column.columnDef.meta?.hideTitleMobile && (
-                  <ColumnTitleMobile>{cell.column.columnDef.header}</ColumnTitleMobile>
+                {(cell.column.columnDef.meta as ColumnMeta)?.hideTitleMobile && (
+                  <ColumnTitleMobile>{cell.column.columnDef.header as ReactNode}</ColumnTitleMobile>
                 )}
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </Td>

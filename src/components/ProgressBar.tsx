@@ -10,7 +10,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ width }) => {
         <div
           style={{ width: `${width}%` }}
           className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-lumerin-green"
-        ></div>
+        />
       </div>
     </div>
   );

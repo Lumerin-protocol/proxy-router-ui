@@ -1,4 +1,5 @@
-import { formatUnits, parseUnits } from "viem";
+import { parseUnits } from "viem";
+import { formatUnits } from "./formatUnits";
 
 type Unit = {
   decimals: number;
@@ -65,25 +66,19 @@ export const parseValidatorStake = (stakeUnits: string): bigint => {
 };
 
 export const formatValue = (units: string | bigint, token: Unit) => {
-  const value = _formatValue(units, token.decimals);
-  const valueRounded = limitSignificantDecimals(value, 3);
+  const { full, unrounded } = formatUnits(BigInt(units), token.decimals, {
+    maxChars: 5,
+  });
   return {
-    value,
-    valueRounded,
+    value: unrounded,
+    valueRounded: full,
     symbol: token.symbol,
     name: token.name,
-    full: `${valueRounded} ${token.symbol}`,
+    full: `${full} ${token.symbol}`,
   };
 };
 
-const _formatValue = (units: string | bigint, decimals: number) => {
-  if (units === undefined || units === null) {
-    return "…";
-  }
-  return formatUnits(BigInt(units), decimals);
-};
-
-function limitSignificantDecimals(value: string, significantDecimals: number) {
+export function limitSignificantDecimals(value: string, significantDecimals: number) {
   const [integer, decimal = ""] = value.split(".");
   if (decimal.length < significantDecimals) {
     return value;
@@ -98,8 +93,7 @@ function limitSignificantDecimals(value: string, significantDecimals: number) {
   return out;
 }
 
-// duplicates the effort of functions above
-// TODO: refactor
+// used to format float values with a currency symbol
 export const formatCurrency: (param: {
   value: number;
   currency: string | undefined;
