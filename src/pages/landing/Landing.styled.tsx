@@ -1,5 +1,6 @@
 import styled from "@mui/material/styles/styled";
 import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled";
+//@ts-ignore
 import BackgroundDots from "../../images/landing-bg-dots.png?quality=40&alphaQuality=40&w=1000";
 import Grid from "../../images/landing-grid.png";
 

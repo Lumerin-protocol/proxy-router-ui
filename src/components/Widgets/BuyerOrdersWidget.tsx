@@ -1,16 +1,10 @@
-import EastIcon from "@mui/icons-material/East";
-import { useNavigate } from "react-router";
 import { useAccount } from "wagmi";
 import { ContractState, type HashRentalContract, PathName } from "../../types/types";
 import { GenericNumberStatsWidget } from "./GenericNumberStatsWidget";
 import { formatHashrateTHPS, formatValue } from "../../lib/units";
-import { formatUnits, isAddressEqual } from "viem";
-import { css } from "@mui/material/styles";
+import { isAddressEqual } from "viem";
 
-export const BuyerOrdersWidget = (props: {
-  contracts: HashRentalContract[];
-  isLoading: boolean;
-}) => {
+export const BuyerOrdersWidget = (props: { contracts: HashRentalContract[]; isLoading: boolean }) => {
   const { address: userAccount } = useAccount();
 
   let runningContracts = 0;

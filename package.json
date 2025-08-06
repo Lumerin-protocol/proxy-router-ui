@@ -54,7 +54,7 @@
     "wagmi": "^2.15.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "2.0.6",
     "@emotion/babel-plugin": "^11.13.5",
     "@sinclair/typebox": "^0.34.33",
     "@tailwindcss/forms": "^0.5.10",
@@ -79,10 +79,19 @@
     "vite": "^6.3.5",
     "vite-imagetools": "^7.1.0",
     "vite-plugin-mkcert": "^1.17.8",
-    "vite-plugin-svgr": "^4.3.0"
+    "vite-plugin-svgr": "^4.3.0",
+    "vitest": "^3.2.4"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
