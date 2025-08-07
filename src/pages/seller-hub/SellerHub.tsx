@@ -1,3 +1,5 @@
+// biome-ignore-all lint/correctness/useExhaustiveDependencies: <explanation>
+
 import AddIcon from "@mui/icons-material/Add";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { type FC, type HTMLProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -102,7 +104,6 @@ export const SellerHub: FC = () => {
 
   const ch = createColumnHelper<HashRentalContract>();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const columns = useMemo(() => {
     return [
       ch.display({
@@ -134,18 +135,19 @@ export const SellerHub: FC = () => {
         sortingFn: "alphanumeric",
         cell: (r) => <TableIcon icon={null} text={r.getValue()} hasLink justify="center" />,
       }),
-      ch.accessor((r) => StatusAccessor(r, Number(blockTime30s)), {
-        id: "status",
-        header: "Status",
-        sortingFn: "alphanumeric",
-        filterFn: "inNumberRange",
-        cell: (r) => <ProgressCell contract={r.row.original} />,
-      }),
+
       ch.accessor("speed", {
         id: "speed",
         header: "Speed",
         sortingFn: "alphanumeric",
         cell: (r) => `${formatHashrateTHPS(r.getValue()).full}`,
+      }),
+      ch.accessor("length", {
+        header: "Duration",
+        sortingFn: "alphanumeric",
+        cell: (r) => {
+          return formatDuration(BigInt(r.getValue()));
+        },
       }),
       ch.accessor("price", {
         id: "price",
@@ -158,17 +160,17 @@ export const SellerHub: FC = () => {
           </div>
         ),
       }),
-      ch.accessor("length", {
-        header: "Duration",
-        sortingFn: "alphanumeric",
-        cell: (r) => {
-          return formatDuration(BigInt(r.getValue()));
-        },
-      }),
       ch.accessor("profitTargetPercent", {
         header: "Profit",
         sortingFn: "alphanumeric",
         cell: (r) => `${r.getValue()}%`,
+      }),
+      ch.accessor((r) => StatusAccessor(r, Number(blockTime30s)), {
+        id: "status",
+        header: "Status",
+        sortingFn: "basic",
+        filterFn: "inNumberRange",
+        cell: (r) => <ProgressCell contract={r.row.original} />,
       }),
       ch.accessor(
         (r) => {
@@ -186,6 +188,12 @@ export const SellerHub: FC = () => {
 
           const toBePaidTillTheEnd = (1 - progress) * Number(r.price);
           const unpaidBalance = Number(r.balance) - toBePaidTillTheEnd;
+
+          // unpaid balance could be negative if contract balance is out of date
+          // displaying 0 before it will eventually update
+          if (unpaidBalance <= 0) {
+            return 0n;
+          }
 
           return BigInt(Math.floor(unpaidBalance));
         },
@@ -383,11 +391,7 @@ export const SellerHub: FC = () => {
   );
 };
 
-const ArchiveUnarchiveButton = (props: {
-  onArchive: () => void;
-  onUnarchive: () => void;
-  isArchived: boolean;
-}) =>
+const ArchiveUnarchiveButton = (props: { onArchive: () => void; onUnarchive: () => void; isArchived: boolean }) =>
   props.isArchived ? <UnarchiveButton onClick={props.onUnarchive} /> : <ArchiveButton onClick={props.onArchive} />;
 
 const getColumnFilters = (quickFilter: QuickFilter) => {

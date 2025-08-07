@@ -25,7 +25,6 @@ export const useAppkit = (config?: WalletModalConfig) => {
     (connectorId: string) => {
       const selectedConnector = connectors.find((c) => c.id === connectorId);
       if (selectedConnector) {
-        console.log("selectedConnector", selectedConnector);
         wagmiConnect({ connector: selectedConnector });
       }
     },

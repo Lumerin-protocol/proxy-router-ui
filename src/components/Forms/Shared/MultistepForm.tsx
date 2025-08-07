@@ -153,7 +153,10 @@ export const MultipleTransactionProgress = (props: {
             </StepProgressRow>
             {tx.txhash && (
               <StepTxHash>
-                TxHash: <TxLink to={getTxUrl(tx.txhash)}>{truncateAddress(tx.txhash)}</TxLink>
+                TxHash:{" "}
+                <TxLink to={getTxUrl(tx.txhash)} target="_blank" rel="noopener noreferrer">
+                  {truncateAddress(tx.txhash)}
+                </TxLink>
               </StepTxHash>
             )}
             {tx.error && <StepError>{mapErrorToString(tx.error)}</StepError>}
@@ -278,6 +281,28 @@ const StepError = styled("div")`
   font-weight: normal;
   color: red;
   grid-column-start: 2;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-y: scroll;
+  max-height: 100px;
+  min-width: 0;
+  min-height: 0;
+
+  scrollbar-color: #888 #222;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #222;
+  }
 `;
 
 const StepProgressRow = styled("div")`

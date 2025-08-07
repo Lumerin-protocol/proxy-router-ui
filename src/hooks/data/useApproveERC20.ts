@@ -19,7 +19,7 @@ export function useApproveERC20(tokenAddress: `0x${string}`) {
       const token = getContract({
         address: tokenAddress,
         abi: erc20Abi,
-        client: pc,
+        client: wc,
       });
 
       // Check current allowance
@@ -36,7 +36,7 @@ export function useApproveERC20(tokenAddress: `0x${string}`) {
 
       return writeContractAsync(req.request);
     },
-    [writeContractAsync, pc, wc],
+    [writeContractAsync, pc, wc, tokenAddress],
   );
 
   return {

@@ -1,8 +1,6 @@
-import { type FC, memo, useRef } from "react";
+import { type FC, memo } from "react";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import Tooltip from "@mui/material/Tooltip";
-import styled from "@mui/material/styles/styled";
 import {
   type Control,
   useController,
@@ -15,9 +13,9 @@ import { useValidators } from "../../../hooks/data/useValidators";
 import type { InputValuesBuyForm } from "../../../types/types";
 import { validateLightningUrl } from "../../../utils/validators";
 import { isValidLightningUsername, isValidHost, isValidUsername } from "../../../utils/validators";
-import { InputWrapper } from "./Forms.styled";
-import { DisabledButton } from "../FormButtons/Buttons.styled";
+import { ErrorWrapper, InputWrapper } from "./Forms.styled";
 import { predefinedPools } from "../BuyerForms/predefinedPools";
+import Alert from "@mui/material/Alert/Alert";
 
 const uncompressedPublicKeyRegex = /^0x04[0-9a-fA-F]{128}$/;
 
@@ -33,8 +31,6 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
       offset: 0,
       limit: 100,
     });
-
-    const hasSetValidator = useRef(false);
 
     // register fields
 
@@ -282,6 +278,15 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
             </InputWrapper>
           </>
         )}
+        {formState.errors.root && (
+          <div className="mt-2">
+            {Object.entries(formState.errors.root).map(([kind, err]) => (
+              <ErrorWrapper key={kind}>
+                <Alert severity="error">{formatErrorMessage(err)}</Alert>
+              </ErrorWrapper>
+            ))}
+          </div>
+        )}
       </>
     );
   },
@@ -295,4 +300,22 @@ function getPoolType(predefinedPoolIndex: number) {
     return "manual";
   }
   return predefinedPools[predefinedPoolIndex].isLightning ? "lightning" : "pool";
+}
+
+function formatErrorMessage(
+  err:
+    | string
+    | number
+    | Partial<{
+        type: string | number;
+        message: string;
+      }>,
+) {
+  if (typeof err === "string") {
+    return err;
+  }
+  if (typeof err === "number") {
+    return err.toString();
+  }
+  return err.message;
 }

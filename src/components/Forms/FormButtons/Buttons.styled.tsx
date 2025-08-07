@@ -27,6 +27,7 @@ export const PrimaryButton = styled(Button, {
   color: #fff;
   background-color: #4c5a5f;
   position: relative;
+  cursor: pointer;
 
   &:disabled {
     background-color: rgb(84, 90, 92);

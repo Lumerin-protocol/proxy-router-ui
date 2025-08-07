@@ -45,6 +45,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
         });
 
         const poolInfo = getPoolInfo({ contractId, startedAt: startTime });
+
         const poolIndex = predefinedPools.findIndex((p) => p.address === poolInfo?.poolAddress);
         const isLightning = poolIndex !== -1 && predefinedPools[poolIndex].isLightning;
         const validatorAddress = validators?.find((v) => v.addr === poolInfo?.validatorAddress)?.addr;
@@ -144,7 +145,6 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
               let validatorAddr: `0x${string}`;
               let validatorHost: string;
 
-              console.log("validator address", data);
               if (data.validatorAddress === "custom") {
                 validatorPublicKey = data.customValidatorPublicKey as `0x${string}`;
                 validatorAddr = publicKeyToAddress(validatorPublicKey);
@@ -162,8 +162,6 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
                 host: validatorHost,
                 username: data.username,
               });
-
-              console.log("validatorURL", validatorURL);
 
               const sellerPublicKey = await pc!.readContract({
                 address: contractId as `0x${string}`,

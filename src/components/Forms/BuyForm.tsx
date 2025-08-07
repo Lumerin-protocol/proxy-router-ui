@@ -1,9 +1,9 @@
-import { type FC, memo, useCallback } from "react";
-import { useForm } from "react-hook-form";
+import { type FC, memo, useCallback, useEffect } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { encryptMessage } from "../../utils/encrypt";
 import { formatStratumUrl } from "../../utils/formatters";
 import { truncateAddress } from "../../utils/formatters";
-import { usePublicClient } from "wagmi";
+import { useAccount, usePublicClient } from "wagmi";
 import { purchasedHashrate } from "../../analytics";
 import { decompressPublicKey } from "../../gateway/utils";
 import { CONTRACTS_QK, useContractV2, waitForBlockNumber } from "../../hooks/data/useContracts";
@@ -14,7 +14,7 @@ import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import type { TransactionReceipt } from "viem/_types/types/transaction";
 import type { GetResponse } from "../../gateway/interfaces";
 import { getLastPurchaseDestination, setPoolInfo, storeLastPurchaseDestination } from "../../gateway/localStorage";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, UseQueryResult } from "@tanstack/react-query";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { isAddressEqual, publicKeyToAddress } from "viem/utils";
@@ -25,6 +25,8 @@ import { implementationAbi } from "contracts-js/dist/abi/abi";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { formatDuration } from "../../lib/duration";
 import { getPredefinedPoolByAddress, getPredefinedPoolByIndex, predefinedPools } from "./BuyerForms/predefinedPools";
+import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
+import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
 
 interface BuyFormProps {
   contractId: string;
@@ -46,25 +48,20 @@ export const BuyForm: FC<BuyFormProps> = memo(
     const priceWSlippage = adjustForSlippage(contract.data?.price, slippagePercent);
     const feeWSlippage = adjustForSlippage(contract.data?.fee, slippagePercent);
 
-    const lastPurchaseDestination = getLastPurchaseDestination();
-    const lastPool = getPredefinedPoolByAddress(lastPurchaseDestination?.poolAddress);
-    const lastPoolIsLightning = lastPool?.data.isLightning || false;
-    const lastPoolIndex = lastPool ? lastPool.index : -1;
-
     // form setup
     const form = useForm<InputValuesBuyForm>({
       mode: "onBlur",
       reValidateMode: "onBlur",
-      defaultValues: {
-        poolAddress: lastPurchaseDestination?.poolAddress || "",
-        username: (!lastPoolIsLightning && lastPurchaseDestination?.username) || "",
-        validatorAddress: "",
-        predefinedPoolIndex: lastPoolIndex,
-        lightningAddress: lastPoolIsLightning ? lastPurchaseDestination?.username : "",
-        customValidatorHost: "",
-        customValidatorPublicKey: "",
-      },
+      defaultValues: getDefaultInputValues(),
     });
+
+    const { address } = useAccount();
+    const feeTokenBalance = useFeeTokenBalance(address);
+    const paymentTokenBalance = usePaymentTokenBalance(address);
+
+    useEffect(() => {
+      validateBalance(feeTokenBalance, paymentTokenBalance, feeWSlippage, priceWSlippage, form);
+    }, [feeTokenBalance.data, paymentTokenBalance.data, feeWSlippage, priceWSlippage, form]);
 
     const inputForm = useCallback(
       () => (
@@ -86,7 +83,11 @@ export const BuyForm: FC<BuyFormProps> = memo(
             hashpower to."
         inputForm={inputForm}
         validateInput={async () => {
-          return await form.trigger();
+          const isValid = await form.trigger();
+          if (!isValid) {
+            return false;
+          }
+          return validateBalance(feeTokenBalance, paymentTokenBalance, feeWSlippage, priceWSlippage, form);
         }}
         reviewForm={(props) => {
           const {
@@ -263,6 +264,54 @@ export const BuyForm: FC<BuyFormProps> = memo(
     return prevProps.contractId === nextProps.contractId;
   },
 );
+
+function validateBalance(
+  feeTokenBalance: UseQueryResult<bigint, Error>,
+  paymentTokenBalance: UseQueryResult<bigint, Error>,
+  feeWSlippage: bigint,
+  priceWSlippage: bigint,
+  form: UseFormReturn<InputValuesBuyForm>,
+) {
+  let isValid = true;
+  if (feeTokenBalance.isSuccess && paymentTokenBalance.isSuccess) {
+    if (feeTokenBalance.data < BigInt(feeWSlippage)) {
+      form.setError("root.feeTokenBalance", { message: "Insufficient LMR balance" });
+      isValid = false;
+    }
+    if (paymentTokenBalance.data < BigInt(priceWSlippage)) {
+      form.setError("root.paymentTokenBalance", { message: "Insufficient USDC balance" });
+      isValid = false;
+    }
+  }
+  return isValid;
+}
+
+function getDefaultInputValues(): InputValuesBuyForm {
+  const lastPurchaseDestination = getLastPurchaseDestination();
+  if (!lastPurchaseDestination) {
+    return {
+      poolAddress: "",
+      username: "",
+      validatorAddress: "",
+      predefinedPoolIndex: "" as const,
+      lightningAddress: "",
+      customValidatorHost: "",
+      customValidatorPublicKey: "",
+    };
+  }
+  const lastPool = getPredefinedPoolByAddress(lastPurchaseDestination?.poolAddress);
+  const lastPoolIsLightning = lastPool?.data.isLightning || false;
+  const lastPoolIndex = lastPool ? lastPool.index : -1;
+  return {
+    poolAddress: lastPurchaseDestination?.poolAddress || "",
+    username: (!lastPoolIsLightning && lastPurchaseDestination?.username) || "",
+    validatorAddress: "",
+    predefinedPoolIndex: lastPoolIndex,
+    lightningAddress: lastPoolIsLightning ? lastPurchaseDestination?.username : "",
+    customValidatorHost: "",
+    customValidatorPublicKey: "",
+  };
+}
 
 function adjustForSlippage(amountInput: bigint | string | undefined, slippagePercent: number) {
   if (!amountInput) {
