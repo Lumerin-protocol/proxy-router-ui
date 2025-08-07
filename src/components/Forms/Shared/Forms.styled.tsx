@@ -12,3 +12,8 @@ export const InputWrapper = styled("div")`
     width: 100%;
   }
 `;
+
+export const ErrorWrapper = styled(InputWrapper)`
+  max-width: unset;
+  margin-top: 0.5rem;
+`;

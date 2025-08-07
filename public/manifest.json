@@ -1,9 +1,9 @@
 {
-	"short_name": "Titan Proxy Router UI",
-	"name": "Titan Proxy Router UI",
-	"icons": [],
-	"start_url": ".",
-	"display": "standalone",
-	"theme_color": "#000000",
-	"background_color": "#ffffff"
+  "short_name": "Titan Proxy Router UI",
+  "name": "Titan Proxy Router UI",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
 }

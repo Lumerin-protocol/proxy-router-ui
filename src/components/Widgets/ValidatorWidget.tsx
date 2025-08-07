@@ -5,13 +5,14 @@ import { SmallWidget } from "../Cards/Cards.styled";
 import { Spinner } from "../Spinner.styled";
 import { formatFeePrice } from "../../lib/units";
 import { PrimaryButton } from "../Forms/FormButtons/Buttons.styled";
-import { useCallback, type FC } from "react";
+import { ComponentType, useCallback, type FC } from "react";
 import { ModalItem } from "../Modal";
 import { RegisterValidatorForm } from "../Forms/RegisterValidator";
 import { useModal } from "../../hooks/useModal";
 import { EditValidatorForm } from "../Forms/EditValidator";
 import { DeregisterValidator } from "../Forms/DeregisterValidator";
 import { validatorRegistryAbi } from "contracts-js/dist/abi/abi";
+import { GenericNumberStatsWidget } from "./GenericNumberStatsWidget";
 
 export const ValidatorWidget: FC = () => {
   const { address } = useAccount();
@@ -88,9 +89,9 @@ export const ValidatorWidget: FC = () => {
         )}
         {validatorQuery.isSuccess && isRegistered && (
           <ValidatorInfo>
-            <Entry>
+            <Entry $hoverText={validator?.host}>
               <Key>Host</Key>
-              <Value>{validator?.host}</Value>
+              <Value style={{ display: "inline-block" }}>{validator?.host}</Value>
             </Entry>
             <Entry>
               <Key>Stake</Key>
@@ -123,27 +124,41 @@ export const ValidatorWidget: FC = () => {
   );
 };
 
-const Entry = styled("dl")`
+const Entry = styled("dl", {
+  shouldForwardProp: (prop) => typeof prop === "string" && !prop.startsWith("$"),
+})<{ $hoverText?: string }>`
+  position: relative;
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-auto-flow: column dense;
   column-gap: 2rem;
   align-items: flex-start;
-`;
-
-const Value = styled("dd")`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  grid-row: 1;
-  font-size: 1em;
-  font-weight: 600;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  white-space: normal;
-  text-align: center;
+  ${({ $hoverText }) =>
+    $hoverText &&
+    `
+    &:after {
+      content: "${$hoverText}";
+    }
+  `}
+  &:after {
+    position: absolute;
+    bottom: calc(100% + 0.5em);
+    width: max-content;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #ccc;
+    font-size: 0.8rem;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    opacity: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  &:hover:after {
+    visibility: visible;
+    opacity: 1;
+  }
 `;
 
 const Key = styled("dt")`
@@ -156,7 +171,7 @@ const Key = styled("dt")`
 
 const ValidatorInfo = styled("div")`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 0.5rem;
   align-items: flex-start;
   justify-content: space-evenly;
@@ -177,4 +192,53 @@ const WidgetContent = styled("div")`
   @media (min-width: 1024px) {
     flex-direction: row;
   }
+`;
+
+const Tooltip = styled("div", {
+  shouldForwardProp: (prop) => typeof prop === "string" && !prop.startsWith("$"),
+})<{ $hoverText?: string }>`
+  position: relative;
+
+  ${({ $hoverText }) =>
+    $hoverText &&
+    `
+    &:hover:after {
+      content: "${$hoverText}";
+    }
+  `}
+
+  &:after {
+    position: absolute;
+    bottom: calc(100% + 0.5em);
+    width: max-content;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #ccc;
+    font-size: 0.8rem;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    opacity: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  &:hover:after {
+    visibility: visible;
+    opacity: 1;
+  }
+`;
+
+const Value = styled("dd")`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  grid-row: 1;
+  font-size: 1em;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `;

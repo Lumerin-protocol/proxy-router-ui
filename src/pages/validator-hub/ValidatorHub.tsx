@@ -1,4 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
+import CancelIcon from "@mui/icons-material/CancelOutlined";
 import { type FC, type HTMLProps, useEffect, useMemo, useRef, useState } from "react";
 import {
   useReactTable,
@@ -35,6 +36,8 @@ import { isAddressEqual } from "viem";
 import { TableToolbarButton } from "../../components/TableToolbarButton";
 import { useMediaQuery } from "@mui/material";
 import { FiltersButtonGroup, FiltersSelect } from "../../components/Filters";
+import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { ValidatorStatsWidget } from "../../components/Widgets/ValidatorStatsWidget";
 
 export const ValidatorHub: FC = () => {
   const { address: userAccount } = useAccount();
@@ -91,11 +94,12 @@ export const ValidatorHub: FC = () => {
         sortingFn: "text",
         cell: (r) => <TableIcon icon={null} text={r.cell.getValue()} hasLink justify="center" />,
       }),
-      ch.accessor("speed", {
-        header: "Speed",
+      ch.accessor("buyer", {
+        header: "Buyer",
         sortingFn: "alphanumeric",
-        cell: (r) => formatHashrateTHPS(r.cell.getValue()).full,
+        cell: (r) => truncateAddress(r.cell.getValue(), AddressLength.SHORT),
       }),
+
       ch.accessor("price", {
         id: "price",
         header: "Price / Fee",
@@ -106,11 +110,6 @@ export const ValidatorHub: FC = () => {
             <div className="text-xs text-gray-400">{formatFeePrice(r.row.original.fee).full}</div>
           </div>
         ),
-      }),
-      ch.accessor("buyer", {
-        header: "Buyer",
-        sortingFn: "alphanumeric",
-        cell: (r) => truncateAddress(r.cell.getValue(), AddressLength.SHORT),
       }),
 
       ch.accessor("purchaseTime", {
@@ -210,6 +209,7 @@ export const ValidatorHub: FC = () => {
     <>
       <WidgetsWrapper>
         <ValidatorWidget />
+        <ValidatorStatsWidget />
       </WidgetsWrapper>
       {claimModal.isOpen && (
         <ModalItem open={claimModal.isOpen} setOpen={claimModal.setOpen}>
@@ -235,7 +235,7 @@ export const ValidatorHub: FC = () => {
           {selectRowsColumnVisible && (
             <>
               <TableToolbarButton onClick={() => setSelectRowsColumnVisible(false)}>
-                <AddIcon className="add-icon" />
+                <CancelIcon className="add-icon" />
                 Cancel
               </TableToolbarButton>
               <TableToolbarButton
@@ -271,6 +271,10 @@ const getColumnFilters = (quickFilter: QuickFilter) => {
       return [{ id: "status", value: [0, 0.99] }];
     case "unclaimed":
       return [{ id: "balance", value: [0, Number.POSITIVE_INFINITY] }];
+    case "success":
+      return [{ id: "status", value: [1, Number.POSITIVE_INFINITY] }];
+    case "closed":
+      return [{ id: "status", value: [Number.NEGATIVE_INFINITY, 0] }];
     case "unset":
       return [];
     default:
@@ -322,6 +326,16 @@ const inNumberRangeExclusive = <TData extends RowData>(
 };
 
 const QuickFilterValues = [
+  {
+    value: "success",
+    icon: <FontAwesomeIcon icon={faCheck} />,
+    text: "Success",
+  },
+  {
+    value: "closed",
+    icon: <FontAwesomeIcon icon={faXmark} />,
+    text: "Closed",
+  },
   {
     value: "running",
     icon: <Pickaxe />,

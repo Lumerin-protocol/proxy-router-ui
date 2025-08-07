@@ -126,11 +126,7 @@ const SelectedItem = styled("div")`
   gap: 0.5rem;
 `;
 
-const ToggleButtonIcon = (props: {
-  value: NonNullable<unknown>;
-  icon: ReactNode;
-  text: string;
-}) => {
+const ToggleButtonIcon = (props: { value: NonNullable<unknown>; icon: ReactNode; text: string }) => {
   return (
     <ToggleButtonStyled value={props.value} size="medium">
       {props.icon}

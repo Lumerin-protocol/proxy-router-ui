@@ -42,8 +42,6 @@ export const RegisterValidatorForm: React.FC<CreateFormProps> = memo(({ onClose 
         functionName: "stakeRegister",
       });
 
-      console.log("minStake", minStake);
-
       minStakeRef.current = minStake;
 
       return {
