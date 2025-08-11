@@ -23,6 +23,7 @@ import { WidgetsWrapper } from "./styled";
 import { isAddressEqual } from "viem";
 import { css } from "@emotion/react";
 import { PieChart } from "react-minimal-pie-chart";
+import { getContractUrl } from "../../lib/indexer";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
@@ -47,6 +48,7 @@ export const Marketplace: FC = () => {
         sortingFn: "text",
         cell: (r) => <TableIcon icon={null} text={r.getValue()} hasLink justify="center" />,
       }),
+
       ch.accessor("speed", {
         id: "speed",
         header: "Speed",
@@ -84,7 +86,7 @@ export const Marketplace: FC = () => {
           },
         },
       ),
-      ch.display({
+      ch.accessor((d) => d, {
         header: "Actions",
         enableSorting: false,
         meta: {
@@ -92,7 +94,6 @@ export const Marketplace: FC = () => {
         },
         cell: (r) => {
           const params = getBuyButtonParams(userAccount, r.row.original.seller as `0x${string}`);
-
           return (
             <div className="flex flex-row gap-2 justify-center">
               <PrimaryButton
@@ -148,6 +149,7 @@ export const Marketplace: FC = () => {
       <ModalItem open={buyModal.isOpen} setOpen={buyModal.setOpen}>
         <BuyForm key={buyContractId} contractId={buyContractId!} closeForm={onBuyFormClose} />
       </ModalItem>
+
       <Table tableInstance={tableInstance} />
     </>
   );

@@ -4,6 +4,7 @@ import { Spinner } from "../Spinner.styled";
 import { safeLazy } from "react-safe-lazy";
 
 const Web3ProviderLazy = safeLazy(() =>
+  //@ts-ignore
   import("../../Web3Provider").then((module) => ({ default: module.Web3Provider })),
 );
 

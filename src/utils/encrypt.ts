@@ -17,5 +17,6 @@ export const encryptMessage = async (pubKey: string, msg: string) => {
   let key = pubKey.startsWith("0x") ? pubKey.slice(2) : pubKey;
   key = key.startsWith("04") ? key.slice(2) : key;
   const normalizedKey = `04${key}`;
+  //@ts-ignore
   return await encrypt(Buffer.from(normalizedKey, "hex"), Buffer.from(msg));
 };

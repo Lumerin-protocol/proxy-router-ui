@@ -46,7 +46,7 @@ export function isErr<const TAbi extends Abi | readonly unknown[]>(
           return true;
         }
       } catch (e) {
-        console.error("!!!!", e);
+        console.error("Error decoding error", e);
         return false;
       }
     }
