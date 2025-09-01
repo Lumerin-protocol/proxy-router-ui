@@ -1,4 +1,6 @@
 import styled from "@mui/material/styles/styled";
+import Tooltip from "@mui/material/Tooltip";
+import type { ComponentProps } from "react";
 
 export const FormButtonsWrapper = styled("div")`
   display: flex;
@@ -21,9 +23,41 @@ export const Button = styled("button")`
   }
 `;
 
-export const PrimaryButton = styled(Button, {
+export const DisabledButton = styled(Button)`
+  color: black;
+  background: grey;
+  box-shadow: none;
+  cursor: not-allowed;
+`;
+
+export const SecondaryButton = styled(Button)`
+  color: #fff;
+  background: none;
+  border: 2px solid #fff;
+`;
+
+export const CancelButton = styled(Button)`
+  color: red;
+  border: 2px solid red;
+`;
+
+type PrimaryButtonProps = ComponentProps<typeof PrimaryButtonComponent> & {
+  $disabledText?: string;
+};
+
+export const PrimaryButton = ({ $disabledText, disabled, ...props }: PrimaryButtonProps) => {
+  const button = <PrimaryButtonComponent disabled={disabled} {...props} />;
+
+  if (disabled && $disabledText) {
+    return <Tooltip title={$disabledText}>{button}</Tooltip>;
+  }
+
+  return button;
+};
+
+const PrimaryButtonComponent = styled(Button, {
   shouldForwardProp: (prop) => typeof prop === "string" && !prop.startsWith("$"),
-})<{ $disabledText?: string; $hoverText?: string }>`
+})<{ $hoverText?: string }>`
   color: #fff;
   background-color: #4c5a5f;
   position: relative;
@@ -40,14 +74,6 @@ export const PrimaryButton = styled(Button, {
     `
       &:hover:after {
         content: "${$hoverText}";
-      }
-    `}
-
-  ${({ $disabledText }) =>
-    $disabledText &&
-    `
-      &:disabled:after {
-        content: "${$disabledText}";
       }
     `}
 
@@ -68,22 +94,4 @@ export const PrimaryButton = styled(Button, {
     visibility: visible;
     opacity: 1;
   }
-`;
-
-export const DisabledButton = styled(Button)`
-  color: black;
-  background: grey;
-  box-shadow: none;
-  cursor: not-allowed;
-`;
-
-export const SecondaryButton = styled(Button)`
-  color: #fff;
-  background: none;
-  border: 2px solid #fff;
-`;
-
-export const CancelButton = styled(Button)`
-  color: red;
-  border: 2px solid red;
 `;
