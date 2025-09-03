@@ -42,14 +42,19 @@ export const CancelButton = styled(Button)`
 `;
 
 type PrimaryButtonProps = ComponentProps<typeof PrimaryButtonComponent> & {
-  $disabledText?: string;
+  disabledText?: string;
+  tooltipText?: string;
 };
 
-export const PrimaryButton = ({ $disabledText, disabled, ...props }: PrimaryButtonProps) => {
+export const PrimaryButton = ({ disabledText, disabled, tooltipText, ...props }: PrimaryButtonProps) => {
   const button = <PrimaryButtonComponent disabled={disabled} {...props} />;
 
-  if (disabled && $disabledText) {
-    return <Tooltip title={$disabledText}>{button}</Tooltip>;
+  if (disabled && disabledText) {
+    return <Tooltip title={disabledText}>{button}</Tooltip>;
+  }
+
+  if (tooltipText) {
+    return <Tooltip title={tooltipText}>{button}</Tooltip>;
   }
 
   return button;

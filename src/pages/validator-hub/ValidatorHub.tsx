@@ -240,7 +240,7 @@ export const ValidatorHub: FC = () => {
               </TableToolbarButton>
               <TableToolbarButton
                 disabled={!areAllSelectedRowsClaimable}
-                $disabledText="All selected contracts must have a balance to claim"
+                disabledText="All selected contracts must have a balance to claim"
                 onClick={() => {
                   const selectedContracts = tableInstance.getSelectedRowModel().rows.map((r) => r.original.contract);
                   setSelectedContractAddresses(selectedContracts);
