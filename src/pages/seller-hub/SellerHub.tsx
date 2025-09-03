@@ -326,7 +326,7 @@ export const SellerHub: FC = () => {
             <TableToolbarButton
               onClick={onCreate}
               disabled={!userAccount}
-              $disabledText="Connect wallet to create a contract"
+              disabledText="Connect wallet to create a contract"
             >
               <AddIcon className="add-icon" />
               Create Contract
@@ -347,7 +347,7 @@ export const SellerHub: FC = () => {
               <TableToolbarButton
                 onClick={onBatchClaim}
                 disabled={!areAllSelectedRowsClaimable}
-                $disabledText="All selected contracts must have a balance to claim"
+                disabledText="All selected contracts must have a balance to claim"
               >
                 <AddIcon className="add-icon" />
                 Claim
@@ -365,13 +365,13 @@ export const SellerHub: FC = () => {
                 </TableToolbarButton>
               )}
               {isSelectedMixedDeleted && (
-                <TableToolbarButton disabled $disabledText="Please select only archived or unarchived contracts">
+                <TableToolbarButton disabled disabledText="Please select only archived or unarchived contracts">
                   <AddIcon className="add-icon" />
                   Archive
                 </TableToolbarButton>
               )}
               {!isAnyRowSelected && (
-                <TableToolbarButton disabled $disabledText="Please select at least one contract">
+                <TableToolbarButton disabled disabledText="Please select at least one contract">
                   <AddIcon className="add-icon" />
                   Archive
                 </TableToolbarButton>

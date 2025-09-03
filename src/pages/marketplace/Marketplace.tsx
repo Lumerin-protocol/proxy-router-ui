@@ -107,7 +107,7 @@ export const Marketplace: FC = () => {
                   buyModal.open();
                 }}
                 disabled={params.disabled}
-                $disabledText={params.disabledText}
+                disabledText={params.disabledText}
               >
                 Purchase
               </PrimaryButton>
