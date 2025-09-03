@@ -1,25 +1,14 @@
-import { ReactComponent as ContractIcon } from './contract.svg';
-import { ReactComponent as MarketplaceIcon } from './marketplace.svg';
-import { ReactComponent as MyOrdersIcon } from './myorders.svg';
-import { ReactComponent as MetaMaskIcon } from './metamask.svg';
-import { ReactComponent as LogoIcon } from './logo.svg';
-import { ReactComponent as LogoIcon2 } from './logo2.svg';
-import { ReactComponent as LumerinIcon } from './lumerin.svg';
-import { ReactComponent as LumerinLandingPage } from './lumerin_landingpage.svg';
-import { ReactComponent as WalletConnectIcon } from './walletconnect.svg';
-import { ReactComponent as EtherIcon } from './eth_icon.svg';
-import { ReactComponent as ArbitrumLogo } from './arbitrum.svg';
-
-export {
-	ContractIcon,
-	MarketplaceIcon,
-	MyOrdersIcon,
-	MetaMaskIcon,
-	LogoIcon,
-	LogoIcon2,
-	LumerinIcon,
-	LumerinLandingPage,
-	WalletConnectIcon,
-	EtherIcon,
-	ArbitrumLogo,
-};
+export { default as ContractIcon } from "./contract.svg?react";
+export { default as MarketplaceIcon } from "./marketplace.svg?react";
+export { default as MyOrdersIcon } from "./myorders.svg?react";
+export { default as MetaMaskIcon } from "./metamask.svg?react";
+export { default as LogoIcon } from "./logo.svg?react";
+export { default as LogoIcon2 } from "./logo2.svg?react";
+export { default as LumerinIcon } from "./lumerin.svg?react";
+export { default as LumerinLandingPage } from "./lumerin_landingpage.svg?react";
+export { default as WalletConnectIcon } from "./walletconnect.svg?react";
+export { default as EtherIcon } from "./eth_icon.svg?react";
+export { default as ArbitrumLogo } from "./arbitrum.svg?react";
+export { default as ArbitrumSepoliaLogo } from "./arbitrum-sepolia.svg?react";
+export { default as HardhatLogo } from "./hardhat.svg?react";
+export { default as UsdcIcon } from "./usdc.svg?react";

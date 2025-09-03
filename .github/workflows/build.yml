@@ -1,0 +1,167 @@
+name: CI-CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_container:
+        description: "Build container image"
+        required: true
+        type: boolean
+
+  push:
+    branches:
+      - main
+      - stg
+      - dev
+      - cicd/*
+
+    paths: [".github/**", "src/**", "Dockerfile", "package.json", "LICENSE", "README.md"]
+
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths: [".github/**", "src/**", "Dockerfile", "package.json", "LICENSE", "README.md"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TEST_ENV_VAR: "test"
+
+jobs:
+  Generate-Tag:
+    runs-on: ubuntu-latest
+    name: Generate Tag Name
+    outputs:
+      tag_name: ${{ steps.gen_tag_name.outputs.tag_name }}
+      vtag: ${{ steps.gen_tag_name.outputs.vtag }}
+      vfull: ${{ steps.gen_tag_name.outputs.vfull }}
+      image_name: ${{ steps.gen_tag_name.outputs.image_name }}
+      artifacts_base_url: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.gen_tag_name.outputs.tag_name }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Determine tag name
+        id: gen_tag_name
+        shell: bash
+        run: |
+          IMAGE_NAME="ghcr.io/lumerin-protocol/proxy-router-ui"
+          VMAJ_NEW=2
+          VMIN_NEW=0
+          VPAT_NEW=0
+          set +o pipefail
+          VLAST=$(git describe --tags --abbrev=0 --match='v[1-9]*' refs/remotes/origin/main 2>/dev/null | cut -c2-)
+
+          if [ -n "$VLAST" ]; then
+              eval $(echo "$VLAST" | awk -F '.' '{print "VMAJ="$1" VMIN="$2" VPAT="$3}')
+          else
+              VMAJ=0
+              VMIN=0
+              VPAT=0
+          fi
+
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+              if [ "$VMAJ_NEW" -gt "$VMAJ" ]; then
+                  VMAJ=$VMAJ_NEW
+                  VMIN=$VMIN_NEW
+                  VPAT=$VPAT_NEW
+              else
+                  VMIN=$((VMIN+1))
+                  VPAT=0
+              fi
+              VFULL=${VMAJ}.${VMIN}.${VPAT}
+              VTAG=v$VFULL
+          else
+              MB=$(git merge-base refs/remotes/origin/main HEAD)
+              VPAT=$(git rev-list --count --no-merges ${MB}..HEAD)
+              VFULL=${VMAJ}.${VMIN}.${VPAT}
+              RNAME=${GITHUB_REF_NAME##*/}
+              [ "$GITHUB_EVENT_NAME" = "pull_request" ] && RNAME=pr${GITHUB_REF_NAME%/merge}
+              VTAG=v${VFULL}-${RNAME}
+          fi
+
+          # Output variables for use in subsequent jobs environment
+          echo "::set-output name=tag_name::${VTAG}"
+          echo "::set-output name=vtag::${VTAG}"
+          echo "::set-output name=vfull::${VFULL}"
+          echo "::set-output name=image_name::${IMAGE_NAME}"
+          echo "✅ New Build Tag: $VTAG" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Docker Image: ${IMAGE_NAME}:${VTAG}" >> $GITHUB_STEP_SUMMARY
+          echo "❌ Old Major Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
+
+ 
+  GitLab-Deploy-Marketplace:
+    name: Deploy Marketplace to GitLab
+    if: |
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/stg'))
+      )
+    needs:
+      - Generate-Tag
+      # - GHCR-Build-and-Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Trigger GitLab Pipeline
+        run: |
+          BUILDTAG=${{ needs.Generate-Tag.outputs.tag_name }}
+          FULLTAG=${{ needs.Generate-Tag.outputs.vfull }}       
+          echo "Triggering GitLab Deploy for branch ${{ github.ref_name }} with tag $BUILDTAG"
+          # Determine branch
+          if [[ "${{ github.ref_name }}" =~ ^cicd/ ]]; then 
+            GITLABBRANCH="dev"
+          elif [ "${{ github.ref_name }}" == "dev" ]; then
+            GITLABBRANCH="dev"
+          elif [ "${{ github.ref_name }}" == "stg" ]; then
+            GITLABBRANCH="stg"
+          elif [ "${{ github.ref_name }}" == "main" ]; then
+            GITLABBRANCH="main"
+          else
+            echo "❌ This branch is not configured to trigger GitLab pipelines."
+            exit 1
+          fi
+          echo "✅ Sending Request to GitLab branch: $GITLABBRANCH"
+          response=$(curl --silent \
+            --request POST \
+            --url "${{ vars.GITLAB_TRIGGER_URL }}" \
+            --form "token=${{ secrets.GITLAB_TRIGGER_TOKEN }}" \
+            --form "ref=$GITLABBRANCH" \
+            --form "variables[SOURCE_REPO]=${{ github.repository }}" \
+            --form "variables[SOURCE_BRANCH]=${{ github.ref_name }}" \
+            --form "variables[GITHUB_VFULL]=$FULLTAG" \
+            --form "variables[GITHUB_TAG]=$BUILDTAG")
+
+          # Parse JSON response using jq
+          gitlab_status=$(echo "$response" | jq -r '.status // "unknown"')
+          gitlab_web_url=$(echo "$response" | jq -r '.web_url // "N/A"')
+
+          # Log the response
+          echo "GitLab Response: $response"
+
+          # Validate the status field
+          if [[ "$gitlab_status" =~ ^(created|preparing|success|running|scheduled)$ ]]; then
+            echo "✅ GitLab pipeline triggered successfully! Status: $gitlab_status"
+            echo "Pipeline details: $gitlab_web_url"
+          else
+            echo "❌ GitLab pipeline FAILED. Invalid status: $gitlab_status"
+            echo "Pipeline details: $gitlab_web_url"
+            exit 1
+          fi

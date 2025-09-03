@@ -1,16 +1,18 @@
-import React from 'react';
-import { Main } from './components/Main';
-import ReactGA from 'react-ga4';
-import { ThemeProvider } from '@mui/material';
-import { darkTheme } from '../styles/themeOptions';
+import ThemeProvider from "@mui/material/styles/ThemeProvider";
+import { darkTheme } from "./styles/themeOptions";
+import { Router } from "./Router";
+import useAnalytics from "./hooks/useAnalytics";
+import type { FC } from "react";
 
-const trackingId = 'G-TN08K48RMS';
-ReactGA.initialize(trackingId);
-
-export const App: React.FC = () => (
-	<ThemeProvider theme={darkTheme}>
-		<Main />
-	</ThemeProvider>
-);
-App.displayName = 'App';
-App.whyDidYouRender = false;
+export const App: FC = () => {
+  useAnalytics({ loadOn: "idle" });
+  return (
+    // <WagmiProvider config={config}>
+    // <QueryClientProvider client={queryClient}>
+    <ThemeProvider theme={darkTheme}>
+      <Router />
+    </ThemeProvider>
+    // </QueryClientProvider>
+    // </WagmiProvider>
+  );
+};

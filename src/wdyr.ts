@@ -1,18 +1,11 @@
-/**
- * This enables the "Why Did You Render" tool in dev mode
- *
- * To enable this for a specific component add this to the bottom of the file:
- *  MyVeryCoolComponent.whyDidYouRender = true;
- */
-/// <reference types="@welldone-software/why-did-you-render" />
-import React from 'react';
+import React from "react";
 
-if (process.env.NODE_ENV === 'development') {
-	const whyDidYouRender = require('@welldone-software/why-did-you-render');
-	whyDidYouRender(React, {
-		// trackAllPureComponents: true,
-		// trackHooks: true,
-		// trackExtraHooks: [],
-		// logOnDifferentValues: true,
-	});
+if (process.env.NODE_ENV === "development") {
+  const whyDidYouRender = await import("@welldone-software/why-did-you-render").then((m) => m.default);
+  whyDidYouRender(React, {
+    // trackAllPureComponents: true,
+    trackHooks: true,
+    trackAllPureComponents: true,
+    logOnDifferentValues: true,
+  });
 }
