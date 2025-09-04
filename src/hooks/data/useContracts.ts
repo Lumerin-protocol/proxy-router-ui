@@ -1,5 +1,4 @@
-import { type QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { type QueryClient, useQuery } from "@tanstack/react-query";
 import { getContractsV2 } from "../../gateway/indexer";
 import { ContractState, type HashRentalContract } from "../../types/types";
 import type { GetResponse, IndexerContractEntry } from "../../gateway/interfaces";
@@ -108,26 +107,27 @@ export const waitForBlockNumber = async (blockNumber: bigint, qc: QueryClient) =
 
 function mapContract(e: IndexerContractEntry): HashRentalContract {
   const { hasFutureTerms, futureTerms, state } = e;
-  let { version, speed, length, price, fee } = e;
+  let { version, speed, length, price, fee, profitTarget } = e;
   if (hasFutureTerms && futureTerms && state === "0") {
     speed = futureTerms.speed;
     length = futureTerms.length;
-    price = futureTerms.price;
     version = futureTerms.version;
+    profitTarget = futureTerms.profitTarget;
   }
+
   return {
     id: e.id,
     price,
     fee,
     speed,
     length,
+    profitTargetPercent: profitTarget,
     buyer: e.buyer,
     seller: e.seller,
     validator: e.validator,
     timestamp: e.startingBlockTimestamp,
     state: e.state,
     encryptedPoolData: e.encrValidatorUrl,
-    profitTargetPercent: e.profitTarget,
     version,
     isDeleted: e.isDeleted,
     balance: e.balance,
