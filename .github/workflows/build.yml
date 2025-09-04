@@ -2,11 +2,6 @@ name: CI-CD
 
 on:
   workflow_dispatch:
-    inputs:
-      build_container:
-        description: "Build container image"
-        required: true
-        type: boolean
 
   push:
     branches:
@@ -40,7 +35,6 @@ jobs:
       tag_name: ${{ steps.gen_tag_name.outputs.tag_name }}
       vtag: ${{ steps.gen_tag_name.outputs.vtag }}
       vfull: ${{ steps.gen_tag_name.outputs.vfull }}
-      image_name: ${{ steps.gen_tag_name.outputs.image_name }}
       artifacts_base_url: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.gen_tag_name.outputs.tag_name }}
     steps:
       - name: Clone repository
@@ -53,7 +47,6 @@ jobs:
         id: gen_tag_name
         shell: bash
         run: |
-          IMAGE_NAME="ghcr.io/lumerin-protocol/proxy-router-ui"
           VMAJ_NEW=2
           VMIN_NEW=0
           VPAT_NEW=0
@@ -67,7 +60,7 @@ jobs:
               VMIN=0
               VPAT=0
           fi
-
+          
           if [ "$GITHUB_REF_NAME" = "main" ]; then
               if [ "$VMAJ_NEW" -gt "$VMAJ" ]; then
                   VMAJ=$VMAJ_NEW
@@ -80,6 +73,11 @@ jobs:
               VFULL=${VMAJ}.${VMIN}.${VPAT}
               VTAG=v$VFULL
           else
+              # Force dev/stg branches to use version 2.0.x
+              if [[ "$GITHUB_REF_NAME" == "dev" || "$GITHUB_REF_NAME" == "stg" ]]; then
+                  VMAJ=2
+                  VMIN=0
+              fi
               MB=$(git merge-base refs/remotes/origin/main HEAD)
               VPAT=$(git rev-list --count --no-merges ${MB}..HEAD)
               VFULL=${VMAJ}.${VMIN}.${VPAT}
@@ -92,12 +90,66 @@ jobs:
           echo "::set-output name=tag_name::${VTAG}"
           echo "::set-output name=vtag::${VTAG}"
           echo "::set-output name=vfull::${VFULL}"
-          echo "::set-output name=image_name::${IMAGE_NAME}"
           echo "✅ New Build Tag: $VTAG" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Docker Image: ${IMAGE_NAME}:${VTAG}" >> $GITHUB_STEP_SUMMARY
           echo "❌ Old Major Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
 
- 
+  Create-GitHub-Release:
+    name: Create GitHub Release
+    if: |
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/stg')) ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    needs:
+      - Generate-Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          TAG_NAME=${{ needs.Generate-Tag.outputs.tag_name }}
+          echo "Creating and pushing tag: $TAG_NAME"
+          
+          # Check if tag already exists
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Tag $TAG_NAME already exists, skipping tag creation"
+          else
+            git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+            git push origin "$TAG_NAME"
+            echo "✅ Tag $TAG_NAME created and pushed"
+          fi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.Generate-Tag.outputs.tag_name }}
+          release_name: Release ${{ needs.Generate-Tag.outputs.tag_name }}
+          body: |
+            ## Release ${{ needs.Generate-Tag.outputs.tag_name }}
+            
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+            
+            ### Changes
+            This release includes the latest changes from the ${{ github.ref_name }} branch.
+            
+          draft: false
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+
   GitLab-Deploy-Marketplace:
     name: Deploy Marketplace to GitLab
     if: |

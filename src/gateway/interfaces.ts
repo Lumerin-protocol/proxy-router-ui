@@ -47,8 +47,6 @@ interface ContractHistory {
 }
 
 interface FutureTerms {
-  price: string;
-  limit: string;
   speed: string;
   length: string;
   version: string;
