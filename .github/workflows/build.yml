@@ -62,7 +62,7 @@ jobs:
           fi
           
           # Force dev branch to use version 2.0.x
-          if [ "$GITHUB_REF_NAME" = "dev" ]; then
+          if [ "$GITHUB_REF_NAME" = "dev" || "$GITHUB_REF_NAME" = "stg" ]; then
               VMAJ=2
               VMIN=0
               VPAT=0
