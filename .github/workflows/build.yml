@@ -61,13 +61,6 @@ jobs:
               VPAT=0
           fi
           
-          # Force dev branch to use version 2.0.x
-          if [ "$GITHUB_REF_NAME" = "dev" ]; then
-              VMAJ=2
-              VMIN=0
-              VPAT=0
-          fi
-
           if [ "$GITHUB_REF_NAME" = "main" ]; then
               if [ "$VMAJ_NEW" -gt "$VMAJ" ]; then
                   VMAJ=$VMAJ_NEW
@@ -80,6 +73,11 @@ jobs:
               VFULL=${VMAJ}.${VMIN}.${VPAT}
               VTAG=v$VFULL
           else
+              # Force dev/stg branches to use version 2.0.x
+              if [[ "$GITHUB_REF_NAME" == "dev" || "$GITHUB_REF_NAME" == "stg" ]]; then
+                  VMAJ=2
+                  VMIN=0
+              fi
               MB=$(git merge-base refs/remotes/origin/main HEAD)
               VPAT=$(git rev-list --count --no-merges ${MB}..HEAD)
               VFULL=${VMAJ}.${VMIN}.${VPAT}
