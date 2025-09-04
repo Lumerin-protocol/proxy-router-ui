@@ -23,7 +23,6 @@ import { WidgetsWrapper } from "./styled";
 import { isAddressEqual } from "viem";
 import { css } from "@emotion/react";
 import { PieChart } from "react-minimal-pie-chart";
-import { getContractUrl } from "../../lib/indexer";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
