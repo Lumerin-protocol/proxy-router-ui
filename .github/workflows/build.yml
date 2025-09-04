@@ -2,11 +2,6 @@ name: CI-CD
 
 on:
   workflow_dispatch:
-    inputs:
-      build_container:
-        description: "Build container image"
-        required: true
-        type: boolean
 
   push:
     branches:
@@ -40,7 +35,6 @@ jobs:
       tag_name: ${{ steps.gen_tag_name.outputs.tag_name }}
       vtag: ${{ steps.gen_tag_name.outputs.vtag }}
       vfull: ${{ steps.gen_tag_name.outputs.vfull }}
-      image_name: ${{ steps.gen_tag_name.outputs.image_name }}
       artifacts_base_url: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.gen_tag_name.outputs.tag_name }}
     steps:
       - name: Clone repository
@@ -53,7 +47,6 @@ jobs:
         id: gen_tag_name
         shell: bash
         run: |
-          IMAGE_NAME="ghcr.io/lumerin-protocol/proxy-router-ui"
           VMAJ_NEW=2
           VMIN_NEW=0
           VPAT_NEW=0
@@ -64,6 +57,13 @@ jobs:
               eval $(echo "$VLAST" | awk -F '.' '{print "VMAJ="$1" VMIN="$2" VPAT="$3}')
           else
               VMAJ=0
+              VMIN=0
+              VPAT=0
+          fi
+          
+          # Force dev branch to use version 2.0.x
+          if [ "$GITHUB_REF_NAME" = "dev" ]; then
+              VMAJ=2
               VMIN=0
               VPAT=0
           fi
@@ -92,9 +92,7 @@ jobs:
           echo "::set-output name=tag_name::${VTAG}"
           echo "::set-output name=vtag::${VTAG}"
           echo "::set-output name=vfull::${VFULL}"
-          echo "::set-output name=image_name::${IMAGE_NAME}"
           echo "✅ New Build Tag: $VTAG" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Docker Image: ${IMAGE_NAME}:${VTAG}" >> $GITHUB_STEP_SUMMARY
           echo "❌ Old Major Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
 
   Create-GitHub-Release:
@@ -102,7 +100,7 @@ jobs:
     if: |
       (
         (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/stg')) ||
-        (github.event_name == 'workflow_dispatch' && github.event.inputs.build_container == true)
+        (github.event_name == 'workflow_dispatch')
       )
     needs:
       - Generate-Tag
@@ -151,10 +149,6 @@ jobs:
             ### Changes
             This release includes the latest changes from the ${{ github.ref_name }} branch.
             
-            ### Docker Image
-            ```
-            ${{ needs.Generate-Tag.outputs.image_name }}:${{ needs.Generate-Tag.outputs.tag_name }}
-            ```
           draft: false
           prerelease: ${{ github.ref != 'refs/heads/main' }}
 
