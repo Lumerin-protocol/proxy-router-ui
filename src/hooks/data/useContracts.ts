@@ -37,7 +37,7 @@ export const useBuyerContracts = (props: { address: `0x${string}` | undefined })
   return useContracts({
     select: (data) => ({
       ...data,
-      data: data.data.filter((c) => c.seller !== props.address && c.isDeleted === false),
+      data: data.data.filter((c) => c.seller !== props.address),
     }),
     enabled: !!props.address,
   });
