@@ -20,6 +20,8 @@ export const EnvSchema = Type.Object({
   REACT_APP_VALIDATOR_REGISTRY_ADDRESS: TypeEthAddress(),
   REACT_APP_VERSION: Type.String(),
   REACT_APP_WALLET_CONNECT_ID: Type.String({ minLength: 1 }),
+  REACT_APP_SUBGRAPH_URL: Type.String({ format: "uri" }),
+  REACT_APP_SUBGRAPH_API_KEY: Type.String({ minLength: 1 }),
   DEV_SERVER_HTTPS: Type.Boolean({ default: false }),
 });
 

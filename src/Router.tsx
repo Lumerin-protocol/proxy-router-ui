@@ -2,6 +2,7 @@ import { Suspense, type FC } from "react";
 import { Route, Routes } from "react-router";
 import { PathName } from "./types/types";
 import { safeLazy } from "./utils/safeLazy";
+import { Test } from "./pages/test/test";
 
 const Landing = safeLazy(() => import("./pages/landing/Landing").then((module) => ({ default: module.Landing })));
 const Marketplace = safeLazy(() =>
@@ -57,6 +58,14 @@ export const Router: FC = () => {
           element={
             <SuspenseLayoutLazy pageTitle="Validator Hub">
               <ValidatorHub />
+            </SuspenseLayoutLazy>
+          }
+        />
+        <Route
+          path={"test"}
+          element={
+            <SuspenseLayoutLazy pageTitle="Test">
+              <Test />
             </SuspenseLayoutLazy>
           }
         />

@@ -104,7 +104,8 @@ export interface ContractHistory {
 }
 
 export interface HashRentalContract {
-  id: string;
+  _id: string;
+  address: string;
   price: string;
   fee: string;
   speed: string;
