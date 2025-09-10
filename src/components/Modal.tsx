@@ -19,7 +19,6 @@ export const ModalItem: FC<ModalProps> = ({ open, setOpen, content, children }) 
       onClose={() => setOpen(false)}
       css={css`
         position: absolute;
-        overflow: scroll;
       `}
     >
       <ModalCard>
