@@ -70,8 +70,6 @@ export enum SortByType {
 
 export enum SortTypes {
   None = "None",
-  PurchaseTimeNewestToOldest = "Purchase Time: Newest",
-  PurchaseTimeOldestToNewest = "Purchase Time: Oldest",
   PriceLowToHigh = "Price: Low",
   PriceHighToLow = "Price: High",
   DurationShortToLong = "Duration: Short",
@@ -139,6 +137,8 @@ export interface InputValuesBuyForm {
   lightningAddress: string;
   customValidatorPublicKey: string;
   customValidatorHost: string;
+  resellToDefault: boolean;
+  profitPercentage: number;
 }
 
 export interface FormData extends InputValuesBuyForm {

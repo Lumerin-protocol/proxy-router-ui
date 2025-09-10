@@ -26,8 +26,8 @@ export const BuyerHub: FC = () => {
   const [contractId, setContractId] = useState<string | null>(null);
 
   const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
-  const [runningSortType, setRunningSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
-  const [completedSortType, setCompletedSortType] = useState<SortTypes>(SortTypes.PurchaseTimeNewestToOldest);
+  const [runningSortType, setRunningSortType] = useState<SortTypes>(SortTypes.SpeedSlowToFast);
+  const [completedSortType, setCompletedSortType] = useState<SortTypes>(SortTypes.SpeedSlowToFast);
   const currentBlockTimestamp = new Date().getTime() / 1000;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>

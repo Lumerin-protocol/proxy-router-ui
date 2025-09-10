@@ -28,13 +28,16 @@ import { getPredefinedPoolByAddress, getPredefinedPoolByIndex, predefinedPools }
 import { useFeeTokenBalance } from "../../hooks/data/useFeeTokenBalance";
 import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
 
+type PurchaseType = "purchase" | "purchase-and-resell";
+
 interface BuyFormProps {
   contractId: string;
   closeForm: () => void;
+  purchaseType?: PurchaseType;
 }
 
 export const BuyForm: FC<BuyFormProps> = memo(
-  ({ contractId, closeForm }) => {
+  ({ contractId, closeForm, purchaseType = "purchase" }) => {
     const payment = useApprovePayment();
     const fee = useApproveFee();
     const { purchaseContractAsync } = usePurchaseContract();
@@ -69,18 +72,38 @@ export const BuyForm: FC<BuyFormProps> = memo(
           control={form.control}
           resetField={form.resetField}
           setValue={form.setValue}
+          purchaseType={purchaseType}
           key="form"
         />
       ),
-      [form.control, form.resetField, form.setValue],
+      [form.control, form.resetField, form.setValue, purchaseType],
     );
+
+    const getTitle = () => {
+      switch (purchaseType) {
+        case "purchase-and-resell":
+          return "Purchase and Resell Item";
+        case "purchase":
+        default:
+          return "Purchase Item";
+      }
+    };
+
+    const getDescription = () => {
+      switch (purchaseType) {
+        case "purchase-and-resell":
+          return "Purchase hashrate and create a sell order with profit. Until there is a new buyer hashrate will flow to the pool of your choice.";
+        case "purchase":
+        default:
+          return "Enter the Pool Address, Port Number, and Username you are pointing the purchasedhashpower to.";
+      }
+    };
 
     return (
       <TransactionForm
         onClose={closeForm}
-        title="Purchase Hashpower"
-        description="Enter the Pool Address, Port Number, and Username you are pointing the purchased
-            hashpower to."
+        title={getTitle()}
+        description={getDescription()}
         inputForm={inputForm}
         validateInput={async () => {
           const isValid = await form.trigger();
@@ -261,7 +284,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.contractId === nextProps.contractId;
+    return prevProps.contractId === nextProps.contractId && prevProps.purchaseType === nextProps.purchaseType;
   },
 );
 
@@ -297,6 +320,8 @@ function getDefaultInputValues(): InputValuesBuyForm {
       lightningAddress: "",
       customValidatorHost: "",
       customValidatorPublicKey: "",
+      resellToDefault: false,
+      profitPercentage: 10,
     };
   }
   const lastPool = getPredefinedPoolByAddress(lastPurchaseDestination?.poolAddress);
@@ -310,6 +335,8 @@ function getDefaultInputValues(): InputValuesBuyForm {
     lightningAddress: lastPoolIsLightning ? lastPurchaseDestination?.username : "",
     customValidatorHost: "",
     customValidatorPublicKey: "",
+    resellToDefault: false,
+    profitPercentage: 10,
   };
 }
 

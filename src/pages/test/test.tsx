@@ -82,6 +82,8 @@ export const TestChild: FC<{
         lightningAddress: "",
         customValidatorPublicKey: "",
         customValidatorHost: "",
+        resellToDefault: false,
+        profitPercentage: 10,
       };
     },
   });

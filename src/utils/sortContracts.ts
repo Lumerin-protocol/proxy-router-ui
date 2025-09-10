@@ -6,18 +6,12 @@ export const sortContracts = <
     price: string;
     length: string;
     speed: string;
-    timestamp?: string;
-    purchaseTime?: string;
   },
 >(
   sortType: SortTypes,
   contractData: T[],
 ): T[] => {
   switch (sortType) {
-    case SortTypes.PurchaseTimeNewestToOldest:
-      return sortContractsList(contractData, (k) => Number(k.timestamp || k.purchaseTime), "desc");
-    case SortTypes.PurchaseTimeOldestToNewest:
-      return sortContractsList(contractData, (k) => Number(k.timestamp || k.purchaseTime), "asc");
     case SortTypes.PriceLowToHigh:
       return sortContractsList(contractData, (k) => Number(k.price), "asc");
     case SortTypes.PriceHighToLow:

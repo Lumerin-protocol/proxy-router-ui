@@ -1,6 +1,8 @@
 import { type FC, memo } from "react";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 import {
   type Control,
   useController,
@@ -23,10 +25,11 @@ interface Props {
   control: Control<InputValuesBuyForm>;
   resetField: UseFormResetField<InputValuesBuyForm>;
   setValue: UseFormSetValue<InputValuesBuyForm>;
+  purchaseType?: "purchase" | "purchase-and-resell";
 }
 
 export const CreateEditPurchaseForm: FC<Props> = memo(
-  ({ control, resetField, setValue }) => {
+  ({ control, resetField, setValue, purchaseType = "purchase" }) => {
     const { data: validators, isLoading: isLoadingValidators } = useValidators({
       offset: 0,
       limit: 100,
@@ -163,6 +166,27 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
       },
     });
 
+    const resellToDefaultController = useController({
+      name: "resellToDefault",
+      control: control,
+    });
+
+    const profitPercentageController = useController({
+      name: "profitPercentage",
+      control: control,
+      rules: {
+        required: "Profit percentage is required",
+        min: {
+          value: 0,
+          message: "Profit percentage must be at least 0",
+        },
+        max: {
+          value: 100,
+          message: "Profit percentage must be at most 100",
+        },
+      },
+    });
+
     // useEffect(() => {
     //   if (!validators?.length || hasSetValidator.current) {
     //     return;
@@ -184,6 +208,20 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
 
     return (
       <>
+        {purchaseType === "purchase-and-resell" && (
+          <InputWrapper style={{ maxWidth: "100%" }}>
+            <FormControlLabel
+              control={
+                <Checkbox {...resellToDefaultController.field} checked={resellToDefaultController.field.value} />
+              }
+              label="Resell to default"
+            />
+            <div style={{ marginTop: "8px", fontSize: "0.875rem", marginBottom: "32px" }}>
+              No need to setup your pool account. Your contract will be immediately purchased by us until there is a new
+              buyer
+            </div>
+          </InputWrapper>
+        )}
         <InputWrapper>
           <TextField
             select
@@ -257,6 +295,36 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
             <MenuItem value="custom">Custom Validator</MenuItem>
           </TextField>
         </InputWrapper>
+
+        {purchaseType === "purchase-and-resell" && (
+          <InputWrapper style={{ marginTop: "32px" }}>
+            <TextField
+              {...profitPercentageController.field}
+              type="number"
+              label="Resell Profit Target (%)"
+              inputProps={{
+                min: 0,
+                max: 100,
+                step: 1,
+              }}
+              error={!!profitPercentageController.fieldState.error}
+              helperText={profitPercentageController.fieldState.error?.message}
+              sx={{
+                "& input[type=number]": {
+                  "-moz-appearance": "textfield",
+                },
+                "& input[type=number]::-webkit-outer-spin-button": {
+                  "-webkit-appearance": "none",
+                  margin: 0,
+                },
+                "& input[type=number]::-webkit-inner-spin-button": {
+                  "-webkit-appearance": "none",
+                  margin: 0,
+                },
+              }}
+            />
+          </InputWrapper>
+        )}
 
         {isCustomValidator && (
           <>

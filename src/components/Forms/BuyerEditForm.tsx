@@ -58,6 +58,8 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
           validatorAddress: validatorAddress || "",
           customValidatorPublicKey: "",
           customValidatorHost: "",
+          resellToDefault: false,
+          profitPercentage: 10,
         };
 
         return defaultValues;
