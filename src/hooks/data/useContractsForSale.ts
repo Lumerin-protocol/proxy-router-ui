@@ -28,7 +28,7 @@ const fetchContractsAsync = async (): Promise<GetResponse<AvailableContract[]>> 
 };
 
 function mapContract(e: ContractsResponse["implementations"][number]): AvailableContract {
-  const { _terms, resellChain, owner, _address, purchasesCount, resellsCount } = e;
+  const { _terms, resellChain, owner, _address, purchasesCount, resellsCount, earlyCloseoutsCount } = e;
   const { _version, _speed, _length } = _terms;
   const { _resellProfitTarget } = resellChain[resellChain.length - 1];
 
@@ -63,6 +63,7 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
     stats: {
       purchasesCount: purchasesCount,
       resellsCount: resellsCount,
+      earlyCloseoutsCount: earlyCloseoutsCount,
     },
   };
 }
@@ -139,6 +140,7 @@ export type AvailableContract = {
   stats: {
     purchasesCount: number;
     resellsCount: number;
+    earlyCloseoutsCount: number;
   };
 };
 
@@ -173,7 +175,6 @@ type ContractsResponse = {
       _isResellToDefaultBuyer: boolean;
     }[];
     blockTimestamp: string;
-    earlyCloseoutsCount: number;
     endTime: string;
     isResellable: boolean;
     owner: {
@@ -183,6 +184,7 @@ type ContractsResponse = {
     _address: `0x${string}`;
     purchasesCount: number;
     resellsCount: number;
+    earlyCloseoutsCount: number;
   }[];
 };
 
