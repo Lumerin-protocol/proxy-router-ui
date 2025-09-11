@@ -46,7 +46,7 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
     speed: BigInt(_speed),
     length: BigInt(_length),
     profitTargetPercent: _resellProfitTarget,
-    owner: zeroAddress, //todo: fix me
+    owner: owner.address as `0x${string}`, 
     version: Number(_version),
     resellChain: resellChain.map((rc) => ({
       account: rc._account as `0x${string}`,
@@ -79,8 +79,7 @@ const query = gql`
       endTime
       isResellable
       owner {
-        id
-        # address
+        address
       }
       purchasesCount
       earlyCloseoutsCount
@@ -178,8 +177,7 @@ type ContractsResponse = {
     endTime: string;
     isResellable: boolean;
     owner: {
-      id: string;
-      // address: `0x${string}`;
+      address: `0x${string}`;
     };
     _address: `0x${string}`;
     purchasesCount: number;

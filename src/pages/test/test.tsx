@@ -6,6 +6,42 @@ import { useContractsForSale } from "../../hooks/data/useContractsForSale";
 export const Test: FC = () => {
   const { data } = useContractsForSale();
 
+    // _id: string; // ID
+    // address: string; // ID
+
+
+    // price: string; // Calculate
+    // fee: string; // Calculate
+
+    // stats: {
+    //   successCount: string; // FROM request
+    //   failCount: string; // From request
+    // };
+
+    // speed: string; // From request
+    // length: string; // From request
+    // profitTargetPercent: string;  // From request
+    // version: // From request
+
+    // state: string; // By Request Query (Available by now)
+    // isDeleted: boolean; // By Request Query (False by now)
+  
+
+    // buyer: string; // last.rc.account (Not final)
+    // seller: string; // last.rc.seller
+    // Owner: from request
+
+
+    // timestamp: string;
+    // balance: string;
+    // validator: string;
+    // feeBalance: string;
+
+    // encryptedPoolData: string; // NO need
+    // history?: ContractHistory[]; // No need for now
+
+  console.log("🚀 ~ Test ~ data:", data)
+
   return (
     <HeroWrapper>
       <div className="content-wrapper">
