@@ -23,7 +23,7 @@ export const useBuyerContracts = (props?: {
 
 const fetchContractsAsync = async (
   address: `0x${string}`,
-  filter: "running" | "completed" | "all"
+  filter: "running" | "completed" | "all",
 ): Promise<GetResponse<AvailableContract[]>> => {
   const now = Math.floor(Date.now() / 1000).toString();
 
