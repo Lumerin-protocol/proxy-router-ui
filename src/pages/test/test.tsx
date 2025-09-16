@@ -1,55 +1,90 @@
 import { type FC } from "react";
 import { HeroHeadline, HeroWrapper } from "../landing/Landing.styled";
 
-import { useContractsForSale } from "../../hooks/data/useContractsForSale";
+import { AvailableContract, useContractsForSale } from "../../hooks/data/useContractsForSale";
+import { useHashrateForOracle, useValidatorsConst } from "../../hooks/data/useGetContractsConstant";
+import { HashRentalContract } from "../../types/types";
 
 export const Test: FC = () => {
+  const { VALIDATOR_FEE_DECIMALS, validatorFeeRateScaled } = useValidatorsConst();
+  const { data: oracle } = useHashrateForOracle();
   const { data } = useContractsForSale();
 
-    // _id: string; // ID
-    // address: string; // ID
+  const mapperToLegacy: HashRentalContract[] | undefined = data?.data.map((c) => {
+    const price = calculatePrice(c, oracle!);
+    const fee = (price * BigInt(validatorFeeRateScaled ?? 0)) / BigInt(10 ** (VALIDATOR_FEE_DECIMALS ?? 0));
+    const lastRc = c.resellChain[c.resellChain.length - 1];
 
+    // show on UI both producer and seller.
+    const producer = c.owner;
+    const seller = lastRc.seller;
+    const buyer = lastRc.account;
 
-    // price: string; // Calculate
-    // fee: string; // Calculate
+    return {
+      id: c.address,
+      isDeleted: false,
+      state: "0",
+      price: (price / 10n ** 6n).toString(),
+      fee: (fee / 10n ** 8n).toString(),
+      speed: c.speed.toString(),
+      length: c.length.toString(),
+      version: c.version.toString(),
+      seller: seller,
+      buyer: buyer,
+      profitTargetPercent: c.profitTargetPercent.toString(),
+      stats: {
+        successCount: (c.stats.purchasesCount + c.stats.resellsCount - c.stats.earlyCloseoutsCount).toString(),
+        failCount: c.stats.earlyCloseoutsCount.toString(),
+      },
+    } as HashRentalContract;
+  });
 
-    // stats: {
-    //   successCount: string; // FROM request
-    //   failCount: string; // From request
-    // };
+  function calculatePrice(c: AvailableContract, hashesForToken: bigint): bigint {
+    // Current epoch time in seconds
+    const currentTime: bigint = BigInt(Math.floor(Date.now() / 1000));
 
-    // speed: string; // From request
-    // length: string; // From request
-    // profitTargetPercent: string;  // From request
-    // version: // From request
+    // if endDate less that current time - then this contract is Available
+    // else endDate bigger then now - then it is purchased.
 
-    // state: string; // By Request Query (Available by now)
-    // isDeleted: boolean; // By Request Query (False by now)
-  
+    const endTime = getEndTime(c);
+    let remainingTime: bigint;
+    if (endTime < currentTime) {
+      remainingTime = c.length;
+    } else {
+      remainingTime = endTime - currentTime;
+    }
 
-    // buyer: string; // last.rc.account (Not final)
-    // seller: string; // last.rc.seller
-    // Owner: from request
+    const priceInToken: bigint = (remainingTime * c.speed) / hashesForToken;
+    const priceInTokenWithProfit: bigint = priceInToken + (priceInToken * BigInt(c.profitTargetPercent)) / 100n;
 
+    return priceInTokenWithProfit < 0n ? 0n : priceInTokenWithProfit;
+  }
 
-    // timestamp: string;
-    // balance: string;
-    // validator: string;
-    // feeBalance: string;
+  function getStartTime(c: AvailableContract): bigint {
+    if (c.resellChain.length <= 1) {
+      return 0n;
+    }
+    return c.resellChain[1].startTime;
+  }
 
-    // encryptedPoolData: string; // NO need
-    // history?: ContractHistory[]; // No need for now
+  function getEndTime(c: AvailableContract): bigint {
+    const startTime = getStartTime(c);
 
-  console.log("🚀 ~ Test ~ data:", data)
+    if (startTime == 0n) {
+      return 0n;
+    }
+
+    return startTime + c.length;
+  }
 
   return (
     <HeroWrapper>
       <div className="content-wrapper">
         <HeroHeadline>Test</HeroHeadline>
-        {data?.data.map((contract) => (
-          <div key={contract._id} className="mb-8">
+        {mapperToLegacy?.map((contract) => (
+          <div key={contract.id} className="mb-8">
             <dt>Address</dt>
-            <dd>{contract.address}</dd>
+            <dd>{contract.id}</dd>
             <dt>Speed</dt>
             <dd>{contract.speed.toString()}</dd>
             <dt>Length</dt>
@@ -58,14 +93,12 @@ export const Test: FC = () => {
             <dd>{contract.profitTargetPercent}</dd>
             <dt>Version</dt>
             <dd>{contract.version}</dd>
-            <dt>Owner</dt>
-            <dd>{contract.owner}</dd>
-            <dt>Resell Chain</dt>
-            <dd>{contract.resellChain.map((rc) => rc.account).join(", ")}</dd>
-            <dt>Purchases Count</dt>
-            <dd>{contract.stats.purchasesCount}</dd>
-            <dt>Resells Count</dt>
-            <dd>{contract.stats.resellsCount}</dd>
+            <dt>Seller</dt>
+            <dd>{contract.seller}</dd>
+            <dt>Success Count</dt>
+            <dd>{contract.stats.successCount}</dd>
+            <dt>Failed Count</dt>
+            <dd>{contract.stats.failCount}</dd>
           </div>
         ))}
       </div>

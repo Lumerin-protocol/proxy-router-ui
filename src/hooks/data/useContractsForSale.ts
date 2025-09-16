@@ -46,7 +46,7 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
     speed: BigInt(_speed),
     length: BigInt(_length),
     profitTargetPercent: _resellProfitTarget,
-    owner: owner.address as `0x${string}`, 
+    owner: owner.address as `0x${string}`,
     version: Number(_version),
     resellChain: resellChain.map((rc) => ({
       account: rc._account as `0x${string}`,
@@ -68,10 +68,12 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
   };
 }
 
+// if isResellable = true, then this contract can be purchased in any time. (even if is processing (no Available))
+
 const query = gql`
   query GetContractsForSale($now: BigInt!) {
     implementations(
-      where: { and: [{ or: [{ isResellable: true }, { endTime_gt: $now }] }, { isDeleted: false }] }
+      where: { and: [{ or: [{ isResellable: true }, { endTime_lt: $now }] }, { isDeleted: false }] }
     ) {
       _address
       blockTimestamp
