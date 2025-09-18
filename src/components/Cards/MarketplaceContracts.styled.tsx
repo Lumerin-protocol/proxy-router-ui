@@ -128,6 +128,13 @@ export const MarketplaceCards = styled("div")`
             color: #999999;
             margin-top: 0.25rem;
           }
+
+          .price-per-hour-text {
+            font-size: 0.7rem;
+            color: #4f7e91;
+            margin-top: 0.25rem;
+            font-weight: 500;
+          }
         }
       }
     }

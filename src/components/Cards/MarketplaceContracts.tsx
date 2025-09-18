@@ -133,6 +133,20 @@ const getTypeDescription = (type: "Direct" | "Resellable") => {
   }
 };
 
+const calculatePricePerHour = (price: string, speed: string, duration: string) => {
+  const priceValue = Number(price) / 10 ** 6;
+  const speedValue = Number(speed) / 10 ** 12;
+  const durationValue = duration;
+
+  // Convert duration from seconds to hours (duration / 3600)
+  const durationInHours = Number(durationValue) / 3600;
+
+  // Calculate price per hour: (price * speed) / duration_in_hours
+  const pricePerHour = (priceValue * speedValue) / Math.floor(durationInHours * 1000); // Multiply by 1000 for precision
+
+  return pricePerHour.toFixed(4);
+};
+
 export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
   const { card: item, userAccount, onPurchase } = props;
   const TypeIcon = getTypeIcon(item.type);
@@ -185,6 +199,9 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
             <h3>PRICE</h3>
             <p>{formatPaymentPrice(item.price).full}</p>
             <p className="fee-text">{formatFeePrice(item.fee).full}</p>
+            <p className="price-per-hour-text">
+              {calculatePricePerHour(item.price, item.speed, item.length)} Th/s x hour
+            </p>
           </div>
         </div>
         {/* <div className="item-value fee">
