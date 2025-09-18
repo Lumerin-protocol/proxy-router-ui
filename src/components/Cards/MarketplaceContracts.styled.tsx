@@ -67,8 +67,12 @@ export const MarketplaceCards = styled("div")`
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 32px;
-            height: 28px;
+            width: 48px;
+            height: 48px;
+            border: rgba(171, 171, 171, 1) 1px solid;
+            border-radius: 9px;
+            background-color: rgba(79, 126, 145, 0.04);
+            background: radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%);
             transition: all 0.2s ease;
 
             &:hover {
@@ -85,7 +89,7 @@ export const MarketplaceCards = styled("div")`
 
     .terms {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: minmax(150px, 1fr);
       gap: 0.5rem;
       margin-bottom: 1rem;
 
@@ -94,6 +98,7 @@ export const MarketplaceCards = styled("div")`
         flex-direction: row;
         align-items: center;
         padding-bottom: 0.8rem;
+        min-width: 0; // Prevents grid items from overflowing
 
         img, wui-avatar {
           width: 20px;
@@ -116,6 +121,12 @@ export const MarketplaceCards = styled("div")`
             font-weight: 400;
             font-size: 0.85rem;
             margin: 0;
+          }
+
+          .fee-text {
+            font-size: 0.75rem;
+            color: #999999;
+            margin-top: 0.25rem;
           }
         }
       }
@@ -166,35 +177,44 @@ export const MarketplaceCards = styled("div")`
       }
     }
 
-    .producer-info {
+    .seller-producer-info {
       margin-bottom: 1.5rem;
 
       .item-value {
         display: flex;
         flex-direction: row;
         align-items: center;
+        gap: 2rem;
 
-        img, wui-avatar {
-          width: 20px;
-          height: 20px;
-          margin-right: 0.75rem;
-        }
-
-        div {
+        .seller-section,
+        .producer-section {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
+          align-items: center;
+          flex: 1;
 
-          h3 {
-            font-size: 0.65rem;
-            font-weight: 300;
-            margin-bottom: 0.25em;
-            color: #999999;
+          img, wui-avatar {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
           }
 
-          p {
-            font-weight: 400;
-            font-size: 0.85rem;
-            margin: 0;
+          div {
+            display: flex;
+            flex-direction: column;
+
+            h3 {
+              font-size: 0.65rem;
+              font-weight: 300;
+              margin-bottom: 0.25em;
+              color: #999999;
+            }
+
+            p {
+              font-weight: 400;
+              font-size: 0.85rem;
+              margin: 0;
+            }
           }
         }
       }

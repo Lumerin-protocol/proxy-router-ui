@@ -13,6 +13,8 @@ import { formatDuration } from "../../lib/duration";
 import { css } from "@emotion/react";
 import { PurchaseDropdown } from "../PurchaseDropdown";
 import LinearProgress from "@mui/material/LinearProgress";
+import Tooltip from "@mui/material/Tooltip";
+import { ArrowRightIcon, ArrowTrendingUpIcon, ArrowPathIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
 
 // The same avatar component as the one in the appkit
 const WuiAvatar = (props: { address: string }) => {
@@ -28,6 +30,7 @@ export type MarketplaceCardData = {
   price: string;
   fee: string;
   seller: string;
+  producer: string;
   type: "Direct" | "Resellable";
   stats: {
     successCount: string;
@@ -114,8 +117,25 @@ const StatsProgressBar: FC<{ successCount: number; failCount: number }> = (props
   );
 };
 
+const getTypeIcon = (type: "Direct" | "Resellable") => {
+  if (type == "Direct") {
+    return ArrowTrendingUpIcon;
+  } else {
+    return ArrowPathIcon;
+  }
+};
+
+const getTypeDescription = (type: "Direct" | "Resellable") => {
+  if (type === "Direct") {
+    return "Direct Contract - Purchase directly from the original producer";
+  } else {
+    return "Resellable Contract - Can be purchased and resold to other buyers";
+  }
+};
+
 export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
   const { card: item, userAccount, onPurchase } = props;
+  const TypeIcon = getTypeIcon(item.type);
 
   return (
     <div className="marketplace-card">
@@ -128,7 +148,11 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
         </div>
         <div className="stats-section">
           <div className="stats-icon">
-            <div className="list-icon">Icon</div>
+            <Tooltip title={getTypeDescription(item.type)} arrow placement="top">
+              <div className="list-icon">
+                <TypeIcon className="w-8 h-8" />
+              </div>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -148,27 +172,28 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
             <p>{formatDuration(BigInt(item.length))}</p>
           </div>
         </div>
-        <div className="item-value type">
+        {/* <div className="item-value type">
           <img src={TypeIcon} alt="" />
           <div>
             <h3>TYPE</h3>
             <p>{item.type}</p>
           </div>
-        </div>
+        </div> */}
         <div className="item-value price">
           <img src={PriceTag} alt="" />
           <div>
             <h3>PRICE</h3>
             <p>{formatPaymentPrice(item.price).full}</p>
+            <p className="fee-text">{formatFeePrice(item.fee).full}</p>
           </div>
         </div>
-        <div className="item-value fee">
+        {/* <div className="item-value fee">
           <img src={PriceTag} alt="" />
           <div>
             <h3>FEE</h3>
             <p>{formatFeePrice(item.fee).full}</p>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <Divider variant="fullWidth" sx={{ mt: 1, mb: 2 }} />
@@ -180,22 +205,21 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
 
       <Divider variant="fullWidth" sx={{ mt: 1, mb: 2 }} />
 
-      <div className="seller-info">
-        <div className="item-value seller">
-          <WuiAvatar address={item.seller} />
-          <div>
-            <h3>SELLER</h3>
-            <p>{truncateAddress(item.seller, AddressLength.LONG)}</p>
+      <div className="seller-producer-info">
+        <div className="item-value seller-producer">
+          <div className="seller-section">
+            <WuiAvatar address={item.seller} />
+            <div>
+              <h3>SELLER</h3>
+              <p>{truncateAddress(item.seller, AddressLength.MEDIUM)}</p>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="producer-info">
-        <div className="item-value producer">
-          <WuiAvatar address="0x1234567890123456789012345678901234567890" />
-          <div>
-            <h3>PRODUCER</h3>
-            <p>Mocked Producer</p>
+          <div className="producer-section">
+            <WuiAvatar address={item.producer} />
+            <div>
+              <h3>PRODUCER</h3>
+              <p>{truncateAddress(item.producer, AddressLength.MEDIUM)}</p>
+            </div>
           </div>
         </div>
       </div>

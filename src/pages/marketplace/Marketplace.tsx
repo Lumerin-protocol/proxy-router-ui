@@ -18,6 +18,7 @@ import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled
 import { TableIcon } from "../../components/TableIcon";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { formatDuration } from "../../lib/duration";
+import { useAvailableContractsV2 } from "../../hooks/data/useContactsV2";
 import { useAvailableContracts } from "../../hooks/data/useContracts";
 import { WidgetsWrapper } from "./styled";
 import { isAddressEqual } from "viem";
@@ -41,6 +42,7 @@ type ContractType = "direct" | "resellable";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
+  // const contractsQuery = useAvailableContractsV2();
   const contractsQuery = useAvailableContracts();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -55,7 +57,7 @@ export const Marketplace: FC = () => {
   const onBuyFormClose = useCallback(async () => {
     contractsQuery.refetch();
     buyModal.close();
-  }, []);
+  }, [contractsQuery.refetch, buyModal]);
 
   const onPurchase = useCallback(
     (contractId: string, purchaseType: PurchaseType) => {
@@ -68,11 +70,12 @@ export const Marketplace: FC = () => {
 
   // Filter contracts based on selected type
   const filteredData = useMemo(() => {
-    if (contractType !== "direct") {
-      return data.filter((contract) => !contract.profitTargetPercent || contract.profitTargetPercent === "0");
-    } else {
-      return data.filter((contract) => contract.profitTargetPercent && contract.profitTargetPercent !== "0");
-    }
+    return data;
+    // if (contractType !== "direct") {
+    //   return data.filter((contract) => !contract.profitTargetPercent || contract.profitTargetPercent === "0");
+    // } else {
+    //   return data.filter((contract) => contract.profitTargetPercent && contract.profitTargetPercent !== "0");
+    // }
   }, [data, contractType]);
 
   // Convert contracts to card data format and apply sorting
@@ -84,10 +87,8 @@ export const Marketplace: FC = () => {
       price: contract.price,
       fee: contract.fee,
       seller: contract.seller,
-      type:
-        !contract.profitTargetPercent || contract.profitTargetPercent === "0"
-          ? ("Direct" as const)
-          : ("Resellable" as const),
+      producer: (contract as any).producer || contract.seller,
+      type: contractType == "direct" ? ("Direct" as const) : ("Resellable" as const),
       stats: contract.stats,
     }));
 

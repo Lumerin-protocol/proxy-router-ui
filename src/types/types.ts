@@ -70,8 +70,6 @@ export enum SortByType {
 
 export enum SortTypes {
   None = "None",
-  PurchaseTimeNewestToOldest = "Purchase Time: Newest",
-  PurchaseTimeOldestToNewest = "Purchase Time: Oldest",
   PriceLowToHigh = "Price: Low",
   PriceHighToLow = "Price: High",
   DurationShortToLong = "Duration: Short",
