@@ -127,6 +127,11 @@ export interface HashRentalContract {
   };
 }
 
+export interface HashRentalContractV2 extends HashRentalContract {
+  producer: string;
+  isResellable: boolean;
+}
+
 // Making fields optional bc a user might not have filled out the input fields
 // when useForm() returns the error object that's typed against InputValues
 export interface InputValuesBuyForm {

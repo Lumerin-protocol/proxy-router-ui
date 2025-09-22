@@ -3,14 +3,15 @@ import { PrimaryButton } from "./Forms/FormButtons/Buttons.styled";
 import { css } from "@emotion/react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { isAddressEqual } from "viem";
+import type { HashRentalContractV2 } from "../types/types";
 
 type PurchaseType = "purchase" | "purchase-and-resell";
 
 interface PurchaseDropdownProps {
   userAccount?: `0x${string}`;
   seller: string;
-  onPurchase: (contractId: string, purchaseType: PurchaseType) => void;
-  contractId: string;
+  onPurchase: (contract: HashRentalContractV2, purchaseType: PurchaseType) => void;
+  contract: HashRentalContractV2;
 }
 
 const getBuyButtonParams = (userAccount: `0x${string}` | undefined, seller: `0x${string}`) => {
@@ -32,7 +33,7 @@ const getBuyButtonParams = (userAccount: `0x${string}` | undefined, seller: `0x$
   };
 };
 
-export const PurchaseDropdown: FC<PurchaseDropdownProps> = ({ userAccount, seller, onPurchase, contractId }) => {
+export const PurchaseDropdown: FC<PurchaseDropdownProps> = ({ userAccount, seller, onPurchase, contract }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buyParams = getBuyButtonParams(userAccount, seller as `0x${string}`);
@@ -51,7 +52,7 @@ export const PurchaseDropdown: FC<PurchaseDropdownProps> = ({ userAccount, selle
   }, []);
 
   const handleOptionClick = (purchaseType: PurchaseType) => {
-    onPurchase(contractId, purchaseType);
+    onPurchase(contract, purchaseType);
     setIsOpen(false);
   };
 

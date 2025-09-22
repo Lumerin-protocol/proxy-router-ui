@@ -1,11 +1,6 @@
-import { HashRentalContract } from "../../types/types";
+import { HashRentalContractV2 } from "../../types/types";
 import { useContractsForSale, AvailableContract } from "./useContractsForSale";
 import { useValidatorsConst, useHashrateForOracle } from "./useGetContractsConstant";
-
-interface HashRentalContractV2 extends HashRentalContract {
-  producer: string;
-  isResellable: boolean;
-}
 
 export const useAvailableContractsV2 = () => {
   const { VALIDATOR_FEE_DECIMALS, validatorFeeRateScaled, isSuccess: isConstRequestSuccess } = useValidatorsConst();

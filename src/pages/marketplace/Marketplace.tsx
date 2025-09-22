@@ -5,7 +5,7 @@ import { MarketplaceStatistics } from "../../components/Widgets/MarketplaceStati
 import { MessageWidget } from "../../components/Widgets/MessageWidget";
 import { WalletBalanceWidget } from "../../components/Widgets/WalletBalanceWidget";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import type { HashRentalContract } from "../../types/types";
+import type { HashRentalContractV2 } from "../../types/types";
 import { useModal } from "../../hooks/useModal";
 import { Table } from "../../components/Table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
@@ -14,18 +14,14 @@ import { BuyForm } from "../../components/Forms/BuyForm";
 import { SkeletonWrap } from "../../components/Skeleton.styled";
 import { createColumnHelper } from "@tanstack/react-table";
 import { getSortedRowModel } from "@tanstack/react-table";
-import { PrimaryButton } from "../../components/Forms/FormButtons/Buttons.styled";
 import { TableIcon } from "../../components/TableIcon";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { formatDuration } from "../../lib/duration";
 import { useAvailableContractsV2 } from "../../hooks/data/useContactsV2";
-import { useAvailableContracts } from "../../hooks/data/useContracts";
 import { WidgetsWrapper } from "./styled";
-import { isAddressEqual } from "viem";
 import { css } from "@emotion/react";
 import { PieChart } from "react-minimal-pie-chart";
-import { getContractUrl } from "../../lib/indexer";
-import { MarketplaceCard, type MarketplaceCardData } from "../../components/Cards/MarketplaceContracts";
+import { MarketplaceCard } from "../../components/Cards/MarketplaceContracts";
 import { MarketplaceCards } from "../../components/Cards/MarketplaceContracts.styled";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ViewListIcon from "@mui/icons-material/ViewList";
@@ -47,8 +43,8 @@ export const Marketplace: FC = () => {
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const buyModal = useModal();
-  const [buyContractId, setBuyContractId] = useState<string | null>(null);
-  const [purchaseType, setPurchaseType] = useState<PurchaseType>("purchase");
+  const [buyContract, setBuyContract] = useState<HashRentalContractV2 | null>(null);
+  const [purchaseType, setPurchaseType] = useState<PurchaseType | null>();
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [contractType, setContractType] = useState<ContractType>("direct");
   const [sortType, setSortType] = useState<SortTypes>(SortTypes.None);
@@ -61,23 +57,17 @@ export const Marketplace: FC = () => {
     return { directCount, resellableCount };
   }, [data]);
 
-  // Set default tab to the one with more entries (if any has more than 1)
   useEffect(() => {
+    if (purchaseType) return;
     if (data.length > 0) {
       const { directCount, resellableCount } = contractCounts;
-
-      // If both have entries, choose the one with more
-      if (directCount > 0 && resellableCount > 0) {
-        setContractType(directCount > resellableCount ? "direct" : "resellable");
-      }
-      // If only one has entries, choose that one
-      else if (directCount > 0) {
+      if (directCount > 0) {
         setContractType("direct");
       } else if (resellableCount > 0) {
         setContractType("resellable");
       }
     }
-  }, [data, contractCounts]);
+  }, [data.length, purchaseType]);
 
   const onBuyFormClose = useCallback(async () => {
     contractsQuery.refetch();
@@ -85,44 +75,30 @@ export const Marketplace: FC = () => {
   }, [contractsQuery.refetch, buyModal]);
 
   const onPurchase = useCallback(
-    (contractId: string, purchaseType: PurchaseType) => {
-      setBuyContractId(contractId);
+    (contract: HashRentalContractV2, purchaseType: PurchaseType) => {
+      setBuyContract(contract);
       setPurchaseType(purchaseType);
       buyModal.open();
     },
     [buyModal],
   );
 
-  // Filter contracts based on selected type
-  const filteredData = useMemo(() => {
+  // Apply sorting to filtered data
+  const sortedData: HashRentalContractV2[] = useMemo(() => {
+    var filteredByContractType = [];
     if (contractType === "direct") {
-      return data.filter((contract) => !contract.isResellable);
+      filteredByContractType = data.filter((contract) => !contract.isResellable);
     } else {
-      return data.filter((contract) => contract.isResellable);
+      filteredByContractType = data.filter((contract) => contract.isResellable);
     }
-  }, [data, contractType]);
-
-  // Convert contracts to card data format and apply sorting
-  const cardData: MarketplaceCardData[] = useMemo(() => {
-    const mappedData = filteredData.map((contract) => ({
-      id: contract.id,
-      speed: contract.speed,
-      length: contract.length,
-      price: contract.price,
-      fee: contract.fee,
-      seller: contract.seller,
-      producer: (contract as any).producer || contract.seller,
-      type: contract.isResellable ? ("Resellable" as const) : ("Direct" as const),
-      stats: contract.stats,
-    }));
 
     // Apply sorting if not "None"
     if (sortType === SortTypes.None) {
-      return mappedData;
+      return filteredByContractType;
     }
 
-    return sortContracts(sortType, mappedData);
-  }, [filteredData, sortType]);
+    return sortContracts(sortType, filteredByContractType);
+  }, [data, contractType, sortType]);
 
   // Helper functions
 
@@ -193,7 +169,7 @@ export const Marketplace: FC = () => {
   }, []);
 
   // Table logic
-  const ch = createColumnHelper<HashRentalContract>();
+  const ch = createColumnHelper<HashRentalContractV2>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const columns = useMemo(() => {
     return [
@@ -253,7 +229,7 @@ export const Marketplace: FC = () => {
                 userAccount={userAccount}
                 seller={r.row.original.seller}
                 onPurchase={onPurchase}
-                contractId={r.row.original.id}
+                contract={r.row.original}
               />
             </div>
           );
@@ -262,9 +238,9 @@ export const Marketplace: FC = () => {
     ];
   }, [userAccount, onPurchase]);
 
-  const tableInstance = useReactTable<HashRentalContract>({
+  const tableInstance = useReactTable<HashRentalContractV2>({
     columns,
-    data: filteredData,
+    data: sortedData,
     getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -292,10 +268,10 @@ export const Marketplace: FC = () => {
       </WidgetsWrapper>
       <ModalItem open={buyModal.isOpen} setOpen={buyModal.setOpen}>
         <BuyForm
-          key={buyContractId}
-          contractId={buyContractId!}
+          key={buyContract?.id}
+          contract={buyContract!}
           closeForm={onBuyFormClose}
-          purchaseType={purchaseType}
+          purchaseType={purchaseType!}
         />
       </ModalItem>
 
@@ -374,8 +350,8 @@ export const Marketplace: FC = () => {
 
       {viewMode === "cards" ? (
         <MarketplaceCards>
-          {cardData.map((card) => (
-            <MarketplaceCard key={card.id} card={card} userAccount={userAccount} onPurchase={onPurchase} />
+          {sortedData.map((contract) => (
+            <MarketplaceCard key={contract.id} contract={contract} userAccount={userAccount} onPurchase={onPurchase} />
           ))}
         </MarketplaceCards>
       ) : (

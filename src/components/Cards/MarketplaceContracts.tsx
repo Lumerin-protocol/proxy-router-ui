@@ -1,4 +1,4 @@
-import { AddressLength } from "../../types/types";
+import { AddressLength, type HashRentalContractV2 } from "../../types/types";
 import { truncateAddress } from "../../utils/formatters";
 import "react-circular-progressbar/dist/styles.css";
 import Divider from "@mui/material/Divider";
@@ -23,27 +23,12 @@ const WuiAvatar = (props: { address: string }) => {
   return <wui-avatar alt={address} address={address} size="sm" />;
 };
 
-export type MarketplaceCardData = {
-  id: string;
-  speed: string;
-  length: string;
-  price: string;
-  fee: string;
-  seller: string;
-  producer: string;
-  type: "Direct" | "Resellable";
-  stats: {
-    successCount: string;
-    failCount: string;
-  };
-};
-
 type PurchaseType = "purchase" | "purchase-and-resell";
 
 interface MarketplaceCardProps {
-  card: MarketplaceCardData;
+  contract: HashRentalContractV2;
   userAccount?: `0x${string}`;
-  onPurchase: (contractId: string, purchaseType: PurchaseType) => void;
+  onPurchase: (contract: HashRentalContractV2, purchaseType: PurchaseType) => void;
 }
 
 const StatsProgressBar: FC<{ successCount: number; failCount: number }> = (props) => {
@@ -148,21 +133,21 @@ const calculatePricePerHour = (price: string, speed: string, duration: string) =
 };
 
 export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
-  const { card: item, userAccount, onPurchase } = props;
-  const TypeIcon = getTypeIcon(item.type);
+  const { contract, userAccount, onPurchase } = props;
+  const TypeIcon = getTypeIcon(contract.isResellable ? "Resellable" : "Direct");
 
   return (
     <div className="marketplace-card">
       <div className="card-header">
         <div className="contract-info">
           <h3>CONTRACT ADDRESS</h3>
-          <a href={getContractUrl(item.id as `0x${string}`)} target="_blank" rel="noreferrer">
-            {item.id ? truncateAddress(item.id, AddressLength.LONG) : "…"}
+          <a href={getContractUrl(contract.id as `0x${string}`)} target="_blank" rel="noreferrer">
+            {contract.id ? truncateAddress(contract.id, AddressLength.LONG) : "…"}
           </a>
         </div>
         <div className="stats-section">
           <div className="stats-icon">
-            <Tooltip title={getTypeDescription(item.type)} arrow placement="top">
+            <Tooltip title={getTypeDescription(contract.isResellable ? "Resellable" : "Direct")} arrow placement="top">
               <div className="list-icon">
                 <TypeIcon className="w-8 h-8" />
               </div>
@@ -176,14 +161,14 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
           <img src={Speed} alt="" />
           <div>
             <h3>SPEED</h3>
-            <p>{formatHashrateTHPS(item.speed).full}</p>
+            <p>{formatHashrateTHPS(contract.speed).full}</p>
           </div>
         </div>
         <div className="item-value duration">
           <img src={Time} alt="" />
           <div>
             <h3>DURATION</h3>
-            <p>{formatDuration(BigInt(item.length))}</p>
+            <p>{formatDuration(BigInt(contract.length))}</p>
           </div>
         </div>
         <div className="item-value price">
@@ -192,13 +177,13 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
             <h3>PRICE</h3>
             <div className="price-container">
               <div>
-                <p>{formatPaymentPrice(item.price).full}</p>
+                <p>{formatPaymentPrice(contract.price).full}</p>
               </div>
               <div className="price-per-hour-text">
-                {calculatePricePerHour(item.price, item.speed, item.length)} USDC Th/s x hour
+                {calculatePricePerHour(contract.price, contract.speed, contract.length)} USDC Th/s x hour
               </div>
             </div>
-            <p className="fee-text">{formatFeePrice(item.fee).full}</p>
+            <p className="fee-text">{formatFeePrice(contract.fee).full}</p>
           </div>
         </div>
       </div>
@@ -207,7 +192,10 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
 
       <div className="stats-block">
         <h3>STATS</h3>
-        <StatsProgressBar successCount={Number(item.stats.successCount)} failCount={Number(item.stats.failCount)} />
+        <StatsProgressBar
+          successCount={Number(contract.stats.successCount)}
+          failCount={Number(contract.stats.failCount)}
+        />
       </div>
 
       <Divider variant="fullWidth" sx={{ mt: 1, mb: 2 }} />
@@ -215,24 +203,29 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
       <div className="seller-producer-info">
         <div className="item-value seller-producer">
           <div className="seller-section">
-            <WuiAvatar address={item.seller} />
+            <WuiAvatar address={contract.seller} />
             <div>
               <h3>SELLER</h3>
-              <p>{truncateAddress(item.seller, AddressLength.MEDIUM)}</p>
+              <p>{truncateAddress(contract.seller, AddressLength.MEDIUM)}</p>
             </div>
           </div>
           <div className="producer-section">
-            <WuiAvatar address={item.producer} />
+            <WuiAvatar address={contract.producer} />
             <div>
               <h3>PRODUCER</h3>
-              <p>{truncateAddress(item.producer, AddressLength.MEDIUM)}</p>
+              <p>{truncateAddress(contract.producer, AddressLength.MEDIUM)}</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="card-actions">
-        <PurchaseDropdown userAccount={userAccount} seller={item.seller} onPurchase={onPurchase} contractId={item.id} />
+        <PurchaseDropdown
+          userAccount={userAccount}
+          seller={contract.seller}
+          onPurchase={onPurchase}
+          contract={contract}
+        />
       </div>
     </div>
   );

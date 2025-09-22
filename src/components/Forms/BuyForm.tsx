@@ -6,9 +6,9 @@ import { truncateAddress } from "../../utils/formatters";
 import { useAccount, usePublicClient } from "wagmi";
 import { purchasedHashrate } from "../../analytics";
 import { decompressPublicKey } from "../../gateway/utils";
-import { CONTRACTS_QK, useContractV2, waitForBlockNumber } from "../../hooks/data/useContracts";
+import { waitForBlockNumber, AVAILABLE_CONTRACTS_QK } from "../../hooks/data/useContractsForSale";
 import { useValidators } from "../../hooks/data/useValidators";
-import type { HashRentalContract, InputValuesBuyForm } from "../../types/types";
+import type { HashRentalContractV2, InputValuesBuyForm } from "../../types/types";
 import { TransactionForm } from "./Shared/MultistepForm";
 import { CreateEditPurchaseForm } from "./Shared/CreateEditPurchaseForm";
 import type { TransactionReceipt } from "viem/_types/types/transaction";
@@ -18,10 +18,10 @@ import { useQueryClient, UseQueryResult } from "@tanstack/react-query";
 import { GenericConfirmContent } from "./Shared/GenericConfirmContent";
 import { GenericCompletedContent } from "./Shared/GenericCompletedContent";
 import { isAddressEqual, publicKeyToAddress } from "viem/utils";
-import { usePurchaseContract } from "../../hooks/data/usePurchaseContract";
+import { usePurchaseContractV2 } from "../../hooks/data/usePurchaseContractV2";
 import { useApprovePayment } from "../../hooks/data/useApprovePayment";
 import { useApproveFee } from "../../hooks/data/useApproveFee";
-import { implementationAbi } from "contracts-js/dist/abi/abi";
+import { implementationAbi } from "../../abi/Implementation";
 import { formatFeePrice, formatHashrateTHPS, formatPaymentPrice } from "../../lib/units";
 import { formatDuration } from "../../lib/duration";
 import { getPredefinedPoolByAddress, getPredefinedPoolByIndex, predefinedPools } from "./BuyerForms/predefinedPools";
@@ -31,25 +31,24 @@ import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance"
 type PurchaseType = "purchase" | "purchase-and-resell";
 
 interface BuyFormProps {
-  contractId: string;
+  contract: HashRentalContractV2;
   closeForm: () => void;
   purchaseType?: PurchaseType;
 }
 
 export const BuyForm: FC<BuyFormProps> = memo(
-  ({ contractId, closeForm, purchaseType = "purchase" }) => {
+  ({ contract, closeForm, purchaseType = "purchase" }) => {
     const payment = useApprovePayment();
     const fee = useApproveFee();
-    const { purchaseContractAsync } = usePurchaseContract();
+    const { purchaseContractV2Async } = usePurchaseContractV2();
 
     const qc = useQueryClient();
     const pc = usePublicClient();
 
     const { data: validators } = useValidators({ offset: 0, limit: 100 });
-    const contract = useContractV2({ address: contractId as `0x${string}` });
     const slippagePercent = process.env.REACT_APP_PAYMENT_SLIPPAGE_PERCENT;
-    const priceWSlippage = adjustForSlippage(contract.data?.price, slippagePercent);
-    const feeWSlippage = adjustForSlippage(contract.data?.fee, slippagePercent);
+    const priceWSlippage = adjustForSlippage(contract.price, slippagePercent);
+    const feeWSlippage = adjustForSlippage(contract.fee, slippagePercent);
 
     // form setup
     const form = useForm<InputValuesBuyForm>({
@@ -127,10 +126,10 @@ export const BuyForm: FC<BuyFormProps> = memo(
           return (
             <GenericConfirmContent
               data={{
-                Hashrate: formatHashrateTHPS(contract.data!.speed).full,
-                Duration: formatDuration(BigInt(contract.data!.length)),
-                "Price / Fee": `${formatPaymentPrice(contract.data!.price).full} / ${
-                  formatFeePrice(contract.data!.fee).full
+                Hashrate: formatHashrateTHPS(contract.speed).full,
+                Duration: formatDuration(BigInt(contract.length)),
+                "Price / Fee": `${formatPaymentPrice(contract.price).full} / ${
+                  formatFeePrice(contract.fee).full
                 } ± ${slippagePercent}% slippage`,
                 ...(isCustomValidator
                   ? {
@@ -238,28 +237,32 @@ export const BuyForm: FC<BuyFormProps> = memo(
               });
 
               const pubKey = await pc!.readContract({
-                address: contract.data!.id as `0x${string}`,
+                address: contract.id as `0x${string}`,
                 abi: implementationAbi,
                 functionName: "pubKey",
               });
               const encrValidatorURL = await encryptMessage(pubKey, validatorURL);
 
-              const txhash = await purchaseContractAsync({
-                contractAddress: contract.data!.id,
+              const txhash = await purchaseContractV2Async({
+                contractAddress: contract.id,
                 validatorAddress: validatorAddr,
                 encrValidatorURL: encrValidatorURL.toString("hex"),
                 encrDestURL: encrDestURL.toString("hex"),
-                termsVersion: contract.data!.version,
+                termsVersion: contract.version,
+                isResellable: purchaseType === "purchase-and-resell",
+                resellToDefaultBuyer: data.resellToDefault || false,
+                resellProfitTarget: data.profitPercentage || 5,
               });
 
-              purchasedHashrate(Number(contract.data!.speed) * Number(contract.data!.length));
+              purchasedHashrate(Number(contract.speed) * Number(contract.length));
               return { txhash, isSkipped: false };
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
               await waitForBlockNumber(receipt.blockNumber, qc);
+
               const startTime = qc
-                .getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK])
-                ?.data.find((c) => isAddressEqual(c.id as `0x${string}`, contractId as `0x${string}`))?.timestamp;
+                .getQueryData<GetResponse<HashRentalContractV2[]>>([AVAILABLE_CONTRACTS_QK])
+                ?.data.find((c) => isAddressEqual(c.id as `0x${string}`, contract.id as `0x${string}`))?.timestamp;
 
               if (!startTime) {
                 throw new Error("Start time not found");
@@ -270,7 +273,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
               const username = isLightning ? data.lightningAddress : data.username;
 
               setPoolInfo({
-                contractId,
+                contractId: contract.id,
                 poolAddress: data.poolAddress,
                 username,
                 startedAt: BigInt(startTime),
@@ -284,7 +287,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.contractId === nextProps.contractId && prevProps.purchaseType === nextProps.purchaseType;
+    return prevProps.contract.id === nextProps.contract.id && prevProps.purchaseType === nextProps.purchaseType;
   },
 );
 
