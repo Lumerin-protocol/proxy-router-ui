@@ -186,31 +186,21 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
             <p>{formatDuration(BigInt(item.length))}</p>
           </div>
         </div>
-        {/* <div className="item-value type">
-          <img src={TypeIcon} alt="" />
-          <div>
-            <h3>TYPE</h3>
-            <p>{item.type}</p>
-          </div>
-        </div> */}
         <div className="item-value price">
           <img src={PriceTag} alt="" />
           <div>
             <h3>PRICE</h3>
-            <p>{formatPaymentPrice(item.price).full}</p>
+            <div className="price-container">
+              <div>
+                <p>{formatPaymentPrice(item.price).full}</p>
+              </div>
+              <div className="price-per-hour-text">
+                {calculatePricePerHour(item.price, item.speed, item.length)} USDC Th/s x hour
+              </div>
+            </div>
             <p className="fee-text">{formatFeePrice(item.fee).full}</p>
-            <p className="price-per-hour-text">
-              {calculatePricePerHour(item.price, item.speed, item.length)} Th/s x hour
-            </p>
           </div>
         </div>
-        {/* <div className="item-value fee">
-          <img src={PriceTag} alt="" />
-          <div>
-            <h3>FEE</h3>
-            <p>{formatFeePrice(item.fee).full}</p>
-          </div>
-        </div> */}
       </div>
 
       <Divider variant="fullWidth" sx={{ mt: 1, mb: 2 }} />

@@ -201,6 +201,7 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
     const isLightningPool = predefinedPoolIndex && getPoolType(predefinedPoolIndex) === "lightning";
 
     const isCustomValidator = useWatch({ control, name: "validatorAddress" }) === "custom";
+    const resellToDefault = useWatch({ control, name: "resellToDefault" });
 
     if (isLoadingValidators || formState.isLoading) {
       return <></>;
@@ -222,79 +223,83 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
             </div>
           </InputWrapper>
         )}
-        <InputWrapper>
-          <TextField
-            select
-            {...predefinedPool.field}
-            label="Predefined Pools"
-            error={!!predefinedPool.fieldState.error}
-            helperText={predefinedPool.fieldState.error?.message}
-          >
-            {predefinedPools.map((item, index) => (
-              <MenuItem key={item.name} value={index}>
-                {item.name}
-              </MenuItem>
-            ))}
-            <MenuItem key="-1" value={-1}>
-              Manually enter pool address
-            </MenuItem>
-          </TextField>
-        </InputWrapper>
-        <InputWrapper>
-          <TextField
-            {...poolAddressController.field}
-            id="poolAddress"
-            type="text"
-            placeholder="mypool.com:3333"
-            label="Pool Address"
-            disabled={!isManualPool}
-            error={!!poolAddressController.fieldState.error}
-            helperText={poolAddressController.fieldState.error?.message}
-          />
-        </InputWrapper>
+        {!resellToDefault && (
+          <>
+            <InputWrapper>
+              <TextField
+                select
+                {...predefinedPool.field}
+                label="Predefined Pools"
+                error={!!predefinedPool.fieldState.error}
+                helperText={predefinedPool.fieldState.error?.message}
+              >
+                {predefinedPools.map((item, index) => (
+                  <MenuItem key={item.name} value={index}>
+                    {item.name}
+                  </MenuItem>
+                ))}
+                <MenuItem key="-1" value={-1}>
+                  Manually enter pool address
+                </MenuItem>
+              </TextField>
+            </InputWrapper>
+            <InputWrapper>
+              <TextField
+                {...poolAddressController.field}
+                id="poolAddress"
+                type="text"
+                placeholder="mypool.com:3333"
+                label="Pool Address"
+                disabled={!isManualPool}
+                error={!!poolAddressController.fieldState.error}
+                helperText={poolAddressController.fieldState.error?.message}
+              />
+            </InputWrapper>
 
-        {isLightningPool ? (
-          <InputWrapper>
-            <TextField
-              {...lightningAddressController.field}
-              id="lightningAddress"
-              type="text"
-              placeholder="bob@getalby.com"
-              label="Lightning Address"
-              error={!!lightningAddressController.fieldState.error}
-              helperText={lightningAddressController.fieldState.error?.message}
-            />
-          </InputWrapper>
-        ) : (
-          <InputWrapper>
-            <TextField
-              {...usernameController.field}
-              id="username"
-              placeholder="account.worker"
-              label="Username"
-              error={!!usernameController.fieldState.error}
-              helperText={usernameController.fieldState.error?.message}
-            />
-          </InputWrapper>
+            {isLightningPool ? (
+              <InputWrapper>
+                <TextField
+                  {...lightningAddressController.field}
+                  id="lightningAddress"
+                  type="text"
+                  placeholder="bob@getalby.com"
+                  label="Lightning Address"
+                  error={!!lightningAddressController.fieldState.error}
+                  helperText={lightningAddressController.fieldState.error?.message}
+                />
+              </InputWrapper>
+            ) : (
+              <InputWrapper>
+                <TextField
+                  {...usernameController.field}
+                  id="username"
+                  placeholder="account.worker"
+                  label="Username"
+                  error={!!usernameController.fieldState.error}
+                  helperText={usernameController.fieldState.error?.message}
+                />
+              </InputWrapper>
+            )}
+
+            <InputWrapper>
+              <TextField
+                id="validatorAddress"
+                {...validatorAddressController.field}
+                label="Validators"
+                select
+                error={!!validatorAddressController.fieldState.error}
+                helperText={validatorAddressController.fieldState.error?.message}
+              >
+                {validators?.map((o) => (
+                  <MenuItem value={o.addr} key={o.addr}>
+                    {o.host}
+                  </MenuItem>
+                ))}
+                <MenuItem value="custom">Custom Validator</MenuItem>
+              </TextField>
+            </InputWrapper>
+          </>
         )}
-
-        <InputWrapper>
-          <TextField
-            id="validatorAddress"
-            {...validatorAddressController.field}
-            label="Validators"
-            select
-            error={!!validatorAddressController.fieldState.error}
-            helperText={validatorAddressController.fieldState.error?.message}
-          >
-            {validators?.map((o) => (
-              <MenuItem value={o.addr} key={o.addr}>
-                {o.host}
-              </MenuItem>
-            ))}
-            <MenuItem value="custom">Custom Validator</MenuItem>
-          </TextField>
-        </InputWrapper>
 
         {purchaseType === "purchase-and-resell" && (
           <InputWrapper style={{ marginTop: "32px" }}>

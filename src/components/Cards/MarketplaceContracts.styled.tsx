@@ -67,8 +67,8 @@ export const MarketplaceCards = styled("div")`
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             border: rgba(171, 171, 171, 1) 1px solid;
             border-radius: 9px;
             background-color: rgba(79, 126, 145, 0.04);
@@ -132,8 +132,15 @@ export const MarketplaceCards = styled("div")`
           .price-per-hour-text {
             font-size: 0.7rem;
             color: #4f7e91;
-            margin-top: 0.25rem;
             font-weight: 500;
+          }
+
+          .price-container {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: row;
+            align-items: center;
+            width: 250px;
           }
         }
       }

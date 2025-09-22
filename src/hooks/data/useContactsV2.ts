@@ -2,41 +2,50 @@ import { HashRentalContract } from "../../types/types";
 import { useContractsForSale, AvailableContract } from "./useContractsForSale";
 import { useValidatorsConst, useHashrateForOracle } from "./useGetContractsConstant";
 
+interface HashRentalContractV2 extends HashRentalContract {
+  producer: string;
+  isResellable: boolean;
+}
+
 export const useAvailableContractsV2 = () => {
-  const { VALIDATOR_FEE_DECIMALS, validatorFeeRateScaled } = useValidatorsConst();
-  const { data: oracle } = useHashrateForOracle();
+  const { VALIDATOR_FEE_DECIMALS, validatorFeeRateScaled, isSuccess: isConstRequestSuccess } = useValidatorsConst();
+  const { data: oracle, isSuccess: isOracleRequestSuccess } = useHashrateForOracle();
   const contractsQuery = useContractsForSale();
 
-  const mapperToLegacy: HashRentalContract[] | undefined = contractsQuery.data?.data.map((c) => {
-    // Ensure oracle is a valid bigint before using it
-    const price = calculatePrice(c, oracle!);
-    const fee = (price * BigInt(validatorFeeRateScaled ?? 0)) / BigInt(10 ** (VALIDATOR_FEE_DECIMALS ?? 0));
-    const lastRc = c.resellChain[c.resellChain.length - 1];
+  const mapperToLegacy: HashRentalContractV2[] | undefined =
+    isConstRequestSuccess && isOracleRequestSuccess
+      ? contractsQuery.data?.data.map((c) => {
+          // Ensure oracle is a valid bigint before using it
+          const price = calculatePrice(c, oracle!);
+          const fee = (price * BigInt(validatorFeeRateScaled ?? 0)) / BigInt(10 ** (VALIDATOR_FEE_DECIMALS ?? 0));
+          const lastRc = c.resellChain[c.resellChain.length - 1];
 
-    // show on UI both producer and seller.
-    const producer = c.owner;
-    const seller = lastRc.seller;
-    const buyer = lastRc.account;
+          // show on UI both producer and seller.
+          const producer = c.owner;
+          const seller = lastRc.seller;
+          const buyer = lastRc.account;
 
-    return {
-      id: c.address,
-      isDeleted: false,
-      state: "0",
-      price: (price / 10n ** 6n).toString(),
-      fee: (fee / 10n ** 8n).toString(),
-      speed: c.speed.toString(),
-      length: c.length.toString(),
-      version: c.version.toString(),
-      seller: seller,
-      producer: producer,
-      buyer: buyer,
-      profitTargetPercent: c.profitTargetPercent.toString(),
-      stats: {
-        successCount: (c.stats.purchasesCount + c.stats.resellsCount - c.stats.earlyCloseoutsCount).toString(),
-        failCount: c.stats.earlyCloseoutsCount.toString(),
-      },
-    } as HashRentalContract & { producer: string };
-  });
+          return {
+            id: c.address,
+            isDeleted: false,
+            state: "0",
+            price: price.toString(),
+            fee: fee.toString(),
+            speed: c.speed.toString(),
+            length: c.length.toString(),
+            version: c.version.toString(),
+            seller: seller,
+            isResellable: c.isResellable,
+            producer: producer,
+            buyer: buyer,
+            profitTargetPercent: c.profitTargetPercent.toString(),
+            stats: {
+              successCount: (c.stats.purchasesCount + c.stats.resellsCount - c.stats.earlyCloseoutsCount).toString(),
+              failCount: c.stats.earlyCloseoutsCount.toString(),
+            },
+          } as HashRentalContractV2;
+        })
+      : undefined;
 
   return {
     data: mapperToLegacy,

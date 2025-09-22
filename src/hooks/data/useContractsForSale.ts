@@ -48,6 +48,7 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
     profitTargetPercent: _resellProfitTarget,
     owner: owner.address as `0x${string}`,
     version: Number(_version),
+    isResellable: e.isResellable,
     resellChain: resellChain.map((rc) => ({
       account: rc._account as `0x${string}`,
       validator: rc._validator as `0x${string}`,
@@ -73,7 +74,7 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
 const query = gql`
   query GetContractsForSale($now: BigInt!) {
     implementations(
-      where: { and: [{ or: [{ isResellable: true }, { endTime_lt: $now }] }, { isDeleted: false }] }
+      where: { and: [{ endTime_lt: $now }, { isDeleted: false }] }
     ) {
       _address
       blockTimestamp
@@ -126,6 +127,7 @@ export type AvailableContract = {
   profitTargetPercent: number;
   version: number;
   owner: `0x${string}`;
+  isResellable: boolean;
   resellChain: {
     account: `0x${string}`;
     validator: `0x${string}`;

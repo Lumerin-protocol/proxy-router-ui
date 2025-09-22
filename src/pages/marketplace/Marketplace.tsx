@@ -1,4 +1,4 @@
-import { type FC, useCallback, useMemo, useState } from "react";
+import { type FC, useCallback, useMemo, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import Skeleton from "@mui/material/Skeleton";
 import { MarketplaceStatistics } from "../../components/Widgets/MarketplaceStatistics";
@@ -42,8 +42,8 @@ type ContractType = "direct" | "resellable";
 
 export const Marketplace: FC = () => {
   const { address: userAccount } = useAccount();
-  // const contractsQuery = useAvailableContractsV2();
-  const contractsQuery = useAvailableContracts();
+  const contractsQuery = useAvailableContractsV2();
+  //const contractsQuery = useAvailableContracts();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const buyModal = useModal();
@@ -53,6 +53,31 @@ export const Marketplace: FC = () => {
   const [contractType, setContractType] = useState<ContractType>("direct");
   const [sortType, setSortType] = useState<SortTypes>(SortTypes.None);
   const data = useMemo(() => contractsQuery.data || [], [contractsQuery.data]);
+
+  // Calculate counts for each contract type
+  const contractCounts = useMemo(() => {
+    const directCount = data.filter((contract) => !contract.isResellable).length;
+    const resellableCount = data.filter((contract) => contract.isResellable).length;
+    return { directCount, resellableCount };
+  }, [data]);
+
+  // Set default tab to the one with more entries (if any has more than 1)
+  useEffect(() => {
+    if (data.length > 0) {
+      const { directCount, resellableCount } = contractCounts;
+
+      // If both have entries, choose the one with more
+      if (directCount > 0 && resellableCount > 0) {
+        setContractType(directCount > resellableCount ? "direct" : "resellable");
+      }
+      // If only one has entries, choose that one
+      else if (directCount > 0) {
+        setContractType("direct");
+      } else if (resellableCount > 0) {
+        setContractType("resellable");
+      }
+    }
+  }, [data, contractCounts]);
 
   const onBuyFormClose = useCallback(async () => {
     contractsQuery.refetch();
@@ -70,12 +95,11 @@ export const Marketplace: FC = () => {
 
   // Filter contracts based on selected type
   const filteredData = useMemo(() => {
-    return data;
-    // if (contractType !== "direct") {
-    //   return data.filter((contract) => !contract.profitTargetPercent || contract.profitTargetPercent === "0");
-    // } else {
-    //   return data.filter((contract) => contract.profitTargetPercent && contract.profitTargetPercent !== "0");
-    // }
+    if (contractType === "direct") {
+      return data.filter((contract) => !contract.isResellable);
+    } else {
+      return data.filter((contract) => contract.isResellable);
+    }
   }, [data, contractType]);
 
   // Convert contracts to card data format and apply sorting
@@ -88,7 +112,7 @@ export const Marketplace: FC = () => {
       fee: contract.fee,
       seller: contract.seller,
       producer: (contract as any).producer || contract.seller,
-      type: contractType == "direct" ? ("Direct" as const) : ("Resellable" as const),
+      type: contract.isResellable ? ("Resellable" as const) : ("Direct" as const),
       stats: contract.stats,
     }));
 
@@ -288,10 +312,9 @@ export const Marketplace: FC = () => {
             {
               text: "Direct",
               value: "direct",
-              count: data.filter((contract) => contract.profitTargetPercent && contract.profitTargetPercent !== "0")
-                .length,
+              count: contractCounts.directCount,
             },
-            { text: "Resellable", value: "resellable", count: 0 },
+            { text: "Resellable", value: "resellable", count: contractCounts.resellableCount },
           ]}
           value={contractType}
           setValue={setContractType}
