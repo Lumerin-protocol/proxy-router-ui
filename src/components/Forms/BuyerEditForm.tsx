@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { usePublicClient } from "wagmi";
-import type { HashRentalContract, InputValuesBuyForm } from "./../../types/types";
+import type { HashRentalContract, HashRentalContractV2, InputValuesBuyForm } from "./../../types/types";
 import { encryptMessage } from "../../utils/encrypt";
 import { formatStratumUrl } from "../../utils/formatters";
 import { truncateAddress } from "../../utils/formatters";
@@ -22,12 +22,12 @@ import { useEditContractDestination } from "../../hooks/data/useEditContractDest
 import { publicKeyToAddress } from "viem/accounts";
 
 interface EditFormProps {
-  contractId: string;
+  contract: HashRentalContractV2;
   closeForm: () => void;
 }
 
 export const BuyerEditForm: React.FC<EditFormProps> = memo(
-  ({ contractId, closeForm }) => {
+  ({ contract, closeForm }) => {
     const pc = usePublicClient();
     const qc = useQueryClient();
     const { data: validators } = useValidators({ offset: 0, limit: 100 });
@@ -38,13 +38,9 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
       mode: "onBlur",
       reValidateMode: "onBlur",
       defaultValues: async () => {
-        const startTime = await pc!.readContract({
-          address: contractId as `0x${string}`,
-          abi: implementationAbi,
-          functionName: "startingBlockTimestamp",
-        });
+        const startTime = BigInt(contract.timestamp);
 
-        const poolInfo = getPoolInfo({ contractId, startedAt: startTime });
+        const poolInfo = getPoolInfo({ contractId: contract.id, startedAt: startTime });
 
         const poolIndex = predefinedPools.findIndex((p) => p.address === poolInfo?.poolAddress);
         const isLightning = poolIndex !== -1 && predefinedPools[poolIndex].isLightning;
@@ -74,7 +70,12 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
         title="Edit purchase"
         description="Here you can edit the pool address and username you are pointing the purchased hashpower to."
         inputForm={(props) => (
-          <CreateEditPurchaseForm control={form.control} resetField={form.resetField} setValue={form.setValue} />
+          <CreateEditPurchaseForm
+            control={form.control}
+            resetField={form.resetField}
+            setValue={form.setValue}
+            contract={contract}
+          />
         )}
         validateInput={async () => {
           return await form.trigger();
@@ -166,7 +167,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
               });
 
               const sellerPublicKey = await pc!.readContract({
-                address: contractId as `0x${string}`,
+                address: contract.id as `0x${string}`,
                 abi: implementationAbi,
                 functionName: "pubKey",
               });
@@ -174,7 +175,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
               const encrValidatorURL = await encryptMessage(sellerPublicKey, validatorURL);
 
               const txhash = await editContractDestinationAsync({
-                contractAddress: contractId,
+                contractAddress: contract.id,
                 encrValidatorURL: encrValidatorURL.toString("hex"),
                 encrDestURL: encrDestURL.toString("hex"),
               });
@@ -189,7 +190,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
 
               const startTime = qc
                 .getQueryData<GetResponse<HashRentalContract[]>>([CONTRACTS_QK])
-                ?.data.find((c) => isAddressEqual(c.id as `0x${string}`, contractId as `0x${string}`))?.timestamp;
+                ?.data.find((c) => isAddressEqual(c.id as `0x${string}`, contract.id as `0x${string}`))?.timestamp;
 
               if (!startTime) {
                 throw new Error("Start time not found");
@@ -198,7 +199,7 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
               const data = form.getValues();
 
               setPoolInfo({
-                contractId,
+                contractId: contract.id,
                 poolAddress: data.poolAddress,
                 username: data.username || data.lightningAddress,
                 startedAt: BigInt(startTime),
@@ -212,6 +213,6 @@ export const BuyerEditForm: React.FC<EditFormProps> = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.contractId === nextProps.contractId;
+    return prevProps.contract.id === nextProps.contract.id;
   },
 );

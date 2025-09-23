@@ -12,12 +12,13 @@ import {
   useWatch,
 } from "react-hook-form";
 import { useValidators } from "../../../hooks/data/useValidators";
-import type { InputValuesBuyForm } from "../../../types/types";
+import type { InputValuesBuyForm, HashRentalContractV2 } from "../../../types/types";
 import { validateLightningUrl } from "../../../utils/validators";
 import { isValidLightningUsername, isValidHost, isValidUsername } from "../../../utils/validators";
 import { ErrorWrapper, InputWrapper } from "./Forms.styled";
 import { predefinedPools } from "../BuyerForms/predefinedPools";
 import Alert from "@mui/material/Alert/Alert";
+import { formatPaymentPrice } from "../../../lib/units";
 
 const uncompressedPublicKeyRegex = /^0x04[0-9a-fA-F]{128}$/;
 
@@ -26,10 +27,11 @@ interface Props {
   resetField: UseFormResetField<InputValuesBuyForm>;
   setValue: UseFormSetValue<InputValuesBuyForm>;
   purchaseType?: "purchase" | "purchase-and-resell";
+  contract?: HashRentalContractV2;
 }
 
 export const CreateEditPurchaseForm: FC<Props> = memo(
-  ({ control, resetField, setValue, purchaseType = "purchase" }) => {
+  ({ control, resetField, setValue, purchaseType = "purchase", contract }) => {
     const { data: validators, isLoading: isLoadingValidators } = useValidators({
       offset: 0,
       limit: 100,
@@ -215,7 +217,7 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
               control={
                 <Checkbox {...resellToDefaultController.field} checked={resellToDefaultController.field.value} />
               }
-              label="Resell to default"
+              label="Resell to default buyer"
             />
             <div style={{ marginTop: "8px", fontSize: "0.875rem", marginBottom: "32px" }}>
               No need to setup your pool account. Your contract will be immediately purchased by us until there is a new
@@ -223,7 +225,7 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
             </div>
           </InputWrapper>
         )}
-        {!resellToDefault && (
+        {!resellToDefault ? (
           <>
             <InputWrapper>
               <TextField
@@ -297,6 +299,34 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
                 ))}
                 <MenuItem value="custom">Custom Validator</MenuItem>
               </TextField>
+            </InputWrapper>
+          </>
+        ) : (
+          <>
+            <InputWrapper>
+              <div style={{ marginBottom: "16px" }}>
+                <div style={{ fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.7)", marginBottom: "4px" }}>
+                  Purchase price
+                </div>
+                <div style={{ fontSize: "1rem", fontWeight: "500" }}>
+                  {contract ? formatPaymentPrice(contract.price).full : "N/A"}
+                </div>
+              </div>
+            </InputWrapper>
+            <InputWrapper>
+              <div style={{ marginBottom: "16px" }}>
+                <div style={{ fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.7)", marginBottom: "4px" }}>
+                  Default buyer resell price
+                </div>
+                <div style={{ fontSize: "1rem", fontWeight: "500" }}>
+                  <span>
+                    {contract
+                      ? `${formatPaymentPrice((Number(contract.price) * 0.95).toFixed().toString()).full}`
+                      : "N/A"}
+                  </span>
+                  <span style={{ marginLeft: "16px" }}>- 5%</span>
+                </div>
+              </div>
             </InputWrapper>
           </>
         )}

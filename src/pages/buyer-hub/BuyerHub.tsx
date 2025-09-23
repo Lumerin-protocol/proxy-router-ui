@@ -5,7 +5,7 @@ import { SortToolbar } from "../../components/SortToolbar";
 import { Spinner } from "../../components/Spinner.styled";
 import { TabSwitch } from "../../components/TabSwitch";
 import { useBuyerContracts } from "../../hooks/data/useContracts";
-import { ContractState, CurrentTab, SortTypes } from "../../types/types";
+import { ContractState, CurrentTab, SortTypes, HashRentalContractV2 } from "../../types/types";
 import { sortContracts } from "../../utils/sortContracts";
 import { getPoolInfo } from "../../gateway/localStorage";
 import { useModal } from "../../hooks/useModal";
@@ -23,7 +23,7 @@ export const BuyerHub: FC = () => {
 
   const editModal = useModal();
   const cancelModal = useModal();
-  const [contractId, setContractId] = useState<string | null>(null);
+  const [contract, setContract] = useState<HashRentalContractV2 | null>(null);
 
   const [activeOrdersTab, setActiveOrdersTab] = useState<string>(CurrentTab.Running);
   const [runningSortType, setRunningSortType] = useState<SortTypes>(SortTypes.SpeedSlowToFast);
@@ -110,11 +110,11 @@ export const BuyerHub: FC = () => {
 
   return (
     <>
-      <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contractId}`}>
-        <BuyerEditForm contractId={contractId!} closeForm={onEditFormClose} />
+      <ModalItem open={editModal.isOpen} setOpen={editModal.setOpen} key={`edit-${contract?.id}`}>
+        <BuyerEditForm contract={contract!} closeForm={onEditFormClose} />
       </ModalItem>
       <ModalItem open={cancelModal.isOpen} setOpen={cancelModal.setOpen}>
-        <CancelForm contractId={contractId!} closeForm={onCancelFormClose} />
+        <CancelForm contractId={contract?.id!} closeForm={onCancelFormClose} />
       </ModalItem>
       <WidgetsWrapper>
         <BuyerOrdersWidget isLoading={contractsQuery.isLoading} contracts={contractsQuery.data || []} />
@@ -146,16 +146,17 @@ export const BuyerHub: FC = () => {
             {runningContracts.length > 0 && (
               <ContractCards>
                 {runningContractsCards.map((item) => {
+                  const contact = contractsQuery.data?.find((x) => x.id == item.contractAddr) as HashRentalContractV2;
                   return (
                     <Card
                       key={`${item.contractAddr}-${item.startTime}`}
                       card={item}
                       editClickHandler={() => {
-                        setContractId(item.contractAddr);
+                        setContract(contact);
                         editModal.open();
                       }}
                       cancelClickHandler={() => {
-                        setContractId(item.contractAddr);
+                        setContract(contact);
                         cancelModal.open();
                       }}
                     />

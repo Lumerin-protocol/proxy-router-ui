@@ -72,10 +72,11 @@ export const BuyForm: FC<BuyFormProps> = memo(
           resetField={form.resetField}
           setValue={form.setValue}
           purchaseType={purchaseType}
+          contract={contract}
           key="form"
         />
       ),
-      [form.control, form.resetField, form.setValue, purchaseType],
+      [form.control, form.resetField, form.setValue, purchaseType, contract],
     );
 
     const getTitle = () => {
@@ -120,34 +121,37 @@ export const BuyForm: FC<BuyFormProps> = memo(
             predefinedPoolIndex,
             customValidatorHost,
             customValidatorPublicKey,
+            profitPercentage,
           } = form.getValues();
           const isLightning = getPredefinedPoolByIndex(predefinedPoolIndex)?.isLightning;
           const isCustomValidator = validatorAddress === "custom";
-          return (
-            <GenericConfirmContent
-              data={{
-                Hashrate: formatHashrateTHPS(contract.speed).full,
-                Duration: formatDuration(BigInt(contract.length)),
-                "Price / Fee": `${formatPaymentPrice(contract.price).full} / ${
-                  formatFeePrice(contract.fee).full
-                } ± ${slippagePercent}% slippage`,
-                ...(isCustomValidator
-                  ? {
-                      "Custom Validator Host": customValidatorHost,
-                      "Custom Validator Public Key": truncateAddress(customValidatorPublicKey),
-                    }
-                  : {
-                      "Validator Address": truncateAddress(validatorAddress),
-                    }),
-                "Pool Address": poolAddress,
-                ...(isLightning
-                  ? {
-                      "Lightning Address": lightningAddress,
-                    }
-                  : { Username: username }),
-              }}
-            />
-          );
+          let confirmParts = {
+            Hashrate: formatHashrateTHPS(contract.speed).full,
+            Duration: formatDuration(BigInt(contract.length)),
+            "Price / Fee": `${formatPaymentPrice(contract.price).full} / ${
+              formatFeePrice(contract.fee).full
+            } ± ${slippagePercent}% slippage`,
+            ...(isCustomValidator
+              ? {
+                  "Custom Validator Host": customValidatorHost,
+                  "Custom Validator Public Key": truncateAddress(customValidatorPublicKey),
+                }
+              : {
+                  "Validator Address": truncateAddress(validatorAddress),
+                }),
+            "Pool Address": poolAddress,
+            ...(isLightning
+              ? {
+                  "Lightning Address": lightningAddress,
+                }
+              : { Username: username }),
+          } as Record<string, string | number | bigint>;
+
+          if (purchaseType == "purchase-and-resell") {
+            confirmParts = { ...confirmParts, ["Resell Profit Target"]: `${profitPercentage}%` };
+          }
+
+          return <GenericConfirmContent data={confirmParts} />;
         }}
         resultForm={(props) => {
           const { predefinedPoolIndex } = form.getValues();
@@ -204,6 +208,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
           {
             label: "Purchase Contract",
             action: async () => {
+              debugger;
               const data = form.getValues();
               const { predefinedPoolIndex } = data;
 
@@ -250,8 +255,8 @@ export const BuyForm: FC<BuyFormProps> = memo(
                 encrDestURL: encrDestURL.toString("hex"),
                 termsVersion: contract.version,
                 isResellable: purchaseType === "purchase-and-resell",
-                resellToDefaultBuyer: data.resellToDefault || false,
-                resellProfitTarget: data.profitPercentage || 5,
+                resellToDefaultBuyer: data.resellToDefault,
+                resellProfitTarget: +data.profitPercentage,
               });
 
               purchasedHashrate(Number(contract.speed) * Number(contract.length));
