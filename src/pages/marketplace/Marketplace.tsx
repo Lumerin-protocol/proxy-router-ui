@@ -20,9 +20,9 @@ import { formatDuration } from "../../lib/duration";
 import { useAvailableContractsV2 } from "../../hooks/data/useContactsV2";
 import { WidgetsWrapper } from "./styled";
 import { css } from "@emotion/react";
-import { PieChart } from "react-minimal-pie-chart";
 import { MarketplaceCard } from "../../components/Cards/MarketplaceContracts";
 import { MarketplaceCards } from "../../components/Cards/MarketplaceContracts.styled";
+import { StatsChart } from "../../components/StatsChart";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import { IconButton } from "@mui/material";
@@ -44,9 +44,9 @@ export const Marketplace: FC = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const buyModal = useModal();
   const [buyContract, setBuyContract] = useState<HashRentalContractV2 | null>(null);
-  const [purchaseType, setPurchaseType] = useState<PurchaseType | null>();
+  const [purchaseType, setPurchaseType] = useState<PurchaseType>("purchase");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
-  const [contractType, setContractType] = useState<ContractType>("direct");
+  const [contractType, setContractType] = useState<ContractType | null>(null);
   const [sortType, setSortType] = useState<SortTypes>(SortTypes.None);
   const data = useMemo(() => contractsQuery.data || [], [contractsQuery.data]);
 
@@ -58,7 +58,7 @@ export const Marketplace: FC = () => {
   }, [data]);
 
   useEffect(() => {
-    if (purchaseType) return;
+    if (contractType) return;
     if (data.length > 0) {
       const { directCount, resellableCount } = contractCounts;
       if (directCount > 0) {
@@ -67,7 +67,7 @@ export const Marketplace: FC = () => {
         setContractType("resellable");
       }
     }
-  }, [data.length, purchaseType]);
+  }, [data.length]);
 
   const onBuyFormClose = useCallback(async () => {
     contractsQuery.refetch();
@@ -98,75 +98,9 @@ export const Marketplace: FC = () => {
     }
 
     return sortContracts(sortType, filteredByContractType);
-  }, [data, contractType, sortType]);
+  }, [contractType, sortType]);
 
   // Helper functions
-
-  const StatsChart: FC<{ successCount: number; failCount: number }> = useCallback((props) => {
-    const stats = props;
-    const total = props.successCount + props.failCount;
-
-    return (
-      <div
-        css={css`
-          width: 3em;
-          height: 3em;
-          position: relative;
-          display: flex;
-          :after {
-            position: absolute;
-            bottom: 100%;
-            opacity: 0;
-            visibility: hidden;
-            width: max-content;
-            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-            content: "Success: ${stats.successCount} / Fail: ${stats.failCount}";
-            background-color: rgba(0, 0, 0, 0.5);
-            color: #fff;
-            font-size: 0.75rem;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transform: translateX(-25%);
-          }
-          :hover:after {
-            opacity: 1;
-            visibility: visible;
-          }
-        `}
-      >
-        <PieChart
-          data={[
-            {
-              label: "Success",
-              value: Number(stats.successCount),
-              color: "rgb(80, 158, 186)",
-            },
-            { label: "Fail", value: Number(stats.failCount), color: "rgb(42, 42, 42)" },
-            { label: "Total", value: total === 0 ? 1 : 0, color: "rgb(42, 42, 42)" },
-          ]}
-          lineWidth={30}
-          rounded={false}
-          startAngle={-90}
-        />
-        <div
-          css={css`
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.7);
-          `}
-        >
-          {total === 0 ? "n/a" : total}
-        </div>
-      </div>
-    );
-  }, []);
 
   // Table logic
   const ch = createColumnHelper<HashRentalContractV2>();
@@ -267,12 +201,7 @@ export const Marketplace: FC = () => {
         <MarketplaceStatistics />
       </WidgetsWrapper>
       <ModalItem open={buyModal.isOpen} setOpen={buyModal.setOpen}>
-        <BuyForm
-          key={buyContract?.id}
-          contract={buyContract!}
-          closeForm={onBuyFormClose}
-          purchaseType={purchaseType!}
-        />
+        <BuyForm key={buyContract?.id} contract={buyContract!} closeForm={onBuyFormClose} purchaseType={purchaseType} />
       </ModalItem>
 
       <div
@@ -292,7 +221,7 @@ export const Marketplace: FC = () => {
             },
             { text: "Resellable", value: "resellable", count: contractCounts.resellableCount },
           ]}
-          value={contractType}
+          value={contractType ?? "direct"}
           setValue={setContractType}
         />
         <div
@@ -348,7 +277,21 @@ export const Marketplace: FC = () => {
         </div>
       </div>
 
-      {viewMode === "cards" ? (
+      {sortedData.length === 0 ? (
+        <div
+          css={css`
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+          `}
+        >
+          No contracts available
+        </div>
+      ) : viewMode === "cards" ? (
         <MarketplaceCards>
           {sortedData.map((contract) => (
             <MarketplaceCard key={contract.id} contract={contract} userAccount={userAccount} onPurchase={onPurchase} />
