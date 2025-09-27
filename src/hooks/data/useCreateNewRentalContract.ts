@@ -1,6 +1,6 @@
 import { useWriteContract, usePublicClient, useWalletClient } from "wagmi";
 import { zeroAddress, getContract } from "viem";
-import { cloneFactoryAbi } from "contracts-js/dist/abi/abi";
+import { cloneFactoryAbi } from "../../abi/CloneFactory";
 
 interface CreateNewRentalContractProps {
   speedHPS: bigint;

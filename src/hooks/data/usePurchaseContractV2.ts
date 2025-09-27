@@ -24,7 +24,7 @@ export function usePurchaseContractV2() {
     const cloneFactory = getContract({
       address: process.env.REACT_APP_CLONE_FACTORY as `0x${string}`,
       abi: cloneFactoryAbi,
-      client: publicClient,
+      client: walletClient,
     });
 
     const req = await cloneFactory.simulate.setPurchaseRentalContractV2(
@@ -36,7 +36,7 @@ export function usePurchaseContractV2() {
         Number(props.termsVersion),
         props.isResellable,
         props.resellToDefaultBuyer,
-        props.resellProfitTarget,
+        props.isResellable ? props.resellProfitTarget : 0,
       ],
       { account: walletClient.account.address },
     );
