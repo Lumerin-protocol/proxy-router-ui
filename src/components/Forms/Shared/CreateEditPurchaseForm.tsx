@@ -18,7 +18,7 @@ import { isValidLightningUsername, isValidHost, isValidUsername } from "../../..
 import { ErrorWrapper, InputWrapper } from "./Forms.styled";
 import { predefinedPools } from "../BuyerForms/predefinedPools";
 import Alert from "@mui/material/Alert/Alert";
-import { formatPaymentPrice } from "../../../lib/units";
+import { formatFeePrice, formatPaymentPrice } from "../../../lib/units";
 
 const uncompressedPublicKeyRegex = /^0x04[0-9a-fA-F]{128}$/;
 
@@ -38,6 +38,7 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
     });
 
     // register fields
+    // TODO: Register only required fields based on Sell To Default Buyer sellection
 
     const poolAddressController = useController({
       name: "poolAddress",
@@ -300,6 +301,17 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
                 <MenuItem value="custom">Custom Validator</MenuItem>
               </TextField>
             </InputWrapper>
+
+            {!isCustomValidator && contract && validatorAddressController.fieldState.isDirty && (
+              <InputWrapper>
+                <div style={{ marginBottom: "16px" }}>
+                  <div style={{ fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.7)", marginBottom: "4px" }}>
+                    Validator fee
+                  </div>
+                  <div style={{ fontSize: "1rem", fontWeight: "500" }}>{formatFeePrice(contract.fee).full}</div>
+                </div>
+              </InputWrapper>
+            )}
           </>
         ) : (
           <>
@@ -310,6 +322,7 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
                 </div>
                 <div style={{ fontSize: "1rem", fontWeight: "500" }}>
                   {contract ? formatPaymentPrice(contract.price).full : "N/A"}
+                  <span style={{ marginLeft: "16px" }}>- {contract?.profitTargetPercent}%</span>
                 </div>
               </div>
             </InputWrapper>
@@ -324,7 +337,9 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
                       ? `${formatPaymentPrice((Number(contract.price) * 0.95).toFixed().toString()).full}`
                       : "N/A"}
                   </span>
+                  {/* TODO: Replace this value with information from getDefaultBuyer on cloneFactory */}
                   <span style={{ marginLeft: "16px" }}>- 5%</span>
+                  {/* Also provide information about validator from getDefaultBuyer on cloneFactory */}
                 </div>
               </div>
             </InputWrapper>
@@ -338,7 +353,7 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
               type="number"
               label="Resell Profit Target (%)"
               inputProps={{
-                min: 0,
+                min: Number(contract?.profitTargetPercent ?? 0),
                 max: 100,
                 step: 1,
               }}

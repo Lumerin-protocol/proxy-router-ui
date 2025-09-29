@@ -130,6 +130,7 @@ export interface HashRentalContract {
 export interface HashRentalContractV2 extends HashRentalContract {
   producer: string;
   isResellable: boolean;
+  isDirect: boolean;
 }
 
 // Making fields optional bc a user might not have filled out the input fields

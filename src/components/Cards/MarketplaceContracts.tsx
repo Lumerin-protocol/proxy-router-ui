@@ -183,7 +183,7 @@ export const MarketplaceCard: FC<MarketplaceCardProps> = (props) => {
                 {calculatePricePerHour(contract.price, contract.speed, contract.length)} USDC Th/s x hour
               </div>
             </div>
-            <p className="fee-text">{formatFeePrice(contract.fee).full}</p>
+            {/* <p className="fee-text">{formatFeePrice(contract.fee).full}</p> */}
           </div>
         </div>
       </div>

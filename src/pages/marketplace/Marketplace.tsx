@@ -52,8 +52,8 @@ export const Marketplace: FC = () => {
 
   // Calculate counts for each contract type
   const contractCounts = useMemo(() => {
-    const directCount = data.filter((contract) => !contract.isResellable).length;
-    const resellableCount = data.filter((contract) => contract.isResellable).length;
+    const directCount = data.filter((contract) => contract.isDirect).length;
+    const resellableCount = data.filter((contract) => !contract.isDirect).length;
     return { directCount, resellableCount };
   }, [data]);
 
@@ -87,9 +87,9 @@ export const Marketplace: FC = () => {
   const sortedData: HashRentalContractV2[] = useMemo(() => {
     var filteredByContractType = [];
     if (contractType === "direct") {
-      filteredByContractType = data.filter((contract) => !contract.isResellable);
+      filteredByContractType = data.filter((contract) => contract.isDirect);
     } else {
-      filteredByContractType = data.filter((contract) => contract.isResellable);
+      filteredByContractType = data.filter((contract) => !contract.isDirect);
     }
 
     // Apply sorting if not "None"
