@@ -86,6 +86,24 @@ export const implementationAbi = [
         name: "_reason",
         type: "uint8",
       },
+      {
+        components: [
+          {
+            internalType: "bool",
+            name: "isResellable",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "isResellToDefaultBuyer",
+            type: "bool",
+          },
+        ],
+        indexed: false,
+        internalType: "struct ResellFlags",
+        name: "_resellFlags",
+        type: "tuple",
+      },
     ],
     name: "contractClosedEarly",
     type: "event",
@@ -125,15 +143,27 @@ export const implementationAbi = [
       },
       {
         indexed: false,
-        internalType: "int8",
-        name: "_resellProfitTarget",
-        type: "int8",
+        internalType: "uint256",
+        name: "_resellPrice",
+        type: "uint256",
       },
       {
+        components: [
+          {
+            internalType: "bool",
+            name: "isResellable",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "isResellToDefaultBuyer",
+            type: "bool",
+          },
+        ],
         indexed: false,
-        internalType: "uint8",
+        internalType: "struct ResellFlags",
         name: "_resellFlags",
-        type: "uint8",
+        type: "tuple",
       },
     ],
     name: "contractPurchased",
@@ -312,6 +342,86 @@ export const implementationAbi = [
   },
   {
     inputs: [],
+    name: "getLatestResell",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "_buyer",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "_validator",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "_price",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "_fee",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "_startTime",
+            type: "uint256",
+          },
+          {
+            internalType: "string",
+            name: "_encrDestURL",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "_encrValidatorURL",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "_lastSettlementTime",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "_seller",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "_resellPrice",
+            type: "uint256",
+          },
+          {
+            internalType: "int8",
+            name: "_resellProfitTarget",
+            type: "int8",
+          },
+          {
+            internalType: "bool",
+            name: "_isResellable",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "_isResellToDefaultBuyer",
+            type: "bool",
+          },
+        ],
+        internalType: "struct Implementation.ResellTerms",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "hashrateOracle",
     outputs: [
       {
@@ -470,7 +580,7 @@ export const implementationAbi = [
     outputs: [
       {
         internalType: "address",
-        name: "_account",
+        name: "_buyer",
         type: "address",
       },
       {
@@ -512,6 +622,11 @@ export const implementationAbi = [
         internalType: "address",
         name: "_seller",
         type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_resellPrice",
+        type: "uint256",
       },
       {
         internalType: "int8",
@@ -614,14 +729,26 @@ export const implementationAbi = [
         type: "address",
       },
       {
-        internalType: "uint8",
+        components: [
+          {
+            internalType: "bool",
+            name: "isResellable",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "isResellToDefaultBuyer",
+            type: "bool",
+          },
+        ],
+        internalType: "struct ResellFlags",
         name: "_resellFlags",
-        type: "uint8",
+        type: "tuple",
       },
       {
-        internalType: "int8",
-        name: "_resellProfitTarget",
-        type: "int8",
+        internalType: "uint256",
+        name: "_resellPrice",
+        type: "uint256",
       },
     ],
     name: "setPurchaseContract",
@@ -681,44 +808,6 @@ export const implementationAbi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint8",
-        name: "packed",
-        type: "uint8",
-      },
-    ],
-    name: "unpackFirstBool",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "a",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint8",
-        name: "packed",
-        type: "uint8",
-      },
-    ],
-    name: "unpackSecondBool",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "b",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
     type: "function",
   },
 ] as const;

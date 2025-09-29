@@ -10,7 +10,7 @@ interface PurchaseContractV2Props {
   termsVersion: string;
   isResellable: boolean;
   resellToDefaultBuyer: boolean;
-  resellProfitTarget: number;
+  resellPrice: bigint;
 }
 
 export function usePurchaseContractV2() {
@@ -36,7 +36,7 @@ export function usePurchaseContractV2() {
         Number(props.termsVersion),
         props.isResellable,
         props.resellToDefaultBuyer,
-        props.isResellable ? props.resellProfitTarget : 0,
+        props.isResellable ? props.resellPrice : 0n,
       ],
       { account: walletClient.account.address },
     );

@@ -174,18 +174,14 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
       control: control,
     });
 
-    const profitPercentageController = useController({
-      name: "profitPercentage",
+    const resellPriceController = useController({
+      name: "resellPrice",
       control: control,
       rules: {
-        required: "Profit percentage is required",
+        required: "Resell price is required",
         min: {
           value: 0,
-          message: "Profit percentage must be at least 0",
-        },
-        max: {
-          value: 100,
-          message: "Profit percentage must be at most 100",
+          message: "Resell price must be at least 0 USDC",
         },
       },
     });
@@ -349,16 +345,15 @@ export const CreateEditPurchaseForm: FC<Props> = memo(
         {purchaseType === "purchase-and-resell" && (
           <InputWrapper style={{ marginTop: "32px" }}>
             <TextField
-              {...profitPercentageController.field}
+              {...resellPriceController.field}
               type="number"
-              label="Resell Profit Target (%)"
+              label="Resell Price (USDC)"
               inputProps={{
-                min: Number(contract?.profitTargetPercent ?? 0),
-                max: 100,
-                step: 1,
+                min: 0,
+                step: 0.01,
               }}
-              error={!!profitPercentageController.fieldState.error}
-              helperText={profitPercentageController.fieldState.error?.message}
+              error={!!resellPriceController.fieldState.error}
+              helperText={resellPriceController.fieldState.error?.message}
               sx={{
                 "& input[type=number]": {
                   "-moz-appearance": "textfield",

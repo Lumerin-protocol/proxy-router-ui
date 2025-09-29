@@ -129,6 +129,7 @@ export interface HashRentalContract {
 
 export interface HashRentalContractV2 extends HashRentalContract {
   producer: string;
+  resellPrice: bigint;
   isResellable: boolean;
   isDirect: boolean;
 }
@@ -144,7 +145,7 @@ export interface InputValuesBuyForm {
   customValidatorPublicKey: string;
   customValidatorHost: string;
   resellToDefault: boolean;
-  profitPercentage: number;
+  resellPrice: number;
 }
 
 export interface FormData extends InputValuesBuyForm {

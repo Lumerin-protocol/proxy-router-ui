@@ -30,7 +30,7 @@ const fetchContractsAsync = async (): Promise<GetResponse<AvailableContract[]>> 
 function mapContract(e: ContractsResponse["implementations"][number]): AvailableContract {
   const { _terms, resellChain, owner, _address, purchasesCount, resellsCount, earlyCloseoutsCount } = e;
   const { _version, _speed, _length } = _terms;
-  const { _resellProfitTarget } = resellChain[resellChain.length - 1];
+  const { _resellProfitTarget, _resellPrice } = resellChain[resellChain.length - 1];
 
   //TODO: enable future terms
   // if (hasFutureTerms && futureTerms && state === "0") {
@@ -46,6 +46,7 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
     speed: BigInt(_speed),
     length: BigInt(_length),
     profitTargetPercent: _resellProfitTarget,
+    resellPrice: BigInt(_resellPrice),
     owner: owner.address as `0x${string}`,
     version: Number(_version),
     isResellable: e.isResellable,
@@ -58,6 +59,7 @@ function mapContract(e: ContractsResponse["implementations"][number]): Available
       lastSettlementTime: BigInt(rc._lastSettlementTime),
       seller: rc._seller as `0x${string}`,
       resellProfitTarget: rc._resellProfitTarget,
+      resellPrice: rc._resellPrice,
       isResellable: rc._isResellable,
       isResellToDefaultBuyer: rc._isResellToDefaultBuyer,
     })),
@@ -106,6 +108,7 @@ const query = gql`
         _lastSettlementTime
         _seller
         _resellProfitTarget
+        _resellPrice
         _isResellable
         _isResellToDefaultBuyer
       }
@@ -125,6 +128,7 @@ export type AvailableContract = {
   speed: bigint;
   length: bigint;
   profitTargetPercent: number;
+  resellPrice: bigint;
   version: number;
   owner: `0x${string}`;
   isResellable: boolean;
@@ -174,6 +178,7 @@ type ContractsResponse = {
       _lastSettlementTime: string;
       _seller: `0x${string}`;
       _resellProfitTarget: number;
+      _resellPrice: string;
       _isResellable: boolean;
       _isResellToDefaultBuyer: boolean;
     }[];

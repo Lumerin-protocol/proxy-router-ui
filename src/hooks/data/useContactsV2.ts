@@ -33,6 +33,7 @@ export const useAvailableContractsV2 = () => {
             isResellable: c.isResellable, // Used to identify if that contract can be purchased, not about type (direct or resell)
             producer: producer,
             buyer: buyer,
+            resellPrice: c.resellPrice, // TODO: Use on UI
             profitTargetPercent: c.profitTargetPercent.toString(),
             isDirect: c.resellChain.length == 1, // if there only one item in rc then it is direct purchase
             stats: {

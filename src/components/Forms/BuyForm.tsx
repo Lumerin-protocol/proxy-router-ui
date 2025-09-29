@@ -121,7 +121,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
             predefinedPoolIndex,
             customValidatorHost,
             customValidatorPublicKey,
-            profitPercentage,
+            resellPrice,
           } = form.getValues();
           const isLightning = getPredefinedPoolByIndex(predefinedPoolIndex)?.isLightning;
           const isCustomValidator = validatorAddress === "custom";
@@ -148,7 +148,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
           } as Record<string, string | number | bigint>;
 
           if (purchaseType == "purchase-and-resell") {
-            confirmParts = { ...confirmParts, ["Resell Profit Target"]: `${profitPercentage}%` };
+            confirmParts = { ...confirmParts, ["Resell Price"]: `${resellPrice} USDC` };
           }
 
           return <GenericConfirmContent data={confirmParts} />;
@@ -256,7 +256,7 @@ export const BuyForm: FC<BuyFormProps> = memo(
                 termsVersion: contract.version,
                 isResellable: purchaseType === "purchase-and-resell",
                 resellToDefaultBuyer: data.resellToDefault,
-                resellProfitTarget: +data.profitPercentage,
+                resellPrice: BigInt(Math.floor(data.resellPrice * 1e6)), // Convert USDC to wei (6 decimals)
               });
 
               purchasedHashrate(Number(contract.speed) * Number(contract.length));
@@ -329,7 +329,7 @@ function getDefaultInputValues(): InputValuesBuyForm {
       customValidatorHost: "",
       customValidatorPublicKey: "",
       resellToDefault: false,
-      profitPercentage: 10,
+      resellPrice: 0,
     };
   }
   const lastPool = getPredefinedPoolByAddress(lastPurchaseDestination?.poolAddress);
@@ -344,7 +344,7 @@ function getDefaultInputValues(): InputValuesBuyForm {
     customValidatorHost: "",
     customValidatorPublicKey: "",
     resellToDefault: false,
-    profitPercentage: 10,
+    resellPrice: 0,
   };
 }
 

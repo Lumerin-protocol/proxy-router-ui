@@ -608,30 +608,6 @@ export const cloneFactoryAbi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bool",
-        name: "a",
-        type: "bool",
-      },
-      {
-        internalType: "bool",
-        name: "b",
-        type: "bool",
-      },
-    ],
-    name: "packBools",
-    outputs: [
-      {
-        internalType: "uint8",
-        name: "",
-        type: "uint8",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "paymentToken",
     outputs: [
@@ -655,6 +631,19 @@ export const cloneFactoryAbi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_contractAddress",
+        type: "address",
+      },
+    ],
+    name: "purchaseAsDefaultBuyer",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -779,16 +768,6 @@ export const cloneFactoryAbi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
         name: "_speed",
         type: "uint256",
       },
@@ -801,11 +780,6 @@ export const cloneFactoryAbi = [
         internalType: "int8",
         name: "_profitTarget",
         type: "int8",
-      },
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
       },
       {
         internalType: "string",
@@ -916,9 +890,9 @@ export const cloneFactoryAbi = [
         type: "bool",
       },
       {
-        internalType: "int8",
-        name: "_resellProfitTarget",
-        type: "int8",
+        internalType: "uint256",
+        name: "_resellPrice",
+        type: "uint256",
       },
     ],
     name: "setPurchaseRentalContractV2",
@@ -973,44 +947,6 @@ export const cloneFactoryAbi = [
     name: "transferOwnership",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint8",
-        name: "packed",
-        type: "uint8",
-      },
-    ],
-    name: "unpackFirstBool",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "a",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint8",
-        name: "packed",
-        type: "uint8",
-      },
-    ],
-    name: "unpackSecondBool",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "b",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
     type: "function",
   },
   {
