@@ -1,3 +1,4 @@
+import React from "react";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
 import { faMedium } from "@fortawesome/free-brands-svg-icons/faMedium";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons/faTelegram";
@@ -7,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FlagCircleIcon from "@mui/icons-material/FlagCircle";
 import HelpIcon from "@mui/icons-material/Help";
 import ShieldIcon from "@mui/icons-material/Shield";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import Drawer from "@mui/material/Drawer";
 import SellerIconActive from "../../images/icons/seller-blue.png";
 import SellerIconInactive from "../../images/icons/seller-grey.png";
@@ -26,6 +28,7 @@ interface Navigation {
   activeIcon: string;
   inactiveIcon: string;
   current: boolean;
+  customIcon?: (props: { item: Navigation }) => React.ReactElement;
 }
 
 export const ResponsiveNavigation = (prop: {
@@ -65,6 +68,16 @@ export const ResponsiveNavigation = (prop: {
       inactiveIcon: SellerIconInactive,
       current: location.pathname === PathName.ValidatorHub,
     },
+    {
+      name: "Futures",
+      to: PathName.Futures,
+      activeIcon: "TrendingUp",
+      inactiveIcon: "TrendingUp",
+      current: location.pathname === PathName.Futures,
+      customIcon: (props: { item: Navigation }) => (
+        <TrendingUpIcon style={{ color: props.item.current ? "#c2c9d6" : "#6B7280", fontSize: "24px" }} />
+      ),
+    },
   ];
 
   const drawer = (
@@ -85,7 +98,7 @@ export const ResponsiveNavigation = (prop: {
               }}
             >
               {/* <img src={item.current ? item.activeIcon : item.inactiveIcon} alt='' /> */}
-              <img src={item.inactiveIcon} alt="" />
+              {item.customIcon ? item.customIcon({ item }) : <img src={item.inactiveIcon} alt="" />}
               <span className="item-name" style={{ fontWeight: item.current ? 700 : 400 }}>
                 {item.name}
               </span>

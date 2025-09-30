@@ -44,6 +44,7 @@ export enum PathName {
   BuyerHub = "/buyerhub",
   SellerHub = "/sellerhub",
   ValidatorHub = "/validatorhub",
+  Futures = "/futures",
 }
 
 export enum AlertMessage {

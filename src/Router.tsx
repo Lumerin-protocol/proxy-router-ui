@@ -21,6 +21,7 @@ const SellerHub = safeLazy(() =>
 const ValidatorHub = safeLazy(() =>
   import("./pages/validator-hub/ValidatorHub").then((module) => ({ default: module.ValidatorHub })),
 );
+const Futures = safeLazy(() => import("./pages/futures/Futures").then((module) => ({ default: module.Futures })));
 
 export const Router: FC = () => {
   return (
@@ -57,6 +58,14 @@ export const Router: FC = () => {
           element={
             <SuspenseLayoutLazy pageTitle="Validator Hub">
               <ValidatorHub />
+            </SuspenseLayoutLazy>
+          }
+        />
+        <Route
+          path={PathName.Futures}
+          element={
+            <SuspenseLayoutLazy pageTitle="Futures">
+              <Futures />
             </SuspenseLayoutLazy>
           }
         />
