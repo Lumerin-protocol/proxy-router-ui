@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { FuturesPortfolioWidget } from "../../components/Widgets/Futures/FuturesPortfolioWidget";
+import { FuturesBalanceWidget } from "../../components/Widgets/Futures/FuturesBalanceWidget";
 import { FuturesMarketWidget } from "../../components/Widgets/Futures/FuturesMarketWidget";
 import { OrderBookTable } from "../../components/Widgets/Futures/OrderBookTable";
 import { HashpriceIndexChart } from "../../components/Widgets/Futures/HashpriceIndexChart";
@@ -14,7 +14,7 @@ export const Futures: FC = () => {
       {/* Main content area - all existing blocks */}
       <div className="flex-1 flex flex-col">
         <WidgetsWrapper>
-          <FuturesPortfolioWidget />
+          <FuturesBalanceWidget />
           <FuturesMarketWidget />
         </WidgetsWrapper>
 

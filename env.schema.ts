@@ -21,6 +21,10 @@ export const EnvSchema = Type.Object({
   REACT_APP_VERSION: Type.String(),
   REACT_APP_WALLET_CONNECT_ID: Type.String({ minLength: 1 }),
   DEV_SERVER_HTTPS: Type.Boolean({ default: false }),
+  REACT_APP_FUTURES_TOKEN_ADDRESS: TypeEthAddress(),
+  REACT_APP_FUTURES_REQUIRED_LMR: Type.String({ default: "10000" }),
+  REACT_APP_SUBGRAPH_FUTURES_URL: Type.String({ format: "uri" }),
+  REACT_APP_SUBGRAPH_FUTURES_API_KEY: Type.String({ minLength: 1 }),
 });
 
 // Inferred type of environment variables

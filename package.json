@@ -37,6 +37,8 @@
     "@tanstack/react-table": "^8.21.3",
     "buffer": "^6.0.3",
     "contracts-js": "github:Lumerin-protocol/contracts-js#v2.0.7",
+    "graphql": "^16.11.0",
+    "graphql-request": "^7.2.0",
     "ecies-geth": "^1.6.2",
     "pretty-ms": "^9.2.0",
     "react": "^18.3",

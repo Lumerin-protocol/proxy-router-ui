@@ -1,24 +1,52 @@
 import styled from "@mui/material/styles/styled";
 import EastIcon from "@mui/icons-material/East";
 import { SmallWidget } from "../../Cards/Cards.styled";
+import { Spinner } from "../../Spinner.styled";
+import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
+import { formatHashrateTHPS } from "../../../lib/units";
 
 export const FuturesMarketWidget = () => {
+  const { data: contractSpecs, isLoading, error } = useFuturesContractSpecs();
+
+  const formatSpeed = (speedHps: bigint) => {
+    return formatHashrateTHPS(speedHps).full;
+  };
+
+  const formatDuration = (seconds: number) => {
+    const months = Math.round(seconds / (30 * 24 * 60 * 60)); // Approximate months
+    return `${months} month${months !== 1 ? "s" : ""}`;
+  };
+
+  const formatPercentage = (percent: number) => {
+    return `${percent}%`;
+  };
+
   return (
     <SmallWidget>
       <h3>Futures Market</h3>
       <MarketStats>
-        <div className="stat">
-          <h4>$2.4M</h4>
-          <p>24H VOLUME</p>
-        </div>
-        <div className="stat">
-          <h4>1,247</h4>
-          <p>ACTIVE TRADES</p>
-        </div>
-        <div className="stat">
-          <h4>+12.3%</h4>
-          <p>MARKET TREND</p>
-        </div>
+        {isLoading && <Spinner fontSize="0.3em" />}
+        {error && <div>Error loading market data</div>}
+        {contractSpecs?.data && (
+          <>
+            <div className="stat">
+              <h4>{formatSpeed(contractSpecs.data.speedHps)}</h4>
+              <p>CONTRACT SPEED</p>
+            </div>
+            <div className="stat">
+              <h4>{formatDuration(contractSpecs.data.deliveryDurationSeconds)}</h4>
+              <p>DELIVERY DURATION</p>
+            </div>
+            <div className="stat">
+              <h4>{formatPercentage(contractSpecs.data.buyerLiquidationMarginPercent)}</h4>
+              <p>BUYER MARGIN</p>
+            </div>
+            <div className="stat">
+              <h4>{formatPercentage(contractSpecs.data.sellerLiquidationMarginPercent)}</h4>
+              <p>SELLER MARGIN</p>
+            </div>
+          </>
+        )}
       </MarketStats>
       <div className="link">
         <a href="#" onClick={(e) => e.preventDefault()}>
