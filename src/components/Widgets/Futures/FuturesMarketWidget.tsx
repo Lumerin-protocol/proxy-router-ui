@@ -37,20 +37,20 @@ export const FuturesMarketWidget = () => {
               <h4>{formatDuration(contractSpecs.data.deliveryDurationSeconds)}</h4>
               <p>DELIVERY DURATION</p>
             </div>
-            <div className="stat">
+            {/* <div className="stat">
               <h4>{formatPercentage(contractSpecs.data.buyerLiquidationMarginPercent)}</h4>
               <p>BUYER MARGIN</p>
             </div>
             <div className="stat">
               <h4>{formatPercentage(contractSpecs.data.sellerLiquidationMarginPercent)}</h4>
               <p>SELLER MARGIN</p>
-            </div>
+            </div> */}
           </>
         )}
       </MarketStats>
       <div className="link">
         <a href="#" onClick={(e) => e.preventDefault()}>
-          Explore futures markets <EastIcon style={{ fontSize: "0.75rem" }} />
+          Other specs <EastIcon style={{ fontSize: "0.75rem" }} />
         </a>
       </div>
     </SmallWidget>
@@ -65,8 +65,8 @@ const MarketStats = styled("div")`
   gap: 1.5rem;
 
   .stat {
-    flex: 1;
-    min-width: 0;
+    // flex: 1;
+    // min-width: 0;
     h4 {
       font-size: 1.85rem;
       line-height: 1.75rem;

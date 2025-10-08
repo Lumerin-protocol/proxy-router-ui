@@ -10,7 +10,11 @@ interface OrderBookData {
   highlightColor?: "red" | "green";
 }
 
-export const OrderBookTable = () => {
+interface OrderBookTableProps {
+  onRowClick?: (price: number, amount: number | null) => void;
+}
+
+export const OrderBookTable = ({ onRowClick }: OrderBookTableProps) => {
   const [selectedMonth, setSelectedMonth] = useState("September");
 
   // Dummy data based on the screenshot
@@ -51,7 +55,16 @@ export const OrderBookTable = () => {
           </thead>
           <tbody>
             {orderBookData.map((row, index) => (
-              <TableRow key={index} $isHighlighted={row.isHighlighted} $highlightColor={row.highlightColor}>
+              <TableRow
+                key={index}
+                $isHighlighted={row.isHighlighted}
+                $highlightColor={row.highlightColor}
+                onClick={() => {
+                  // Use askUnits if available, otherwise bidUnits, otherwise null
+                  const amount = row.askUnits || row.bidUnits || null;
+                  onRowClick?.(row.price, amount);
+                }}
+              >
                 <td>{row.bidUnits || ""}</td>
                 <td>{row.price.toFixed(2)}</td>
                 <td>{row.askUnits || ""}</td>
@@ -66,7 +79,7 @@ export const OrderBookTable = () => {
 
 const OrderBookWidget = styled(SmallWidget)`
   width: 100%;
-  padding: 1rem;
+  padding: 1.5rem;
 `;
 
 const Header = styled("div")`
@@ -77,7 +90,7 @@ const Header = styled("div")`
   
   h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 600;
   }
   
@@ -85,9 +98,9 @@ const Header = styled("div")`
     background: none;
     border: none;
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 4px;
     
     &:hover {
@@ -120,8 +133,8 @@ const Table = styled("table")`
   
   th {
     text-align: center;
-    padding: 0.5rem 0.25rem;
-    font-size: 0.75rem;
+    padding: 1rem 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #a7a9b6;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -129,8 +142,8 @@ const Table = styled("table")`
   
   td {
     text-align: center;
-    padding: 0.4rem 0.25rem;
-    font-size: 0.85rem;
+    padding: 0.75rem 0.75rem;
+    font-size: 1.1rem;
     color: #fff;
   }
 `;
@@ -140,8 +153,9 @@ const TableRow = styled("tr")<{ $isHighlighted?: boolean; $highlightColor?: "red
     if (!props.$isHighlighted) return "transparent";
     return props.$highlightColor === "red" ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)";
   }};
+  cursor: pointer;
   
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.1);
   }
 `;

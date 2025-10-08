@@ -2,6 +2,7 @@ import styled from "@mui/material/styles/styled";
 import EastIcon from "@mui/icons-material/East";
 import { useAccount } from "wagmi";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
+import { useLmrBalanceValidation } from "../../../hooks/data/useLmrBalanceValidation";
 import { useModal } from "../../../hooks/useModal";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { Spinner } from "../../Spinner.styled";
@@ -15,12 +16,18 @@ import { WithdrawalForm } from "../../Forms/WithdrawalForm";
 export const FuturesBalanceWidget = () => {
   const { address } = useAccount();
   const futureBalance = useGetFutureBalance(address);
+  const lmrBalanceValidation = useLmrBalanceValidation(address);
   const depositModal = useModal();
   const withdrawalModal = useModal();
 
   const isLoading = futureBalance.isLoading;
   const isSuccess = !!(futureBalance.isSuccess && address);
   const balanceValue = formatValue(futureBalance.data ?? 0n, paymentToken);
+
+  // Check if LMR balance meets minimum requirement
+  const requiredLmrAmount = BigInt(process.env.REACT_APP_FUTURES_REQUIRED_LMR || "10000");
+  const hasMinimumLmrBalance = lmrBalanceValidation.totalBalance >= requiredLmrAmount;
+  const isLmrBalanceLoading = lmrBalanceValidation.isLoading;
 
   return (
     <>
@@ -39,16 +46,35 @@ export const FuturesBalanceWidget = () => {
                 </BalanceAmount>
               </BalanceDisplay>
               <ActionButtons>
-                <PrimaryButton onClick={depositModal.open}>Deposit</PrimaryButton>
-                <PrimaryButton onClick={withdrawalModal.open}>Withdraw</PrimaryButton>
+                <PrimaryButton
+                  onClick={depositModal.open}
+                  disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
+                  title={
+                    !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
+                  }
+                >
+                  Deposit
+                </PrimaryButton>
+                <PrimaryButton
+                  onClick={withdrawalModal.open}
+                  disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
+                  title={
+                    !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
+                  }
+                >
+                  Withdraw
+                </PrimaryButton>
               </ActionButtons>
             </BalanceRow>
           )}
         </BalanceContainer>
         <div className="link">
           <p onClick={(e) => e.preventDefault()}>
-            To use Futures you need to have at least {process.env.REACT_APP_FUTURES_REQUIRED_LMR} LMR balance (Arbitrum
-            or Ethereum)
+            {isLmrBalanceLoading
+              ? "Checking LMR balance..."
+              : hasMinimumLmrBalance
+                ? `✓ LMR balance sufficient (${lmrBalanceValidation.totalBalance.toString()} LMR)`
+                : `⚠ Insufficient LMR balance. Required: ${process.env.REACT_APP_FUTURES_REQUIRED_LMR} LMR (Arbitrum or Ethereum)`}
           </p>
         </div>
       </SmallWidget>

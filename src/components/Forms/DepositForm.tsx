@@ -1,7 +1,7 @@
 import { type FC, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAccount } from "wagmi";
-import { useAddMargin } from "../../hooks/data/useAddMargin";
+import { useAddMargin, useApproveAddMargin } from "../../hooks/data/useAddMargin";
 import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
 import { useApproveERC20 } from "../../hooks/data/useApproveERC20";
 import { TransactionForm } from "./Shared/MultistepForm";
@@ -19,9 +19,10 @@ interface InputValues {
 
 export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
   const { address } = useAccount();
-  const { addMarginAsync, isPending } = useAddMargin();
+  const { addMarginAsync } = useAddMargin();
+  const { approveAsync } = useApproveAddMargin();
+
   const paymentTokenBalance = usePaymentTokenBalance(address);
-  const { approveAsync } = useApproveERC20(process.env.REACT_APP_PAYMENT_TOKEN_ADDRESS as `0x${string}`);
 
   const form = useForm<InputValues>({
     mode: "onBlur",

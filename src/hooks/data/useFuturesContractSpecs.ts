@@ -3,8 +3,9 @@ import { gql } from "graphql-request";
 import { graphqlRequest } from "./graphql";
 import { useQuery } from "@tanstack/react-query";
 import type { GetResponse } from "../../gateway/interfaces";
+import { ContractSpecsQuery } from "./graphql-queries";
 
-export const FUTURES_CONTRACT_SPECS_QK = "futuresContractSpecs";
+export const FUTURES_CONTRACT_SPECS_QK = "ContractSpecs";
 
 export const useFuturesContractSpecs = (props?: { refetch?: boolean }) => {
   const query = useQuery({
@@ -29,7 +30,7 @@ const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpe
     priceLadderStep: BigInt(response.futures.priceLadderStep),
     purchaseCount: response.futures.purchaseCount,
     sellerLiquidationMarginPercent: response.futures.sellerLiquidationMarginPercent,
-    speedHps: BigInt(response.futures.speedHps),
+    speedHps: BigInt(+response.futures.speedHps / 10 ** 4), // TODO: Check probably bug
     tokenAddress: response.futures.tokenAddress,
     validatorAddress: response.futures.validatorAddress,
   };
@@ -38,32 +39,6 @@ const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpe
     blockNumber: response._meta.block.number,
   };
 };
-
-const ContractSpecsQuery = gql`
-  query ContractSpecs {
-    futures(id: "0") {
-      buyerLiquidationMarginPercent
-      closeoutCount
-      contractActiveCount
-      contractCount
-      deliveryDurationSeconds
-      hashrateOracleAddress
-      minSellerStake
-      priceLadderStep
-      purchaseCount
-      sellerLiquidationMarginPercent
-      speedHps
-      tokenAddress
-      validatorAddress
-    }
-    _meta {
-      block {
-        number
-        timestamp
-      }
-    }
-  }
-`;
 
 export type FuturesContractSpecs = {
   buyerLiquidationMarginPercent: number;
