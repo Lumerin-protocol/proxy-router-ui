@@ -25,7 +25,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
 
   const options: Highcharts.Options = {
     chart: {
-      type: "line",
+      type: "spline",
       backgroundColor: "transparent",
       style: {
         fontFamily: "inherit",
@@ -59,6 +59,8 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
           color: "#ffffff",
         },
       },
+      // min: 100,   // Minimum value on Y-axis
+      // max: 150,
       labels: {
         style: {
           color: "#ffffff",
@@ -75,7 +77,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
         color: "#509EBA",
         lineWidth: 2,
         marker: {
-          enabled: true,
+          enabled: false,
           radius: 4,
         },
       },

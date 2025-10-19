@@ -1,60 +1,67 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState } from "react";
-import type { ParticipantOrder } from "../../../hooks/data/useParticipant";
+import type { ParticipantPosition } from "../../../hooks/data/useParticipant";
 
-interface OrdersListWidgetProps {
-  orders: ParticipantOrder[];
+interface PositionsListWidgetProps {
+  positions: ParticipantPosition[];
   isLoading?: boolean;
+  participantAddress?: `0x${string}`;
 }
 
-export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) => {
+export const PositionsListWidget = ({ positions, isLoading, participantAddress }: PositionsListWidgetProps) => {
   const getStatusColor = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
-      return "#3b82f6"; // Filled/Closed
+      return "#6b7280"; // Closed
     }
     return isActive ? "#22c55e" : "#ef4444"; // Active or Cancelled
   };
 
   const getStatusText = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
-      return "Filled";
+      return "Closed";
     }
-    return isActive ? "Active" : "Cancelled";
+    return isActive ? "Open" : "Cancelled";
   };
 
-  const getTypeColor = (isBuy: boolean) => {
-    return isBuy ? "#22c55e" : "#ef4444";
+  const getPositionType = (position: ParticipantPosition) => {
+    if (!participantAddress) return "Unknown";
+    return position.buyer.address.toLowerCase() === participantAddress.toLowerCase() ? "Long" : "Short";
+  };
+
+  const getTypeColor = (position: ParticipantPosition) => {
+    const type = getPositionType(position);
+    return type === "Long" ? "#22c55e" : "#ef4444";
   };
 
   const formatPrice = (price: bigint) => {
     return (Number(price) / 1e6).toFixed(2); // Convert from wei to USDC
   };
 
-  const formatDeliveryDate = (deliveryDate: bigint) => {
-    const date = new Date(Number(deliveryDate) * 1000);
-    return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(Number(timestamp) * 1000);
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
-  const handleCloseOrder = (orderId: string) => {
-    console.log("Closing order:", orderId);
-    // TODO: Implement actual close order logic
+  const handleClosePosition = (positionId: string) => {
+    console.log("Closing position:", positionId);
+    // TODO: Implement actual close position logic
   };
 
   if (isLoading) {
     return (
-      <OrdersContainer>
-        <h3>Orders</h3>
+      <PositionsContainer>
+        <h3>Positions</h3>
         <div style={{ textAlign: "center", padding: "2rem", color: "#6b7280" }}>
-          <p>Loading orders...</p>
+          <p>Loading positions...</p>
         </div>
-      </OrdersContainer>
+      </PositionsContainer>
     );
   }
 
   return (
-    <OrdersContainer>
-      <h3>Orders</h3>
+    <PositionsContainer>
+      <h3>Positions</h3>
 
       <TableContainer>
         <Table>
@@ -62,45 +69,48 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
             <tr>
               <th>Type</th>
               <th>Price</th>
-              <th>Delivery Date</th>
+              <th>Start Time</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <TableRow key={order.id}>
-                <td>
-                  <TypeBadge $type={order.isBuy ? "Buy" : "Sell"}>{order.isBuy ? "Buy" : "Sell"}</TypeBadge>
-                </td>
-                <td>${formatPrice(order.price)}</td>
-                <td>{formatDeliveryDate(order.deliveryDate)}</td>
-                <td>
-                  <StatusBadge $status={getStatusText(order.isActive, order.closedAt)}>
-                    {getStatusText(order.isActive, order.closedAt)}
-                  </StatusBadge>
-                </td>
-                <td>
-                  {order.isActive && !order.closedAt && (
-                    <CloseButton onClick={() => handleCloseOrder(order.id)}>Close</CloseButton>
-                  )}
-                </td>
-              </TableRow>
-            ))}
+            {positions.map((position) => {
+              const positionType = getPositionType(position);
+              return (
+                <TableRow key={position.id}>
+                  <td>
+                    <TypeBadge $type={positionType}>{positionType}</TypeBadge>
+                  </td>
+                  <td>${formatPrice(position.price)}</td>
+                  <td>{formatTimestamp(position.startTime)}</td>
+                  <td>
+                    <StatusBadge $status={getStatusText(position.isActive, position.closedAt)}>
+                      {getStatusText(position.isActive, position.closedAt)}
+                    </StatusBadge>
+                  </td>
+                  <td>
+                    {position.isActive && !position.closedAt && (
+                      <CloseButton onClick={() => handleClosePosition(position.id)}>Close</CloseButton>
+                    )}
+                  </td>
+                </TableRow>
+              );
+            })}
           </tbody>
         </Table>
       </TableContainer>
 
-      {orders.length === 0 && (
+      {positions.length === 0 && (
         <EmptyState>
-          <p>No orders found</p>
+          <p>No positions found</p>
         </EmptyState>
       )}
-    </OrdersContainer>
+    </PositionsContainer>
   );
 };
 
-const OrdersContainer = styled(SmallWidget)`
+const PositionsContainer = styled(SmallWidget)`
   width: 100%;
   padding: 1.5rem;
   display: flex;
@@ -137,7 +147,7 @@ const TableContainer = styled("div")`
 const Table = styled("table")`
   width: 100%;
   border-collapse: collapse;
-  min-width: 400px;
+  min-width: 500px;
   
   th {
     text-align: left;
@@ -173,8 +183,8 @@ const TypeBadge = styled("span")<{ $type: string }>`
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
-  background-color: ${(props) => (props.$type === "Buy" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)")};
-  color: ${(props) => (props.$type === "Buy" ? "#22c55e" : "#ef4444")};
+  background-color: ${(props) => (props.$type === "Long" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)")};
+  color: ${(props) => (props.$type === "Long" ? "#22c55e" : "#ef4444")};
 `;
 
 const StatusBadge = styled("span")<{ $status: string }>`
@@ -185,12 +195,10 @@ const StatusBadge = styled("span")<{ $status: string }>`
   font-weight: 600;
   background-color: ${(props) => {
     switch (props.$status) {
-      case "Active":
+      case "Open":
         return "rgba(34, 197, 94, 0.2)";
-      case "Filled":
-        return "rgba(59, 130, 246, 0.2)";
-      case "Cancelled":
-        return "rgba(239, 68, 68, 0.2)";
+      case "Closed":
+        return "rgba(107, 114, 128, 0.2)";
       default:
         return "rgba(107, 114, 128, 0.2)";
     }
@@ -232,12 +240,10 @@ const EmptyState = styled("div")`
 // Helper function for status color
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "Active":
+    case "Open":
       return "#22c55e";
-    case "Filled":
-      return "#3b82f6";
-    case "Cancelled":
-      return "#ef4444";
+    case "Closed":
+      return "#6b7280";
     default:
       return "#6b7280";
   }

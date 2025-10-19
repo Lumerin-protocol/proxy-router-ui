@@ -30,7 +30,7 @@ const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpe
     priceLadderStep: BigInt(response.futures.priceLadderStep),
     purchaseCount: response.futures.purchaseCount,
     sellerLiquidationMarginPercent: response.futures.sellerLiquidationMarginPercent,
-    speedHps: BigInt(+response.futures.speedHps / 10 ** 4), // TODO: Check probably bug
+    speedHps: BigInt(+response.futures.speedHps),
     tokenAddress: response.futures.tokenAddress,
     validatorAddress: response.futures.validatorAddress,
   };

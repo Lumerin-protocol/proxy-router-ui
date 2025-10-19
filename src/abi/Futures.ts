@@ -356,12 +356,6 @@ export const FuturesABI = [
       },
       {
         indexed: false,
-        internalType: "bytes32",
-        name: "offsetPositionId",
-        type: "bytes32",
-      },
-      {
-        indexed: false,
         internalType: "bool",
         name: "isBuy",
         type: "bool",
@@ -434,6 +428,12 @@ export const FuturesABI = [
         internalType: "uint256",
         name: "startTime",
         type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "orderId",
+        type: "bytes32",
       },
     ],
     name: "PositionCreated",
@@ -750,24 +750,6 @@ export const FuturesABI = [
   {
     inputs: [
       {
-        internalType: "bytes32",
-        name: "_offsetPositionId",
-        type: "bytes32",
-      },
-      {
-        internalType: "uint256",
-        name: "_price",
-        type: "uint256",
-      },
-    ],
-    name: "createOffsetOrder",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
         name: "_price",
         type: "uint256",
@@ -776,6 +758,11 @@ export const FuturesABI = [
         internalType: "uint256",
         name: "_deliveryDate",
         type: "uint256",
+      },
+      {
+        internalType: "uint8",
+        name: "_qty",
+        type: "uint8",
       },
       {
         internalType: "bool",
@@ -1022,11 +1009,6 @@ export const FuturesABI = [
             internalType: "uint256",
             name: "timestamp",
             type: "uint256",
-          },
-          {
-            internalType: "bytes32",
-            name: "offsetPositionId",
-            type: "bytes32",
           },
         ],
         internalType: "struct Futures.Order",

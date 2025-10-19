@@ -40,7 +40,6 @@ export const ParticipantQuery = gql`
         id
         closedBy
         closedAt
-        offsetPositionId
         buyer {
           address
         }
@@ -70,6 +69,12 @@ export const DeliveryDatesQuery = gql`
     deliveryDates(where: { deliveryDate_gte: $now }, orderBy: deliveryDate, orderDirection: asc) {
       deliveryDate
       id
+    },
+    _meta {
+      block {
+        number
+        timestamp
+      }
     }
   }
 `;
