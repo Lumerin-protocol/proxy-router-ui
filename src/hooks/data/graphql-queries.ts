@@ -60,6 +60,12 @@ export const ParticipantQuery = gql`
         price
         timestamp
       }
+    },
+    _meta {
+      block {
+        number
+        timestamp
+      }
     }
   }
 `;
@@ -89,6 +95,12 @@ export const OrderBookQuery = gql`
         address
       }
       isBuy
+    },
+    _meta {
+      block {
+        number
+        timestamp
+      }
     }
   }
 `;

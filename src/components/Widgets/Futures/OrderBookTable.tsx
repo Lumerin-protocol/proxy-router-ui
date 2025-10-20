@@ -97,14 +97,59 @@ export const OrderBookTable = ({
   }, [selectedDeliveryDate, onDeliveryDateChange]);
 
   // // Fetch order book for selected delivery date
-  // const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true });
-  // const orderBookData = orderBookQuery.data?.data?.orders || [];
+  const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true });
+  const orderBookData = orderBookQuery.data?.data?.orders || [];
 
-  // // Transform order book data to match the expected interface
-  // const transformedOrderBookData = transformOrderBookData(orderBookData);
+  // Group fetched order book by price and side, then merge with prop data
+  const liveGroupedMap = new Map<number, { bidUnits: number | null; askUnits: number | null }>();
+  if (orderBookData && orderBookData.length > 0) {
+    const priceToSideCount = new Map<number, { bids: number; asks: number }>();
 
-  // // Use passed data or fallback to transformed data
-  // const finalOrderBookData = propOrderBookData || transformedOrderBookData;
+    for (const order of orderBookData) {
+      const price = Math.round((Number(order.price) / 1e6) * 100) / 100; // USDC with 2 decimals
+      const entry = priceToSideCount.get(price) || { bids: 0, asks: 0 };
+      if (order.isBuy) {
+        entry.bids += 1; // counting orders as units for now
+      } else {
+        entry.asks += 1;
+      }
+      priceToSideCount.set(price, entry);
+    }
+
+    // Fill liveGroupedMap from aggregated counts
+    for (const [price, counts] of priceToSideCount.entries()) {
+      liveGroupedMap.set(price, {
+        bidUnits: counts.bids > 0 ? counts.bids : null,
+        askUnits: counts.asks > 0 ? counts.asks : null,
+      });
+    }
+  }
+
+  // Start merged map with prop data (so prop-only prices are kept)
+  const mergedMap = new Map<number, { bidUnits: number | null; askUnits: number | null }>();
+  if (propOrderBookData && propOrderBookData.length > 0) {
+    for (const row of propOrderBookData) {
+      mergedMap.set(row.price, { bidUnits: row.bidUnits, askUnits: row.askUnits });
+    }
+  }
+
+  // Overlay live data ensuring all live prices are present and preferred
+  for (const [price, live] of liveGroupedMap.entries()) {
+    const existing = mergedMap.get(price);
+    if (!existing) {
+      mergedMap.set(price, { bidUnits: live.bidUnits, askUnits: live.askUnits });
+    } else {
+      mergedMap.set(price, {
+        bidUnits: live.bidUnits !== null ? live.bidUnits : existing.bidUnits,
+        askUnits: live.askUnits !== null ? live.askUnits : existing.askUnits,
+      });
+    }
+  }
+
+  // Build final array sorted by price desc
+  const finalOrderBookData: OrderBookData[] = Array.from(mergedMap.entries())
+    .sort((a, b) => b[0] - a[0])
+    .map(([price, v]) => ({ price, bidUnits: v.bidUnits, askUnits: v.askUnits }));
 
   // Navigation functions
   const goToPreviousDate = () => {
@@ -201,7 +246,7 @@ export const OrderBookTable = ({
             </tr>
           </thead>
           <tbody>
-            {propOrderBookData?.map((row, index) => (
+            {finalOrderBookData.map((row, index) => (
               <TableRow
                 key={index}
                 $isHighlighted={row.isHighlighted}
@@ -318,8 +363,13 @@ const TableRow = styled("tr")<{ $isHighlighted?: boolean; $highlightColor?: "red
     return props.$highlightColor === "red" ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)";
   }};
   cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  &:last-child {
+    border-bottom: none;
   }
 `;

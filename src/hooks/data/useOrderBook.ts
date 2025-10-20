@@ -7,7 +7,7 @@ import { OrderBookQuery } from "./graphql-queries";
 
 export const ORDER_BOOK_QK = "OrderBook";
 
-export const useOrderBook = (deliveryDate: bigint | undefined, props?: { refetch?: boolean }) => {
+export const useOrderBook = (deliveryDate: number | undefined, props?: { refetch?: boolean }) => {
   const query = useQuery({
     queryKey: [ORDER_BOOK_QK, deliveryDate],
     queryFn: () => fetchOrderBookAsync(deliveryDate!),
@@ -18,7 +18,7 @@ export const useOrderBook = (deliveryDate: bigint | undefined, props?: { refetch
   return query;
 };
 
-const fetchOrderBookAsync = async (deliveryDate: bigint) => {
+const fetchOrderBookAsync = async (deliveryDate: number) => {
   const variables = {
     deliveryDate: deliveryDate.toString(),
   };

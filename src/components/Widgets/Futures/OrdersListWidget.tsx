@@ -1,7 +1,7 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
-import { useState } from "react";
 import type { ParticipantOrder } from "../../../hooks/data/useParticipant";
+import { useCloseOrder } from "../../../hooks/data/useCloseOrder";
 
 interface OrdersListWidgetProps {
   orders: ParticipantOrder[];
@@ -9,6 +9,7 @@ interface OrdersListWidgetProps {
 }
 
 export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) => {
+  const { closeOrdersAsync, isPending } = useCloseOrder();
   const getStatusColor = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
       return "#3b82f6"; // Filled/Closed
@@ -16,12 +17,12 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
     return isActive ? "#22c55e" : "#ef4444"; // Active or Cancelled
   };
 
-  const getStatusText = (isActive: boolean, closedAt: string | null) => {
-    if (closedAt) {
-      return "Filled";
-    }
-    return isActive ? "Active" : "Cancelled";
-  };
+  // const getStatusText = (isActive: boolean, closedAt: string | null) => {
+  //   if (closedAt) {
+  //     return "Filled";
+  //   }
+  //   return isActive ? "Active" : "Cancelled";
+  // };
 
   const getTypeColor = (isBuy: boolean) => {
     return isBuy ? "#22c55e" : "#ef4444";
@@ -33,13 +34,56 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
 
   const formatDeliveryDate = (deliveryDate: bigint) => {
     const date = new Date(Number(deliveryDate) * 1000);
-    return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    return date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
   };
 
-  const handleCloseOrder = (orderId: string) => {
-    console.log("Closing order:", orderId);
-    // TODO: Implement actual close order logic
+  const handleCloseOrder = async (orderIds: string[]) => {
+    try {
+      // Cast to 0x-prefixed bytes32 strings
+      const ids = orderIds as unknown as `0x${string}`[];
+      await closeOrdersAsync({ orderIds: ids });
+    } catch (e) {
+      console.error("Failed to close orders", e);
+    }
   };
+
+  // Group orders by type, price, and delivery date
+  const groupedOrders = orders.reduce(
+    (acc, order) => {
+      const key = `${order.isBuy}-${order.price}-${order.deliveryDate}`;
+
+      if (!acc[key]) {
+        acc[key] = {
+          isBuy: order.isBuy,
+          price: order.price,
+          deliveryDate: order.deliveryDate,
+          amount: 0,
+          isActive: order.isActive,
+          closedAt: order.closedAt,
+          orderIds: [] as string[],
+        };
+      }
+
+      acc[key].amount += 1;
+      acc[key].orderIds.push(order.id);
+
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        isBuy: boolean;
+        price: bigint;
+        deliveryDate: bigint;
+        amount: number;
+        isActive: boolean;
+        closedAt: string | null;
+        orderIds: string[];
+      }
+    >,
+  );
+
+  const groupedOrdersArray = Object.values(groupedOrders);
 
   if (isLoading) {
     return (
@@ -62,27 +106,27 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
             <tr>
               <th>Type</th>
               <th>Price</th>
+              <th>Amount</th>
               <th>Delivery Date</th>
-              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <TableRow key={order.id}>
+            {groupedOrdersArray.map((groupedOrder, index) => (
+              <TableRow key={`${groupedOrder.isBuy}-${groupedOrder.price}-${groupedOrder.deliveryDate}-${index}`}>
                 <td>
-                  <TypeBadge $type={order.isBuy ? "Buy" : "Sell"}>{order.isBuy ? "Buy" : "Sell"}</TypeBadge>
+                  <TypeBadge $type={groupedOrder.isBuy ? "Buy" : "Sell"}>
+                    {groupedOrder.isBuy ? "Buy" : "Sell"}
+                  </TypeBadge>
                 </td>
-                <td>${formatPrice(order.price)}</td>
-                <td>{formatDeliveryDate(order.deliveryDate)}</td>
+                <td>${formatPrice(groupedOrder.price)}</td>
+                <td>{groupedOrder.amount}</td>
+                <td>{formatDeliveryDate(groupedOrder.deliveryDate)}</td>
                 <td>
-                  <StatusBadge $status={getStatusText(order.isActive, order.closedAt)}>
-                    {getStatusText(order.isActive, order.closedAt)}
-                  </StatusBadge>
-                </td>
-                <td>
-                  {order.isActive && !order.closedAt && (
-                    <CloseButton onClick={() => handleCloseOrder(order.id)}>Close</CloseButton>
+                  {groupedOrder.isActive && !groupedOrder.closedAt && (
+                    <CloseButton onClick={() => handleCloseOrder(groupedOrder.orderIds)} disabled={isPending}>
+                      Close All
+                    </CloseButton>
                   )}
                 </td>
               </TableRow>
@@ -91,7 +135,7 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
         </Table>
       </TableContainer>
 
-      {orders.length === 0 && (
+      {groupedOrdersArray.length === 0 && (
         <EmptyState>
           <p>No orders found</p>
         </EmptyState>

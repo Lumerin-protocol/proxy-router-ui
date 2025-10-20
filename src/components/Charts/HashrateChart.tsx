@@ -19,7 +19,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
       const date = item.updatedAtDate || new Date(Number(item.updatedAt) * 1000);
       return [
         date.getTime(), // X-axis: timestamp
-        Number(item.priceToken) / 10 ** 6, // Y-axis: priceToken divided by 10^6
+        Number((Number(item.priceToken) / 10 ** 6).toFixed(2)), // Y-axis: priceToken divided by 10^6
       ];
     });
 

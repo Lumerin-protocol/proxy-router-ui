@@ -2,6 +2,7 @@ import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState } from "react";
 import type { ParticipantPosition } from "../../../hooks/data/useParticipant";
+import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
 
 interface PositionsListWidgetProps {
   positions: ParticipantPosition[];
@@ -10,6 +11,8 @@ interface PositionsListWidgetProps {
 }
 
 export const PositionsListWidget = ({ positions, isLoading, participantAddress }: PositionsListWidgetProps) => {
+  const { createOrderAsync, isPending } = useCreateOrder();
+
   const getStatusColor = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
       return "#6b7280"; // Closed
@@ -43,10 +46,76 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
-  const handleClosePosition = (positionId: string) => {
-    console.log("Closing position:", positionId);
-    // TODO: Implement actual close position logic
+  const handleClosePosition = async (groupedPosition: {
+    price: bigint;
+    startTime: string;
+    positionType: string;
+    amount: number;
+    positions: ParticipantPosition[];
+  }) => {
+    try {
+      // Create opposite order to close the position
+      // If it's a Long position, create a Sell order
+      // If it's a Short position, create a Buy order
+      const isBuy = groupedPosition.positionType === "Short";
+
+      // Calculate delivery date from startTime (assuming 30 days duration)
+      const startTimeSeconds = Number(groupedPosition.startTime);
+      const deliveryDate = BigInt(startTimeSeconds + 30 * 24 * 60 * 60); // 30 days in seconds
+
+      await createOrderAsync({
+        price: groupedPosition.price,
+        deliveryDate: deliveryDate,
+        quantity: groupedPosition.amount,
+        isBuy: isBuy,
+      });
+
+      console.log(
+        `Created ${isBuy ? "buy" : "sell"} order to close ${groupedPosition.amount} ${groupedPosition.positionType} positions`,
+      );
+    } catch (err) {
+      console.error("Failed to close position:", err);
+    }
   };
+
+  // Group positions by price, startTime, and position type
+  const groupedPositions = positions.reduce(
+    (acc, position) => {
+      const positionType = getPositionType(position);
+      const key = `${position.price}-${position.startTime}-${positionType}`;
+
+      if (!acc[key]) {
+        acc[key] = {
+          price: position.price,
+          startTime: position.startTime,
+          positionType: positionType,
+          amount: 0,
+          isActive: position.isActive,
+          closedAt: position.closedAt,
+          positions: [] as ParticipantPosition[],
+        };
+      }
+
+      acc[key].amount += 1;
+      acc[key].positions.push(position);
+
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        price: bigint;
+        startTime: string;
+        positionType: string;
+        amount: number;
+        isActive: boolean;
+        closedAt: string | null;
+        positions: ParticipantPosition[];
+      }
+    >,
+  );
+
+  const groupedPositionsArray = Object.values(groupedPositions);
 
   if (isLoading) {
     return (
@@ -69,39 +138,36 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
             <tr>
               <th>Type</th>
               <th>Price</th>
+              <th>Amount</th>
               <th>Start Time</th>
-              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {positions.map((position) => {
-              const positionType = getPositionType(position);
-              return (
-                <TableRow key={position.id}>
-                  <td>
-                    <TypeBadge $type={positionType}>{positionType}</TypeBadge>
-                  </td>
-                  <td>${formatPrice(position.price)}</td>
-                  <td>{formatTimestamp(position.startTime)}</td>
-                  <td>
-                    <StatusBadge $status={getStatusText(position.isActive, position.closedAt)}>
-                      {getStatusText(position.isActive, position.closedAt)}
-                    </StatusBadge>
-                  </td>
-                  <td>
-                    {position.isActive && !position.closedAt && (
-                      <CloseButton onClick={() => handleClosePosition(position.id)}>Close</CloseButton>
-                    )}
-                  </td>
-                </TableRow>
-              );
-            })}
+            {groupedPositionsArray.map((groupedPosition, index) => (
+              <TableRow
+                key={`${groupedPosition.price}-${groupedPosition.startTime}-${groupedPosition.positionType}-${index}`}
+              >
+                <td>
+                  <TypeBadge $type={groupedPosition.positionType}>{groupedPosition.positionType}</TypeBadge>
+                </td>
+                <td>${formatPrice(groupedPosition.price)}</td>
+                <td>{groupedPosition.amount}</td>
+                <td>{formatTimestamp(groupedPosition.startTime)}</td>
+                <td>
+                  {groupedPosition.isActive && !groupedPosition.closedAt && (
+                    <CloseButton onClick={() => handleClosePosition(groupedPosition)} disabled={isPending}>
+                      Close
+                    </CloseButton>
+                  )}
+                </td>
+              </TableRow>
+            ))}
           </tbody>
         </Table>
       </TableContainer>
 
-      {positions.length === 0 && (
+      {groupedPositionsArray.length === 0 && (
         <EmptyState>
           <p>No positions found</p>
         </EmptyState>
@@ -147,7 +213,7 @@ const TableContainer = styled("div")`
 const Table = styled("table")`
   width: 100%;
   border-collapse: collapse;
-  min-width: 500px;
+  min-width: 600px;
   
   th {
     text-align: left;
@@ -217,12 +283,18 @@ const CloseButton = styled("button")`
   cursor: pointer;
   transition: background-color 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: #dc2626;
   }
   
-  &:active {
+  &:active:not(:disabled) {
     background: #b91c1c;
+  }
+  
+  &:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 `;
 

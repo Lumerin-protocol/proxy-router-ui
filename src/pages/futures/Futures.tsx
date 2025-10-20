@@ -17,7 +17,7 @@ export const Futures: FC = () => {
   const { isConnected, address } = useAccount();
   const hashrateQuery = useHashrateIndexData();
   const contractSpecsQuery = useFuturesContractSpecs();
-  const participantQuery = useParticipant(address);
+  const { data: participantData, isLoading: isParticipantLoading } = useParticipant(address);
 
   // State for order book selection
   const [selectedPrice, setSelectedPrice] = useState<string | undefined>();
@@ -127,15 +127,12 @@ export const Futures: FC = () => {
           <div className="w-full mb-8">
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1">
-                <OrdersListWidget
-                  orders={participantQuery.data?.data?.orders || []}
-                  isLoading={participantQuery.isLoading}
-                />
+                <OrdersListWidget orders={participantData?.data?.orders || []} isLoading={isParticipantLoading} />
               </div>
               <div className="flex-1">
                 <PositionsListWidget
-                  positions={participantQuery.data?.data?.positions || []}
-                  isLoading={participantQuery.isLoading}
+                  positions={participantData?.data?.positions || []}
+                  isLoading={isParticipantLoading}
                   participantAddress={address}
                 />
               </div>

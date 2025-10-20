@@ -11,7 +11,7 @@ interface PlaceOrderWidgetProps {
 }
 
 export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDeliveryDate }: PlaceOrderWidgetProps) => {
-  const [price, setPrice] = useState("5.00");
+  const [price, setPrice] = useState("100.00");
   const [amount, setAmount] = useState(1);
 
   const { createOrderAsync, isPending, isError, error, hash } = useCreateOrder();
@@ -125,7 +125,7 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
                 value={price}
                 onChange={(e) => handlePriceChange(e.target.value)}
                 step={priceStep}
-                min="0"
+                min="1"
               />
               <PriceButton onClick={incrementPrice} disabled={isPending}>
                 +
@@ -135,7 +135,7 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
 
           <InputGroup>
             <label>Amount</label>
-            <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} min="1" />
+            <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} min="1" max="50" />
           </InputGroup>
         </InputSection>
 
