@@ -18,7 +18,8 @@ const envsToInject = Object.keys(EnvSchema.properties);
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  env.REACT_APP_VERSION = version;
+  // Use env var if set (from CI/CD), otherwise fallback to package.json version
+  env.REACT_APP_VERSION = env.REACT_APP_VERSION || version;
 
   const ajv = newAjv();
   const validate = ajv.compile(EnvSchema);
