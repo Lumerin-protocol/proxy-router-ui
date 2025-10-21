@@ -114,13 +114,13 @@ jobs:
           echo "✅ Proposed Tag: $VTAG (will be created after successful deployment)" >> $GITHUB_STEP_SUMMARY
           echo "📋 Last Production Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
 
-  build:
-    name: 🔨 Build
+  setup:
+    name: ⚙️ Setup
     needs:
       - generate-tag
     runs-on: ubuntu-latest
+    # NO environment scope - uses repo-level AWS_ROLE_ARN secrets
     outputs:
-      version: ${{ needs.generate-tag.outputs.vtag }}
       environment: ${{ needs.generate-tag.outputs.environment }}
       s3_bucket: ${{ steps.get_deployment_config.outputs.s3_bucket }}
       cloudfront_distribution: ${{ steps.get_deployment_config.outputs.cloudfront_distribution_id }}
@@ -128,29 +128,12 @@ jobs:
       marketplace_url: ${{ steps.get_deployment_config.outputs.marketplace_url }}
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Debug OIDC context
-        run: |
-          echo "🔍 GitHub OIDC Context Debug:"
-          echo "Repository: ${{ github.repository }}"
-          echo "Repository Owner: ${{ github.repository_owner }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "Ref Name: ${{ github.ref_name }}"
-          echo "Actor: ${{ github.actor }}"
-          echo "Expected sub claim: repo:${{ github.repository }}:ref:${{ github.ref }}"
-          echo "Environment output: ${{ needs.generate-tag.outputs.environment }}"
-          echo "Selected Role ARN: ${{ needs.generate-tag.outputs.environment == 'dev' && secrets.AWS_ROLE_ARN_DEV || needs.generate-tag.outputs.environment == 'stg' && secrets.AWS_ROLE_ARN_STG || secrets.AWS_ROLE_ARN_LMN }}"
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ needs.generate-tag.outputs.environment == 'dev' && secrets.AWS_ROLE_ARN_DEV || needs.generate-tag.outputs.environment == 'stg' && secrets.AWS_ROLE_ARN_STG || secrets.AWS_ROLE_ARN_LMN }}
           aws-region: us-east-1
-          role-session-name: GitHubActions-Marketplace-Build-${{ github.run_id }}
+          role-session-name: GitHubActions-Marketplace-Setup-${{ github.run_id }}
 
       - name: Get deployment configuration from AWS Secrets Manager
         id: get_deployment_config
@@ -196,6 +179,30 @@ jobs:
           echo "   URL: ${MARKETPLACE_URL}"
           echo "   Region: ${AWS_REGION}"
 
+  build:
+    name: 🔨 Build
+    needs:
+      - generate-tag
+      - setup
+    runs-on: ubuntu-latest
+    # HAS environment scope - can access environment-scoped secrets/variables
+    environment:
+      name: ${{ needs.generate-tag.outputs.environment == 'main' && 'prd' || needs.generate-tag.outputs.environment }}
+      url: ${{ needs.setup.outputs.marketplace_url }}
+    outputs:
+      version: ${{ needs.generate-tag.outputs.vtag }}
+      environment: ${{ needs.setup.outputs.environment }}
+      s3_bucket: ${{ needs.setup.outputs.s3_bucket }}
+      cloudfront_distribution: ${{ needs.setup.outputs.cloudfront_distribution }}
+      aws_region: ${{ needs.setup.outputs.aws_region }}
+      marketplace_url: ${{ needs.setup.outputs.marketplace_url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -222,7 +229,7 @@ jobs:
           REACT_APP_PAYMENT_SLIPPAGE_PERCENT=${{ secrets.REACT_APP_PAYMENT_SLIPPAGE_PERCENT || vars.REACT_APP_PAYMENT_SLIPPAGE_PERCENT || '1' }}
           REACT_APP_READ_ONLY_ETH_NODE_URL=${{ secrets.REACT_APP_READ_ONLY_ETH_NODE_URL }}
           REACT_APP_TITAN_LIGHTNING_POOL=${{ secrets.REACT_APP_TITAN_LIGHTNING_POOL || vars.REACT_APP_TITAN_LIGHTNING_POOL || 'pplp.titan.io:4141' }}
-          REACT_APP_URL=${{ steps.get_deployment_config.outputs.marketplace_url }}
+          REACT_APP_URL=${{ needs.setup.outputs.marketplace_url }}
           REACT_APP_VALIDATOR_REGISTRY_ADDRESS=${{ secrets.REACT_APP_VALIDATOR_REGISTRY_ADDRESS || vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }}
           REACT_APP_VERSION=${{ needs.generate-tag.outputs.vtag }}
           REACT_APP_WALLET_CONNECT_ID=${{ secrets.REACT_APP_WALLET_CONNECT_ID }}
@@ -259,7 +266,7 @@ jobs:
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
-    needs: [generate-tag, build]
+    needs: [generate-tag, setup, build]
     
     steps:
       - name: Download build artifacts
@@ -272,21 +279,21 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ needs.generate-tag.outputs.environment == 'dev' && secrets.AWS_ROLE_ARN_DEV || needs.generate-tag.outputs.environment == 'stg' && secrets.AWS_ROLE_ARN_STG || secrets.AWS_ROLE_ARN_LMN }}
-          aws-region: ${{ needs.build.outputs.aws_region }}
-          role-session-name: GitHubActions-Marketplace-${{ github.run_id }}
+          aws-region: ${{ needs.setup.outputs.aws_region }}
+          role-session-name: GitHubActions-Marketplace-Deploy-${{ github.run_id }}
 
       - name: Deploy to S3
         run: |
-          echo "🚀 Deploying to S3 bucket: ${{ needs.build.outputs.s3_bucket }}"
-          aws s3 sync build/ s3://${{ needs.build.outputs.s3_bucket }}/ --delete
+          echo "🚀 Deploying to S3 bucket: ${{ needs.setup.outputs.s3_bucket }}"
+          aws s3 sync build/ s3://${{ needs.setup.outputs.s3_bucket }}/ --delete
           
           echo "✅ Files uploaded to S3"
 
       - name: Invalidate CloudFront cache
         run: |
-          echo "🔄 Invalidating CloudFront distribution: ${{ needs.build.outputs.cloudfront_distribution }}"
+          echo "🔄 Invalidating CloudFront distribution: ${{ needs.setup.outputs.cloudfront_distribution }}"
           aws cloudfront create-invalidation \
-            --distribution-id ${{ needs.build.outputs.cloudfront_distribution }} \
+            --distribution-id ${{ needs.setup.outputs.cloudfront_distribution }} \
             --paths "/*"
           
           echo "✅ CloudFront cache invalidated"
@@ -294,7 +301,7 @@ jobs:
   verify:
     name: 🔍 Verify
     runs-on: ubuntu-latest
-    needs: [generate-tag, build, deploy]
+    needs: [generate-tag, setup, build, deploy]
     
     steps:
       - name: Wait for CloudFront propagation
@@ -304,10 +311,10 @@ jobs:
 
       - name: Verify deployment
         run: |
-          echo "🧪 Verifying deployment at ${{ needs.build.outputs.marketplace_url }}"
+          echo "🧪 Verifying deployment at ${{ needs.setup.outputs.marketplace_url }}"
           
           # Check if the site is accessible
-          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" ${{ needs.build.outputs.marketplace_url }})
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" ${{ needs.setup.outputs.marketplace_url }})
           
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "✅ Marketplace is accessible (HTTP $HTTP_CODE)"
@@ -319,7 +326,7 @@ jobs:
   summary:
     name: 📊 Summary & Tag
     runs-on: ubuntu-latest
-    needs: [generate-tag, build, deploy, verify]
+    needs: [generate-tag, setup, build, deploy, verify]
     if: always()
     
     steps:
@@ -366,11 +373,10 @@ jobs:
             **Environment:** Production
             **Branch:** ${{ github.ref_name }}
             **Commit:** ${{ github.sha }}
-            **Deployed:** ${{ needs.build.outputs.marketplace_url }}
+            **Deployed:** ${{ needs.setup.outputs.marketplace_url }}
             
             ### Changes
             This production release includes the latest changes from the main branch.
-            
           draft: false
           prerelease: false
 
@@ -382,8 +388,8 @@ jobs:
           echo "**Service:** Marketplace" >> $GITHUB_STEP_SUMMARY
           echo "**Environment:** ${{ needs.generate-tag.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ needs.generate-tag.outputs.vtag }}" >> $GITHUB_STEP_SUMMARY
-          echo "**URL:** ${{ needs.build.outputs.marketplace_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "**S3 Bucket:** ${{ needs.build.outputs.s3_bucket }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ needs.setup.outputs.marketplace_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**S3 Bucket:** ${{ needs.setup.outputs.s3_bucket }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Marketplace deployed and verified successfully" >> $GITHUB_STEP_SUMMARY
           echo "🏷️ Git tag created: ${{ needs.generate-tag.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
