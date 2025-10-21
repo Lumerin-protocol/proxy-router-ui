@@ -8,15 +8,29 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { useModal } from "../../hooks/useModal";
 import Button from "@mui/material/Button";
+import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
+import { HashrateChart } from "../../components/Charts/HashrateChart";
 
 export const Test: FC = () => {
   const editModal = useModal();
   const [contractId, setContractId] = useState<string>("0x123");
 
+  const hashrateQuery = useHashrateIndexData();
+
+  if (hashrateQuery.isSuccess) {
+    console.log(hashrateQuery.data);
+  }
+
   return (
     <HeroWrapper>
       <div className="content-wrapper">
         <HeroHeadline>Test</HeroHeadline>
+
+        {/* Hashrate Chart */}
+        <div style={{ marginBottom: "2rem" }}>
+          <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
+        </div>
+
         <Button
           type="button"
           onClick={() => {
