@@ -307,22 +307,89 @@ jobs:
     needs: [generate-tag, setup, build, deploy]
     
     steps:
-      - name: Wait for CloudFront propagation
-        run: |
-          echo "⏳ Waiting 30 seconds for CloudFront to propagate..."
-          sleep 30
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.generate-tag.outputs.environment == 'dev' && secrets.AWS_ROLE_ARN_DEV || needs.generate-tag.outputs.environment == 'stg' && secrets.AWS_ROLE_ARN_STG || secrets.AWS_ROLE_ARN_LMN }}
+          aws-region: ${{ needs.setup.outputs.aws_region }}
+          role-session-name: GitHubActions-Marketplace-Verify-${{ github.run_id }}
 
-      - name: Verify deployment
+      - name: Wait for CloudFront invalidation to complete
         run: |
-          echo "🧪 Verifying deployment at ${{ needs.setup.outputs.marketplace_url }}"
+          echo "⏳ Waiting for CloudFront invalidation to complete..."
+          DISTRIBUTION_ID="${{ needs.setup.outputs.cloudfront_distribution }}"
           
-          # Check if the site is accessible
-          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" ${{ needs.setup.outputs.marketplace_url }})
+          # Get the most recent invalidation ID for this distribution
+          INVALIDATION_ID=$(aws cloudfront list-invalidations \
+            --distribution-id $DISTRIBUTION_ID \
+            --query 'InvalidationList.Items[0].Id' \
+            --output text)
+          
+          if [ "$INVALIDATION_ID" != "None" ] && [ -n "$INVALIDATION_ID" ]; then
+            echo "📋 Invalidation ID: $INVALIDATION_ID"
+            echo "⏳ Polling invalidation status..."
+            
+            # Poll until invalidation completes (timeout after 10 minutes)
+            TIMEOUT=600
+            ELAPSED=0
+            while [ $ELAPSED -lt $TIMEOUT ]; do
+              STATUS=$(aws cloudfront get-invalidation \
+                --distribution-id $DISTRIBUTION_ID \
+                --id $INVALIDATION_ID \
+                --query 'Invalidation.Status' \
+                --output text)
+              
+              echo "   Status: $STATUS (${ELAPSED}s elapsed)"
+              
+              if [ "$STATUS" = "Completed" ]; then
+                echo "✅ CloudFront invalidation completed!"
+                break
+              fi
+              
+              sleep 10
+              ELAPSED=$((ELAPSED + 10))
+            done
+            
+            if [ $ELAPSED -ge $TIMEOUT ]; then
+              echo "⚠️ Invalidation check timed out after ${TIMEOUT}s, proceeding anyway..."
+            fi
+          else
+            echo "⚠️ No recent invalidation found, waiting 60s for propagation..."
+            sleep 60
+          fi
+
+      - name: Verify deployment and version
+        run: |
+          URL="${{ needs.setup.outputs.marketplace_url }}"
+          EXPECTED_VERSION="${{ needs.generate-tag.outputs.vtag }}"
+          
+          echo "🧪 Verifying deployment at $URL"
+          echo "📌 Expected version: $EXPECTED_VERSION"
+          
+          # Check if site is accessible and fetch HTML
+          HTTP_CODE=$(curl -o /tmp/page.html -s -w "%{http_code}" "$URL")
           
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "✅ Marketplace is accessible (HTTP $HTTP_CODE)"
+            
+            # Extract version from HTML (looking for "Version: vX.Y.Z" pattern)
+            ACTUAL_VERSION=$(grep -oP 'Version:\s*\K[v0-9.-]+[a-zA-Z0-9_-]*' /tmp/page.html | head -1)
+            
+            if [ -z "$ACTUAL_VERSION" ]; then
+              echo "⚠️ WARNING: Could not extract version from page"
+              echo "::warning::Version not found on deployed page"
+            elif [ "$ACTUAL_VERSION" = "$EXPECTED_VERSION" ]; then
+              echo "✅ Version matches! Deployed: $ACTUAL_VERSION"
+              echo "::notice::Deployment verified successfully with correct version $ACTUAL_VERSION"
+            else
+              echo "⚠️ WARNING: Version mismatch!"
+              echo "   Expected: $EXPECTED_VERSION"
+              echo "   Actual:   $ACTUAL_VERSION"
+              echo "::warning::Deployed version ($ACTUAL_VERSION) does not match expected version ($EXPECTED_VERSION)"
+            fi
           else
             echo "❌ Marketplace returned HTTP $HTTP_CODE"
+            echo "::error::Marketplace not accessible (HTTP $HTTP_CODE)"
             exit 1
           fi
 
