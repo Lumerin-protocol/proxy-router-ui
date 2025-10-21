@@ -303,17 +303,18 @@ jobs:
     needs: [generate-tag, setup, build, deploy]
     
     steps:
-      - name: Checkout code (for Playwright script)
-        uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Install Playwright
+      - name: Install Playwright for verification
         run: |
-          npm install -D @playwright/test
+          # Install playwright in a temp directory to avoid package.json conflicts
+          mkdir -p /tmp/playwright-verify
+          cd /tmp/playwright-verify
+          npm init -y
+          npm install playwright
           npx playwright install --with-deps chromium
 
       - name: Wait for CloudFront propagation
@@ -333,13 +334,18 @@ jobs:
           echo "🧪 Verifying deployment at $URL"
           echo "📌 Expected version: $EXPECTED_VERSION"
           
-          # Create Playwright test script
+          # Create Playwright test script in temp directory
+          cd /tmp/playwright-verify
           cat > verify.spec.js << 'EOF'
-          const { chromium } = require('@playwright/test');
+          const { chromium } = require('playwright');
+          const path = require('path');
           
           (async () => {
             const browser = await chromium.launch();
             const page = await browser.newPage();
+            
+            // Save screenshots to current directory
+            const screenshotDir = process.cwd();
             
             const url = process.env.MARKETPLACE_URL;
             const expectedVersion = process.env.EXPECTED_VERSION;
@@ -402,7 +408,7 @@ jobs:
                 console.log('::warning::Version not found on deployed page');
                 
                 // Take a screenshot for debugging
-                await page.screenshot({ path: 'verification-failed.png', fullPage: true });
+                await page.screenshot({ path: path.join(screenshotDir, 'verification-failed.png'), fullPage: true });
                 console.log('📸 Screenshot saved to verification-failed.png');
               } else if (actualVersion === expectedVersion) {
                 console.log(`✅ Version matches! Deployed: ${actualVersion}`);
@@ -414,13 +420,13 @@ jobs:
                 console.log(`::warning::Deployed version (${actualVersion}) does not match expected version (${expectedVersion})`);
                 
                 // Take a screenshot for debugging
-                await page.screenshot({ path: 'verification-mismatch.png', fullPage: true });
+                await page.screenshot({ path: path.join(screenshotDir, 'verification-mismatch.png'), fullPage: true });
                 console.log('📸 Screenshot saved to verification-mismatch.png');
               }
               
             } catch (error) {
               console.error(`❌ Error during verification: ${error.message}`);
-              await page.screenshot({ path: 'verification-error.png', fullPage: true });
+              await page.screenshot({ path: path.join(screenshotDir, 'verification-error.png'), fullPage: true });
               console.log('📸 Screenshot saved to verification-error.png');
               process.exit(1);
             } finally {
@@ -437,7 +443,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: verification-screenshots
-          path: '*.png'
+          path: '/tmp/playwright-verify/*.png'
           retention-days: 7
 
   summary:
