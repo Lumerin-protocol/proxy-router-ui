@@ -360,6 +360,8 @@ jobs:
 
       - name: Verify deployment and version
         run: |
+          set +e  # Don't exit on command failure for version extraction
+          
           URL="${{ needs.setup.outputs.marketplace_url }}"
           EXPECTED_VERSION="${{ needs.generate-tag.outputs.vtag }}"
           
@@ -372,12 +374,25 @@ jobs:
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "✅ Marketplace is accessible (HTTP $HTTP_CODE)"
             
-            # Extract version from HTML (looking for "Version: vX.Y.Z" pattern)
-            ACTUAL_VERSION=$(grep -oP 'Version:\s*\K[v0-9.-]+[a-zA-Z0-9_-]*' /tmp/page.html | head -1)
+            # Try multiple patterns to extract version from HTML
+            # Pattern 1: Using grep -P (Perl regex)
+            ACTUAL_VERSION=$(grep -oP 'Version:\s*\K[v0-9.-]+[a-zA-Z0-9_-]*' /tmp/page.html 2>/dev/null | head -1)
+            
+            # Pattern 2: Fallback using sed if grep -P fails
+            if [ -z "$ACTUAL_VERSION" ]; then
+              ACTUAL_VERSION=$(grep -i "version" /tmp/page.html | sed -n 's/.*[Vv]ersion[: ]*\([v0-9][v0-9.a-zA-Z_-]*\).*/\1/p' | head -1)
+            fi
+            
+            # Pattern 3: Look for any v2.x.x pattern as last resort
+            if [ -z "$ACTUAL_VERSION" ]; then
+              ACTUAL_VERSION=$(grep -o 'v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[a-zA-Z0-9_-]*' /tmp/page.html | head -1)
+            fi
             
             if [ -z "$ACTUAL_VERSION" ]; then
               echo "⚠️ WARNING: Could not extract version from page"
               echo "::warning::Version not found on deployed page"
+              echo "📄 Searching for 'version' in HTML:"
+              grep -i "version" /tmp/page.html | head -5 || echo "No version text found"
             elif [ "$ACTUAL_VERSION" = "$EXPECTED_VERSION" ]; then
               echo "✅ Version matches! Deployed: $ACTUAL_VERSION"
               echo "::notice::Deployment verified successfully with correct version $ACTUAL_VERSION"
@@ -392,6 +407,8 @@ jobs:
             echo "::error::Marketplace not accessible (HTTP $HTTP_CODE)"
             exit 1
           fi
+          
+          set -e  # Re-enable exit on error
 
   summary:
     name: 📊 Summary & Tag
