@@ -314,55 +314,20 @@ jobs:
           aws-region: ${{ needs.setup.outputs.aws_region }}
           role-session-name: GitHubActions-Marketplace-Verify-${{ github.run_id }}
 
-      - name: Wait for CloudFront invalidation to complete
+      - name: Wait for CloudFront propagation
         run: |
-          echo "⏳ Waiting for CloudFront invalidation to complete..."
-          DISTRIBUTION_ID="${{ needs.setup.outputs.cloudfront_distribution }}"
-          
-          # Get the most recent invalidation ID for this distribution
-          INVALIDATION_ID=$(aws cloudfront list-invalidations \
-            --distribution-id $DISTRIBUTION_ID \
-            --query 'InvalidationList.Items[0].Id' \
-            --output text)
-          
-          if [ "$INVALIDATION_ID" != "None" ] && [ -n "$INVALIDATION_ID" ]; then
-            echo "📋 Invalidation ID: $INVALIDATION_ID"
-            echo "⏳ Polling invalidation status..."
-            
-            # Poll until invalidation completes (timeout after 10 minutes)
-            TIMEOUT=600
-            ELAPSED=0
-            while [ $ELAPSED -lt $TIMEOUT ]; do
-              STATUS=$(aws cloudfront get-invalidation \
-                --distribution-id $DISTRIBUTION_ID \
-                --id $INVALIDATION_ID \
-                --query 'Invalidation.Status' \
-                --output text)
-              
-              echo "   Status: $STATUS (${ELAPSED}s elapsed)"
-              
-              if [ "$STATUS" = "Completed" ]; then
-                echo "✅ CloudFront invalidation completed!"
-                break
-              fi
-              
-              sleep 10
-              ELAPSED=$((ELAPSED + 10))
-            done
-            
-            if [ $ELAPSED -ge $TIMEOUT ]; then
-              echo "⚠️ Invalidation check timed out after ${TIMEOUT}s, proceeding anyway..."
-            fi
-          else
-            echo "⚠️ No recent invalidation found, waiting 60s for propagation..."
-            sleep 60
-          fi
+          echo "⏳ Waiting for CloudFront to propagate changes..."
+          echo "   CloudFront invalidations typically take 1-5 minutes"
+          echo "   Waiting 90 seconds for initial propagation..."
+          sleep 90
+          echo "✅ Wait complete, proceeding to verification"
 
       - name: Verify deployment and version
         run: |
           set +e  # Don't exit on command failure for version extraction
           
-          URL="${{ needs.setup.outputs.marketplace_url }}"
+          BASE_URL="${{ needs.setup.outputs.marketplace_url }}"
+          URL="${BASE_URL}/marketplace"
           EXPECTED_VERSION="${{ needs.generate-tag.outputs.vtag }}"
           
           echo "🧪 Verifying deployment at $URL"
