@@ -147,6 +147,8 @@ jobs:
           echo "Ref Name: ${{ github.ref_name }}"
           echo "Actor: ${{ github.actor }}"
           echo "Expected sub claim: repo:${{ github.repository }}:ref:${{ github.ref }}"
+          echo "Environment output: ${{ needs.generate-tag.outputs.environment }}"
+          echo "Selected Role ARN: ${{ needs.generate-tag.outputs.environment == 'dev' && secrets.AWS_ROLE_ARN_DEV || needs.generate-tag.outputs.environment == 'stg' && secrets.AWS_ROLE_ARN_STG || secrets.AWS_ROLE_ARN_LMN }}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
