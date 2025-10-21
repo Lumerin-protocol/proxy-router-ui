@@ -303,20 +303,6 @@ jobs:
     needs: [generate-tag, setup, build, deploy]
     
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install Playwright for verification
-        run: |
-          # Install playwright in a temp directory to avoid package.json conflicts
-          mkdir -p /tmp/playwright-verify
-          cd /tmp/playwright-verify
-          npm init -y
-          npm install playwright
-          npx playwright install --with-deps chromium
-
       - name: Wait for CloudFront propagation
         run: |
           echo "⏳ Waiting for CloudFront to propagate changes..."
@@ -325,126 +311,42 @@ jobs:
           sleep 90
           echo "✅ Wait complete, proceeding to verification"
 
-      - name: Verify deployment with Playwright
+      - name: Verify deployment and version
         run: |
-          BASE_URL="${{ needs.setup.outputs.marketplace_url }}"
-          URL="${BASE_URL}/marketplace"
+          URL="${{ needs.setup.outputs.marketplace_url }}"
           EXPECTED_VERSION="${{ needs.generate-tag.outputs.vtag }}"
           
           echo "🧪 Verifying deployment at $URL"
           echo "📌 Expected version: $EXPECTED_VERSION"
           
-          # Create Playwright test script in temp directory
-          cd /tmp/playwright-verify
-          cat > verify.spec.js << 'EOF'
-          const { chromium } = require('playwright');
-          const path = require('path');
+          # Fetch the page
+          HTTP_CODE=$(curl -o /tmp/page.html -s -w "%{http_code}" "$URL")
           
-          (async () => {
-            const browser = await chromium.launch();
-            const page = await browser.newPage();
-            
-            // Save screenshots to current directory
-            const screenshotDir = process.cwd();
-            
-            const url = process.env.MARKETPLACE_URL;
-            const expectedVersion = process.env.EXPECTED_VERSION;
-            
-            console.log(`🌐 Navigating to ${url}...`);
-            
-            try {
-              // Navigate to the page
-              const response = await page.goto(url, { 
-                waitUntil: 'networkidle',
-                timeout: 30000 
-              });
-              
-              if (!response.ok()) {
-                console.error(`❌ HTTP ${response.status()}: ${response.statusText()}`);
-                process.exit(1);
-              }
-              
-              console.log(`✅ Page loaded (HTTP ${response.status()})`);
-              
-              // Wait a bit for React to render
-              await page.waitForTimeout(3000);
-              
-              // Try to find version text on the page
-              // Look for common patterns where version might be displayed
-              const pageContent = await page.content();
-              
-              // Method 1: Try to find version in visible text
-              const versionElement = await page.locator('text=/Version:?\\s*v?[0-9]/i').first();
-              let actualVersion = null;
-              
-              try {
-                const versionText = await versionElement.textContent({ timeout: 5000 });
-                const match = versionText.match(/v[0-9][0-9.a-zA-Z_-]*/i);
-                if (match) {
-                  actualVersion = match[0];
-                }
-              } catch (e) {
-                console.log('⚠️ Version element not found in DOM, checking page source...');
-              }
-              
-              // Method 2: Check if version is in the page source anywhere
-              if (!actualVersion) {
-                const versionMatch = pageContent.match(/Version:?\s*(v[0-9][0-9.a-zA-Z_-]*)/i);
-                if (versionMatch) {
-                  actualVersion = versionMatch[1];
-                }
-              }
-              
-              // Method 3: Look for REACT_APP_VERSION in the JavaScript
-              if (!actualVersion) {
-                const jsMatch = pageContent.match(/REACT_APP_VERSION.*?(v[0-9][0-9.a-zA-Z_-]*)/);
-                if (jsMatch) {
-                  actualVersion = jsMatch[1];
-                }
-              }
-              
-              if (!actualVersion) {
-                console.log('⚠️ WARNING: Could not extract version from rendered page');
-                console.log('::warning::Version not found on deployed page');
-                
-                // Take a screenshot for debugging
-                await page.screenshot({ path: path.join(screenshotDir, 'verification-failed.png'), fullPage: true });
-                console.log('📸 Screenshot saved to verification-failed.png');
-              } else if (actualVersion === expectedVersion) {
-                console.log(`✅ Version matches! Deployed: ${actualVersion}`);
-                console.log(`::notice::Deployment verified successfully with correct version ${actualVersion}`);
-              } else {
-                console.log(`⚠️ WARNING: Version mismatch!`);
-                console.log(`   Expected: ${expectedVersion}`);
-                console.log(`   Actual:   ${actualVersion}`);
-                console.log(`::warning::Deployed version (${actualVersion}) does not match expected version (${expectedVersion})`);
-                
-                // Take a screenshot for debugging
-                await page.screenshot({ path: path.join(screenshotDir, 'verification-mismatch.png'), fullPage: true });
-                console.log('📸 Screenshot saved to verification-mismatch.png');
-              }
-              
-            } catch (error) {
-              console.error(`❌ Error during verification: ${error.message}`);
-              await page.screenshot({ path: path.join(screenshotDir, 'verification-error.png'), fullPage: true });
-              console.log('📸 Screenshot saved to verification-error.png');
-              process.exit(1);
-            } finally {
-              await browser.close();
-            }
-          })();
-          EOF
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "❌ Marketplace returned HTTP $HTTP_CODE"
+            echo "::error::Marketplace not accessible (HTTP $HTTP_CODE)"
+            exit 1
+          fi
           
-          # Run Playwright verification
-          MARKETPLACE_URL="$URL" EXPECTED_VERSION="$EXPECTED_VERSION" node verify.spec.js
-
-      - name: Upload screenshots on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: verification-screenshots
-          path: '/tmp/playwright-verify/*.png'
-          retention-days: 7
+          echo "✅ Marketplace is accessible (HTTP $HTTP_CODE)"
+          
+          # Extract version from meta tag
+          ACTUAL_VERSION=$(grep -oP '<meta name="application-version" content="\K[^"]+' /tmp/page.html || echo "")
+          
+          if [ -z "$ACTUAL_VERSION" ]; then
+            echo "⚠️ WARNING: Could not extract version from page"
+            echo "::warning::Version meta tag not found on deployed page"
+            echo "📄 HTML head section:"
+            grep -A 10 "<head>" /tmp/page.html || echo "Could not extract head section"
+          elif [ "$ACTUAL_VERSION" = "$EXPECTED_VERSION" ]; then
+            echo "✅ Version matches! Deployed: $ACTUAL_VERSION"
+            echo "::notice::Deployment verified successfully with version $ACTUAL_VERSION"
+          else
+            echo "⚠️ WARNING: Version mismatch!"
+            echo "   Expected: $EXPECTED_VERSION"
+            echo "   Actual:   $ACTUAL_VERSION"
+            echo "::warning::Deployed version ($ACTUAL_VERSION) does not match expected version ($EXPECTED_VERSION)"
+          fi
 
   summary:
     name: 📊 Summary & Tag

@@ -55,6 +55,17 @@ export default defineConfig(({ mode }) => {
   return {
     define: processEnvDefineMap,
     plugins: [
+      // Inject version into HTML meta tag for easy verification
+      {
+        name: 'html-transform',
+        transformIndexHtml(html) {
+          const appVersion = env.REACT_APP_VERSION || version || 'unknown';
+          return html.replace(
+            '</head>',
+            `\t<meta name="application-version" content="${appVersion}" />\n</head>`
+          );
+        },
+      },
       react({
         jsxImportSource: "@emotion/react",
         // jsxImportSource: "@welldone-software/why-did-you-render",
