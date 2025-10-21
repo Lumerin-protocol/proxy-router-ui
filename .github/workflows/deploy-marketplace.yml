@@ -252,6 +252,9 @@ jobs:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
     needs: [generate-tag, build]
+    environment:
+      name: ${{ needs.generate-tag.outputs.environment == 'main' && 'prd' || needs.generate-tag.outputs.environment }}
+      url: ${{ needs.build.outputs.marketplace_url }}
     
     steps:
       - name: Download build artifacts
@@ -263,7 +266,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ needs.generate-tag.outputs.environment == 'dev' && secrets.AWS_ROLE_ARN_FUTURES_DEV || needs.generate-tag.outputs.environment == 'stg' && secrets.AWS_ROLE_ARN_FUTURES_STG || secrets.AWS_ROLE_ARN_FUTURES_LMN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_FUTURES }}
           aws-region: ${{ needs.build.outputs.aws_region }}
           role-session-name: GitHubActions-Marketplace-${{ github.run_id }}
 
