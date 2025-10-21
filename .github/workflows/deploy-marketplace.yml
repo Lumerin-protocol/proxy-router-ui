@@ -1,4 +1,4 @@
-name: Deploy Marketplace to S3
+name: Deploy Marketplace to Hosted Environment
 
 on:
   workflow_dispatch:
