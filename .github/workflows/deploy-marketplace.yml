@@ -213,8 +213,10 @@ jobs:
         id: create_env
         run: |
           ENV="${{ needs.generate-tag.outputs.environment }}"
+          VERSION="${{ needs.generate-tag.outputs.vtag }}"
           
           echo "🔧 Creating .env file for ${ENV} environment"
+          echo "📌 Version tag: ${VERSION}"
           
           # Create .env file with environment-scoped variables
           # GitHub Environments automatically scope secrets/vars to the environment
@@ -240,6 +242,7 @@ jobs:
           EOF
           
           echo "✅ .env file created"
+          echo "📄 Version in .env: $(grep REACT_APP_VERSION .env)"
           echo "📄 .env contents (sanitized):"
           cat .env | sed 's/=.*/=***/'
 
