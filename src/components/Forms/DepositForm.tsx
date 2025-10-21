@@ -105,6 +105,16 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
       reviewForm={reviewForm}
       validateInput={validateInput}
       transactionSteps={transactionSteps}
+      resultForm={(p) => (
+        <div className="space-y-4">
+          <div className="bg-gray-800 p-4 rounded-lg">
+            <p className="text-gray-300">Your deposit has been processed successfully.</p>
+            <p className="text-white font-medium mt-2">
+              Amount deposited: {amount} {paymentToken.symbol}
+            </p>
+          </div>
+        </div>
+      )}
     />
   );
 };

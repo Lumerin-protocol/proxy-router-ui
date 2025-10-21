@@ -31,7 +31,7 @@ export const ParticipantQuery = gql`
       totalDeposited
       totalVolume
       totalWithdrawn
-      positions(first: $posLimit, skip: $posOffset, orderBy: timestamp, orderDirection: desc) {
+      positions(where: { isActive: true }, first: $posLimit, skip: $posOffset, orderBy: timestamp, orderDirection: desc) {
         transactionHash
         timestamp
         startTime
@@ -47,7 +47,7 @@ export const ParticipantQuery = gql`
           address
         }
       }
-      orders(first: $orderLimit, skip: $orderOffset, orderBy: timestamp, orderDirection: desc) {
+      orders(where: { isActive: true }, first: $orderLimit, skip: $orderOffset, orderBy: timestamp, orderDirection: desc) {
         closedAt
         closedBy
         deliveryDate
@@ -87,14 +87,15 @@ export const DeliveryDatesQuery = gql`
 
 export const OrderBookQuery = gql`
   query OrderBook($deliveryDate: BigInt!) {
-    orders(where: { deliveryDate: $deliveryDate }, orderBy: price, orderDirection: desc) {
+    orders(where: { deliveryDate: $deliveryDate, isActive: true }) {
       id
       price
       deliveryDate
       participant {
         address
       }
-      isBuy
+      isBuy,
+      isActive
     },
     _meta {
       block {

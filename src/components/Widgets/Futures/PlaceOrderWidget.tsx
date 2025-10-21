@@ -15,7 +15,7 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
   const [amount, setAmount] = useState(1);
 
   const { createOrderAsync, isPending, isError, error, hash } = useCreateOrder();
-  const contractSpecsQuery = useFuturesContractSpecs({ refetch: true });
+  const contractSpecsQuery = useFuturesContractSpecs();
 
   // Calculate price step from contract specs
   const priceStep = contractSpecsQuery.data?.data?.priceLadderStep

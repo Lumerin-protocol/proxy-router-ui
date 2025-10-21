@@ -1,5 +1,4 @@
 import styled from "@mui/material/styles/styled";
-import EastIcon from "@mui/icons-material/East";
 import { useAccount } from "wagmi";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 import { useLmrBalanceValidation } from "../../../hooks/data/useLmrBalanceValidation";
@@ -19,6 +18,16 @@ export const FuturesBalanceWidget = () => {
   const lmrBalanceValidation = useLmrBalanceValidation(address);
   const depositModal = useModal();
   const withdrawalModal = useModal();
+
+  const handleDepositSuccess = () => {
+    futureBalance.refetch();
+    depositModal.close();
+  };
+
+  const handleWithdrawalSuccess = () => {
+    futureBalance.refetch();
+    withdrawalModal.close();
+  };
 
   const isLoading = futureBalance.isLoading;
   const isSuccess = !!(futureBalance.isSuccess && address);
@@ -80,11 +89,11 @@ export const FuturesBalanceWidget = () => {
       </SmallWidget>
 
       <ModalItem open={depositModal.isOpen} setOpen={depositModal.setOpen}>
-        <DepositForm closeForm={depositModal.close} />
+        <DepositForm closeForm={handleDepositSuccess} />
       </ModalItem>
 
       <ModalItem open={withdrawalModal.isOpen} setOpen={withdrawalModal.setOpen}>
-        <WithdrawalForm closeForm={withdrawalModal.close} />
+        <WithdrawalForm closeForm={handleWithdrawalSuccess} />
       </ModalItem>
     </>
   );

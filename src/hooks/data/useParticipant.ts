@@ -46,9 +46,9 @@ const fetchParticipantAsync = async (
   const variables = {
     participantAddress,
     posOffset: props?.posOffset || 0,
-    posLimit: props?.posLimit || 10,
+    posLimit: props?.posLimit || 100,
     orderOffset: props?.orderOffset || 0,
-    orderLimit: props?.orderLimit || 10,
+    orderLimit: props?.orderLimit || 100,
   };
 
   const response = await graphqlRequest<ParticipantResponse>(ParticipantQuery, variables);

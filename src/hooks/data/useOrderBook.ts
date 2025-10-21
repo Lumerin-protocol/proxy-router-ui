@@ -34,6 +34,7 @@ const fetchOrderBookAsync = async (deliveryDate: number) => {
         address: order.participant.address,
       },
       isBuy: order.isBuy,
+      isActive: order.isActive,
     })),
   };
 
@@ -72,5 +73,6 @@ type OrderBookResponse = {
       address: `0x${string}`;
     };
     isBuy: boolean;
+    isActive: boolean;
   }[];
 };

@@ -90,6 +90,16 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
       reviewForm={reviewForm}
       validateInput={validateInput}
       transactionSteps={transactionSteps}
+      resultForm={(p) => (
+        <div className="space-y-4">
+          <div className="bg-gray-800 p-4 rounded-lg">
+            <p className="text-gray-300">Your withdrawal has been processed successfully.</p>
+            <p className="text-white font-medium mt-2">
+              Amount withdrawn: {amount} {paymentToken.symbol}
+            </p>
+          </div>
+        </div>
+      )}
     />
   );
 };
