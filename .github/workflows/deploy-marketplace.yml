@@ -209,11 +209,6 @@ jobs:
           node-version: '22'
           cache: 'yarn'
 
-      - name: Configure Git to use HTTPS for GitHub
-        run: |
-          git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-          git config --global url."https://".insteadOf git://
-
       - name: Create .env file
         id: create_env
         run: |
