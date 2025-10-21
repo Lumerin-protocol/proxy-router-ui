@@ -119,11 +119,6 @@ jobs:
     needs:
       - generate-tag
     runs-on: ubuntu-latest
-    # Use GitHub Environments for scoped variables (three-letter standard: dev, stg, prd)
-    # Note: AWS Role ARN is at repo level with suffixes to match other working workflows
-    environment:
-      name: ${{ needs.generate-tag.outputs.environment == 'main' && 'prd' || needs.generate-tag.outputs.environment }}
-      url: ${{ steps.get_deployment_config.outputs.marketplace_url }}
     outputs:
       version: ${{ needs.generate-tag.outputs.vtag }}
       environment: ${{ needs.generate-tag.outputs.environment }}
