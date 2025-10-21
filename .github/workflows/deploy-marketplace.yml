@@ -137,6 +137,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Debug OIDC context
+        run: |
+          echo "🔍 GitHub OIDC Context Debug:"
+          echo "Repository: ${{ github.repository }}"
+          echo "Repository Owner: ${{ github.repository_owner }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Ref Name: ${{ github.ref_name }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Expected sub claim: repo:${{ github.repository }}:ref:${{ github.ref }}"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
