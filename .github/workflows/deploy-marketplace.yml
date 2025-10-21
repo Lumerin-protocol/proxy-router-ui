@@ -1,0 +1,399 @@
+name: Deploy Marketplace to S3
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - stg
+      - dev
+      - cicd/*
+
+    paths: [".github/**", "src/**", "public/**", "package.json", "yarn.lock", "vite.config.ts", "tsconfig.json", "index.html", "LICENSE", "README.md"]
+
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths: [".github/**", "src/**", "public/**", "package.json", "yarn.lock", "vite.config.ts", "tsconfig.json", "index.html"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: write   # Required for creating releases and tags
+
+env:
+  SERVICE_NAME: marketplace
+
+jobs:
+  generate-tag:
+    runs-on: ubuntu-latest
+    name: 📦 Generate Tag
+    outputs:
+      tag_name: ${{ steps.gen_tag_name.outputs.tag_name }}
+      vtag: ${{ steps.gen_tag_name.outputs.vtag }}
+      vfull: ${{ steps.gen_tag_name.outputs.vfull }}
+      environment: ${{ steps.determine_env.outputs.environment }}
+      artifacts_base_url: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.gen_tag_name.outputs.tag_name }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Determine environment
+        id: determine_env
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          if [ "$BRANCH" == "main" ]; then
+            ENV="main"
+          elif [ "$BRANCH" == "stg" ]; then
+            ENV="stg"
+          elif [[ "$BRANCH" == cicd/* ]]; then
+            ENV="dev"
+            echo "🔧 CI/CD feature branch detected - deploying to DEV"
+          else
+            ENV="dev"
+          fi
+          echo "environment=${ENV}" >> $GITHUB_OUTPUT
+
+      - name: Determine tag name
+        id: gen_tag_name
+        shell: bash
+        run: |
+          VMAJ_NEW=2
+          VMIN_NEW=0
+          VPAT_NEW=0
+          set +o pipefail
+          VLAST=$(git describe --tags --abbrev=0 --match='v[1-9]*' refs/remotes/origin/main 2>/dev/null | cut -c2-)
+
+          if [ -n "$VLAST" ]; then
+              eval $(echo "$VLAST" | awk -F '.' '{print "VMAJ="$1" VMIN="$2" VPAT="$3}')
+          else
+              VMAJ=0
+              VMIN=0
+              VPAT=0
+          fi
+          
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+              if [ "$VMAJ_NEW" -gt "$VMAJ" ]; then
+                  VMAJ=$VMAJ_NEW
+                  VMIN=$VMIN_NEW
+                  VPAT=$VPAT_NEW
+              else
+                  VMIN=$((VMIN+1))
+                  VPAT=0
+              fi
+              VFULL=${VMAJ}.${VMIN}.${VPAT}
+              VTAG=v$VFULL
+          else
+              MB=$(git merge-base refs/remotes/origin/main HEAD)
+              VPAT=$(git rev-list --count --no-merges ${MB}..HEAD)
+              VFULL=${VMAJ}.${VMIN}.${VPAT}
+              RNAME=${GITHUB_REF_NAME##*/}
+              [ "$GITHUB_EVENT_NAME" = "pull_request" ] && RNAME=pr${GITHUB_REF_NAME%/merge}
+              VTAG=v${VFULL}-${RNAME}
+          fi
+
+          # Output variables for use in subsequent jobs environment
+          echo "tag_name=${VTAG}" >> $GITHUB_OUTPUT
+          echo "vtag=${VTAG}" >> $GITHUB_OUTPUT
+          echo "vfull=${VFULL}" >> $GITHUB_OUTPUT
+          echo "✅ New Build Tag: $VTAG" >> $GITHUB_STEP_SUMMARY
+          echo "📋 Old Major Tag: $VLAST"  >> $GITHUB_STEP_SUMMARY
+
+  create-release:
+    name: 🏷️ Create GitHub Release
+    if: |
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/stg')) ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    needs:
+      - generate-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          TAG_NAME=${{ needs.generate-tag.outputs.tag_name }}
+          echo "Creating and pushing tag: $TAG_NAME"
+          
+          # Check if tag already exists
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Tag $TAG_NAME already exists, skipping tag creation"
+          else
+            git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+            git push origin "$TAG_NAME"
+            echo "✅ Tag $TAG_NAME created and pushed"
+          fi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.generate-tag.outputs.tag_name }}
+          release_name: Release ${{ needs.generate-tag.outputs.tag_name }}
+          body: |
+            ## Release ${{ needs.generate-tag.outputs.tag_name }}
+            
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+            **Environment:** ${{ needs.generate-tag.outputs.environment }}
+            
+            ### Changes
+            This release includes the latest changes from the ${{ github.ref_name }} branch.
+            
+          draft: false
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+
+  build:
+    name: 🔨 Build
+    if: |
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/stg')) ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    needs:
+      - generate-tag
+    runs-on: ubuntu-latest
+    # Use GitHub Environments for scoped secrets/variables (three-letter standard: dev, stg, prd)
+    environment:
+      name: ${{ needs.generate-tag.outputs.environment == 'main' && 'prd' || needs.generate-tag.outputs.environment }}
+      url: ${{ steps.get_deployment_config.outputs.marketplace_url }}
+    outputs:
+      version: ${{ needs.generate-tag.outputs.vtag }}
+      environment: ${{ needs.generate-tag.outputs.environment }}
+      s3_bucket: ${{ steps.get_deployment_config.outputs.s3_bucket }}
+      cloudfront_distribution: ${{ steps.get_deployment_config.outputs.cloudfront_distribution_id }}
+      aws_region: ${{ steps.get_deployment_config.outputs.aws_region }}
+      marketplace_url: ${{ steps.get_deployment_config.outputs.marketplace_url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_FUTURES }}
+          aws-region: us-east-1
+          role-session-name: GitHubActions-Marketplace-Build-${{ github.run_id }}
+
+      - name: Get deployment configuration from AWS Secrets Manager
+        id: get_deployment_config
+        run: |
+          ENV="${{ needs.generate-tag.outputs.environment }}"
+          
+          # Map environment to AWS secret suffix
+          case $ENV in
+            dev)
+              SECRET_NAME="futures-marketplace-secrets-dev"
+              ;;
+            stg)
+              SECRET_NAME="futures-marketplace-secrets-stg"
+              ;;
+            main)
+              SECRET_NAME="futures-marketplace-secrets-lmn"
+              ;;
+          esac
+          
+          echo "📦 Retrieving deployment config from AWS Secrets Manager: ${SECRET_NAME}"
+          
+          # Retrieve the secret
+          SECRET_JSON=$(aws secretsmanager get-secret-value \
+            --secret-id ${SECRET_NAME} \
+            --query SecretString \
+            --output text)
+          
+          # Parse deployment configuration
+          S3_BUCKET=$(echo $SECRET_JSON | jq -r '.deployment.s3_bucket')
+          CF_DISTRO=$(echo $SECRET_JSON | jq -r '.deployment.cloudfront_distribution_id')
+          MARKETPLACE_URL=$(echo $SECRET_JSON | jq -r '.deployment.marketplace_url')
+          AWS_REGION=$(echo $SECRET_JSON | jq -r '.deployment.aws_region')
+          
+          # Output for use in subsequent jobs
+          echo "s3_bucket=${S3_BUCKET}" >> $GITHUB_OUTPUT
+          echo "cloudfront_distribution_id=${CF_DISTRO}" >> $GITHUB_OUTPUT
+          echo "marketplace_url=${MARKETPLACE_URL}" >> $GITHUB_OUTPUT
+          echo "aws_region=${AWS_REGION}" >> $GITHUB_OUTPUT
+          
+          echo "✅ Deployment Configuration:"
+          echo "   S3 Bucket: ${S3_BUCKET}"
+          echo "   CloudFront: ${CF_DISTRO}"
+          echo "   URL: ${MARKETPLACE_URL}"
+          echo "   Region: ${AWS_REGION}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Create .env file
+        id: create_env
+        run: |
+          ENV="${{ needs.generate-tag.outputs.environment }}"
+          
+          echo "🔧 Creating .env file for ${ENV} environment"
+          
+          # Create .env file with environment-scoped variables
+          # GitHub Environments automatically scope secrets/vars to the environment
+          cat > .env << EOF
+          REACT_APP_BUY_LMR_URL=${{ secrets.REACT_APP_BUY_LMR_URL || vars.REACT_APP_BUY_LMR_URL }}
+          REACT_APP_CHAIN_ID=${{ secrets.REACT_APP_CHAIN_ID || vars.REACT_APP_CHAIN_ID }}
+          REACT_APP_CLONE_FACTORY=${{ secrets.REACT_APP_CLONE_FACTORY || vars.REACT_APP_CLONE_FACTORY }}
+          REACT_APP_ETHERSCAN_URL=${{ secrets.REACT_APP_ETHERSCAN_URL || vars.REACT_APP_ETHERSCAN_URL }}
+          REACT_APP_GITBOOK_URL=${{ secrets.REACT_APP_GITBOOK_URL || vars.REACT_APP_GITBOOK_URL }}
+          REACT_APP_INDEXER_URL=${{ secrets.REACT_APP_INDEXER_URL || vars.REACT_APP_INDEXER_URL }}
+          REACT_APP_MULTICALL_ADDRESS=${{ secrets.REACT_APP_MULTICALL_ADDRESS || vars.REACT_APP_MULTICALL_ADDRESS }}
+          REACT_APP_PAYMENT_SLIPPAGE_PERCENT=${{ secrets.REACT_APP_PAYMENT_SLIPPAGE_PERCENT || vars.REACT_APP_PAYMENT_SLIPPAGE_PERCENT || '1' }}
+          REACT_APP_READ_ONLY_ETH_NODE_URL=${{ secrets.REACT_APP_READ_ONLY_ETH_NODE_URL }}
+          REACT_APP_TITAN_LIGHTNING_POOL=${{ secrets.REACT_APP_TITAN_LIGHTNING_POOL || vars.REACT_APP_TITAN_LIGHTNING_POOL || 'pplp.titan.io:4141' }}
+          REACT_APP_URL=${{ steps.get_deployment_config.outputs.marketplace_url }}
+          REACT_APP_VALIDATOR_REGISTRY_ADDRESS=${{ secrets.REACT_APP_VALIDATOR_REGISTRY_ADDRESS || vars.REACT_APP_VALIDATOR_REGISTRY_ADDRESS }}
+          REACT_APP_VERSION=${{ needs.generate-tag.outputs.vtag }}
+          REACT_APP_WALLET_CONNECT_ID=${{ secrets.REACT_APP_WALLET_CONNECT_ID }}
+          DEV_SERVER_HTTPS=false
+          REACT_APP_FUTURES_TOKEN_ADDRESS=${{ secrets.REACT_APP_FUTURES_TOKEN_ADDRESS || vars.REACT_APP_FUTURES_TOKEN_ADDRESS }}
+          REACT_APP_FUTURES_REQUIRED_LMR=${{ secrets.REACT_APP_FUTURES_REQUIRED_LMR || vars.REACT_APP_FUTURES_REQUIRED_LMR || '10000' }}
+          REACT_APP_SUBGRAPH_FUTURES_URL=${{ secrets.REACT_APP_SUBGRAPH_FUTURES_URL || vars.REACT_APP_SUBGRAPH_FUTURES_URL }}
+          EOF
+          
+          echo "✅ .env file created"
+          echo "📄 .env contents (sanitized):"
+          cat .env | sed 's/=.*/=***/'
+
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+          yarn install --frozen-lockfile
+
+      - name: Build application
+        run: |
+          echo "🏗️ Building application..."
+          yarn build
+          
+          echo "✅ Build complete"
+          ls -lh build/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ needs.generate-tag.outputs.environment }}
+          path: build/
+          retention-days: 1
+
+  deploy:
+    name: 🚀 Deploy
+    runs-on: ubuntu-latest
+    needs: [generate-tag, build]
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ needs.generate-tag.outputs.environment }}
+          path: build/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.generate-tag.outputs.environment == 'dev' && secrets.AWS_ROLE_ARN_FUTURES_DEV || needs.generate-tag.outputs.environment == 'stg' && secrets.AWS_ROLE_ARN_FUTURES_STG || secrets.AWS_ROLE_ARN_FUTURES_LMN }}
+          aws-region: ${{ needs.build.outputs.aws_region }}
+          role-session-name: GitHubActions-Marketplace-${{ github.run_id }}
+
+      - name: Deploy to S3
+        run: |
+          echo "🚀 Deploying to S3 bucket: ${{ needs.build.outputs.s3_bucket }}"
+          aws s3 sync build/ s3://${{ needs.build.outputs.s3_bucket }}/ --delete
+          
+          echo "✅ Files uploaded to S3"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          echo "🔄 Invalidating CloudFront distribution: ${{ needs.build.outputs.cloudfront_distribution }}"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ needs.build.outputs.cloudfront_distribution }} \
+            --paths "/*"
+          
+          echo "✅ CloudFront cache invalidated"
+
+  verify:
+    name: 🔍 Verify
+    runs-on: ubuntu-latest
+    needs: [generate-tag, build, deploy]
+    
+    steps:
+      - name: Wait for CloudFront propagation
+        run: |
+          echo "⏳ Waiting 30 seconds for CloudFront to propagate..."
+          sleep 30
+
+      - name: Verify deployment
+        run: |
+          echo "🧪 Verifying deployment at ${{ needs.build.outputs.marketplace_url }}"
+          
+          # Check if the site is accessible
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" ${{ needs.build.outputs.marketplace_url }})
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Marketplace is accessible (HTTP $HTTP_CODE)"
+          else
+            echo "❌ Marketplace returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+  summary:
+    name: 📊 Summary
+    runs-on: ubuntu-latest
+    needs: [generate-tag, build, deploy, verify]
+    if: always()
+    
+    steps:
+      - name: Deployment summary
+        if: needs.verify.result == 'success'
+        run: |
+          echo "## 🎉 Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** Marketplace" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ needs.generate-tag.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.generate-tag.outputs.vtag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ needs.build.outputs.marketplace_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**S3 Bucket:** ${{ needs.build.outputs.s3_bucket }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Marketplace deployed and verified successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Failure summary
+        if: needs.verify.result == 'failure'
+        run: |
+          echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** Marketplace" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ needs.generate-tag.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.generate-tag.outputs.vtag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Deployment or verification failed. Check logs above for details." >> $GITHUB_STEP_SUMMARY
+
