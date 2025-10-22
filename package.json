@@ -18,7 +18,7 @@
     "lint:fix": "biome lint --write",
     "prettier": "biome format",
     "prettier:fix": "biome format --write",
-    "format": "biome format --write --staged",
+    "format": "biome format --write --staged --files-ignore-unknown=true",
     "prepare": "husky"
   },
   "dependencies": {
