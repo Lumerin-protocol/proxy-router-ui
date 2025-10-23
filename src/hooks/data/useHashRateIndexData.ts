@@ -32,9 +32,9 @@ async function convertHashrateIndexToUsd() {
     to: "1000000000000000000",
   });
 
-  // for our contract on marketplace: 100 TH/s for 30 days
+  // for our contract on marketplace: 100 TH/s for 24 hours
   const contractHPS = 100n * 10n ** 12n;
-  const contractDuration = 30n * 24n * 3600n;
+  const contractDuration = 24n * 3600n;
 
   // for luxor hashtate index 1 PH/s for 24 hours
   // const contractHPS = 1000n * 10n ** 12n;

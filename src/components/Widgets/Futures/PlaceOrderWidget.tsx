@@ -3,6 +3,10 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
 import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
+import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { Spinner } from "../../Spinner.styled";
+import { ModalItem } from "../../Modal";
+import { PrimaryButton, SecondaryButton } from "../../Forms/FormButtons/Buttons.styled";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
@@ -11,16 +15,59 @@ interface PlaceOrderWidgetProps {
 }
 
 export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDeliveryDate }: PlaceOrderWidgetProps) => {
-  const [price, setPrice] = useState("100.00");
+  const [price, setPrice] = useState("5.00");
   const [amount, setAmount] = useState(1);
+  const [showHighPriceModal, setShowHighPriceModal] = useState(false);
+  const [pendingOrder, setPendingOrder] = useState<{
+    price: number;
+    amount: number;
+    isBuy: boolean;
+  } | null>(null);
 
   const { createOrderAsync, isPending, isError, error, hash } = useCreateOrder();
   const contractSpecsQuery = useFuturesContractSpecs();
+  const hashrateQuery = useHashrateIndexData();
 
   // Calculate price step from contract specs
   const priceStep = contractSpecsQuery.data?.data?.priceLadderStep
     ? Number(contractSpecsQuery.data.data.priceLadderStep) / 1e6
-    : 0.05; // Default fallback
+    : null;
+
+  // Get newest item price for validation
+  const newestItemPrice =
+    hashrateQuery.data && hashrateQuery.data.length > 0
+      ? Number(hashrateQuery.data[hashrateQuery.data.length - 1].priceToken) / 1e6
+      : null;
+
+  // Get high price percentage from environment variable (default 60 for 160%)
+  const highPricePercentage = Number(process.env.REACT_APP_FUTURES_HIGH_PRICE_PERCENTAGE || "60");
+  const maxPriceMultiplier = 1 + highPricePercentage / 100; // Convert percentage to multiplier
+
+  // Update values when external props change
+  useEffect(() => {
+    if (externalPrice !== undefined) {
+      setPrice(externalPrice);
+    }
+  }, [externalPrice]);
+
+  useEffect(() => {
+    if (externalAmount !== undefined) {
+      setAmount(externalAmount);
+    }
+  }, [externalAmount]);
+
+  // Show loading state while priceLadderStep is being fetched
+  if (contractSpecsQuery.isLoading || !priceStep || hashrateQuery.isLoading || !newestItemPrice) {
+    return (
+      <PlaceOrderContainer>
+        <h3>Place order</h3>
+        <div style={{ textAlign: "center", padding: "2rem", color: "#6b7280" }}>
+          <Spinner fontSize="0.3em" />
+          <p style={{ marginTop: "1rem", margin: 0 }}>Loading contract specifications...</p>
+        </div>
+      </PlaceOrderContainer>
+    );
+  }
 
   // Helper functions for price adjustment
   const snapToStep = (value: number): number => {
@@ -49,40 +96,27 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
     }
   };
 
-  // Update values when external props change
-  useEffect(() => {
-    if (externalPrice !== undefined) {
-      setPrice(externalPrice);
-    }
-  }, [externalPrice]);
-
-  useEffect(() => {
-    if (externalAmount !== undefined) {
-      setAmount(externalAmount);
-    }
-  }, [externalAmount]);
-
   const handleBuy = async () => {
     if (!externalDeliveryDate) {
       alert("Please select a price from the order book to set delivery date");
       return;
     }
 
-    try {
-      const priceInWei = BigInt(Math.floor(parseFloat(price) * 1e6));
-      const deliveryTimestamp = BigInt(externalDeliveryDate);
+    // Check if price exceeds the configured percentage of newest item price
+    const currentPrice = parseFloat(price);
+    const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
-      await createOrderAsync({
-        price: priceInWei,
-        deliveryDate: deliveryTimestamp,
-        quantity: amount,
+    if (currentPrice > maxAllowedPrice) {
+      setPendingOrder({
+        price: currentPrice,
+        amount: amount,
         isBuy: true,
       });
-
-      console.log("Buy order created successfully");
-    } catch (err) {
-      console.error("Failed to create buy order:", err);
+      setShowHighPriceModal(true);
+      return;
     }
+
+    await executeOrder(currentPrice, amount, true);
   };
 
   const handleSell = async () => {
@@ -91,67 +125,197 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
       return;
     }
 
+    // Check if price exceeds the configured percentage of newest item price
+    const currentPrice = parseFloat(price);
+    const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
+
+    if (currentPrice > maxAllowedPrice) {
+      setPendingOrder({
+        price: currentPrice,
+        amount: amount,
+        isBuy: false,
+      });
+      setShowHighPriceModal(true);
+      return;
+    }
+
+    await executeOrder(currentPrice, amount, false);
+  };
+
+  const executeOrder = async (orderPrice: number, orderAmount: number, isBuy: boolean) => {
     try {
-      const priceInWei = BigInt(Math.floor(parseFloat(price) * 1e6));
-      const deliveryTimestamp = BigInt(externalDeliveryDate);
+      const priceInWei = BigInt(Math.floor(orderPrice * 1e6));
+      const deliveryTimestamp = BigInt(externalDeliveryDate!);
 
       await createOrderAsync({
         price: priceInWei,
         deliveryDate: deliveryTimestamp,
-        quantity: amount,
-        isBuy: false,
+        quantity: orderAmount,
+        isBuy: isBuy,
       });
 
-      console.log("Sell order created successfully");
+      console.log(`${isBuy ? "Buy" : "Sell"} order created successfully`);
     } catch (err) {
-      console.error("Failed to create sell order:", err);
+      console.error(`Failed to create ${isBuy ? "buy" : "sell"} order:`, err);
     }
   };
 
-  return (
-    <PlaceOrderContainer>
-      <h3>Place order</h3>
+  const handleConfirmHighPrice = async () => {
+    if (pendingOrder) {
+      await executeOrder(pendingOrder.price, pendingOrder.amount, pendingOrder.isBuy);
+      setShowHighPriceModal(false);
+      setPendingOrder(null);
+    }
+  };
 
-      <MainSection>
-        <InputSection>
-          <InputGroup>
-            <label>Price, USDC (Step: {priceStep.toFixed(2)})</label>
-            <PriceInputContainer>
-              <PriceButton onClick={decrementPrice} disabled={isPending}>
-                −
-              </PriceButton>
+  const handleCancelHighPrice = () => {
+    setShowHighPriceModal(false);
+    setPendingOrder(null);
+  };
+
+  return (
+    <>
+      <PlaceOrderContainer>
+        <h3>Place order</h3>
+
+        <MainSection>
+          <InputSection>
+            <InputGroup>
+              <label>Price, USDC (Step: {priceStep.toFixed(2)})</label>
+              <PriceInputContainer>
+                <PriceButton onClick={decrementPrice} disabled={isPending}>
+                  −
+                </PriceButton>
+                <input
+                  type="number"
+                  value={price}
+                  placeholder="5.00"
+                  onChange={(e) => handlePriceChange(e.target.value)}
+                  step={priceStep}
+                  min="1"
+                />
+                <PriceButton onClick={incrementPrice} disabled={isPending}>
+                  +
+                </PriceButton>
+              </PriceInputContainer>
+            </InputGroup>
+
+            <InputGroup>
+              <label>Amount</label>
               <input
                 type="number"
-                value={price}
-                onChange={(e) => handlePriceChange(e.target.value)}
-                step={priceStep}
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
                 min="1"
+                max="50"
               />
-              <PriceButton onClick={incrementPrice} disabled={isPending}>
-                +
-              </PriceButton>
-            </PriceInputContainer>
-          </InputGroup>
+            </InputGroup>
+          </InputSection>
 
-          <InputGroup>
-            <label>Amount</label>
-            <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} min="1" max="50" />
-          </InputGroup>
-        </InputSection>
+          <ButtonSection>
+            <BuyButton onClick={handleBuy} disabled={isPending}>
+              {isPending ? "Creating..." : "Buy / Long"}
+            </BuyButton>
+            <SellButton onClick={handleSell} disabled={isPending}>
+              {isPending ? "Creating..." : "Sell / Short"}
+            </SellButton>
+          </ButtonSection>
 
-        <ButtonSection>
-          <BuyButton onClick={handleBuy} disabled={isPending}>
-            {isPending ? "Creating..." : "Buy / Long"}
-          </BuyButton>
-          <SellButton onClick={handleSell} disabled={isPending}>
-            {isPending ? "Creating..." : "Sell / Short"}
-          </SellButton>
-        </ButtonSection>
+          {isError && error && <ErrorMessage>Error: {error.message || "Failed to create order"}</ErrorMessage>}
+        </MainSection>
+        {hash && <SuccessMessage>Order created successfully! Transaction: {hash}</SuccessMessage>}
+      </PlaceOrderContainer>
 
-        {isError && error && <ErrorMessage>Error: {error.message || "Failed to create order"}</ErrorMessage>}
-      </MainSection>
-      {hash && <SuccessMessage>Order created successfully! Transaction: {hash}</SuccessMessage>}
-    </PlaceOrderContainer>
+      <ModalItem open={showHighPriceModal} setOpen={setShowHighPriceModal}>
+        <HighPriceConfirmationModal
+          pendingOrder={pendingOrder}
+          newestItemPrice={newestItemPrice}
+          highPricePercentage={highPricePercentage}
+          onConfirm={handleConfirmHighPrice}
+          onCancel={handleCancelHighPrice}
+        />
+      </ModalItem>
+    </>
+  );
+};
+
+const HighPriceConfirmationModal = ({
+  pendingOrder,
+  newestItemPrice,
+  highPricePercentage,
+  onConfirm,
+  onCancel,
+}: {
+  pendingOrder: { price: number; amount: number; isBuy: boolean } | null;
+  newestItemPrice: number;
+  highPricePercentage: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  if (!pendingOrder) return null;
+
+  const percentageOver = ((pendingOrder.price / newestItemPrice) * 100).toFixed(1);
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-white mb-6">High Price Warning</h2>
+
+      <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+        <div className="flex items-center mb-3">
+          <span className="text-yellow-400 text-2xl mr-3">⚠️</span>
+          <h3 className="text-lg font-semibold text-yellow-400">Price Exceeds Market</h3>
+        </div>
+
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-300">Your Price:</span>
+            <span className="text-white font-medium">${pendingOrder.price.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-gray-300">Market Price:</span>
+            <span className="text-white font-medium">${newestItemPrice.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-gray-300">Percentage of Market:</span>
+            <span className="text-red-400 font-medium">{percentageOver}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg p-4">
+        <h4 className="text-white font-semibold mb-2">Order Details:</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-300">Type:</span>
+            <span className="text-white">{pendingOrder.isBuy ? "Buy / Long" : "Sell / Short"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Amount:</span>
+            <span className="text-white">{pendingOrder.amount} units</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Total Value:</span>
+            <span className="text-white">${(pendingOrder.price * pendingOrder.amount).toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+        <p className="text-red-300 text-sm">
+          <strong>Warning:</strong> This price is significantly above the current market rate. You may experience
+          difficulty finding a counterparty or may face higher slippage.
+        </p>
+      </div>
+
+      <div className="flex gap-3 justify-end">
+        <SecondaryButton onClick={onCancel}>Cancel</SecondaryButton>
+        <PrimaryButton onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
+          Proceed Anyway
+        </PrimaryButton>
+      </div>
+    </div>
   );
 };
 
