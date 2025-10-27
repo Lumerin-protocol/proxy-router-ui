@@ -1,20 +1,5 @@
 import { gql } from "graphql-request";
 
-export const HashrateIndexQuery = gql`
-  query HashpriceIndex($from: BigInt!, $to: BigInt!) {
-    hashrateIndexes(
-      where: { updatedAt_gt: $from, updatedAt_lte: $to }
-      orderBy: updatedAt
-      orderDirection: asc
-    ) {
-      hashesForBTC
-      hashesForToken
-      id
-      updatedAt
-    }
-  }
-`;
-
 export const ParticipantQuery = gql`
   query Participant(
     $participantAddress: ID!
@@ -70,19 +55,40 @@ export const ParticipantQuery = gql`
   }
 `;
 
-export const DeliveryDatesQuery = gql`
-  query DeliveryDates($now: BigInt!) {
-    deliveryDates(where: { deliveryDate_gte: $now }, orderBy: deliveryDate, orderDirection: asc) {
-      deliveryDate
-      id
+export const PositionsBookQuery = gql`
+  query PositionsBookQuery($address: ID!) {
+  positions(
+    where: {
+      or: [
+        { isActive: true, buyer_: { address: $address } },
+        { isActive: true, seller_: { address: $address } }
+      ]
     },
-    _meta {
-      block {
-        number
-        timestamp
-      }
+    orderBy: timestamp,
+    orderDirection: desc
+  ) {
+    transactionHash
+    timestamp
+    startTime
+    price
+    isActive
+    id
+    closedBy
+    closedAt
+    buyer {
+      address
+    }
+    seller {
+      address
     }
   }
+  _meta {
+    block {
+      number
+      timestamp
+    }
+  }
+}
 `;
 
 export const OrderBookQuery = gql`
@@ -106,20 +112,6 @@ export const OrderBookQuery = gql`
   }
 `;
 
-export const PositionBookQuery = gql`
-  query PositionBook($deliveryDate: BigInt!) {
-    positions(where: { startTime: $deliveryDate }) {
-      id
-      price
-      startTime
-    }
-  }
-`;
-
-// Last sell/buy order - derived from order book query result
-
-// Total open interest - derived from position book query result
-
 export const ContractSpecsQuery = gql`
   query ContractSpecs {
     futures(id: "0") {
@@ -137,6 +129,35 @@ export const ContractSpecsQuery = gql`
       tokenAddress
       validatorAddress
     }
+    _meta {
+      block {
+        number
+        timestamp
+      }
+    }
+  }
+`;
+
+export const HashrateIndexQuery = gql`
+  query HashpriceIndex {
+    hashrateIndexes(
+      orderBy: updatedAt
+      orderDirection: desc
+    ) {
+      hashesForBTC
+      hashesForToken
+      updatedAt
+      id
+    }
+  }
+`;
+
+export const DeliveryDatesQuery = gql`
+  query DeliveryDates($now: BigInt!) {
+    deliveryDates(where: { deliveryDate_gte: $now }, orderBy: deliveryDate, orderDirection: asc) {
+      deliveryDate
+      id
+    },
     _meta {
       block {
         number

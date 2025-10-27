@@ -1,31 +1,39 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
-import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
-import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
 import { Spinner } from "../../Spinner.styled";
 import { ModalItem } from "../../Modal";
 import { PrimaryButton, SecondaryButton } from "../../Forms/FormButtons/Buttons.styled";
+import { PlaceOrderForm } from "../../Forms/PlaceOrderForm";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { GetResponse } from "../../../gateway/interfaces";
+import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
   externalAmount?: number;
   externalDeliveryDate?: number;
+  address?: `0x${string}`;
+  contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
 }
 
-export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDeliveryDate }: PlaceOrderWidgetProps) => {
+export const PlaceOrderWidget = ({
+  externalPrice,
+  externalAmount,
+  externalDeliveryDate,
+  contractSpecsQuery,
+}: PlaceOrderWidgetProps) => {
   const [price, setPrice] = useState("5.00");
   const [amount, setAmount] = useState(1);
   const [showHighPriceModal, setShowHighPriceModal] = useState(false);
+  const [showOrderForm, setShowOrderForm] = useState(false);
   const [pendingOrder, setPendingOrder] = useState<{
     price: number;
     amount: number;
     isBuy: boolean;
   } | null>(null);
 
-  const { createOrderAsync, isPending, isError, error, hash } = useCreateOrder();
-  const contractSpecsQuery = useFuturesContractSpecs();
   const hashrateQuery = useHashrateIndexData();
 
   // Calculate price step from contract specs
@@ -116,7 +124,7 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
       return;
     }
 
-    await executeOrder(currentPrice, amount, true);
+    openOrderForm(currentPrice, amount, true);
   };
 
   const handleSell = async () => {
@@ -139,32 +147,22 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
       return;
     }
 
-    await executeOrder(currentPrice, amount, false);
+    openOrderForm(currentPrice, amount, false);
   };
 
-  const executeOrder = async (orderPrice: number, orderAmount: number, isBuy: boolean) => {
-    try {
-      const priceInWei = BigInt(Math.floor(orderPrice * 1e6));
-      const deliveryTimestamp = BigInt(externalDeliveryDate!);
-
-      await createOrderAsync({
-        price: priceInWei,
-        deliveryDate: deliveryTimestamp,
-        quantity: orderAmount,
-        isBuy: isBuy,
-      });
-
-      console.log(`${isBuy ? "Buy" : "Sell"} order created successfully`);
-    } catch (err) {
-      console.error(`Failed to create ${isBuy ? "buy" : "sell"} order:`, err);
-    }
+  const openOrderForm = (orderPrice: number, orderAmount: number, isBuy: boolean) => {
+    setPendingOrder({
+      price: orderPrice,
+      amount: orderAmount,
+      isBuy: isBuy,
+    });
+    setShowOrderForm(true);
   };
 
-  const handleConfirmHighPrice = async () => {
+  const handleConfirmHighPrice = () => {
     if (pendingOrder) {
-      await executeOrder(pendingOrder.price, pendingOrder.amount, pendingOrder.isBuy);
       setShowHighPriceModal(false);
-      setPendingOrder(null);
+      setShowOrderForm(true);
     }
   };
 
@@ -183,7 +181,7 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
             <InputGroup>
               <label>Price, USDC (Step: {priceStep.toFixed(2)})</label>
               <PriceInputContainer>
-                <PriceButton onClick={decrementPrice} disabled={isPending}>
+                <PriceButton onClick={decrementPrice} disabled={showOrderForm}>
                   −
                 </PriceButton>
                 <input
@@ -194,7 +192,7 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
                   step={priceStep}
                   min="1"
                 />
-                <PriceButton onClick={incrementPrice} disabled={isPending}>
+                <PriceButton onClick={incrementPrice} disabled={showOrderForm}>
                   +
                 </PriceButton>
               </PriceInputContainer>
@@ -213,17 +211,14 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
           </InputSection>
 
           <ButtonSection>
-            <BuyButton onClick={handleBuy} disabled={isPending}>
-              {isPending ? "Creating..." : "Buy / Long"}
+            <BuyButton onClick={handleBuy} disabled={showOrderForm}>
+              Buy / Long
             </BuyButton>
-            <SellButton onClick={handleSell} disabled={isPending}>
-              {isPending ? "Creating..." : "Sell / Short"}
+            <SellButton onClick={handleSell} disabled={showOrderForm}>
+              Sell / Short
             </SellButton>
           </ButtonSection>
-
-          {isError && error && <ErrorMessage>Error: {error.message || "Failed to create order"}</ErrorMessage>}
         </MainSection>
-        {hash && <SuccessMessage>Order created successfully! Transaction: {hash}</SuccessMessage>}
       </PlaceOrderContainer>
 
       <ModalItem open={showHighPriceModal} setOpen={setShowHighPriceModal}>
@@ -235,6 +230,29 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
           onCancel={handleCancelHighPrice}
         />
       </ModalItem>
+
+      {showOrderForm && pendingOrder && externalDeliveryDate && (
+        <ModalItem
+          open={showOrderForm}
+          setOpen={(open) => {
+            setShowOrderForm(open);
+            if (!open) {
+              setPendingOrder(null);
+            }
+          }}
+        >
+          <PlaceOrderForm
+            price={BigInt(Math.floor(pendingOrder.price * 1e6))}
+            deliveryDate={BigInt(externalDeliveryDate)}
+            quantity={pendingOrder.amount}
+            isBuy={pendingOrder.isBuy}
+            closeForm={() => {
+              setShowOrderForm(false);
+              setPendingOrder(null);
+            }}
+          />
+        </ModalItem>
+      )}
     </>
   );
 };
@@ -518,25 +536,4 @@ const SellButton = styled("button")`
     cursor: not-allowed;
     opacity: 0.6;
   }
-`;
-
-const ErrorMessage = styled("div")`
-  padding: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 6px;
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 1rem;
-`;
-
-const SuccessMessage = styled("div")`
-  padding: 0.75rem;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 6px;
-  color: #22c55e;
-  font-size: 0.875rem;
-  margin-top: 1rem;
-  word-break: break-all;
 `;

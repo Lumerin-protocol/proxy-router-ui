@@ -3,25 +3,23 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
 import { useDeliveryDates } from "../../../hooks/data/useDeliveryDates";
 import { useOrderBook } from "../../../hooks/data/useOrderBook";
-import { createFinalOrderBookData, type OrderBookData } from "./orderBookHelpers";
+import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { createFinalOrderBookData } from "./orderBookHelpers";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { GetResponse } from "../../../gateway/interfaces";
+import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface OrderBookTableProps {
   onRowClick?: (price: number, amount: number | null) => void;
   onDeliveryDateChange?: (deliveryDate: number | undefined) => void;
-  orderBookData?: OrderBookData[];
+  contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
 }
 
-export const OrderBookTable = ({
-  onRowClick,
-  onDeliveryDateChange,
-  orderBookData: propOrderBookData,
-}: OrderBookTableProps) => {
+export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecsQuery }: OrderBookTableProps) => {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
 
-  // // Get current blockchain time
-  // const now = useSimulatedBlockchainTime();
-
   const { data: deliveryDatesResponse, isLoading, isError, isSuccess } = useDeliveryDates();
+  const hashrateQuery = useHashrateIndexData();
 
   // Fetch delivery dates
   const deliveryDates = deliveryDatesResponse?.data || [];
@@ -38,12 +36,16 @@ export const OrderBookTable = ({
     }
   }, [selectedDeliveryDate, onDeliveryDateChange]);
 
-  // // Fetch order book for selected delivery date
+  // Fetch order book for selected delivery date
   const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true });
   const orderBookData = orderBookQuery.data?.data?.orders || [];
 
-  // Create final order book data by merging live and prop data
-  const finalOrderBookData = createFinalOrderBookData(orderBookData, propOrderBookData);
+  // Create final order book data
+  const finalOrderBookData = createFinalOrderBookData(
+    orderBookData,
+    hashrateQuery.data as any,
+    contractSpecsQuery.data?.data,
+  );
 
   // Navigation functions
   const goToPreviousDate = () => {
@@ -134,9 +136,9 @@ export const OrderBookTable = ({
         <Table>
           <thead>
             <tr>
-              <th>Bid, units</th>
+              <th>Buy, units</th>
               <th>Price, USDC</th>
-              <th>Ask, units</th>
+              <th>Sell, units</th>
             </tr>
           </thead>
           <tbody>

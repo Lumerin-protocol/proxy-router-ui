@@ -2,14 +2,20 @@ import styled from "@mui/material/styles/styled";
 import EastIcon from "@mui/icons-material/East";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { Spinner } from "../../Spinner.styled";
-import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 import { formatHashrateTHPS } from "../../../lib/units";
 import { useModal } from "../../../hooks/useModal";
 import { ModalItem } from "../../Modal";
 import { DetailedSpecsModal } from "./DetailedSpecsModal";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { GetResponse } from "../../../gateway/interfaces";
+import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
-export const FuturesMarketWidget = () => {
-  const { data: contractSpecs, isLoading, error } = useFuturesContractSpecs();
+interface FuturesMarketWidgetProps {
+  contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
+}
+
+export const FuturesMarketWidget = ({ contractSpecsQuery }: FuturesMarketWidgetProps) => {
+  const { data: contractSpecs, isLoading, error } = contractSpecsQuery;
   const detailedSpecsModal = useModal();
 
   const formatSpeed = (speedHps: bigint) => {
