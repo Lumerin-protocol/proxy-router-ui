@@ -2,84 +2,24 @@ import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
 import { useDeliveryDates } from "../../../hooks/data/useDeliveryDates";
-import { useOrderBook, type OrderBookOrder } from "../../../hooks/data/useOrderBook";
-import { useSimulatedBlockchainTime } from "../../../hooks/data/useSimulatedBlockchainTime";
-
-interface OrderBookData {
-  bidUnits: number | null;
-  price: number;
-  askUnits: number | null;
-  isHighlighted?: boolean;
-  highlightColor?: "red" | "green";
-}
+import { useOrderBook } from "../../../hooks/data/useOrderBook";
+import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { createFinalOrderBookData } from "./orderBookHelpers";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { GetResponse } from "../../../gateway/interfaces";
+import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface OrderBookTableProps {
   onRowClick?: (price: number, amount: number | null) => void;
   onDeliveryDateChange?: (deliveryDate: number | undefined) => void;
-  orderBookData?: OrderBookData[];
+  contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
 }
 
-// Transform order book data from API to component interface
-const transformOrderBookData = (orders: OrderBookOrder[]): OrderBookData[] => {
-  if (!orders || orders.length === 0) {
-    return [];
-  }
-
-  // Group orders by price and separate buy/sell orders
-  const priceGroups = new Map<number, { bids: OrderBookOrder[]; asks: OrderBookOrder[] }>();
-
-  orders.forEach((order) => {
-    // Convert BigInt price to number (price is already in wei, convert to USDC)
-    const price = Number(order.price) / 1e6; // Convert from wei to USDC
-
-    // Round to avoid floating point precision issues
-    const roundedPrice = Math.round(price * 100) / 100;
-
-    if (!priceGroups.has(roundedPrice)) {
-      priceGroups.set(roundedPrice, { bids: [], asks: [] });
-    }
-
-    if (order.isBuy) {
-      priceGroups.get(roundedPrice)!.bids.push(order);
-    } else {
-      priceGroups.get(roundedPrice)!.asks.push(order);
-    }
-  });
-
-  // Convert to OrderBookData format
-  const orderBookData: OrderBookData[] = [];
-
-  // Sort prices in descending order for display
-  const sortedPrices = Array.from(priceGroups.keys()).sort((a, b) => b - a);
-
-  sortedPrices.forEach((price) => {
-    const group = priceGroups.get(price)!;
-
-    // Calculate total units for bids and asks
-    const bidUnits = group.bids.length > 0 ? group.bids.length : null; // Simplified: using count instead of actual units
-    const askUnits = group.asks.length > 0 ? group.asks.length : null; // Simplified: using count instead of actual units
-
-    orderBookData.push({
-      bidUnits,
-      price,
-      askUnits,
-    });
-  });
-
-  return orderBookData;
-};
-
-export const OrderBookTable = ({
-  onRowClick,
-  onDeliveryDateChange,
-  orderBookData: propOrderBookData,
-}: OrderBookTableProps) => {
+export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecsQuery }: OrderBookTableProps) => {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
 
-  // // Get current blockchain time
-  // const now = useSimulatedBlockchainTime();
-
   const { data: deliveryDatesResponse, isLoading, isError, isSuccess } = useDeliveryDates();
+  const hashrateQuery = useHashrateIndexData();
 
   // Fetch delivery dates
   const deliveryDates = deliveryDatesResponse?.data || [];
@@ -96,60 +36,16 @@ export const OrderBookTable = ({
     }
   }, [selectedDeliveryDate, onDeliveryDateChange]);
 
-  // // Fetch order book for selected delivery date
+  // Fetch order book for selected delivery date
   const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true });
   const orderBookData = orderBookQuery.data?.data?.orders || [];
 
-  // Group fetched order book by price and side, then merge with prop data
-  const liveGroupedMap = new Map<number, { bidUnits: number | null; askUnits: number | null }>();
-  if (orderBookData && orderBookData.length > 0) {
-    const priceToSideCount = new Map<number, { bids: number; asks: number }>();
-
-    for (const order of orderBookData) {
-      const price = Math.round((Number(order.price) / 1e6) * 100) / 100; // USDC with 2 decimals
-      const entry = priceToSideCount.get(price) || { bids: 0, asks: 0 };
-      if (order.isBuy) {
-        entry.bids += 1; // counting orders as units for now
-      } else {
-        entry.asks += 1;
-      }
-      priceToSideCount.set(price, entry);
-    }
-
-    // Fill liveGroupedMap from aggregated counts
-    for (const [price, counts] of priceToSideCount.entries()) {
-      liveGroupedMap.set(price, {
-        bidUnits: counts.bids > 0 ? counts.bids : null,
-        askUnits: counts.asks > 0 ? counts.asks : null,
-      });
-    }
-  }
-
-  // Start merged map with prop data (so prop-only prices are kept)
-  const mergedMap = new Map<number, { bidUnits: number | null; askUnits: number | null }>();
-  if (propOrderBookData && propOrderBookData.length > 0) {
-    for (const row of propOrderBookData) {
-      mergedMap.set(row.price, { bidUnits: row.bidUnits, askUnits: row.askUnits });
-    }
-  }
-
-  // Overlay live data ensuring all live prices are present and preferred
-  for (const [price, live] of liveGroupedMap.entries()) {
-    const existing = mergedMap.get(price);
-    if (!existing) {
-      mergedMap.set(price, { bidUnits: live.bidUnits, askUnits: live.askUnits });
-    } else {
-      mergedMap.set(price, {
-        bidUnits: live.bidUnits !== null ? live.bidUnits : existing.bidUnits,
-        askUnits: live.askUnits !== null ? live.askUnits : existing.askUnits,
-      });
-    }
-  }
-
-  // Build final array sorted by price desc
-  const finalOrderBookData: OrderBookData[] = Array.from(mergedMap.entries())
-    .sort((a, b) => b[0] - a[0])
-    .map(([price, v]) => ({ price, bidUnits: v.bidUnits, askUnits: v.askUnits }));
+  // Create final order book data
+  const finalOrderBookData = createFinalOrderBookData(
+    orderBookData,
+    hashrateQuery.data as any,
+    contractSpecsQuery.data?.data,
+  );
 
   // Navigation functions
   const goToPreviousDate = () => {
@@ -240,9 +136,9 @@ export const OrderBookTable = ({
         <Table>
           <thead>
             <tr>
-              <th>Bid, units</th>
+              <th>Buy, units</th>
               <th>Price, USDC</th>
-              <th>Ask, units</th>
+              <th>Sell, units</th>
             </tr>
           </thead>
           <tbody>

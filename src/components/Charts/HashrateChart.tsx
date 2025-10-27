@@ -54,7 +54,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
     },
     yAxis: {
       title: {
-        text: "Price (100 TH/s for 30d)",
+        text: "Price (100 TH/s per day)",
         style: {
           color: "#ffffff",
         },

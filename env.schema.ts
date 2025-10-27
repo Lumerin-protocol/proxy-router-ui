@@ -24,6 +24,7 @@ export const EnvSchema = Type.Object({
   REACT_APP_FUTURES_TOKEN_ADDRESS: TypeEthAddress(),
   REACT_APP_FUTURES_REQUIRED_LMR: Type.String({ default: "10000" }),
   REACT_APP_SUBGRAPH_FUTURES_URL: Type.String({ format: "uri" }),
+  REACT_APP_FUTURES_HIGH_PRICE_PERCENTAGE: Type.Integer({ minimum: 0, maximum: 300, default: 50 }),
 });
 
 // Inferred type of environment variables

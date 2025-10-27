@@ -1,26 +1,81 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
-import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
-import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
+import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { Spinner } from "../../Spinner.styled";
+import { ModalItem } from "../../Modal";
+import { PrimaryButton, SecondaryButton } from "../../Forms/FormButtons/Buttons.styled";
+import { PlaceOrderForm } from "../../Forms/PlaceOrderForm";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { GetResponse } from "../../../gateway/interfaces";
+import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
   externalAmount?: number;
   externalDeliveryDate?: number;
+  address?: `0x${string}`;
+  contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
 }
 
-export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDeliveryDate }: PlaceOrderWidgetProps) => {
-  const [price, setPrice] = useState("100.00");
+export const PlaceOrderWidget = ({
+  externalPrice,
+  externalAmount,
+  externalDeliveryDate,
+  contractSpecsQuery,
+}: PlaceOrderWidgetProps) => {
+  const [price, setPrice] = useState("5.00");
   const [amount, setAmount] = useState(1);
+  const [showHighPriceModal, setShowHighPriceModal] = useState(false);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [pendingOrder, setPendingOrder] = useState<{
+    price: number;
+    amount: number;
+    isBuy: boolean;
+  } | null>(null);
 
-  const { createOrderAsync, isPending, isError, error, hash } = useCreateOrder();
-  const contractSpecsQuery = useFuturesContractSpecs();
+  const hashrateQuery = useHashrateIndexData();
 
   // Calculate price step from contract specs
   const priceStep = contractSpecsQuery.data?.data?.priceLadderStep
     ? Number(contractSpecsQuery.data.data.priceLadderStep) / 1e6
-    : 0.05; // Default fallback
+    : null;
+
+  // Get newest item price for validation
+  const newestItemPrice =
+    hashrateQuery.data && hashrateQuery.data.length > 0
+      ? Number(hashrateQuery.data[hashrateQuery.data.length - 1].priceToken) / 1e6
+      : null;
+
+  // Get high price percentage from environment variable (default 60 for 160%)
+  const highPricePercentage = Number(process.env.REACT_APP_FUTURES_HIGH_PRICE_PERCENTAGE || "60");
+  const maxPriceMultiplier = 1 + highPricePercentage / 100; // Convert percentage to multiplier
+
+  // Update values when external props change
+  useEffect(() => {
+    if (externalPrice !== undefined) {
+      setPrice(externalPrice);
+    }
+  }, [externalPrice]);
+
+  useEffect(() => {
+    if (externalAmount !== undefined) {
+      setAmount(externalAmount);
+    }
+  }, [externalAmount]);
+
+  // Show loading state while priceLadderStep is being fetched
+  if (contractSpecsQuery.isLoading || !priceStep || hashrateQuery.isLoading || !newestItemPrice) {
+    return (
+      <PlaceOrderContainer>
+        <h3>Place order</h3>
+        <div style={{ textAlign: "center", padding: "2rem", color: "#6b7280" }}>
+          <Spinner fontSize="0.3em" />
+          <p style={{ marginTop: "1rem", margin: 0 }}>Loading contract specifications...</p>
+        </div>
+      </PlaceOrderContainer>
+    );
+  }
 
   // Helper functions for price adjustment
   const snapToStep = (value: number): number => {
@@ -49,40 +104,27 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
     }
   };
 
-  // Update values when external props change
-  useEffect(() => {
-    if (externalPrice !== undefined) {
-      setPrice(externalPrice);
-    }
-  }, [externalPrice]);
-
-  useEffect(() => {
-    if (externalAmount !== undefined) {
-      setAmount(externalAmount);
-    }
-  }, [externalAmount]);
-
   const handleBuy = async () => {
     if (!externalDeliveryDate) {
       alert("Please select a price from the order book to set delivery date");
       return;
     }
 
-    try {
-      const priceInWei = BigInt(Math.floor(parseFloat(price) * 1e6));
-      const deliveryTimestamp = BigInt(externalDeliveryDate);
+    // Check if price exceeds the configured percentage of newest item price
+    const currentPrice = parseFloat(price);
+    const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
-      await createOrderAsync({
-        price: priceInWei,
-        deliveryDate: deliveryTimestamp,
-        quantity: amount,
+    if (currentPrice > maxAllowedPrice) {
+      setPendingOrder({
+        price: currentPrice,
+        amount: amount,
         isBuy: true,
       });
-
-      console.log("Buy order created successfully");
-    } catch (err) {
-      console.error("Failed to create buy order:", err);
+      setShowHighPriceModal(true);
+      return;
     }
+
+    openOrderForm(currentPrice, amount, true);
   };
 
   const handleSell = async () => {
@@ -91,67 +133,207 @@ export const PlaceOrderWidget = ({ externalPrice, externalAmount, externalDelive
       return;
     }
 
-    try {
-      const priceInWei = BigInt(Math.floor(parseFloat(price) * 1e6));
-      const deliveryTimestamp = BigInt(externalDeliveryDate);
+    // Check if price exceeds the configured percentage of newest item price
+    const currentPrice = parseFloat(price);
+    const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
-      await createOrderAsync({
-        price: priceInWei,
-        deliveryDate: deliveryTimestamp,
-        quantity: amount,
+    if (currentPrice > maxAllowedPrice) {
+      setPendingOrder({
+        price: currentPrice,
+        amount: amount,
         isBuy: false,
       });
+      setShowHighPriceModal(true);
+      return;
+    }
 
-      console.log("Sell order created successfully");
-    } catch (err) {
-      console.error("Failed to create sell order:", err);
+    openOrderForm(currentPrice, amount, false);
+  };
+
+  const openOrderForm = (orderPrice: number, orderAmount: number, isBuy: boolean) => {
+    setPendingOrder({
+      price: orderPrice,
+      amount: orderAmount,
+      isBuy: isBuy,
+    });
+    setShowOrderForm(true);
+  };
+
+  const handleConfirmHighPrice = () => {
+    if (pendingOrder) {
+      setShowHighPriceModal(false);
+      setShowOrderForm(true);
     }
   };
 
-  return (
-    <PlaceOrderContainer>
-      <h3>Place order</h3>
+  const handleCancelHighPrice = () => {
+    setShowHighPriceModal(false);
+    setPendingOrder(null);
+  };
 
-      <MainSection>
-        <InputSection>
-          <InputGroup>
-            <label>Price, USDC (Step: {priceStep.toFixed(2)})</label>
-            <PriceInputContainer>
-              <PriceButton onClick={decrementPrice} disabled={isPending}>
-                −
-              </PriceButton>
+  return (
+    <>
+      <PlaceOrderContainer>
+        <h3>Place order</h3>
+
+        <MainSection>
+          <InputSection>
+            <InputGroup>
+              <label>Price, USDC (Step: {priceStep.toFixed(2)})</label>
+              <PriceInputContainer>
+                <PriceButton onClick={decrementPrice} disabled={showOrderForm}>
+                  −
+                </PriceButton>
+                <input
+                  type="number"
+                  value={price}
+                  placeholder="5.00"
+                  onChange={(e) => handlePriceChange(e.target.value)}
+                  step={priceStep}
+                  min="1"
+                />
+                <PriceButton onClick={incrementPrice} disabled={showOrderForm}>
+                  +
+                </PriceButton>
+              </PriceInputContainer>
+            </InputGroup>
+
+            <InputGroup>
+              <label>Amount</label>
               <input
                 type="number"
-                value={price}
-                onChange={(e) => handlePriceChange(e.target.value)}
-                step={priceStep}
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
                 min="1"
+                max="50"
               />
-              <PriceButton onClick={incrementPrice} disabled={isPending}>
-                +
-              </PriceButton>
-            </PriceInputContainer>
-          </InputGroup>
+            </InputGroup>
+          </InputSection>
 
-          <InputGroup>
-            <label>Amount</label>
-            <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} min="1" max="50" />
-          </InputGroup>
-        </InputSection>
+          <ButtonSection>
+            <BuyButton onClick={handleBuy} disabled={showOrderForm}>
+              Buy / Long
+            </BuyButton>
+            <SellButton onClick={handleSell} disabled={showOrderForm}>
+              Sell / Short
+            </SellButton>
+          </ButtonSection>
+        </MainSection>
+      </PlaceOrderContainer>
 
-        <ButtonSection>
-          <BuyButton onClick={handleBuy} disabled={isPending}>
-            {isPending ? "Creating..." : "Buy / Long"}
-          </BuyButton>
-          <SellButton onClick={handleSell} disabled={isPending}>
-            {isPending ? "Creating..." : "Sell / Short"}
-          </SellButton>
-        </ButtonSection>
+      <ModalItem open={showHighPriceModal} setOpen={setShowHighPriceModal}>
+        <HighPriceConfirmationModal
+          pendingOrder={pendingOrder}
+          newestItemPrice={newestItemPrice}
+          highPricePercentage={highPricePercentage}
+          onConfirm={handleConfirmHighPrice}
+          onCancel={handleCancelHighPrice}
+        />
+      </ModalItem>
 
-        {isError && error && <ErrorMessage>Error: {error.message || "Failed to create order"}</ErrorMessage>}
-      </MainSection>
-      {hash && <SuccessMessage>Order created successfully! Transaction: {hash}</SuccessMessage>}
-    </PlaceOrderContainer>
+      {showOrderForm && pendingOrder && externalDeliveryDate && (
+        <ModalItem
+          open={showOrderForm}
+          setOpen={(open) => {
+            setShowOrderForm(open);
+            if (!open) {
+              setPendingOrder(null);
+            }
+          }}
+        >
+          <PlaceOrderForm
+            price={BigInt(Math.floor(pendingOrder.price * 1e6))}
+            deliveryDate={BigInt(externalDeliveryDate)}
+            quantity={pendingOrder.amount}
+            isBuy={pendingOrder.isBuy}
+            closeForm={() => {
+              setShowOrderForm(false);
+              setPendingOrder(null);
+            }}
+          />
+        </ModalItem>
+      )}
+    </>
+  );
+};
+
+const HighPriceConfirmationModal = ({
+  pendingOrder,
+  newestItemPrice,
+  highPricePercentage,
+  onConfirm,
+  onCancel,
+}: {
+  pendingOrder: { price: number; amount: number; isBuy: boolean } | null;
+  newestItemPrice: number;
+  highPricePercentage: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  if (!pendingOrder) return null;
+
+  const percentageOver = ((pendingOrder.price / newestItemPrice) * 100).toFixed(1);
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-white mb-6">High Price Warning</h2>
+
+      <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+        <div className="flex items-center mb-3">
+          <span className="text-yellow-400 text-2xl mr-3">⚠️</span>
+          <h3 className="text-lg font-semibold text-yellow-400">Price Exceeds Market</h3>
+        </div>
+
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-300">Your Price:</span>
+            <span className="text-white font-medium">${pendingOrder.price.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-gray-300">Market Price:</span>
+            <span className="text-white font-medium">${newestItemPrice.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-gray-300">Percentage of Market:</span>
+            <span className="text-red-400 font-medium">{percentageOver}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg p-4">
+        <h4 className="text-white font-semibold mb-2">Order Details:</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-300">Type:</span>
+            <span className="text-white">{pendingOrder.isBuy ? "Buy / Long" : "Sell / Short"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Amount:</span>
+            <span className="text-white">{pendingOrder.amount} units</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Total Value:</span>
+            <span className="text-white">${(pendingOrder.price * pendingOrder.amount).toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+        <p className="text-red-300 text-sm">
+          <strong>Warning:</strong> This price is significantly above the current market rate. You may experience
+          difficulty finding a counterparty or may face higher slippage.
+        </p>
+      </div>
+
+      <div className="flex gap-3 justify-end">
+        <SecondaryButton onClick={onCancel}>Cancel</SecondaryButton>
+        <PrimaryButton onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
+          Proceed Anyway
+        </PrimaryButton>
+      </div>
+    </div>
   );
 };
 
@@ -354,25 +536,4 @@ const SellButton = styled("button")`
     cursor: not-allowed;
     opacity: 0.6;
   }
-`;
-
-const ErrorMessage = styled("div")`
-  padding: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 6px;
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 1rem;
-`;
-
-const SuccessMessage = styled("div")`
-  padding: 0.75rem;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 6px;
-  color: #22c55e;
-  font-size: 0.875rem;
-  margin-top: 1rem;
-  word-break: break-all;
 `;

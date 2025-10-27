@@ -1,7 +1,7 @@
 import { backgroundRefetchOpts } from "./config";
 import { gql } from "graphql-request";
 import { graphqlRequest } from "./graphql";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import type { GetResponse } from "../../gateway/interfaces";
 import { ParticipantQuery } from "./graphql-queries";
 
@@ -18,14 +18,7 @@ export const useParticipant = (
   },
 ) => {
   const query = useQuery({
-    queryKey: [
-      PARTICIPANT_QK,
-      participantAddress,
-      props?.posOffset,
-      props?.posLimit,
-      props?.orderOffset,
-      props?.orderLimit,
-    ],
+    queryKey: [PARTICIPANT_QK],
     queryFn: () => fetchParticipantAsync(participantAddress!, props),
     enabled: !!participantAddress,
     ...(props?.refetch ? backgroundRefetchOpts : {}),
@@ -103,6 +96,26 @@ const fetchParticipantAsync = async (
     data,
     blockNumber: response._meta.block.number,
   };
+};
+
+export const waitForBlockNumber = async (blockNumber: bigint, participantAddress: `0x${string}`) => {
+  const delay = 1000;
+  const maxAttempts = 30; // 30 attempts with 2s delay = max 1 minute wait
+
+  let attempts = 0;
+  while (attempts < maxAttempts) {
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    var data = await fetchParticipantAsync(participantAddress);
+    const currentBlock = data?.blockNumber;
+
+    if (currentBlock !== undefined && currentBlock >= Number(blockNumber)) {
+      return;
+    }
+    // Wait 2 seconds before next attempt
+    attempts++;
+  }
+
+  throw new Error(`Timeout waiting for block number ${blockNumber}`);
 };
 
 export type Participant = {

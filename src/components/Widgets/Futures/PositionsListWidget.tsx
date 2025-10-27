@@ -1,11 +1,11 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
-import { useState } from "react";
-import type { ParticipantPosition } from "../../../hooks/data/useParticipant";
+import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
+import { ParticipantPosition } from "../../../hooks/data/useParticipant";
 
 interface PositionsListWidgetProps {
-  positions: ParticipantPosition[];
+  positions: PositionBookPosition[];
   isLoading?: boolean;
   participantAddress?: `0x${string}`;
 }
@@ -27,12 +27,12 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
     return isActive ? "Open" : "Cancelled";
   };
 
-  const getPositionType = (position: ParticipantPosition) => {
+  const getPositionType = (position: PositionBookPosition) => {
     if (!participantAddress) return "Unknown";
     return position.buyer.address.toLowerCase() === participantAddress.toLowerCase() ? "Long" : "Short";
   };
 
-  const getTypeColor = (position: ParticipantPosition) => {
+  const getTypeColor = (position: PositionBookPosition) => {
     const type = getPositionType(position);
     return type === "Long" ? "#22c55e" : "#ef4444";
   };
@@ -51,7 +51,7 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
     startTime: string;
     positionType: string;
     amount: number;
-    positions: ParticipantPosition[];
+    positions: PositionBookPosition[];
   }) => {
     try {
       // Create opposite order to close the position
@@ -110,7 +110,7 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
         amount: number;
         isActive: boolean;
         closedAt: string | null;
-        positions: ParticipantPosition[];
+        positions: PositionBookPosition[];
       }
     >,
   );

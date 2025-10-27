@@ -10,14 +10,16 @@ import { PositionsListWidget } from "../../components/Widgets/Futures/PositionsL
 import { FeedWidget } from "../../components/Widgets/Futures/FeedWidget";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
-import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
 import { useParticipant } from "../../hooks/data/useParticipant";
+import { usePositionBook } from "../../hooks/data/usePositionBook";
+import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
 
 export const Futures: FC = () => {
   const { isConnected, address } = useAccount();
   const hashrateQuery = useHashrateIndexData();
   const contractSpecsQuery = useFuturesContractSpecs();
   const { data: participantData, isLoading: isParticipantLoading } = useParticipant(address);
+  const { data: positionBookData, isLoading: isPositionBookLoading } = usePositionBook(address);
 
   // State for order book selection
   const [selectedPrice, setSelectedPrice] = useState<string | undefined>();
@@ -33,65 +35,13 @@ export const Futures: FC = () => {
     setSelectedDeliveryDate(deliveryDate);
   };
 
-  // Calculate order book data based on hashrate query newest item
-  const calculateOrderBookData = () => {
-    if (!hashrateQuery.data || !contractSpecsQuery.data?.data) {
-      return [];
-    }
-
-    const hashrateData = hashrateQuery.data;
-    const priceLadderStep = Number(contractSpecsQuery.data.data.priceLadderStep) / 1e6; // Convert from wei to USDC
-
-    // Get the newest item by date (last item in the array since it's ordered by updatedAt asc)
-    const newestItem = hashrateData[hashrateData.length - 1];
-    if (!newestItem || !newestItem.priceToken) {
-      return [];
-    }
-
-    const rawPrice = Number(newestItem.priceToken) / 1e6; // Convert from wei to USDC
-    // Round to the nearest multiple of priceLadderStep
-    const basePrice = Math.round(rawPrice / priceLadderStep) * priceLadderStep;
-    const orderBookData = [];
-
-    // Create 10 items before the base price
-    for (let i = 10; i >= 1; i--) {
-      const price = basePrice - i * priceLadderStep;
-      orderBookData.push({
-        bidUnits: null,
-        price: price,
-        askUnits: null,
-      });
-    }
-
-    // Add the base price
-    orderBookData.push({
-      bidUnits: null,
-      price: basePrice,
-      askUnits: null,
-    });
-
-    // Create 10 items after the base price
-    for (let i = 1; i <= 10; i++) {
-      const price = basePrice + i * priceLadderStep;
-      orderBookData.push({
-        bidUnits: null,
-        price: price,
-        askUnits: null,
-      });
-    }
-
-    return orderBookData;
-  };
-
-  const orderBookData = calculateOrderBookData();
-
   return (
     <div className="flex gap-6 w-full">
       {/* Main content area - all existing blocks */}
       <div className="flex-1 flex flex-col">
         <WidgetsWrapper>
           <FuturesBalanceWidget />
-          <FuturesMarketWidget />
+          <FuturesMarketWidget contractSpecsQuery={contractSpecsQuery} />
         </WidgetsWrapper>
 
         {/* Chart, Place Order, and Order Book Section */}
@@ -107,6 +57,7 @@ export const Futures: FC = () => {
                   externalPrice={selectedPrice}
                   externalAmount={selectedAmount}
                   externalDeliveryDate={selectedDeliveryDate}
+                  contractSpecsQuery={contractSpecsQuery}
                 />
               </div>
             )}
@@ -117,7 +68,7 @@ export const Futures: FC = () => {
             <OrderBookTable
               onRowClick={handleOrderBookClick}
               onDeliveryDateChange={handleDeliveryDateChange}
-              orderBookData={orderBookData}
+              contractSpecsQuery={contractSpecsQuery}
             />
           </div>
         </div>
@@ -131,8 +82,8 @@ export const Futures: FC = () => {
               </div>
               <div className="flex-1">
                 <PositionsListWidget
-                  positions={participantData?.data?.positions || []}
-                  isLoading={isParticipantLoading}
+                  positions={positionBookData?.data?.positions || []}
+                  isLoading={isPositionBookLoading}
                   participantAddress={address}
                 />
               </div>

@@ -52,7 +52,7 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
     () => (
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-white">Review Deposit</h3>
-        <div className="bg-gray-800 p-4 rounded-lg">
+        <div className="p-4 rounded-lg">
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">Amount to deposit:</span>
             <span className="text-white font-medium">
@@ -107,7 +107,7 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
       transactionSteps={transactionSteps}
       resultForm={(p) => (
         <div className="space-y-4">
-          <div className="bg-gray-800 p-4 rounded-lg">
+          <div className="p-4 rounded-lg">
             <p className="text-gray-300">Your deposit has been processed successfully.</p>
             <p className="text-white font-medium mt-2">
               Amount deposited: {amount} {paymentToken.symbol}
