@@ -115,17 +115,17 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
             {groupedOrdersArray.map((groupedOrder, index) => (
               <TableRow key={`${groupedOrder.isBuy}-${groupedOrder.price}-${groupedOrder.deliveryDate}-${index}`}>
                 <td>
-                  <TypeBadge $type={groupedOrder.isBuy ? "Buy" : "Sell"}>
-                    {groupedOrder.isBuy ? "Buy" : "Sell"}
+                  <TypeBadge $type={groupedOrder.isBuy ? "Long" : "Short"}>
+                    {groupedOrder.isBuy ? "Long" : "Short"}
                   </TypeBadge>
                 </td>
-                <td>${formatPrice(groupedOrder.price)}</td>
+                <td>{formatPrice(groupedOrder.price)} USDC</td>
                 <td>{groupedOrder.amount}</td>
                 <td>{formatDeliveryDate(groupedOrder.deliveryDate)}</td>
                 <td>
                   {groupedOrder.isActive && !groupedOrder.closedAt && (
                     <CloseButton onClick={() => handleCloseOrder(groupedOrder.orderIds)} disabled={isPending}>
-                      Close All
+                      Close
                     </CloseButton>
                   )}
                 </td>
@@ -217,8 +217,8 @@ const TypeBadge = styled("span")<{ $type: string }>`
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
-  background-color: ${(props) => (props.$type === "Buy" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)")};
-  color: ${(props) => (props.$type === "Buy" ? "#22c55e" : "#ef4444")};
+  background-color: ${(props) => (props.$type === "Long" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)")};
+  color: ${(props) => (props.$type === "Long" ? "#22c55e" : "#ef4444")};
 `;
 
 const StatusBadge = styled("span")<{ $status: string }>`

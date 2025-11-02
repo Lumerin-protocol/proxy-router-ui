@@ -1,6 +1,6 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDeliveryDates } from "../../../hooks/data/useDeliveryDates";
 import { useOrderBook } from "../../../hooks/data/useOrderBook";
 import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
@@ -17,6 +17,7 @@ interface OrderBookTableProps {
 
 export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecsQuery }: OrderBookTableProps) => {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: deliveryDatesResponse, isLoading, isError, isSuccess } = useDeliveryDates();
   const hashrateQuery = useHashrateIndexData();
@@ -46,6 +47,34 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
     hashrateQuery.data as any,
     contractSpecsQuery.data?.data,
   );
+
+  // Auto-scroll to last hashprice row when data loads or delivery date changes
+  useEffect(() => {
+    if (finalOrderBookData.length > 0 && !isLoading && tableContainerRef.current) {
+      // Use setTimeout to ensure DOM is updated and refs are set
+      const timeoutId = setTimeout(() => {
+        // Find the last hashprice row index
+        const lastHashpriceIndex = finalOrderBookData.findIndex((row) => row.isLastHashprice);
+
+        if (lastHashpriceIndex !== -1 && tableContainerRef.current) {
+          const rowHeight = 51.4; // Fixed row height from styles
+          const containerHeight = tableContainerRef.current.clientHeight;
+
+          // Calculate scroll position to center the row in the viewport
+          // (row index * row height) - (container height / 2) + (row height / 2)
+          const scrollPosition = lastHashpriceIndex * rowHeight - 5 * rowHeight;
+
+          // Smooth scroll to center the row
+          tableContainerRef.current.scrollTo({
+            top: Math.max(0, scrollPosition),
+            behavior: "smooth",
+          });
+        }
+      }, 100); // Small delay to ensure DOM is updated
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [finalOrderBookData, selectedDeliveryDate, isLoading]);
 
   // Navigation functions
   const goToPreviousDate = () => {
@@ -132,13 +161,13 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
         </button>
       </Header>
 
-      <TableContainer>
+      <TableContainer ref={tableContainerRef}>
         <Table>
           <thead>
             <tr>
-              <th>Buy, units</th>
+              <th>Buy</th>
               <th>Price, USDC</th>
-              <th>Sell, units</th>
+              <th>Sell</th>
             </tr>
           </thead>
           <tbody>
@@ -154,7 +183,7 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
                 }}
               >
                 <td>{row.bidUnits || ""}</td>
-                <td>{row.price.toFixed(2)}</td>
+                <PriceCell $isLastHashprice={row.isLastHashprice}>{row.price.toFixed(2)}</PriceCell>
                 <td>{row.askUnits || ""}</td>
               </TableRow>
             ))}
@@ -249,6 +278,7 @@ const Table = styled("table")`
     padding: 0.75rem 0.75rem;
     font-size: 1.1rem;
     color: #fff;
+    width: 130px;
     height: 40px; /* Fixed row height for consistent scrolling */
   }
 `;
@@ -268,4 +298,17 @@ const TableRow = styled("tr")<{ $isHighlighted?: boolean; $highlightColor?: "red
   &:last-child {
     border-bottom: none;
   }
+`;
+
+const PriceCell = styled("td")<{ $isLastHashprice?: boolean }>`
+  background-color: ${(props) => (props.$isLastHashprice ? "rgba(59, 130, 246, 0.3)" : "transparent")};
+  font-weight: ${(props) => (props.$isLastHashprice ? "700" : "normal")};
+  border-radius: 4px;
+  
+  ${(props) =>
+    props.$isLastHashprice &&
+    `
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    border: 1px solid rgba(59, 130, 246, 0.6);
+  `}
 `;

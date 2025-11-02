@@ -7,6 +7,7 @@ export interface OrderBookData {
   askUnits: number | null;
   isHighlighted?: boolean;
   highlightColor?: "red" | "green";
+  isLastHashprice?: boolean;
 }
 
 type HashrateIndexData = {
@@ -29,49 +30,56 @@ export const createFinalOrderBookData = (
   hashrateData: HashrateIndexData[] | undefined,
   contractSpecs: FuturesContractSpecs | undefined,
 ): OrderBookData[] => {
-  // Calculate static order book data based on hashrate
-  let calculatedOrderBookData: { price: number; bidUnits: number | null; askUnits: number | null }[] = [];
+  // Calculate priceLadderStep once for reuse
+  const priceLadderStep = contractSpecs ? Number(contractSpecs.priceLadderStep) / 1e6 : null; // Convert from wei to USDC
 
-  if (hashrateData && hashrateData.length > 0 && contractSpecs) {
-    const priceLadderStep = Number(contractSpecs.priceLadderStep) / 1e6; // Convert from wei to USDC
-
+  // Calculate basePrice from newest hashprice (used for highlighting and calculating order book)
+  let basePrice: number | null = null;
+  if (hashrateData && hashrateData.length > 0 && priceLadderStep !== null) {
     // Get the newest item by date (last item in the array since it's ordered by updatedAt asc)
-    const newestItem = hashrateData[hashrateData.length - 1];
+    const newestItem = hashrateData[0];
     if (newestItem && newestItem.priceToken) {
       const rawPrice = Number(newestItem.priceToken) / 1e6; // Convert from wei to USDC
       // Round to the nearest multiple of priceLadderStep
-      const basePrice = Math.round(rawPrice / priceLadderStep) * priceLadderStep;
-      const orderBookData = [];
+      basePrice = Math.round(rawPrice / priceLadderStep) * priceLadderStep;
+    }
+  }
 
-      // Create 10 items before the base price
-      for (let i = 10; i >= 1; i--) {
-        const price = basePrice - i * priceLadderStep;
-        orderBookData.push({
-          price: price,
-          bidUnits: null,
-          askUnits: null,
-        });
-      }
+  // Calculate static order book data based on hashrate
+  let calculatedOrderBookData: { price: number; bidUnits: number | null; askUnits: number | null }[] = [];
+  const offsetAroundBasePrice = 100;
 
-      // Add the base price
-      orderBookData.push({
-        price: basePrice,
+  if (basePrice !== null && priceLadderStep !== null) {
+    const staticOrderBookRows = [];
+
+    // Create 10 items before the base price
+    for (let i = offsetAroundBasePrice; i >= 1; i--) {
+      const price = basePrice - i * priceLadderStep;
+      staticOrderBookRows.push({
+        price: price,
         bidUnits: null,
         askUnits: null,
       });
-
-      // Create 10 items after the base price
-      for (let i = 1; i <= 10; i++) {
-        const price = basePrice + i * priceLadderStep;
-        orderBookData.push({
-          price: price,
-          bidUnits: null,
-          askUnits: null,
-        });
-      }
-
-      calculatedOrderBookData = orderBookData;
     }
+
+    // Add the base price
+    staticOrderBookRows.push({
+      price: basePrice,
+      bidUnits: null,
+      askUnits: null,
+    });
+
+    // Create 10 items after the base price
+    for (let i = 1; i <= offsetAroundBasePrice; i++) {
+      const price = basePrice + i * priceLadderStep;
+      staticOrderBookRows.push({
+        price: price,
+        bidUnits: null,
+        askUnits: null,
+      });
+    }
+
+    calculatedOrderBookData = staticOrderBookRows;
   }
 
   // Group fetched order book by price and side
@@ -124,5 +132,10 @@ export const createFinalOrderBookData = (
   // Build final array sorted by price asc (lower prices on top)
   return Array.from(mergedMap.entries())
     .sort((a, b) => a[0] - b[0])
-    .map(([price, v]) => ({ price, bidUnits: v.bidUnits, askUnits: v.askUnits }));
+    .map(([price, v]) => ({
+      price,
+      bidUnits: v.bidUnits,
+      askUnits: v.askUnits,
+      isLastHashprice: price == basePrice, // Allow small floating point differences
+    }));
 };

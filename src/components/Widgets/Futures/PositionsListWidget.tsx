@@ -3,15 +3,23 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
 import { ParticipantPosition } from "../../../hooks/data/useParticipant";
+import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
 
 interface PositionsListWidgetProps {
   positions: PositionBookPosition[];
   isLoading?: boolean;
   participantAddress?: `0x${string}`;
+  onClosePosition?: (price: string, amount: number, isBuy: boolean) => void;
 }
 
-export const PositionsListWidget = ({ positions, isLoading, participantAddress }: PositionsListWidgetProps) => {
+export const PositionsListWidget = ({
+  positions,
+  isLoading,
+  participantAddress,
+  onClosePosition,
+}: PositionsListWidgetProps) => {
   const { createOrderAsync, isPending } = useCreateOrder();
+  const hashrateQuery = useHashrateIndexData();
 
   const getStatusColor = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
@@ -46,6 +54,38 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
+  // Get latest price from hashrate index
+  const latestPrice =
+    hashrateQuery.data && hashrateQuery.data.length > 0 ? Number(hashrateQuery.data[0].priceToken) / 1e6 : null;
+
+  // Calculate PnL for a position
+  const calculatePnL = (
+    entryPrice: bigint,
+    positionType: string,
+    amount: number,
+  ): { pnl: number | null; percentage: number | null } => {
+    if (!latestPrice) return { pnl: null, percentage: null };
+
+    const entryPriceNum = Number(entryPrice) / 1e6;
+    const priceDiff = latestPrice - entryPriceNum;
+
+    // Long: profit when price goes up (current > entry)
+    // Short: profit when price goes down (entry > current)
+    const pnl = positionType === "Long" ? priceDiff * amount : -priceDiff * amount;
+    // Calculate percentage based on PnL and initial investment (entry value)
+    const entryValue = latestPrice * amount;
+    const percentage = entryValue !== 0 ? (pnl / entryValue) * 100 : 0;
+
+    return { pnl, percentage };
+  };
+
+  const formatPnL = (pnl: number | null, percentage: number | null): string => {
+    if (pnl === null || percentage === null) return "-";
+    const sign = pnl >= 0 ? "+" : "";
+    const percentageSign = percentage >= 0 ? "+" : "";
+    return `${sign}${pnl.toFixed(2)} USDC (${percentageSign}${percentage.toFixed(2)}%)`;
+  };
+
   const handleClosePosition = async (groupedPosition: {
     price: bigint;
     startTime: string;
@@ -53,12 +93,22 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
     amount: number;
     positions: PositionBookPosition[];
   }) => {
-    try {
-      // Create opposite order to close the position
-      // If it's a Long position, create a Sell order
-      // If it's a Short position, create a Buy order
-      const isBuy = groupedPosition.positionType === "Short";
+    // Determine order type to close the position
+    // If it's a Long position, create a Sell order
+    // If it's a Short position, create a Buy order
+    const isBuy = groupedPosition.positionType === "Short";
 
+    // Format price as string
+    const priceString = formatPrice(groupedPosition.price);
+
+    // If callback provided, use it to populate place order widget
+    if (onClosePosition) {
+      onClosePosition(priceString, groupedPosition.amount, isBuy);
+      return;
+    }
+
+    // Otherwise, create order directly (fallback behavior)
+    try {
       // Calculate delivery date from startTime (assuming 30 days duration)
       const startTimeSeconds = Number(groupedPosition.startTime);
       const deliveryDate = BigInt(startTimeSeconds + 30 * 24 * 60 * 60); // 30 days in seconds
@@ -139,6 +189,7 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
               <th>Type</th>
               <th>Price</th>
               <th>Amount</th>
+              <th>PnL</th>
               <th>Start Time</th>
               <th>Action</th>
             </tr>
@@ -151,12 +202,26 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
                 <td>
                   <TypeBadge $type={groupedPosition.positionType}>{groupedPosition.positionType}</TypeBadge>
                 </td>
-                <td>${formatPrice(groupedPosition.price)}</td>
+                <td>{formatPrice(groupedPosition.price)} USDC</td>
                 <td>{groupedPosition.amount}</td>
+                <td>
+                  {(() => {
+                    const { pnl, percentage } = calculatePnL(
+                      groupedPosition.price,
+                      groupedPosition.positionType,
+                      groupedPosition.amount,
+                    );
+                    return <PnLCell $isPositive={pnl !== null && pnl >= 0}>{formatPnL(pnl, percentage)}</PnLCell>;
+                  })()}
+                </td>
                 <td>{formatTimestamp(groupedPosition.startTime)}</td>
                 <td>
                   {groupedPosition.isActive && !groupedPosition.closedAt && (
-                    <CloseButton onClick={() => handleClosePosition(groupedPosition)} disabled={isPending}>
+                    <CloseButton
+                      onClick={() => handleClosePosition(groupedPosition)}
+                      disabled={isPending}
+                      title="By creating opposite order"
+                    >
                       Close
                     </CloseButton>
                   )}
@@ -251,6 +316,11 @@ const TypeBadge = styled("span")<{ $type: string }>`
   font-weight: 600;
   background-color: ${(props) => (props.$type === "Long" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)")};
   color: ${(props) => (props.$type === "Long" ? "#22c55e" : "#ef4444")};
+`;
+
+const PnLCell = styled("span")<{ $isPositive: boolean }>`
+  color: ${(props) => (props.$isPositive ? "#22c55e" : "#ef4444")};
+  font-weight: 600;
 `;
 
 const StatusBadge = styled("span")<{ $status: string }>`

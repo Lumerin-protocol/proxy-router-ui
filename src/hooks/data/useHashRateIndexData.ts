@@ -27,7 +27,10 @@ export const useHashrateIndexData = (props?: { refetch?: boolean }) => {
 };
 
 async function convertHashrateIndexToUsd() {
-  const req = await graphqlRequest<HashrateIndexRes>(HashrateIndexQuery);
+  const now = Math.floor(Date.now() / 1000);
+  const startDate = now - 7 * 24 * 60 * 60;
+
+  const req = await graphqlRequest<HashrateIndexRes>(HashrateIndexQuery, { startDate, first: 1000 });
 
   // for our contract on marketplace: 100 TH/s for 24 hours
   const contractHPS = 100n * 10n ** 12n;

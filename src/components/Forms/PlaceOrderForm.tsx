@@ -35,11 +35,11 @@ export const PlaceOrderForm: FC<Props> = memo(
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-300">Type:</span>
-                  <span className="text-white">{isBuy ? "Buy / Long" : "Sell / Short"}</span>
+                  <span className="text-white">{isBuy ? "Buy" : "Sell"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Price:</span>
-                  <span className="text-white">${Number(price) / 1e6}</span>
+                  <span className="text-white">{Number(price) / 1e6} USDC</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Quantity:</span>
@@ -51,7 +51,7 @@ export const PlaceOrderForm: FC<Props> = memo(
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Total Value:</span>
-                  <span className="text-white">${((Number(price) / 1e6) * quantity).toFixed(2)}</span>
+                  <span className="text-white">{((Number(price) / 1e6) * quantity).toFixed(2)} USDC</span>
                 </div>
               </div>
             </div>

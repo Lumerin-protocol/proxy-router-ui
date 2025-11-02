@@ -27,7 +27,7 @@ const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpe
     deliveryDurationSeconds: response.futures.deliveryDurationSeconds,
     hashrateOracleAddress: response.futures.hashrateOracleAddress,
     minSellerStake: BigInt(response.futures.minSellerStake),
-    priceLadderStep: BigInt(response.futures.priceLadderStep),
+    priceLadderStep: 10000n, // TODO: Get lastest from chain BigInt(response.futures.priceLadderStep),
     purchaseCount: response.futures.purchaseCount,
     sellerLiquidationMarginPercent: response.futures.sellerLiquidationMarginPercent,
     speedHps: BigInt(+response.futures.speedHps),

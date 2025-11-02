@@ -139,15 +139,17 @@ export const ContractSpecsQuery = gql`
 `;
 
 export const HashrateIndexQuery = gql`
-  query HashpriceIndex {
+  query HashpriceIndex($startDate: BigInt!, $first: Int!) {
     hashrateIndexes(
+      where: { updatedAt_gte: $startDate }
       orderBy: updatedAt
       orderDirection: desc
+      first: $first
     ) {
+      id
       hashesForBTC
       hashesForToken
       updatedAt
-      id
     }
   }
 `;
