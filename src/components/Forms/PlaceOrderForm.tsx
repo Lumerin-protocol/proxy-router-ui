@@ -12,16 +12,19 @@ import { useAccount } from "wagmi";
 interface Props {
   price: bigint;
   deliveryDate: bigint;
-  quantity: number;
-  isBuy: boolean;
+  quantity: number; // Positive for Buy, Negative for Sell
   closeForm: () => void;
 }
 
 export const PlaceOrderForm: FC<Props> = memo(
-  ({ price, deliveryDate, quantity, isBuy, closeForm }) => {
+  ({ price, deliveryDate, quantity, closeForm }) => {
     const { createOrderAsync } = useCreateOrder();
     const qc = useQueryClient();
     const { address } = useAccount();
+
+    // Determine order type from quantity sign
+    const isBuy = quantity > 0;
+    const absoluteQuantity = Math.abs(quantity);
 
     return (
       <TransactionForm
@@ -43,7 +46,7 @@ export const PlaceOrderForm: FC<Props> = memo(
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Quantity:</span>
-                  <span className="text-white">{quantity} units</span>
+                  <span className="text-white">{absoluteQuantity} units</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Delivery Date:</span>
@@ -51,7 +54,7 @@ export const PlaceOrderForm: FC<Props> = memo(
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Total Value:</span>
-                  <span className="text-white">{((Number(price) / 1e6) * quantity).toFixed(2)} USDC</span>
+                  <span className="text-white">{((Number(price) / 1e6) * absoluteQuantity).toFixed(2)} USDC</span>
                 </div>
               </div>
             </div>
@@ -76,7 +79,7 @@ export const PlaceOrderForm: FC<Props> = memo(
                 price,
                 deliveryDate,
                 quantity,
-                isBuy,
+                destUrl: "",
               });
               return {
                 isSkipped: false,
@@ -104,8 +107,7 @@ export const PlaceOrderForm: FC<Props> = memo(
     return (
       prevProps.price === nextProps.price &&
       prevProps.deliveryDate === nextProps.deliveryDate &&
-      prevProps.quantity === nextProps.quantity &&
-      prevProps.isBuy === nextProps.isBuy
+      prevProps.quantity === nextProps.quantity
     );
   },
 );

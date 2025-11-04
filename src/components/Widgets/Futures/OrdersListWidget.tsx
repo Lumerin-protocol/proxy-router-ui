@@ -47,16 +47,16 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
     }
   };
 
-  // Group orders by type, price, and delivery date
+  // Group orders by type, pricePerDay, and deliveryAt
   const groupedOrders = orders.reduce(
     (acc, order) => {
-      const key = `${order.isBuy}-${order.price}-${order.deliveryDate}`;
+      const key = `${order.isBuy}-${order.pricePerDay}-${order.deliveryAt}`;
 
       if (!acc[key]) {
         acc[key] = {
           isBuy: order.isBuy,
-          price: order.price,
-          deliveryDate: order.deliveryDate,
+          pricePerDay: order.pricePerDay,
+          deliveryAt: order.deliveryAt,
           amount: 0,
           isActive: order.isActive,
           closedAt: order.closedAt,
@@ -73,8 +73,8 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
       string,
       {
         isBuy: boolean;
-        price: bigint;
-        deliveryDate: bigint;
+        pricePerDay: bigint;
+        deliveryAt: bigint;
         amount: number;
         isActive: boolean;
         closedAt: string | null;
@@ -113,15 +113,15 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
           </thead>
           <tbody>
             {groupedOrdersArray.map((groupedOrder, index) => (
-              <TableRow key={`${groupedOrder.isBuy}-${groupedOrder.price}-${groupedOrder.deliveryDate}-${index}`}>
+              <TableRow key={`${groupedOrder.isBuy}-${groupedOrder.pricePerDay}-${groupedOrder.deliveryAt}-${index}`}>
                 <td>
                   <TypeBadge $type={groupedOrder.isBuy ? "Long" : "Short"}>
                     {groupedOrder.isBuy ? "Long" : "Short"}
                   </TypeBadge>
                 </td>
-                <td>{formatPrice(groupedOrder.price)} USDC</td>
+                <td>{formatPrice(groupedOrder.pricePerDay)} USDC</td>
                 <td>{groupedOrder.amount}</td>
-                <td>{formatDeliveryDate(groupedOrder.deliveryDate)}</td>
+                <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
                 <td>
                   {groupedOrder.isActive && !groupedOrder.closedAt && (
                     <CloseButton onClick={() => handleCloseOrder(groupedOrder.orderIds)} disabled={isPending}>
@@ -243,22 +243,29 @@ const StatusBadge = styled("span")<{ $status: string }>`
 `;
 
 const CloseButton = styled("button")`
-  padding: 0.25rem 0.5rem;
-  background: #ef4444;
+  padding: 0.5rem 0.875rem;
+  background: #4c5a5f;
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   
-  &:hover {
-    background: #dc2626;
+  &:hover:not(:disabled) {
+    background: #5a6b70;
+    transform: translateY(-1px);
   }
   
-  &:active {
-    background: #b91c1c;
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 `;
 

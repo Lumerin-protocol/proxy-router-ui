@@ -20,7 +20,7 @@ export const useOrderBook = (deliveryDate: number | undefined, props?: { refetch
 
 const fetchOrderBookAsync = async (deliveryDate: number) => {
   const variables = {
-    deliveryDate: deliveryDate.toString(),
+    deliveryAt: deliveryDate.toString(),
   };
 
   const response = await graphqlRequest<OrderBookResponse>(OrderBookQuery, variables);
@@ -28,8 +28,8 @@ const fetchOrderBookAsync = async (deliveryDate: number) => {
   const data: OrderBook = {
     orders: response.orders.map((order) => ({
       id: order.id,
-      price: BigInt(order.price),
-      deliveryDate: BigInt(order.deliveryDate),
+      pricePerDay: BigInt(order.pricePerDay),
+      deliveryAt: BigInt(order.deliveryAt),
       participant: {
         address: order.participant.address,
       },
@@ -72,8 +72,8 @@ export type OrderBook = {
 
 export type OrderBookOrder = {
   id: string;
-  price: bigint;
-  deliveryDate: bigint;
+  pricePerDay: bigint;
+  deliveryAt: bigint;
   participant: {
     address: `0x${string}`;
   };
@@ -89,8 +89,8 @@ type OrderBookResponse = {
   };
   orders: {
     id: string;
-    price: string;
-    deliveryDate: string;
+    pricePerDay: string;
+    deliveryAt: string;
     participant: {
       address: `0x${string}`;
     };

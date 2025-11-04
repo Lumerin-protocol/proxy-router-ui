@@ -1,7 +1,7 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
-import { useState, useEffect, useRef } from "react";
-import { useDeliveryDates } from "../../../hooks/data/useDeliveryDates";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useGetDeliveryDates } from "../../../hooks/data/useGetDeliveryDates";
 import { useOrderBook } from "../../../hooks/data/useOrderBook";
 import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
 import { createFinalOrderBookData } from "./orderBookHelpers";
@@ -19,11 +19,16 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: deliveryDatesResponse, isLoading, isError, isSuccess } = useDeliveryDates();
+  const { data: deliveryDatesRaw, isLoading, isError } = useGetDeliveryDates();
   const hashrateQuery = useHashrateIndexData();
 
-  // Fetch delivery dates
-  const deliveryDates = deliveryDatesResponse?.data || [];
+  // Transform delivery dates from bigint[] to [{ deliveryDate: number }]
+  const deliveryDates = useMemo(() => {
+    if (!deliveryDatesRaw) return [];
+    return deliveryDatesRaw.map((date) => ({
+      deliveryDate: Number(date),
+    }));
+  }, [deliveryDatesRaw]);
 
   // Get selected delivery date
   const selectedDeliveryDate = deliveryDates[selectedDateIndex]?.deliveryDate;

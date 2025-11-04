@@ -30,18 +30,18 @@ export const createFinalOrderBookData = (
   hashrateData: HashrateIndexData[] | undefined,
   contractSpecs: FuturesContractSpecs | undefined,
 ): OrderBookData[] => {
-  // Calculate priceLadderStep once for reuse
-  const priceLadderStep = contractSpecs ? Number(contractSpecs.priceLadderStep) / 1e6 : null; // Convert from wei to USDC
+  // Calculate minimumPriceIncrement once for reuse
+  const minimumPriceIncrement = contractSpecs ? Number(contractSpecs.minimumPriceIncrement) / 1e6 : null; // Convert from wei to USDC
 
   // Calculate basePrice from newest hashprice (used for highlighting and calculating order book)
   let basePrice: number | null = null;
-  if (hashrateData && hashrateData.length > 0 && priceLadderStep !== null) {
+  if (hashrateData && hashrateData.length > 0 && minimumPriceIncrement !== null) {
     // Get the newest item by date (last item in the array since it's ordered by updatedAt asc)
     const newestItem = hashrateData[0];
     if (newestItem && newestItem.priceToken) {
       const rawPrice = Number(newestItem.priceToken) / 1e6; // Convert from wei to USDC
-      // Round to the nearest multiple of priceLadderStep
-      basePrice = Math.round(rawPrice / priceLadderStep) * priceLadderStep;
+      // Round to the nearest multiple of minimumPriceIncrement
+      basePrice = Math.round(rawPrice / minimumPriceIncrement) * minimumPriceIncrement;
     }
   }
 
@@ -49,12 +49,12 @@ export const createFinalOrderBookData = (
   let calculatedOrderBookData: { price: number; bidUnits: number | null; askUnits: number | null }[] = [];
   const offsetAroundBasePrice = 100;
 
-  if (basePrice !== null && priceLadderStep !== null) {
+  if (basePrice !== null && minimumPriceIncrement !== null) {
     const staticOrderBookRows = [];
 
     // Create 10 items before the base price
     for (let i = offsetAroundBasePrice; i >= 1; i--) {
-      const price = basePrice - i * priceLadderStep;
+      const price = basePrice - i * minimumPriceIncrement;
       staticOrderBookRows.push({
         price: price,
         bidUnits: null,
@@ -71,7 +71,7 @@ export const createFinalOrderBookData = (
 
     // Create 10 items after the base price
     for (let i = 1; i <= offsetAroundBasePrice; i++) {
-      const price = basePrice + i * priceLadderStep;
+      const price = basePrice + i * minimumPriceIncrement;
       staticOrderBookRows.push({
         price: price,
         bidUnits: null,
@@ -89,7 +89,7 @@ export const createFinalOrderBookData = (
     const priceToSideCount = new Map<number, { bids: number; asks: number }>();
 
     for (const order of orderBookData) {
-      const price = Math.round((Number(order.price) / 1e6) * 100) / 100; // USDC with 2 decimals
+      const price = Math.round((Number(order.pricePerDay) / 1e6) * 100) / 100; // USDC with 2 decimals
       const entry = priceToSideCount.get(price) || { bids: 0, asks: 0 };
       if (order.isBuy) {
         entry.bids += 1; // counting orders as units for now

@@ -20,16 +20,10 @@ export const useFuturesContractSpecs = (props?: { refetch?: boolean }) => {
 const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpecs>> => {
   const response = await graphqlRequest<ContractSpecsResponse>(ContractSpecsQuery);
   const data: FuturesContractSpecs = {
-    buyerLiquidationMarginPercent: response.futures.buyerLiquidationMarginPercent,
-    closeoutCount: response.futures.closeoutCount,
-    contractActiveCount: response.futures.contractActiveCount,
-    contractCount: response.futures.contractCount,
-    deliveryDurationSeconds: response.futures.deliveryDurationSeconds,
+    deliveryDurationSeconds: response.futures.deliveryDurationDays * 24 * 60 * 60,
     hashrateOracleAddress: response.futures.hashrateOracleAddress,
-    minSellerStake: BigInt(response.futures.minSellerStake),
-    priceLadderStep: 10000n, // TODO: Get lastest from chain BigInt(response.futures.priceLadderStep),
-    purchaseCount: response.futures.purchaseCount,
-    sellerLiquidationMarginPercent: response.futures.sellerLiquidationMarginPercent,
+    minimumPriceIncrement: BigInt(response.futures.minimumPriceIncrement),
+    liquidationMarginPercent: response.futures.liquidationMarginPercent,
     speedHps: BigInt(+response.futures.speedHps),
     tokenAddress: response.futures.tokenAddress,
     validatorAddress: response.futures.validatorAddress,
@@ -41,16 +35,10 @@ const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpe
 };
 
 export type FuturesContractSpecs = {
-  buyerLiquidationMarginPercent: number;
-  closeoutCount: number;
-  contractActiveCount: number;
-  contractCount: number;
   deliveryDurationSeconds: number;
   hashrateOracleAddress: `0x${string}`;
-  minSellerStake: bigint;
-  priceLadderStep: bigint;
-  purchaseCount: number;
-  sellerLiquidationMarginPercent: number;
+  minimumPriceIncrement: bigint;
+  liquidationMarginPercent: number;
   speedHps: bigint;
   tokenAddress: `0x${string}`;
   validatorAddress: `0x${string}`;
@@ -64,16 +52,10 @@ type ContractSpecsResponse = {
     };
   };
   futures: {
-    buyerLiquidationMarginPercent: number;
-    closeoutCount: number;
-    contractActiveCount: number;
-    contractCount: number;
-    deliveryDurationSeconds: number;
+    liquidationMarginPercent: number;
+    deliveryDurationDays: number;
     hashrateOracleAddress: `0x${string}`;
-    minSellerStake: string;
-    priceLadderStep: string;
-    purchaseCount: number;
-    sellerLiquidationMarginPercent: number;
+    minimumPriceIncrement: string;
     speedHps: string;
     tokenAddress: `0x${string}`;
     validatorAddress: `0x${string}`;

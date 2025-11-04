@@ -4,9 +4,9 @@ import { FuturesABI } from "../../abi/Futures";
 
 interface CreateOrderProps {
   price: bigint;
-  quantity: number;
+  quantity: number; // Positive for Buy, Negative for Sell
+  destUrl: string;
   deliveryDate: bigint;
-  isBuy: boolean;
 }
 
 export function useCreateOrder() {
@@ -23,8 +23,15 @@ export function useCreateOrder() {
       client: publicClient,
     });
 
+    // Convert quantity to int8 (signed 8-bit integer)
+    // Contract expects: positive = Buy, negative = Sell
+    const quantityInt8 = Number(props.quantity) as number;
+
+    // Clamp to int8 range (-128 to 127)
+    const clampedQuantity = Math.max(-128, Math.min(127, quantityInt8));
+
     const req = await futuresContract.simulate.createOrder(
-      [props.price, props.deliveryDate, props.quantity, props.isBuy],
+      [props.price, props.deliveryDate, props.destUrl, clampedQuantity],
       { account: walletClient.account.address },
     );
 

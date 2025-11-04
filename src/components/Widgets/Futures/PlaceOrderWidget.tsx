@@ -31,8 +31,8 @@ export const PlaceOrderWidget = ({
   const hashrateQuery = useHashrateIndexData();
 
   // Calculate price step from contract specs
-  const priceStep = contractSpecsQuery.data?.data?.priceLadderStep
-    ? Number(contractSpecsQuery.data.data.priceLadderStep) / 1e6
+  const priceStep = contractSpecsQuery.data?.data?.minimumPriceIncrement
+    ? Number(contractSpecsQuery.data.data.minimumPriceIncrement) / 1e6
     : null;
 
   // Get newest item price for validation and default price
@@ -48,7 +48,7 @@ export const PlaceOrderWidget = ({
   const [pendingOrder, setPendingOrder] = useState<{
     price: number;
     amount: number;
-    isBuy: boolean;
+    quantity: number; // Positive for Buy, Negative for Sell
   } | null>(null);
 
   // Get high price percentage from environment variable (default 60 for 160%)
@@ -108,7 +108,7 @@ export const PlaceOrderWidget = ({
     }
   }, [externalIsBuy, externalPrice, externalAmount, highlightTrigger]);
 
-  // Show loading state while priceLadderStep is being fetched
+  // Show loading state while minimumPriceIncrement is being fetched
   if (contractSpecsQuery.isLoading || !priceStep || hashrateQuery.isLoading || !newestItemPrice) {
     return (
       <PlaceOrderContainer>
@@ -162,13 +162,13 @@ export const PlaceOrderWidget = ({
       setPendingOrder({
         price: currentPrice,
         amount: amount,
-        isBuy: true,
+        quantity: amount, // Positive for Buy
       });
       setShowHighPriceModal(true);
       return;
     }
 
-    openOrderForm(currentPrice, amount, true);
+    openOrderForm(currentPrice, amount, amount); // Positive quantity for Buy
   };
 
   const handleSell = async () => {
@@ -185,20 +185,20 @@ export const PlaceOrderWidget = ({
       setPendingOrder({
         price: currentPrice,
         amount: amount,
-        isBuy: false,
+        quantity: -amount, // Negative for Sell
       });
       setShowHighPriceModal(true);
       return;
     }
 
-    openOrderForm(currentPrice, amount, false);
+    openOrderForm(currentPrice, amount, -amount); // Negative quantity for Sell
   };
 
-  const openOrderForm = (orderPrice: number, orderAmount: number, isBuy: boolean) => {
+  const openOrderForm = (orderPrice: number, orderAmount: number, quantity: number) => {
     setPendingOrder({
       price: orderPrice,
       amount: orderAmount,
-      isBuy: isBuy,
+      quantity: quantity,
     });
     setShowOrderForm(true);
   };
@@ -288,8 +288,7 @@ export const PlaceOrderWidget = ({
           <PlaceOrderForm
             price={BigInt(Math.floor(pendingOrder.price * 1e6))}
             deliveryDate={BigInt(externalDeliveryDate)}
-            quantity={pendingOrder.amount}
-            isBuy={pendingOrder.isBuy}
+            quantity={pendingOrder.quantity}
             closeForm={() => {
               setShowOrderForm(false);
               setPendingOrder(null);
@@ -308,7 +307,7 @@ const HighPriceConfirmationModal = ({
   onConfirm,
   onCancel,
 }: {
-  pendingOrder: { price: number; amount: number; isBuy: boolean } | null;
+  pendingOrder: { price: number; amount: number; quantity: number } | null;
   newestItemPrice: number;
   highPricePercentage: number;
   onConfirm: () => void;
@@ -317,6 +316,7 @@ const HighPriceConfirmationModal = ({
   if (!pendingOrder) return null;
 
   const percentageOver = ((pendingOrder.price / newestItemPrice) * 100).toFixed(1);
+  const isBuy = pendingOrder.quantity > 0;
 
   return (
     <div className="space-y-6">
@@ -351,7 +351,7 @@ const HighPriceConfirmationModal = ({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-300">Type:</span>
-            <span className="text-white">{pendingOrder.isBuy ? "Buy" : "Sell"}</span>
+            <span className="text-white">{isBuy ? "Buy" : "Sell"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Amount:</span>
