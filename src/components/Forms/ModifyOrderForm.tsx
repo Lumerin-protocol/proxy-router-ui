@@ -60,9 +60,10 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
     };
 
     // Memoize input form to prevent recreation on each render
-    const inputForm = useCallback(() => (
-      <ModifyInputForm key="modify-input-form" control={form.control} />
-    ), [form.control]);
+    const inputForm = useCallback(
+      () => <ModifyInputForm key="modify-input-form" control={form.control} />,
+      [form.control],
+    );
 
     // Convert quantity to signed int8 (positive for Buy, negative for Sell)
     const getSignedQuantity = () => {
@@ -117,7 +118,9 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Total Value:</span>
-                  <span className="text-white">{(parseFloat(form.watch("price")) * form.watch("quantity")).toFixed(2)} USDC</span>
+                  <span className="text-white">
+                    {(parseFloat(form.watch("price")) * form.watch("quantity")).toFixed(2)} USDC
+                  </span>
                 </div>
               </div>
             </div>
@@ -272,7 +275,7 @@ const ModifyInputForm = memo<{
     control: control,
     rules: {
       required: "Quantity is required",
-      min: 1, 
+      min: 1,
       max: 50,
       validate: (value: number) => {
         if (value <= 0 || value > 127) {
@@ -287,16 +290,8 @@ const ModifyInputForm = memo<{
     <InputFormContainer>
       <InputGroup>
         <label>Price, USDC</label>
-        <input
-          type="number"
-          {...priceController.field}
-          step="0.01"
-          min="0.01"
-          placeholder="5.00"
-        />
-        {priceController.fieldState.error && (
-          <ErrorText>{priceController.fieldState.error.message}</ErrorText>
-        )}
+        <input type="number" {...priceController.field} step="0.01" min="0.01" placeholder="5.00" />
+        {priceController.fieldState.error && <ErrorText>{priceController.fieldState.error.message}</ErrorText>}
       </InputGroup>
 
       <InputGroup>
@@ -321,9 +316,7 @@ const ModifyInputForm = memo<{
           max="127"
           placeholder="1"
         />
-        {quantityController.fieldState.error && (
-          <ErrorText>{quantityController.fieldState.error.message}</ErrorText>
-        )}
+        {quantityController.fieldState.error && <ErrorText>{quantityController.fieldState.error.message}</ErrorText>}
       </InputGroup>
     </InputFormContainer>
   );
