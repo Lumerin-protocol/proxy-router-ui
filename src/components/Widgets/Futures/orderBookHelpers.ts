@@ -82,6 +82,18 @@ export const createFinalOrderBookData = (
     calculatedOrderBookData = staticOrderBookRows;
   }
 
+  // Helper function to normalize price to consistent precision
+  // If minimumPriceIncrement is available, round to nearest multiple
+  // Otherwise, round to 2 decimal places
+  const normalizePrice = (price: number): number => {
+    if (minimumPriceIncrement !== null) {
+      // Round to nearest multiple of minimumPriceIncrement to match calculated prices
+      return Math.round(price / minimumPriceIncrement) * minimumPriceIncrement;
+    }
+    // Fallback to 2 decimal places
+    return Math.round(price * 100) / 100;
+  };
+
   // Group fetched order book by price and side
   const liveGroupedMap = new Map<number, { bidUnits: number | null; askUnits: number | null }>();
 
@@ -89,7 +101,8 @@ export const createFinalOrderBookData = (
     const priceToSideCount = new Map<number, { bids: number; asks: number }>();
 
     for (const order of orderBookData) {
-      const price = Math.round((Number(order.pricePerDay) / 1e6) * 100) / 100; // USDC with 2 decimals
+      const rawPrice = Number(order.pricePerDay) / 1e6; // Convert from wei to USDC
+      const price = normalizePrice(rawPrice); // Normalize to consistent precision
       const entry = priceToSideCount.get(price) || { bids: 0, asks: 0 };
       if (order.isBuy) {
         entry.bids += 1; // counting orders as units for now
@@ -109,19 +122,23 @@ export const createFinalOrderBookData = (
   }
 
   // Start merged map with calculated data (so calculated-only prices are kept)
+  // Normalize calculated prices to ensure consistency
   const mergedMap = new Map<number, { bidUnits: number | null; askUnits: number | null }>();
   if (calculatedOrderBookData && calculatedOrderBookData.length > 0) {
     for (const row of calculatedOrderBookData) {
-      mergedMap.set(row.price, { bidUnits: row.bidUnits, askUnits: row.askUnits });
+      const normalizedPrice = normalizePrice(row.price);
+      mergedMap.set(normalizedPrice, { bidUnits: row.bidUnits, askUnits: row.askUnits });
     }
   }
 
   // Overlay live data ensuring all live prices are present and preferred
+  // Live prices are already normalized, so they should match calculated prices
   for (const [price, live] of liveGroupedMap.entries()) {
     const existing = mergedMap.get(price);
     if (!existing) {
       mergedMap.set(price, { bidUnits: live.bidUnits, askUnits: live.askUnits });
     } else {
+      // Merge: prefer live data if available, otherwise keep existing
       mergedMap.set(price, {
         bidUnits: live.bidUnits !== null ? live.bidUnits : existing.bidUnits,
         askUnits: live.askUnits !== null ? live.askUnits : existing.askUnits,
@@ -130,12 +147,16 @@ export const createFinalOrderBookData = (
   }
 
   // Build final array sorted by price asc (lower prices on top)
+  // Normalize prices in final output to ensure consistency
   return Array.from(mergedMap.entries())
     .sort((a, b) => a[0] - b[0])
-    .map(([price, v]) => ({
-      price,
-      bidUnits: v.bidUnits,
-      askUnits: v.askUnits,
-      isLastHashprice: price == basePrice, // Allow small floating point differences
-    }));
+    .map(([price, v]) => {
+      const normalizedPrice = normalizePrice(price);
+      return {
+        price: normalizedPrice,
+        bidUnits: v.bidUnits,
+        askUnits: v.askUnits,
+        isLastHashprice: normalizedPrice === (basePrice !== null ? normalizePrice(basePrice) : null),
+      };
+    });
 };

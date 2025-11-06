@@ -23,12 +23,24 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
   const hashrateQuery = useHashrateIndexData();
 
   // Transform delivery dates from bigint[] to [{ deliveryDate: number }]
+  // Filter out dates that are earlier than now
   const deliveryDates = useMemo(() => {
     if (!deliveryDatesRaw) return [];
-    return deliveryDatesRaw.map((date) => ({
-      deliveryDate: Number(date),
-    }));
+    const now = Math.floor(Date.now() / 1000); // Current time in Unix timestamp (seconds)
+    return deliveryDatesRaw
+      .map((date) => ({
+        deliveryDate: Number(date),
+      }))
+      .filter(({ deliveryDate }) => deliveryDate >= now)
+      .sort((a, b) => a.deliveryDate - b.deliveryDate); // Sort by date ascending
   }, [deliveryDatesRaw]);
+
+  // Reset selected date index if it's out of bounds after filtering
+  useEffect(() => {
+    if (deliveryDates.length > 0 && selectedDateIndex >= deliveryDates.length) {
+      setSelectedDateIndex(0);
+    }
+  }, [deliveryDates.length, selectedDateIndex]);
 
   // Get selected delivery date
   const selectedDeliveryDate = deliveryDates[selectedDateIndex]?.deliveryDate;
@@ -53,9 +65,40 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
     contractSpecsQuery.data?.data,
   );
 
-  // Auto-scroll to last hashprice row when data loads or delivery date changes
+  // Calculate current basePrice (last hashprice) from hashrate data
+  const currentBasePrice = useMemo(() => {
+    const hashrateData = hashrateQuery.data;
+    const minimumPriceIncrement = contractSpecsQuery.data?.data?.minimumPriceIncrement;
+
+    if (hashrateData && hashrateData.length > 0 && minimumPriceIncrement) {
+      // Get the newest item (first item in the array since it's ordered by updatedAt desc)
+      const newestItem = hashrateData[0];
+      if (newestItem && newestItem.priceToken) {
+        const rawPrice = Number(newestItem.priceToken) / 1e6; // Convert from wei to USDC
+        const minIncrement = Number(minimumPriceIncrement) / 1e6; // Convert from wei to USDC
+        // Round to the nearest multiple of minimumPriceIncrement
+        return Math.round(rawPrice / minIncrement) * minIncrement;
+      }
+    }
+    return null;
+  }, [hashrateQuery.data, contractSpecsQuery.data?.data?.minimumPriceIncrement]);
+
+  // Track previous basePrice to detect changes
+  const previousBasePriceRef = useRef<number | null>(null);
+
+  // Auto-scroll to last hashprice row when basePrice (hashprice) updates
   useEffect(() => {
-    if (finalOrderBookData.length > 0 && !isLoading && tableContainerRef.current) {
+    if (
+      finalOrderBookData.length > 0 &&
+      !isLoading &&
+      tableContainerRef.current &&
+      currentBasePrice !== null &&
+      previousBasePriceRef.current !== null && // Only scroll if we had a previous value (not on initial mount)
+      currentBasePrice !== previousBasePriceRef.current
+    ) {
+      // Update the ref to track the new value
+      previousBasePriceRef.current = currentBasePrice;
+
       // Use setTimeout to ensure DOM is updated and refs are set
       const timeoutId = setTimeout(() => {
         // Find the last hashprice row index
@@ -78,8 +121,11 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
       }, 100); // Small delay to ensure DOM is updated
 
       return () => clearTimeout(timeoutId);
+    } else if (currentBasePrice !== null && previousBasePriceRef.current === null) {
+      // Initialize the ref on first load (don't scroll on initial mount)
+      previousBasePriceRef.current = currentBasePrice;
     }
-  }, [finalOrderBookData, selectedDeliveryDate, isLoading]);
+  }, [currentBasePrice, finalOrderBookData, isLoading]);
 
   // Navigation functions
   const goToPreviousDate = () => {
@@ -176,22 +222,24 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
             </tr>
           </thead>
           <tbody>
-            {finalOrderBookData.map((row, index) => (
-              <TableRow
-                key={index}
-                $isHighlighted={row.isHighlighted}
-                $highlightColor={row.highlightColor}
-                onClick={() => {
-                  // Use askUnits if available, otherwise bidUnits, otherwise null
-                  const amount = row.askUnits || row.bidUnits || null;
-                  onRowClick?.(row.price, amount);
-                }}
-              >
-                <td>{row.bidUnits || ""}</td>
-                <PriceCell $isLastHashprice={row.isLastHashprice}>{row.price.toFixed(2)}</PriceCell>
-                <td>{row.askUnits || ""}</td>
-              </TableRow>
-            ))}
+            {finalOrderBookData.map((row, index) => {
+              return (
+                <TableRow
+                  key={index}
+                  $isHighlighted={row.isHighlighted}
+                  $highlightColor={row.highlightColor}
+                  onClick={() => {
+                    // Use askUnits if available, otherwise bidUnits, otherwise null
+                    const amount = row.askUnits || row.bidUnits || null;
+                    onRowClick?.(row.price, amount);
+                  }}
+                >
+                  <td>{row.bidUnits || ""}</td>
+                  <PriceCell $isLastHashprice={row.isLastHashprice}>{row.price.toFixed(2)}</PriceCell>
+                  <td>{row.askUnits || ""}</td>
+                </TableRow>
+              );
+            })}
           </tbody>
         </Table>
       </TableContainer>

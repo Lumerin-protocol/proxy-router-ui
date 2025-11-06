@@ -9,6 +9,8 @@ import { PlaceOrderForm } from "../../Forms/PlaceOrderForm";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { GetResponse } from "../../../gateway/interfaces";
 import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
+import { useAccount } from "wagmi";
+import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
@@ -29,6 +31,8 @@ export const PlaceOrderWidget = ({
   contractSpecsQuery,
 }: PlaceOrderWidgetProps) => {
   const hashrateQuery = useHashrateIndexData();
+  const { address } = useAccount();
+  const balanceQuery = useGetFutureBalance(address);
 
   // Calculate price step from contract specs
   const priceStep = contractSpecsQuery.data?.data?.minimumPriceIncrement
@@ -154,8 +158,17 @@ export const PlaceOrderWidget = ({
       return;
     }
 
-    // Check if price exceeds the configured percentage of newest item price
+    // Validate balance for buy orders
     const currentPrice = parseFloat(price);
+    const totalOrderValue = BigInt(Math.floor(currentPrice * 1e6)) * BigInt(amount);
+    const balance = balanceQuery.data ?? 0n;
+
+    if (totalOrderValue > balance) {
+      alert("Insufficient funds");
+      return;
+    }
+
+    // Check if price exceeds the configured percentage of newest item price
     const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
     if (currentPrice > maxAllowedPrice) {
