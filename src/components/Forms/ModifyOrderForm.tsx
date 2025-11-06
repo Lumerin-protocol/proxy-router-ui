@@ -1,4 +1,5 @@
-import { memo, useState, type FC } from "react";
+import { memo, useCallback, type FC } from "react";
+import { useForm, useController, type Control } from "react-hook-form";
 import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
 import { TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
@@ -18,84 +19,54 @@ interface ModifyOrderFormProps {
   closeForm: () => void;
 }
 
+interface ModifyFormValues {
+  price: string;
+  quantity: number;
+}
+
 export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
   ({ order, orderIds, currentQuantity, closeForm }) => {
     const { createOrderAsync } = useCreateOrder();
     const qc = useQueryClient();
     const { address } = useAccount();
 
-    // Pre-fill with current order values
-    const [price, setPrice] = useState((Number(order.pricePerDay) / 1e6).toFixed(2));
-    const [quantity, setQuantity] = useState(currentQuantity);
-
     // Determine order type from quantity sign
     const isBuy = order.isBuy;
 
-    const handlePriceChange = (value: string) => {
-      const numValue = parseFloat(value);
-      if (!isNaN(numValue) && numValue > 0) {
-        setPrice(numValue.toFixed(2));
-      } else {
-        setPrice(value);
-      }
-    };
-
-    const handleQuantityChange = (value: string) => {
-      const numValue = parseInt(value, 10);
-      if (!isNaN(numValue) && numValue > 0 && numValue <= 127) {
-        setQuantity(numValue);
-      } else if (value === "") {
-        setQuantity(0);
-      }
-    };
+    // Form setup with default values from current order
+    const form = useForm<ModifyFormValues>({
+      mode: "onBlur",
+      reValidateMode: "onBlur",
+      defaultValues: {
+        price: (Number(order.pricePerDay) / 1e6).toFixed(2),
+        quantity: currentQuantity,
+      },
+    });
 
     const validateInput = async (): Promise<boolean> => {
-      const priceNum = parseFloat(price);
-      const quantityNum = quantity;
-
-      if (isNaN(priceNum) || priceNum <= 0) {
-        alert("Please enter a valid price");
+      const result = await form.trigger();
+      if (!result) {
+        const errors = form.formState.errors;
+        if (errors.price) {
+          alert(errors.price.message || "Please enter a valid price");
+        } else if (errors.quantity) {
+          alert(errors.quantity.message || "Please enter a valid quantity");
+        } else {
+          alert("Please fix the form errors");
+        }
         return false;
       }
-
-      if (quantityNum <= 0 || quantityNum > 127) {
-        alert("Quantity must be between 1 and 127");
-        return false;
-      }
-
       return true;
     };
 
-    const inputForm = () => (
-      <InputFormContainer>
-        <InputGroup>
-          <label>Price, USDC</label>
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => handlePriceChange(e.target.value)}
-            step="0.01"
-            min="0.01"
-            placeholder="5.00"
-          />
-        </InputGroup>
-
-        <InputGroup>
-          <label>Quantity</label>
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => handleQuantityChange(e.target.value)}
-            min="1"
-            max="127"
-            placeholder="1"
-          />
-        </InputGroup>
-      </InputFormContainer>
-    );
+    // Memoize input form to prevent recreation on each render
+    const inputForm = useCallback(() => (
+      <ModifyInputForm key="modify-input-form" control={form.control} />
+    ), [form.control]);
 
     // Convert quantity to signed int8 (positive for Buy, negative for Sell)
     const getSignedQuantity = () => {
+      const quantity = form.getValues("quantity");
       return isBuy ? quantity : -quantity;
     };
 
@@ -134,11 +105,11 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Price:</span>
-                  <span className="text-white">{parseFloat(price).toFixed(2)} USDC</span>
+                  <span className="text-white">{parseFloat(form.watch("price")).toFixed(2)} USDC</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Quantity:</span>
-                  <span className="text-white">{quantity} units</span>
+                  <span className="text-white">{form.watch("quantity")} units</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Delivery Date:</span>
@@ -146,7 +117,7 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Total Value:</span>
-                  <span className="text-white">{(parseFloat(price) * quantity).toFixed(2)} USDC</span>
+                  <span className="text-white">{(parseFloat(form.watch("price")) * form.watch("quantity")).toFixed(2)} USDC</span>
                 </div>
               </div>
             </div>
@@ -192,7 +163,8 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
           {
             label: "Create New Order",
             action: async () => {
-              const priceBigInt = BigInt(Math.floor(parseFloat(price) * 1e6));
+              const formValues = form.getValues();
+              const priceBigInt = BigInt(Math.floor(parseFloat(formValues.price) * 1e6));
               const signedQuantity = getSignedQuantity();
               const txhash = await createOrderAsync({
                 price: priceBigInt,
@@ -269,3 +241,92 @@ const InputGroup = styled("div")`
     }
   }
 `;
+
+const ErrorText = styled("span")`
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: -0.25rem;
+`;
+
+// Separate memoized component to prevent input focus loss
+const ModifyInputForm = memo<{
+  control: Control<ModifyFormValues>;
+}>(({ control }) => {
+  const priceController = useController({
+    name: "price",
+    control: control,
+    rules: {
+      required: "Price is required",
+      validate: (value: string) => {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue) || numValue <= 0) {
+          return "Price must be greater than 0";
+        }
+        return true;
+      },
+    },
+  });
+
+  const quantityController = useController({
+    name: "quantity",
+    control: control,
+    rules: {
+      required: "Quantity is required",
+      min: 1, 
+      max: 50,
+      validate: (value: number) => {
+        if (value <= 0 || value > 127) {
+          return "Quantity must be between 1 and 127";
+        }
+        return true;
+      },
+    },
+  });
+
+  return (
+    <InputFormContainer>
+      <InputGroup>
+        <label>Price, USDC</label>
+        <input
+          type="number"
+          {...priceController.field}
+          step="0.01"
+          min="0.01"
+          placeholder="5.00"
+        />
+        {priceController.fieldState.error && (
+          <ErrorText>{priceController.fieldState.error.message}</ErrorText>
+        )}
+      </InputGroup>
+
+      <InputGroup>
+        <label>Quantity</label>
+        <input
+          type="number"
+          value={quantityController.field.value}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "") {
+              quantityController.field.onChange(0);
+            } else {
+              const numValue = parseInt(value, 10);
+              if (!isNaN(numValue) && numValue >= 0 && numValue <= 127) {
+                quantityController.field.onChange(numValue);
+              }
+            }
+          }}
+          onBlur={quantityController.field.onBlur}
+          name={quantityController.field.name}
+          min="1"
+          max="127"
+          placeholder="1"
+        />
+        {quantityController.fieldState.error && (
+          <ErrorText>{quantityController.fieldState.error.message}</ErrorText>
+        )}
+      </InputGroup>
+    </InputFormContainer>
+  );
+});
+
+ModifyInputForm.displayName = "ModifyInputForm";
