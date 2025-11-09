@@ -3,15 +3,23 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
 import { ParticipantPosition } from "../../../hooks/data/useParticipant";
+import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
 
 interface PositionsListWidgetProps {
   positions: PositionBookPosition[];
   isLoading?: boolean;
   participantAddress?: `0x${string}`;
+  onClosePosition?: (price: string, amount: number, isBuy: boolean) => void;
 }
 
-export const PositionsListWidget = ({ positions, isLoading, participantAddress }: PositionsListWidgetProps) => {
+export const PositionsListWidget = ({
+  positions,
+  isLoading,
+  participantAddress,
+  onClosePosition,
+}: PositionsListWidgetProps) => {
   const { createOrderAsync, isPending } = useCreateOrder();
+  const hashrateQuery = useHashrateIndexData();
 
   const getStatusColor = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
@@ -46,48 +54,96 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
+  // Get latest price from hashrate index
+  const latestPrice =
+    hashrateQuery.data && hashrateQuery.data.length > 0 ? Number(hashrateQuery.data[0].priceToken) / 1e6 : null;
+
+  // Calculate PnL for a position
+  const calculatePnL = (
+    entryPrice: bigint,
+    positionType: string,
+    amount: number,
+  ): { pnl: number | null; percentage: number | null } => {
+    if (!latestPrice) return { pnl: null, percentage: null };
+
+    const entryPriceNum = Number(entryPrice) / 1e6;
+    const priceDiff = latestPrice - entryPriceNum;
+
+    // Long: profit when price goes up (current > entry)
+    // Short: profit when price goes down (entry > current)
+    const pnl = positionType === "Long" ? priceDiff * amount : -priceDiff * amount;
+    // Calculate percentage based on PnL and initial investment (entry value)
+    const entryValue = latestPrice * amount;
+    const percentage = entryValue !== 0 ? (pnl / entryValue) * 100 : 0;
+
+    return { pnl, percentage };
+  };
+
+  const formatPnL = (pnl: number | null, percentage: number | null): string => {
+    if (pnl === null || percentage === null) return "-";
+    const sign = pnl >= 0 ? "+" : "";
+    const percentageSign = percentage >= 0 ? "+" : "";
+    return `${sign}${pnl.toFixed(2)} USDC (${percentageSign}${percentage.toFixed(2)}%)`;
+  };
+
   const handleClosePosition = async (groupedPosition: {
-    price: bigint;
-    startTime: string;
+    pricePerDay: bigint;
+    deliveryAt: string;
     positionType: string;
     amount: number;
     positions: PositionBookPosition[];
   }) => {
-    try {
-      // Create opposite order to close the position
-      // If it's a Long position, create a Sell order
-      // If it's a Short position, create a Buy order
-      const isBuy = groupedPosition.positionType === "Short";
+    // Determine order type to close the position
+    // If it's a Long position, create a Sell order (negative quantity)
+    // If it's a Short position, create a Buy order (positive quantity)
+    // Quantity sign: positive = Buy, negative = Sell
+    const quantity =
+      groupedPosition.positionType === "Short"
+        ? groupedPosition.amount // Buy order (positive)
+        : -groupedPosition.amount; // Sell order (negative)
 
-      // Calculate delivery date from startTime (assuming 30 days duration)
-      const startTimeSeconds = Number(groupedPosition.startTime);
-      const deliveryDate = BigInt(startTimeSeconds + 30 * 24 * 60 * 60); // 30 days in seconds
+    // Format price as string
+    const priceString = formatPrice(groupedPosition.pricePerDay);
+
+    // Determine isBuy for callback compatibility
+    const isBuy = quantity > 0;
+
+    // If callback provided, use it to populate place order widget
+    if (onClosePosition) {
+      onClosePosition(priceString, Math.abs(quantity), isBuy);
+      return;
+    }
+
+    // Otherwise, create order directly (fallback behavior)
+    try {
+      // Use deliveryAt directly (it's already a timestamp)
+      const deliveryDate = BigInt(groupedPosition.deliveryAt);
 
       await createOrderAsync({
-        price: groupedPosition.price,
+        price: groupedPosition.pricePerDay,
         deliveryDate: deliveryDate,
-        quantity: groupedPosition.amount,
-        isBuy: isBuy,
+        quantity: quantity,
+        destUrl: "",
       });
 
       console.log(
-        `Created ${isBuy ? "buy" : "sell"} order to close ${groupedPosition.amount} ${groupedPosition.positionType} positions`,
+        `Created ${isBuy ? "buy" : "sell"} order to close ${Math.abs(quantity)} ${groupedPosition.positionType} positions`,
       );
     } catch (err) {
       console.error("Failed to close position:", err);
     }
   };
 
-  // Group positions by price, startTime, and position type
+  // Group positions by pricePerDay, deliveryAt, and position type
   const groupedPositions = positions.reduce(
     (acc, position) => {
       const positionType = getPositionType(position);
-      const key = `${position.price}-${position.startTime}-${positionType}`;
+      const key = `${position.pricePerDay}-${position.deliveryAt}-${positionType}`;
 
       if (!acc[key]) {
         acc[key] = {
-          price: position.price,
-          startTime: position.startTime,
+          pricePerDay: position.pricePerDay,
+          deliveryAt: position.deliveryAt,
           positionType: positionType,
           amount: 0,
           isActive: position.isActive,
@@ -104,8 +160,8 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
     {} as Record<
       string,
       {
-        price: bigint;
-        startTime: string;
+        pricePerDay: bigint;
+        deliveryAt: string;
         positionType: string;
         amount: number;
         isActive: boolean;
@@ -139,6 +195,7 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
               <th>Type</th>
               <th>Price</th>
               <th>Amount</th>
+              <th>PnL</th>
               <th>Start Time</th>
               <th>Action</th>
             </tr>
@@ -146,17 +203,31 @@ export const PositionsListWidget = ({ positions, isLoading, participantAddress }
           <tbody>
             {groupedPositionsArray.map((groupedPosition, index) => (
               <TableRow
-                key={`${groupedPosition.price}-${groupedPosition.startTime}-${groupedPosition.positionType}-${index}`}
+                key={`${groupedPosition.pricePerDay}-${groupedPosition.deliveryAt}-${groupedPosition.positionType}-${index}`}
               >
                 <td>
                   <TypeBadge $type={groupedPosition.positionType}>{groupedPosition.positionType}</TypeBadge>
                 </td>
-                <td>${formatPrice(groupedPosition.price)}</td>
+                <td>{formatPrice(groupedPosition.pricePerDay)} USDC</td>
                 <td>{groupedPosition.amount}</td>
-                <td>{formatTimestamp(groupedPosition.startTime)}</td>
+                <td>
+                  {(() => {
+                    const { pnl, percentage } = calculatePnL(
+                      groupedPosition.pricePerDay,
+                      groupedPosition.positionType,
+                      groupedPosition.amount,
+                    );
+                    return <PnLCell $isPositive={pnl !== null && pnl >= 0}>{formatPnL(pnl, percentage)}</PnLCell>;
+                  })()}
+                </td>
+                <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
                 <td>
                   {groupedPosition.isActive && !groupedPosition.closedAt && (
-                    <CloseButton onClick={() => handleClosePosition(groupedPosition)} disabled={isPending}>
+                    <CloseButton
+                      onClick={() => handleClosePosition(groupedPosition)}
+                      disabled={isPending}
+                      title="By creating opposite order"
+                    >
                       Close
                     </CloseButton>
                   )}
@@ -253,6 +324,11 @@ const TypeBadge = styled("span")<{ $type: string }>`
   color: ${(props) => (props.$type === "Long" ? "#22c55e" : "#ef4444")};
 `;
 
+const PnLCell = styled("span")<{ $isPositive: boolean }>`
+  color: ${(props) => (props.$isPositive ? "#22c55e" : "#ef4444")};
+  font-weight: 600;
+`;
+
 const StatusBadge = styled("span")<{ $status: string }>`
   display: inline-block;
   padding: 0.25rem 0.5rem;
@@ -273,24 +349,25 @@ const StatusBadge = styled("span")<{ $status: string }>`
 `;
 
 const CloseButton = styled("button")`
-  padding: 0.25rem 0.5rem;
-  background: #ef4444;
+  padding: 0.5rem 0.875rem;
+  background: #4c5a5f;
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   
   &:hover:not(:disabled) {
-    background: #dc2626;
+    background: #5a6b70;
+    transform: translateY(-1px);
   }
   
   &:active:not(:disabled) {
-    background: #b91c1c;
+    transform: translateY(0);
   }
-  
+
   &:disabled {
     background: #6b7280;
     cursor: not-allowed;

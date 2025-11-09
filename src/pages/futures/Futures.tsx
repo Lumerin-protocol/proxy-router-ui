@@ -5,8 +5,7 @@ import { FuturesMarketWidget } from "../../components/Widgets/Futures/FuturesMar
 import { OrderBookTable } from "../../components/Widgets/Futures/OrderBookTable";
 import { HashrateChart } from "../../components/Charts/HashrateChart";
 import { PlaceOrderWidget } from "../../components/Widgets/Futures/PlaceOrderWidget";
-import { OrdersListWidget } from "../../components/Widgets/Futures/OrdersListWidget";
-import { PositionsListWidget } from "../../components/Widgets/Futures/PositionsListWidget";
+import { OrdersPositionsTabWidget } from "../../components/Widgets/Futures/OrdersPositionsTabWidget";
 import { FeedWidget } from "../../components/Widgets/Futures/FeedWidget";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
@@ -25,6 +24,8 @@ export const Futures: FC = () => {
   const [selectedPrice, setSelectedPrice] = useState<string | undefined>();
   const [selectedAmount, setSelectedAmount] = useState<number | undefined>();
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<number | undefined>();
+  const [selectedIsBuy, setSelectedIsBuy] = useState<boolean | undefined>();
+  const [highlightTrigger, setHighlightTrigger] = useState(0);
 
   const handleOrderBookClick = (price: number, amount: number | null) => {
     setSelectedPrice(price.toString());
@@ -33,6 +34,14 @@ export const Futures: FC = () => {
 
   const handleDeliveryDateChange = (deliveryDate: number | undefined) => {
     setSelectedDeliveryDate(deliveryDate);
+  };
+
+  const handleClosePosition = (price: string, amount: number, isBuy: boolean) => {
+    setSelectedPrice(price);
+    setSelectedAmount(amount);
+    setSelectedIsBuy(isBuy);
+    // Increment trigger to force highlight update
+    setHighlightTrigger((prev) => prev + 1);
   };
 
   return (
@@ -57,6 +66,8 @@ export const Futures: FC = () => {
                   externalPrice={selectedPrice}
                   externalAmount={selectedAmount}
                   externalDeliveryDate={selectedDeliveryDate}
+                  externalIsBuy={selectedIsBuy}
+                  highlightTrigger={highlightTrigger}
                   contractSpecsQuery={contractSpecsQuery}
                 />
               </div>
@@ -76,18 +87,14 @@ export const Futures: FC = () => {
         {/* Orders and Positions List Section - Only show when wallet is connected */}
         {isConnected && (
           <div className="w-full mb-8">
-            <div className="flex flex-col lg:flex-row gap-6">
-              <div className="flex-1">
-                <OrdersListWidget orders={participantData?.data?.orders || []} isLoading={isParticipantLoading} />
-              </div>
-              <div className="flex-1">
-                <PositionsListWidget
-                  positions={positionBookData?.data?.positions || []}
-                  isLoading={isPositionBookLoading}
-                  participantAddress={address}
-                />
-              </div>
-            </div>
+            <OrdersPositionsTabWidget
+              orders={participantData?.data?.orders || []}
+              positions={positionBookData?.data?.positions || []}
+              ordersLoading={isParticipantLoading}
+              positionsLoading={isPositionBookLoading}
+              participantAddress={address}
+              onClosePosition={handleClosePosition}
+            />
           </div>
         )}
       </div>

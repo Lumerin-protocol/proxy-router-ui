@@ -31,24 +31,63 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
 
   const [amount, setAmount] = useState<string>("");
 
+  const validateBalance = useCallback(
+    (value: string): string | true => {
+      if (!futureBalance.data) {
+        return "Unable to fetch balance. Please try again.";
+      }
+      const amountBigInt = parseUnits(value, paymentToken.decimals);
+      if (amountBigInt > futureBalance.data) {
+        const balanceFormatted = formatValue(futureBalance.data, paymentToken).valueRounded;
+        return `Insufficient balance. Available: ${balanceFormatted} ${paymentToken.symbol}`;
+      }
+      return true;
+    },
+    [futureBalance.data],
+  );
+
   const inputForm = useCallback(
-    () => <AmountInputForm control={form.control} label="Withdrawal Amount" />,
-    [form.control],
+    () => <AmountInputForm control={form.control} label="Withdrawal Amount" additionalValidate={validateBalance} />,
+    [form.control, validateBalance],
   );
 
   const validateInput = useCallback(async () => {
     const amountValue = form.getValues("amount");
     if (!amountValue || parseFloat(amountValue) <= 0) {
+      form.setError("amount", {
+        type: "validation",
+        message: "Withdrawal Amount must be a positive number",
+      });
       return false;
     }
+
+    // Check if balance is available
+    if (!futureBalance.data) {
+      form.setError("amount", {
+        type: "validation",
+        message: "Unable to fetch balance. Please try again.",
+      });
+      return false;
+    }
+
+    // Validate that amount doesn't exceed balance
+    const amountBigInt = parseUnits(amountValue, paymentToken.decimals);
+    if (amountBigInt > futureBalance.data) {
+      const balanceFormatted = formatValue(futureBalance.data, paymentToken).valueRounded;
+      form.setError("amount", {
+        type: "validation",
+        message: `Insufficient balance. Available: ${balanceFormatted} ${paymentToken.symbol}`,
+      });
+      return false;
+    }
+
     setAmount(amountValue);
     return true;
-  }, [form]);
+  }, [form, futureBalance.data]);
 
   const reviewForm = useCallback(
     () => (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-white">Review Withdrawal</h3>
         <div className="p-4 rounded-lg">
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">Amount to withdraw:</span>

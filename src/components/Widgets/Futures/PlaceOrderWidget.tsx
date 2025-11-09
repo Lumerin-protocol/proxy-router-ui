@@ -9,11 +9,15 @@ import { PlaceOrderForm } from "../../Forms/PlaceOrderForm";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { GetResponse } from "../../../gateway/interfaces";
 import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
+import { useAccount } from "wagmi";
+import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
   externalAmount?: number;
   externalDeliveryDate?: number;
+  externalIsBuy?: boolean;
+  highlightTrigger?: number;
   address?: `0x${string}`;
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
 }
@@ -22,39 +26,54 @@ export const PlaceOrderWidget = ({
   externalPrice,
   externalAmount,
   externalDeliveryDate,
+  externalIsBuy,
+  highlightTrigger,
   contractSpecsQuery,
 }: PlaceOrderWidgetProps) => {
-  const [price, setPrice] = useState("5.00");
+  const hashrateQuery = useHashrateIndexData();
+  const { address } = useAccount();
+  const balanceQuery = useGetFutureBalance(address);
+
+  // Calculate price step from contract specs
+  const priceStep = contractSpecsQuery.data?.data?.minimumPriceIncrement
+    ? Number(contractSpecsQuery.data.data.minimumPriceIncrement) / 1e6
+    : null;
+
+  // Get newest item price for validation and default price
+  const newestItemPrice =
+    hashrateQuery.data && hashrateQuery.data.length > 0 ? Number(hashrateQuery.data[0].priceToken) / 1e6 : null;
+
+  const [price, setPrice] = useState("5.00"); // Will be updated when hashrate data loads
+  const [priceInitialized, setPriceInitialized] = useState(false); // Track if price has been initialized from hashrate
   const [amount, setAmount] = useState(1);
+  const [highlightedButton, setHighlightedButton] = useState<"buy" | "sell" | null>(null);
   const [showHighPriceModal, setShowHighPriceModal] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [pendingOrder, setPendingOrder] = useState<{
     price: number;
     amount: number;
-    isBuy: boolean;
+    quantity: number; // Positive for Buy, Negative for Sell
   } | null>(null);
-
-  const hashrateQuery = useHashrateIndexData();
-
-  // Calculate price step from contract specs
-  const priceStep = contractSpecsQuery.data?.data?.priceLadderStep
-    ? Number(contractSpecsQuery.data.data.priceLadderStep) / 1e6
-    : null;
-
-  // Get newest item price for validation
-  const newestItemPrice =
-    hashrateQuery.data && hashrateQuery.data.length > 0
-      ? Number(hashrateQuery.data[hashrateQuery.data.length - 1].priceToken) / 1e6
-      : null;
 
   // Get high price percentage from environment variable (default 60 for 160%)
   const highPricePercentage = Number(process.env.REACT_APP_FUTURES_HIGH_PRICE_PERCENTAGE || "60");
   const maxPriceMultiplier = 1 + highPricePercentage / 100; // Convert percentage to multiplier
 
+  // Set default price from newest hashprice when data loads (if no external price set)
+  useEffect(() => {
+    if (!externalPrice && !priceInitialized && newestItemPrice && priceStep) {
+      // Only update if we haven't initialized yet and no external price is set
+      const snappedPrice = Math.round(newestItemPrice / priceStep) * priceStep;
+      setPrice(snappedPrice.toFixed(2));
+      setPriceInitialized(true);
+    }
+  }, [newestItemPrice, priceStep, externalPrice, priceInitialized]);
+
   // Update values when external props change
   useEffect(() => {
     if (externalPrice !== undefined) {
       setPrice(externalPrice);
+      setPriceInitialized(true); // Mark as initialized when external price is set
     }
   }, [externalPrice]);
 
@@ -64,7 +83,36 @@ export const PlaceOrderWidget = ({
     }
   }, [externalAmount]);
 
-  // Show loading state while priceLadderStep is being fetched
+  // Highlight button when position is closed and values are substituted
+  useEffect(() => {
+    if (
+      externalIsBuy !== undefined &&
+      externalPrice !== undefined &&
+      externalAmount !== undefined &&
+      highlightTrigger !== undefined &&
+      highlightTrigger > 0
+    ) {
+      // Reset highlight first to ensure visual feedback
+      setHighlightedButton(null);
+
+      // Set highlight in next tick to ensure visual change
+      const highlightTimeout = setTimeout(() => {
+        setHighlightedButton(externalIsBuy ? "buy" : "sell");
+      }, 10);
+
+      // Clear highlight after 3 seconds
+      const clearTimeoutId = setTimeout(() => {
+        setHighlightedButton(null);
+      }, 3000);
+
+      return () => {
+        clearTimeout(highlightTimeout);
+        clearTimeout(clearTimeoutId);
+      };
+    }
+  }, [externalIsBuy, externalPrice, externalAmount, highlightTrigger]);
+
+  // Show loading state while minimumPriceIncrement is being fetched
   if (contractSpecsQuery.isLoading || !priceStep || hashrateQuery.isLoading || !newestItemPrice) {
     return (
       <PlaceOrderContainer>
@@ -110,21 +158,30 @@ export const PlaceOrderWidget = ({
       return;
     }
 
-    // Check if price exceeds the configured percentage of newest item price
+    // Validate balance for buy orders
     const currentPrice = parseFloat(price);
+    const totalOrderValue = BigInt(Math.floor(currentPrice * 1e6)) * BigInt(amount);
+    const balance = balanceQuery.data ?? 0n;
+
+    if (totalOrderValue > balance) {
+      alert("Insufficient funds");
+      return;
+    }
+
+    // Check if price exceeds the configured percentage of newest item price
     const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
     if (currentPrice > maxAllowedPrice) {
       setPendingOrder({
         price: currentPrice,
         amount: amount,
-        isBuy: true,
+        quantity: amount, // Positive for Buy
       });
       setShowHighPriceModal(true);
       return;
     }
 
-    openOrderForm(currentPrice, amount, true);
+    openOrderForm(currentPrice, amount, amount); // Positive quantity for Buy
   };
 
   const handleSell = async () => {
@@ -141,20 +198,20 @@ export const PlaceOrderWidget = ({
       setPendingOrder({
         price: currentPrice,
         amount: amount,
-        isBuy: false,
+        quantity: -amount, // Negative for Sell
       });
       setShowHighPriceModal(true);
       return;
     }
 
-    openOrderForm(currentPrice, amount, false);
+    openOrderForm(currentPrice, amount, -amount); // Negative quantity for Sell
   };
 
-  const openOrderForm = (orderPrice: number, orderAmount: number, isBuy: boolean) => {
+  const openOrderForm = (orderPrice: number, orderAmount: number, quantity: number) => {
     setPendingOrder({
       price: orderPrice,
       amount: orderAmount,
-      isBuy: isBuy,
+      quantity: quantity,
     });
     setShowOrderForm(true);
   };
@@ -211,11 +268,11 @@ export const PlaceOrderWidget = ({
           </InputSection>
 
           <ButtonSection>
-            <BuyButton onClick={handleBuy} disabled={showOrderForm}>
-              Buy / Long
+            <BuyButton onClick={handleBuy} disabled={showOrderForm} $isHighlighted={highlightedButton === "buy"}>
+              Buy
             </BuyButton>
-            <SellButton onClick={handleSell} disabled={showOrderForm}>
-              Sell / Short
+            <SellButton onClick={handleSell} disabled={showOrderForm} $isHighlighted={highlightedButton === "sell"}>
+              Sell
             </SellButton>
           </ButtonSection>
         </MainSection>
@@ -244,8 +301,7 @@ export const PlaceOrderWidget = ({
           <PlaceOrderForm
             price={BigInt(Math.floor(pendingOrder.price * 1e6))}
             deliveryDate={BigInt(externalDeliveryDate)}
-            quantity={pendingOrder.amount}
-            isBuy={pendingOrder.isBuy}
+            quantity={pendingOrder.quantity}
             closeForm={() => {
               setShowOrderForm(false);
               setPendingOrder(null);
@@ -264,7 +320,7 @@ const HighPriceConfirmationModal = ({
   onConfirm,
   onCancel,
 }: {
-  pendingOrder: { price: number; amount: number; isBuy: boolean } | null;
+  pendingOrder: { price: number; amount: number; quantity: number } | null;
   newestItemPrice: number;
   highPricePercentage: number;
   onConfirm: () => void;
@@ -273,6 +329,7 @@ const HighPriceConfirmationModal = ({
   if (!pendingOrder) return null;
 
   const percentageOver = ((pendingOrder.price / newestItemPrice) * 100).toFixed(1);
+  const isBuy = pendingOrder.quantity > 0;
 
   return (
     <div className="space-y-6">
@@ -307,7 +364,7 @@ const HighPriceConfirmationModal = ({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-300">Type:</span>
-            <span className="text-white">{pendingOrder.isBuy ? "Buy / Long" : "Sell / Short"}</span>
+            <span className="text-white">{isBuy ? "Buy" : "Sell"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Amount:</span>
@@ -482,17 +539,18 @@ const ButtonSection = styled("div")`
   }
 `;
 
-const BuyButton = styled("button")`
+const BuyButton = styled("button")<{ $isHighlighted?: boolean }>`
   padding: 0.875rem 1rem;
-  background: #22c55e;
+  background: ${(props) => (props.$isHighlighted ? "#16a34a" : "#22c55e")};
   color: #fff;
-  border: none;
+  border: ${(props) => (props.$isHighlighted ? "2px solid #10b981" : "none")};
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   min-width: 120px;
+  box-shadow: ${(props) => (props.$isHighlighted ? "0 0 12px rgba(34, 197, 94, 0.6)" : "none")};
   
   &:hover:not(:disabled) {
     background: #16a34a;
@@ -510,17 +568,18 @@ const BuyButton = styled("button")`
   }
 `;
 
-const SellButton = styled("button")`
+const SellButton = styled("button")<{ $isHighlighted?: boolean }>`
   padding: 0.875rem 1rem;
-  background: #ef4444;
+  background: ${(props) => (props.$isHighlighted ? "#dc2626" : "#ef4444")};
   color: #fff;
-  border: none;
+  border: ${(props) => (props.$isHighlighted ? "2px solid #f87171" : "none")};
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   min-width: 120px;
+  box-shadow: ${(props) => (props.$isHighlighted ? "0 0 12px rgba(239, 68, 68, 0.6)" : "none")};
   
   &:hover:not(:disabled) {
     background: #dc2626;

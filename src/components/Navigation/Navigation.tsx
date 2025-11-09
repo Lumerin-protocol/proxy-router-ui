@@ -74,9 +74,7 @@ export const ResponsiveNavigation = (prop: {
       activeIcon: "TrendingUp",
       inactiveIcon: "TrendingUp",
       current: location.pathname === PathName.Futures,
-      customIcon: (props: { item: Navigation }) => (
-        <TrendingUpIcon style={{ color: props.item.current ? "#c2c9d6" : "#6B7280", fontSize: "24px" }} />
-      ),
+      customIcon: (props: { item: Navigation }) => <TrendingUpIcon style={{ color: "#c2c9d6", fontSize: "24px" }} />,
     },
   ];
 

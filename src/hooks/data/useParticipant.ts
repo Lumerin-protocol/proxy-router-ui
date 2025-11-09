@@ -64,8 +64,8 @@ const fetchParticipantAsync = async (
     positions: response.participant.positions.map((position) => ({
       transactionHash: position.transactionHash,
       timestamp: position.timestamp,
-      startTime: position.startTime,
-      price: BigInt(position.price),
+      deliveryAt: position.deliveryAt,
+      pricePerDay: BigInt(position.pricePerDay),
       isActive: position.isActive,
       id: position.id,
       closedBy: position.closedBy,
@@ -80,14 +80,14 @@ const fetchParticipantAsync = async (
     orders: response.participant.orders.map((order) => ({
       closedAt: order.closedAt,
       closedBy: order.closedBy,
-      deliveryDate: BigInt(order.deliveryDate),
+      deliveryAt: BigInt(order.deliveryAt),
       id: order.id,
       isActive: order.isActive,
       isBuy: order.isBuy,
       participant: {
         address: order.participant.address,
       },
-      price: BigInt(order.price),
+      pricePerDay: BigInt(order.pricePerDay),
       timestamp: order.timestamp,
     })),
   };
@@ -133,8 +133,8 @@ export type Participant = {
 export type ParticipantPosition = {
   transactionHash: `0x${string}`;
   timestamp: string;
-  startTime: string;
-  price: bigint;
+  deliveryAt: string;
+  pricePerDay: bigint;
   isActive: boolean;
   id: string;
   closedBy: string | null;
@@ -150,14 +150,14 @@ export type ParticipantPosition = {
 export type ParticipantOrder = {
   closedAt: string | null;
   closedBy: string | null;
-  deliveryDate: bigint;
+  deliveryAt: bigint;
   id: string;
   isActive: boolean;
   isBuy: boolean;
   participant: {
     address: `0x${string}`;
   };
-  price: bigint;
+  pricePerDay: bigint;
   timestamp: string;
 };
 
@@ -179,8 +179,8 @@ type ParticipantResponse = {
     positions: {
       transactionHash: `0x${string}`;
       timestamp: string;
-      startTime: string;
-      price: string;
+      deliveryAt: string;
+      pricePerDay: string;
       isActive: boolean;
       id: string;
       closedBy: string | null;
@@ -195,14 +195,14 @@ type ParticipantResponse = {
     orders: {
       closedAt: string | null;
       closedBy: string | null;
-      deliveryDate: string;
+      deliveryAt: string;
       id: string;
       isActive: boolean;
       isBuy: boolean;
       participant: {
         address: `0x${string}`;
       };
-      price: string;
+      pricePerDay: string;
       timestamp: string;
     }[];
   } | null;

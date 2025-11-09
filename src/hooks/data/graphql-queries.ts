@@ -19,8 +19,8 @@ export const ParticipantQuery = gql`
       positions(where: { isActive: true }, first: $posLimit, skip: $posOffset, orderBy: timestamp, orderDirection: desc) {
         transactionHash
         timestamp
-        startTime
-        price
+        deliveryAt
+        pricePerDay
         isActive
         id
         closedBy
@@ -35,14 +35,14 @@ export const ParticipantQuery = gql`
       orders(where: { isActive: true }, first: $orderLimit, skip: $orderOffset, orderBy: timestamp, orderDirection: desc) {
         closedAt
         closedBy
-        deliveryDate
+        deliveryAt
         id
         isActive
         isBuy
         participant {
           address
         }
-        price
+        pricePerDay
         timestamp
       }
     },
@@ -69,8 +69,8 @@ export const PositionsBookQuery = gql`
   ) {
     transactionHash
     timestamp
-    startTime
-    price
+    deliveryAt
+    pricePerDay
     isActive
     id
     closedBy
@@ -92,11 +92,11 @@ export const PositionsBookQuery = gql`
 `;
 
 export const OrderBookQuery = gql`
-  query OrderBook($deliveryDate: BigInt!) {
-    orders(where: { deliveryDate: $deliveryDate, isActive: true }) {
+  query OrderBook($deliveryAt: BigInt!) {
+    orders(where: { deliveryAt: $deliveryAt, isActive: true }) {
       id
-      price
-      deliveryDate
+      pricePerDay
+      deliveryAt
       participant {
         address
       }
@@ -115,16 +115,10 @@ export const OrderBookQuery = gql`
 export const ContractSpecsQuery = gql`
   query ContractSpecs {
     futures(id: "0") {
-      buyerLiquidationMarginPercent
-      closeoutCount
-      contractActiveCount
-      contractCount
-      deliveryDurationSeconds
+      deliveryDurationDays
+      liquidationMarginPercent
       hashrateOracleAddress
-      minSellerStake
-      priceLadderStep
-      purchaseCount
-      sellerLiquidationMarginPercent
+      minimumPriceIncrement
       speedHps
       tokenAddress
       validatorAddress
@@ -139,15 +133,17 @@ export const ContractSpecsQuery = gql`
 `;
 
 export const HashrateIndexQuery = gql`
-  query HashpriceIndex {
+  query HashpriceIndex($startDate: BigInt!, $first: Int!) {
     hashrateIndexes(
+      where: { updatedAt_gte: $startDate }
       orderBy: updatedAt
       orderDirection: desc
+      first: $first
     ) {
+      id
       hashesForBTC
       hashesForToken
       updatedAt
-      id
     }
   }
 `;

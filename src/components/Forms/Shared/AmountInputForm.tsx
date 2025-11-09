@@ -6,9 +6,10 @@ import { ErrorWrapper, InputWrapper } from "./Forms.styled";
 interface Props {
   control: Control<{ amount: string }>;
   label?: string;
+  additionalValidate?: (value: string) => string | true;
 }
 
-export const AmountInputForm: FC<Props> = ({ control, label = "Amount" }) => {
+export const AmountInputForm: FC<Props> = ({ control, label = "Amount", additionalValidate }) => {
   const amountController = useController({
     name: "amount",
     control: control,
@@ -18,6 +19,13 @@ export const AmountInputForm: FC<Props> = ({ control, label = "Amount" }) => {
         const numValue = parseFloat(value);
         if (isNaN(numValue) || numValue <= 0) {
           return `${label} must be a positive number`;
+        }
+        // Apply additional validation if provided
+        if (additionalValidate) {
+          const additionalResult = additionalValidate(value);
+          if (additionalResult !== true) {
+            return additionalResult;
+          }
         }
         return true;
       },

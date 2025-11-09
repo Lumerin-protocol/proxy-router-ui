@@ -1,7 +1,7 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
-import { useState, useEffect } from "react";
-import { useDeliveryDates } from "../../../hooks/data/useDeliveryDates";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useGetDeliveryDates } from "../../../hooks/data/useGetDeliveryDates";
 import { useOrderBook } from "../../../hooks/data/useOrderBook";
 import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
 import { createFinalOrderBookData } from "./orderBookHelpers";
@@ -17,12 +17,36 @@ interface OrderBookTableProps {
 
 export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecsQuery }: OrderBookTableProps) => {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  // Track previous basePrice to detect changes
+  const previousBasePriceRef = useRef<number | null>(null);
+  const previousOrderBookStateRef = useRef<Map<number, { bidUnits: number | null; askUnits: number | null }>>(
+    new Map(),
+  );
+  const [priceHighlights, setPriceHighlights] = useState<Map<number, { color: "red" | "green" }>>(new Map());
 
-  const { data: deliveryDatesResponse, isLoading, isError, isSuccess } = useDeliveryDates();
+  const { data: deliveryDatesRaw, isLoading, isError } = useGetDeliveryDates();
   const hashrateQuery = useHashrateIndexData();
 
-  // Fetch delivery dates
-  const deliveryDates = deliveryDatesResponse?.data || [];
+  // Transform delivery dates from bigint[] to [{ deliveryDate: number }]
+  // Filter out dates that are earlier than now
+  const deliveryDates = useMemo(() => {
+    if (!deliveryDatesRaw) return [];
+    const now = Math.floor(Date.now() / 1000); // Current time in Unix timestamp (seconds)
+    return deliveryDatesRaw
+      .map((date) => ({
+        deliveryDate: Number(date),
+      }))
+      .filter(({ deliveryDate }) => deliveryDate >= now)
+      .sort((a, b) => a.deliveryDate - b.deliveryDate); // Sort by date ascending
+  }, [deliveryDatesRaw]);
+
+  // Reset selected date index if it's out of bounds after filtering
+  useEffect(() => {
+    if (deliveryDates.length > 0 && selectedDateIndex >= deliveryDates.length) {
+      setSelectedDateIndex(0);
+    }
+  }, [deliveryDates.length, selectedDateIndex]);
 
   // Get selected delivery date
   const selectedDeliveryDate = deliveryDates[selectedDateIndex]?.deliveryDate;
@@ -34,11 +58,55 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
     } else {
       onDeliveryDateChange?.(undefined);
     }
+    // Reset highlights and previous state when delivery date changes
+    setPriceHighlights(new Map());
+    previousOrderBookStateRef.current = new Map();
   }, [selectedDeliveryDate, onDeliveryDateChange]);
 
   // Fetch order book for selected delivery date
   const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true });
   const orderBookData = orderBookQuery.data?.data?.orders || [];
+
+  // Helper function to normalize price
+  const normalizePrice = (price: number, minimumPriceIncrement: number | null): number => {
+    if (minimumPriceIncrement !== null) {
+      return Math.round(price / minimumPriceIncrement) * minimumPriceIncrement;
+    }
+    return Math.round(price * 100) / 100;
+  };
+
+  // Group current order book data by price
+  const currentOrderBookState = useMemo(() => {
+    const state = new Map<number, { bidUnits: number; askUnits: number }>();
+    const minimumPriceIncrement = contractSpecsQuery.data?.data?.minimumPriceIncrement
+      ? Number(contractSpecsQuery.data.data.minimumPriceIncrement) / 1e6
+      : null;
+
+    if (orderBookData && orderBookData.length > 0) {
+      const priceToSideCount = new Map<number, { bids: number; asks: number }>();
+
+      for (const order of orderBookData) {
+        const rawPrice = Number(order.pricePerDay) / 1e6;
+        const price = normalizePrice(rawPrice, minimumPriceIncrement);
+        const entry = priceToSideCount.get(price) || { bids: 0, asks: 0 };
+        if (order.isBuy) {
+          entry.bids += 1;
+        } else {
+          entry.asks += 1;
+        }
+        priceToSideCount.set(price, entry);
+      }
+
+      for (const [price, counts] of priceToSideCount.entries()) {
+        state.set(price, {
+          bidUnits: counts.bids,
+          askUnits: counts.asks,
+        });
+      }
+    }
+
+    return state;
+  }, [orderBookData, contractSpecsQuery.data?.data?.minimumPriceIncrement]);
 
   // Create final order book data
   const finalOrderBookData = createFinalOrderBookData(
@@ -46,6 +114,96 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
     hashrateQuery.data as any,
     contractSpecsQuery.data?.data,
   );
+
+  // Add highlighting to final order book data based on price changes
+  const finalOrderBookDataWithHighlights = useMemo(() => {
+    return finalOrderBookData.map((row) => {
+      const highlight = priceHighlights.get(row.price);
+      return {
+        ...row,
+        isHighlighted: !!highlight,
+        highlightColor: highlight?.color,
+      };
+    });
+  }, [finalOrderBookData, priceHighlights]);
+
+  const currentBasePrice = finalOrderBookDataWithHighlights.find((o) => o.isLastHashprice);
+
+  // Auto-scroll to last hashprice row when basePrice (hashprice) updates
+  useEffect(() => {
+    if (!tableContainerRef.current) {
+      return;
+    }
+    if (!finalOrderBookData.length || !currentBasePrice) {
+      return;
+    }
+    if (previousBasePriceRef.current) {
+      return;
+    }
+
+    previousBasePriceRef.current = currentBasePrice.price;
+
+    setTimeout(() => {
+      // Find the last hashprice row index
+      const lastHashpriceIndex = finalOrderBookDataWithHighlights.findIndex((row) => row.isLastHashprice);
+      scrollToOrder(lastHashpriceIndex);
+    }, 100);
+  }, [currentBasePrice, finalOrderBookDataWithHighlights]);
+
+  // Track order book changes and highlight changed prices
+  useEffect(() => {
+    if (!orderBookData.length || !previousOrderBookStateRef.current.size) {
+      // First load or no previous state - just store current state
+      previousOrderBookStateRef.current = new Map(currentOrderBookState);
+      return;
+    }
+
+    const previousState = previousOrderBookStateRef.current;
+    const newHighlights = new Map<number, { color: "red" | "green" }>();
+
+    // Check all prices in current state
+    for (const [price, current] of currentOrderBookState.entries()) {
+      const previous = previousState.get(price);
+
+      if (previous && previous.askUnits == current.askUnits && previous.bidUnits == current.bidUnits) {
+        continue;
+      }
+
+      if (!previous) {
+        if (current.bidUnits > 0) {
+          newHighlights.set(price, { color: "green" });
+        } else if (current.askUnits > 0) {
+          newHighlights.set(price, { color: "red" });
+        }
+        continue;
+      }
+
+      if (current.bidUnits > (previous.bidUnits ?? 0)) {
+        newHighlights.set(price, { color: "green" });
+      }
+
+      if (current.askUnits > (previous.askUnits ?? 0)) {
+        newHighlights.set(price, { color: "red" });
+      }
+    }
+
+    // Update highlights if there are any changes
+    if (newHighlights.size > 0) {
+      setPriceHighlights(newHighlights);
+
+      const firstItemToHightlight = finalOrderBookDataWithHighlights.findIndex(
+        (row) => row.price == newHighlights.keys().next().value,
+      );
+      scrollToOrder(firstItemToHightlight);
+
+      // Clear highlights after 2 seconds
+      setTimeout(() => {
+        setPriceHighlights(new Map());
+      }, 3000);
+    }
+
+    previousOrderBookStateRef.current = new Map(currentOrderBookState);
+  }, [orderBookData, currentOrderBookState]);
 
   // Navigation functions
   const goToPreviousDate = () => {
@@ -58,6 +216,24 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
     if (selectedDateIndex < deliveryDates.length - 1) {
       setSelectedDateIndex(selectedDateIndex + 1);
     }
+  };
+
+  const scrollToOrder = (orderIndex: number) => {
+    setTimeout(() => {
+      if (orderIndex !== -1 && tableContainerRef.current) {
+        const rowHeight = 51.4; // Fixed row height from styles
+
+        // Calculate scroll position to center the row in the viewport
+        // (row index * row height) - (container height / 2) + (row height / 2)
+        const scrollPosition = orderIndex * rowHeight - 5 * rowHeight;
+
+        // Smooth scroll to center the row
+        tableContainerRef.current.scrollTo({
+          top: Math.max(0, scrollPosition),
+          behavior: "smooth",
+        });
+      }
+    }, 100);
   };
 
   // Format delivery date for display
@@ -132,32 +308,34 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
         </button>
       </Header>
 
-      <TableContainer>
+      <TableContainer ref={tableContainerRef}>
         <Table>
           <thead>
             <tr>
-              <th>Buy, units</th>
+              <th>Buy</th>
               <th>Price, USDC</th>
-              <th>Sell, units</th>
+              <th>Sell</th>
             </tr>
           </thead>
           <tbody>
-            {finalOrderBookData.map((row, index) => (
-              <TableRow
-                key={index}
-                $isHighlighted={row.isHighlighted}
-                $highlightColor={row.highlightColor}
-                onClick={() => {
-                  // Use askUnits if available, otherwise bidUnits, otherwise null
-                  const amount = row.askUnits || row.bidUnits || null;
-                  onRowClick?.(row.price, amount);
-                }}
-              >
-                <td>{row.bidUnits || ""}</td>
-                <td>{row.price.toFixed(2)}</td>
-                <td>{row.askUnits || ""}</td>
-              </TableRow>
-            ))}
+            {finalOrderBookDataWithHighlights.map((row, index) => {
+              return (
+                <TableRow
+                  key={index}
+                  $isHighlighted={row.isHighlighted}
+                  $highlightColor={row.highlightColor}
+                  onClick={() => {
+                    // Use askUnits if available, otherwise bidUnits, otherwise null
+                    const amount = row.askUnits || row.bidUnits || null;
+                    onRowClick?.(row.price, amount);
+                  }}
+                >
+                  <td>{row.bidUnits || ""}</td>
+                  <PriceCell $isLastHashprice={row.isLastHashprice}>{row.price.toFixed(2)}</PriceCell>
+                  <td>{row.askUnits || ""}</td>
+                </TableRow>
+              );
+            })}
           </tbody>
         </Table>
       </TableContainer>
@@ -249,6 +427,7 @@ const Table = styled("table")`
     padding: 0.75rem 0.75rem;
     font-size: 1.1rem;
     color: #fff;
+    width: 130px;
     height: 40px; /* Fixed row height for consistent scrolling */
   }
 `;
@@ -268,4 +447,17 @@ const TableRow = styled("tr")<{ $isHighlighted?: boolean; $highlightColor?: "red
   &:last-child {
     border-bottom: none;
   }
+`;
+
+const PriceCell = styled("td")<{ $isLastHashprice?: boolean }>`
+  background-color: ${(props) => (props.$isLastHashprice ? "rgba(59, 130, 246, 0.3)" : "transparent")};
+  font-weight: ${(props) => (props.$isLastHashprice ? "700" : "normal")};
+  border-radius: 4px;
+  
+  ${(props) =>
+    props.$isLastHashprice &&
+    `
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    border: 1px solid rgba(59, 130, 246, 0.6);
+  `}
 `;
