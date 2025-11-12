@@ -56,6 +56,11 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
         }
         return false;
       }
+      var values = form.getValues();
+      if (values.quantity == currentQuantity && values.price == (Number(order.pricePerDay) / 1e6).toFixed(2)) {
+        alert("Please change order terms");
+        return false;
+      }
       return true;
     };
 
