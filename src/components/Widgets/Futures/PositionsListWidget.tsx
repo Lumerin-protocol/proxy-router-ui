@@ -1,4 +1,5 @@
 import styled from "@mui/material/styles/styled";
+import Tooltip from "@mui/material/Tooltip";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
@@ -227,9 +228,11 @@ export const PositionsListWidget = ({
                 <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
                 <td>
                   {groupedPosition.destURL && (
-                    <DestURLCell title={groupedPosition.destURL}>
-                      <ServerStackIcon width={20} height={20} />
-                    </DestURLCell>
+                    <Tooltip title={groupedPosition.destURL}>
+                      <DestURLCell>
+                        <ServerStackIcon width={20} height={20} />
+                      </DestURLCell>
+                    </Tooltip>
                   )}
                 </td>
                 <td>
@@ -344,6 +347,7 @@ const DestURLCell = styled("span")`
   display: inline-block;
   max-width: 200px;
   overflow: hidden;
+  cursor: pointer;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #a7a9b6;

@@ -7,6 +7,7 @@ import { ModalItem } from "../../Modal";
 import { ModifyOrderForm } from "../../Forms/ModifyOrderForm";
 import { CloseOrderForm } from "../../Forms/CloseOrderForm";
 import { ServerStackIcon } from "@heroicons/react/24/outline";
+import Tooltip from "@mui/material/Tooltip";
 
 interface OrdersListWidgetProps {
   orders: ParticipantOrder[];
@@ -151,9 +152,11 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
                 <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
                 <td>
                   {groupedOrder.destURL && (
-                    <DestURLCell title={groupedOrder.destURL}>
-                      <ServerStackIcon width={20} height={20} />
-                    </DestURLCell>
+                    <Tooltip title={groupedOrder.destURL}>
+                      <DestURLCell>
+                        <ServerStackIcon width={20} height={20} />
+                      </DestURLCell>
+                    </Tooltip>
                   )}
                 </td>
                 <td>
@@ -294,6 +297,7 @@ const TypeBadge = styled("span")<{ $type: string }>`
 const DestURLCell = styled("span")`
   display: inline-block;
   max-width: 200px;
+  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
