@@ -26,29 +26,7 @@ const fetchOrderBookAsync = async (deliveryDate: number) => {
 
   const response = await graphqlRequest<OrderBookResponse>(OrderBookQuery, variables);
 
-  // Generate a random mock order
-  const isBuy = Math.random() > 0.5; // Random buy or sell
-  // Price around 4 ± 0.05 (between 3.95 and 4.05 USDC) with 0.01 step increments
-  // In wei: 4.00 USDC = 4000000n, 0.01 USDC = 10000n
-  const basePrice = 4000000n; // 4.00 USDC
-  const stepSize = 10000n; // 0.01 USDC per step
-  // Random steps between -5 and +5 (covering -0.05 to +0.05 in 0.01 increments)
-  const randomSteps = Math.floor(Math.random() * 11) - 5; // Random between -5 and +5
-  const priceVariation = BigInt(randomSteps) * stepSize;
-  const mockPrice = basePrice + priceVariation; // Between 3950000n (3.95) and 4050000n (4.05) in 0.01 steps
-
-  const mock = {
-    id: `mock-order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    pricePerDay: mockPrice,
-    deliveryAt: BigInt(deliveryDate),
-    participant: {
-      address: "0x0000000000000000000000000000000000000000" as `0x${string}`,
-    },
-    isBuy: isBuy,
-    isActive: true,
-  };
-
-  var respOrders = response.orders.map((order) => ({
+  var orders = response.orders.map((order) => ({
     id: order.id,
     pricePerDay: BigInt(order.pricePerDay),
     deliveryAt: BigInt(order.deliveryAt),
@@ -59,13 +37,7 @@ const fetchOrderBookAsync = async (deliveryDate: number) => {
     isActive: order.isActive,
   }));
 
-  const data: OrderBook = {
-    orders: [
-      ...respOrders,
-      // mock
-      // Add mock order
-    ],
-  };
+  const data: OrderBook = { orders };
 
   return {
     data,
