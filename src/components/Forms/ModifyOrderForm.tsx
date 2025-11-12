@@ -1,7 +1,7 @@
 import { memo, useCallback, type FC } from "react";
 import { useForm, useController, type Control } from "react-hook-form";
 import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
-import { TransactionForm } from "./Shared/MultistepForm";
+import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import { useCreateOrder } from "../../hooks/data/useCreateOrder";
 import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
@@ -54,6 +54,11 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
         } else {
           alert("Please fix the form errors");
         }
+        return false;
+      }
+      var values = form.getValues();
+      if (values.quantity == currentQuantity && values.price == (Number(order.pricePerDay) / 1e6).toFixed(2)) {
+        alert("Please change order terms");
         return false;
       }
       return true;
@@ -132,8 +137,7 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
         )}
         resultForm={(props) => (
           <>
-            <h2 className="w-6/6 text-left font-semibold mb-3">Order modified successfully!</h2>
-            <p className="w-6/6 text-left font-normal text-s">
+            <p className="w-6/6 text-left font-normal text-s mt-5">
               Your order has been updated and will appear in the order book shortly.
             </p>
           </>
@@ -151,7 +155,7 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
                 price: order.pricePerDay,
                 deliveryDate: order.deliveryAt,
                 quantity: oppositeQuantity,
-                destUrl: "",
+                destUrl: order.destURL,
               });
 
               return {
@@ -167,13 +171,13 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
             label: "Create New Order",
             action: async () => {
               const formValues = form.getValues();
-              const priceBigInt = BigInt(Math.floor(parseFloat(formValues.price) * 1e6));
+              const priceBigInt = BigInt(Math.round(parseFloat(formValues.price) * 1e6));
               const signedQuantity = getSignedQuantity();
               const txhash = await createOrderAsync({
                 price: priceBigInt,
                 deliveryDate: order.deliveryAt,
                 quantity: signedQuantity,
-                destUrl: "",
+                destUrl: order.destURL,
               });
               return {
                 isSkipped: false,

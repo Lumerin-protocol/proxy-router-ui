@@ -4,7 +4,7 @@ import { useAccount } from "wagmi";
 import { useAddMargin, useApproveAddMargin } from "../../hooks/data/useAddMargin";
 import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
 import { useApproveERC20 } from "../../hooks/data/useApproveERC20";
-import { TransactionForm } from "./Shared/MultistepForm";
+import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import { AmountInputForm } from "./Shared/AmountInputForm";
 import { formatValue, paymentToken } from "../../lib/units";
 import { parseUnits } from "viem";

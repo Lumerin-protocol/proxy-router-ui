@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { colors } from "../../styles/styles.config";
 import { useQueryClient } from "@tanstack/react-query";
-import { TransactionForm } from "./Shared/MultistepForm";
+import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import { useCreateOrder } from "../../hooks/data/useCreateOrder";
 import { useAccount } from "wagmi";
@@ -74,9 +74,7 @@ export const CloseOrderForm: FC<CloseOrderFormProps> = ({ isBuy, pricePerDay, de
       )}
       resultForm={(props) => (
         <>
-          <FontAwesomeIcon className="mb-8" icon={faCheckCircle} size="5x" color={colors["lumerin-aqua"]} />
-          <h2 className="w-6/6 text-left font-semibold mb-3">Order closed successfully!</h2>
-          <p className="w-6/6 text-left font-normal text-s">
+          <p className="w-6/6 text-left font-normal text-s mt-5">
             Your order has been closed and will be removed from the order book shortly.
           </p>
         </>

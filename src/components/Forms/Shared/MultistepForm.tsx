@@ -126,6 +126,96 @@ export const TransactionForm = (props: TransactionFormProps) => {
   );
 };
 
+export const TransactionFormV2 = (props: TransactionFormProps) => {
+  const multistepTx = useMultistepTx({
+    steps: props.transactionSteps,
+  });
+
+  async function handleExecuteTransaction(fromStep = 0) {
+    for (let i = fromStep; i < props.transactionSteps.length; i++) {
+      const success = await multistepTx.executeNextTransaction(i);
+      if (!success) {
+        console.error("transaction failed");
+        return;
+      }
+    }
+  }
+
+  return (
+    <MultistepForm
+      onClose={props.onClose}
+      steps={[
+        ...(props.inputForm
+          ? [
+              {
+                label: props.title,
+                component: (p: StepComponentProps) => (
+                  <>
+                    <p className="mb-2">{props.description}</p>
+                    {typeof props.inputForm === "function" ? props.inputForm!(p) : props.inputForm}
+                    <MultistepFormActions
+                      primary={{
+                        label: "Review",
+                        onClick: async () => {
+                          if (props.validateInput && !(await props.validateInput())) {
+                            return;
+                          }
+                          p.nextStep();
+                        },
+                      }}
+                      secondary={{ label: "Cancel", onClick: () => p.prevStep() }}
+                    />
+                  </>
+                ),
+              },
+            ]
+          : []),
+        {
+          label: props.title,
+          component: (p) => (
+            <>
+              {props.reviewForm(p)}
+              <MultistepFormActions
+                primary={{
+                  label: "Execute",
+                  onClick: async () => {
+                    if (props.validateInput && !(await props.validateInput())) {
+                      return;
+                    }
+                    p.nextStep();
+                    await handleExecuteTransaction();
+                  },
+                }}
+                secondary={{ label: "Back", onClick: () => p.prevStep() }}
+              />
+            </>
+          ),
+        },
+        {
+          label: props.title,
+          component: (p) => (
+            <>
+              <MultipleTransactionProgress
+                steps={props.transactionSteps}
+                txState={multistepTx.txState}
+                onRetry={(stepNumber) => handleExecuteTransaction(stepNumber)}
+              />
+              {multistepTx.isSuccess && props.resultForm!(p)}
+              <MultistepFormActions
+                primary={{
+                  label: multistepTx.isSuccess && props.resultForm ? "Okay" : "Cancel",
+                  onClick: multistepTx.isSuccess && props.resultForm ? () => props.onClose() : () => props.onClose(),
+                  disabled: multistepTx.isPending,
+                }}
+              />
+            </>
+          ),
+        },
+      ]}
+    />
+  );
+};
+
 // TransactionForm.whyDidYouRender = true;
 
 export const MultipleTransactionProgress = (props: {
