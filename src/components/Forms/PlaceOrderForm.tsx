@@ -1,7 +1,7 @@
-import { memo, type FC, useCallback } from "react";
+import { memo, type FC, useCallback, useState } from "react";
 import { useForm, useController, type Control } from "react-hook-form";
 import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
-import { TransactionForm } from "./Shared/MultistepForm";
+import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import { useCreateOrder } from "../../hooks/data/useCreateOrder";
 import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
@@ -33,6 +33,9 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
   // Determine order type from quantity sign
   const isBuy = quantity > 0;
   const absoluteQuantity = Math.abs(quantity);
+
+  // State for checkbox to show pool input form
+  const [hidePoolInput, setHidePoolInput] = useState(true);
 
   // Form setup for pool address and username (optional for buy orders)
   const form = useForm<PoolFormValues>({
@@ -85,9 +88,8 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
       onClose={closeForm}
       title={isBuy ? "Place Buy Order" : "Place Sell Order"}
       description={""}
-      inputForm={isBuy ? inputForm : undefined}
       validateInput={
-        isBuy
+        isBuy && !hidePoolInput
           ? async () => {
               const result = await form.trigger();
               return result;
@@ -119,28 +121,22 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
                 <span className="text-gray-300">Total Value:</span>
                 <span className="text-white">{((Number(price) / 1e6) * absoluteQuantity).toFixed(2)} USDC</span>
               </div>
-              {isBuy &&
-                (() => {
-                  const formValues = form.getValues();
-                  return (
-                    <>
-                      {formValues.poolAddress && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-300">Pool Address:</span>
-                          <span className="text-white">{formValues.poolAddress}</span>
-                        </div>
-                      )}
-                      {formValues.username && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-300">Username:</span>
-                          <span className="text-white">{formValues.username}</span>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
             </div>
           </div>
+          {isBuy && (
+            <div className="mb-4">
+              <CheckboxContainer>
+                <CheckboxInput
+                  type="checkbox"
+                  id="no-hashrate-checkbox"
+                  checked={hidePoolInput}
+                  onChange={(e) => setHidePoolInput(e.target.checked)}
+                />
+                <CheckboxLabel htmlFor="no-hashrate-checkbox">I do not intend to receive hashrate.</CheckboxLabel>
+              </CheckboxContainer>
+              {!hidePoolInput && <div className="mt-4">{inputForm()}</div>}
+            </div>
+          )}
           <p className="text-gray-400 text-sm">
             You are about to place a {isBuy ? "buy" : "sell"} order. Please review the details above.
           </p>
@@ -148,8 +144,7 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
       )}
       resultForm={(props) => (
         <>
-          <h2 className="w-6/6 text-left font-semibold mb-3">Order created successfully!</h2>
-          <p className="w-6/6 text-left font-normal text-s">
+          <p className="w-6/6 text-left font-normal text-s mt-5">
             Your order has been placed and will appear in the order book shortly.
           </p>
         </>
@@ -231,6 +226,37 @@ const ErrorText = styled("span")`
   color: #ef4444;
   font-size: 0.75rem;
   margin-top: -0.25rem;
+`;
+
+const CheckboxContainer = styled("div")`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+`;
+
+const CheckboxInput = styled("input")`
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #509EBA;
+`;
+
+const CheckboxLabel = styled("label")`
+  font-size: 0.875rem;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
 `;
 
 // Separate memoized component to prevent input focus loss

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useAccount } from "wagmi";
 import { useRemoveMargin } from "../../hooks/data/useRemoveMargin";
 import { useGetFutureBalance } from "../../hooks/data/useGetFutureBalance";
-import { TransactionForm } from "./Shared/MultistepForm";
+import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import { AmountInputForm } from "./Shared/AmountInputForm";
 import { formatValue, paymentToken } from "../../lib/units";
 import { parseUnits } from "viem";
