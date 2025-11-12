@@ -4,6 +4,7 @@ import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
 import { ParticipantPosition } from "../../../hooks/data/useParticipant";
 import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { ServerStackIcon } from "@heroicons/react/24/outline";
 
 interface PositionsListWidgetProps {
   positions: PositionBookPosition[];
@@ -145,6 +146,7 @@ export const PositionsListWidget = ({
           pricePerDay: position.pricePerDay,
           deliveryAt: position.deliveryAt,
           positionType: positionType,
+          destURL: position.destURL,
           amount: 0,
           isActive: position.isActive,
           closedAt: position.closedAt,
@@ -163,6 +165,7 @@ export const PositionsListWidget = ({
         pricePerDay: bigint;
         deliveryAt: string;
         positionType: string;
+        destURL: string;
         amount: number;
         isActive: boolean;
         closedAt: string | null;
@@ -197,6 +200,7 @@ export const PositionsListWidget = ({
               <th>Amount</th>
               <th>PnL</th>
               <th>Start Time</th>
+              <th>Destination</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -221,6 +225,13 @@ export const PositionsListWidget = ({
                   })()}
                 </td>
                 <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
+                <td>
+                  {groupedPosition.destURL && (
+                    <DestURLCell title={groupedPosition.destURL}>
+                      <ServerStackIcon width={20} height={20} />
+                    </DestURLCell>
+                  )}
+                </td>
                 <td>
                   {groupedPosition.isActive && !groupedPosition.closedAt && (
                     <CloseButton
@@ -327,6 +338,16 @@ const TypeBadge = styled("span")<{ $type: string }>`
 const PnLCell = styled("span")<{ $isPositive: boolean }>`
   color: ${(props) => (props.$isPositive ? "#22c55e" : "#ef4444")};
   font-weight: 600;
+`;
+
+const DestURLCell = styled("span")`
+  display: inline-block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #a7a9b6;
+  font-size: 0.875rem;
 `;
 
 const StatusBadge = styled("span")<{ $status: string }>`
