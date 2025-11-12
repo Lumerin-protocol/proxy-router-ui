@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { TabSwitch } from "../../TabSwitch";
@@ -26,13 +26,29 @@ export const OrdersPositionsTabWidget = ({
 }: OrdersPositionsTabWidgetProps) => {
   const [activeTab, setActiveTab] = useState<"ORDERS" | "POSITIONS">("ORDERS");
 
+  const ordersCount = useMemo(() => {
+    const unique = new Set<string>();
+    orders.forEach((order) => {
+      unique.add(`${order.deliveryAt.toString()}_${order.pricePerDay.toString()}`);
+    });
+    return unique.size;
+  }, [orders]);
+
+  const positionsCount = useMemo(() => {
+    const unique = new Set<string>();
+    positions.forEach((p) => {
+      unique.add(`${p.deliveryAt.toString()}_${p.pricePerDay.toString()}`);
+    });
+    return unique.size;
+  }, [positions]);
+
   return (
     <TabContainer>
       <Header>
         <TabSwitch
           values={[
-            { text: "Open Orders", value: "ORDERS", count: orders.length },
-            { text: "Positions", value: "POSITIONS", count: positions.length },
+            { text: "Orders", value: "ORDERS", count: ordersCount },
+            { text: "Positions", value: "POSITIONS", count: positionsCount },
           ]}
           value={activeTab}
           setValue={setActiveTab}

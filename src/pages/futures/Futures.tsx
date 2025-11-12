@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { type FC, useState, useRef } from "react";
 import { useAccount } from "wagmi";
 import { FuturesBalanceWidget } from "../../components/Widgets/Futures/FuturesBalanceWidget";
 import { FuturesMarketWidget } from "../../components/Widgets/Futures/FuturesMarketWidget";
@@ -26,6 +26,11 @@ export const Futures: FC = () => {
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<number | undefined>();
   const [selectedIsBuy, setSelectedIsBuy] = useState<boolean | undefined>();
   const [highlightTrigger, setHighlightTrigger] = useState(0);
+
+  // Track previous order book state for change detection
+  const previousOrderBookStateRef = useRef<Map<number, { bidUnits: number | null; askUnits: number | null }>>(
+    new Map(),
+  );
 
   const handleOrderBookClick = (price: number, amount: number | null) => {
     setSelectedPrice(price.toString());
@@ -80,6 +85,7 @@ export const Futures: FC = () => {
               onRowClick={handleOrderBookClick}
               onDeliveryDateChange={handleDeliveryDateChange}
               contractSpecsQuery={contractSpecsQuery}
+              previousOrderBookStateRef={previousOrderBookStateRef}
             />
           </div>
         </div>

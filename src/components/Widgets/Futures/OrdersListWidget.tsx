@@ -6,6 +6,8 @@ import { useModal } from "../../../hooks/useModal";
 import { ModalItem } from "../../Modal";
 import { ModifyOrderForm } from "../../Forms/ModifyOrderForm";
 import { CloseOrderForm } from "../../Forms/CloseOrderForm";
+import { ServerStackIcon } from "@heroicons/react/24/outline";
+import Tooltip from "@mui/material/Tooltip";
 
 interface OrdersListWidgetProps {
   orders: ParticipantOrder[];
@@ -78,6 +80,7 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
           isBuy: order.isBuy,
           pricePerDay: order.pricePerDay,
           deliveryAt: order.deliveryAt,
+          destURL: order.destURL,
           amount: 0,
           isActive: order.isActive,
           closedAt: order.closedAt,
@@ -97,6 +100,7 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
         isBuy: boolean;
         pricePerDay: bigint;
         deliveryAt: bigint;
+        destURL: string;
         amount: number;
         isActive: boolean;
         closedAt: string | null;
@@ -131,6 +135,7 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
               <th>Price</th>
               <th>Amount</th>
               <th>Delivery Date</th>
+              <th>Destination</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -145,6 +150,15 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
                 <td>{formatPrice(groupedOrder.pricePerDay)} USDC</td>
                 <td>{groupedOrder.amount}</td>
                 <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
+                <td>
+                  {groupedOrder.destURL && (
+                    <Tooltip title={groupedOrder.destURL}>
+                      <DestURLCell>
+                        <ServerStackIcon width={20} height={20} />
+                      </DestURLCell>
+                    </Tooltip>
+                  )}
+                </td>
                 <td>
                   {groupedOrder.isActive && !groupedOrder.closedAt && (
                     <ActionButtons>
@@ -278,6 +292,17 @@ const TypeBadge = styled("span")<{ $type: string }>`
   font-weight: 600;
   background-color: ${(props) => (props.$type === "Long" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)")};
   color: ${(props) => (props.$type === "Long" ? "#22c55e" : "#ef4444")};
+`;
+
+const DestURLCell = styled("span")`
+  display: inline-block;
+  max-width: 200px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #a7a9b6;
+  font-size: 0.875rem;
 `;
 
 const StatusBadge = styled("span")<{ $status: string }>`

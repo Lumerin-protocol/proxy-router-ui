@@ -36,12 +36,14 @@ const fetchParticipantAsync = async (
     orderLimit?: number;
   },
 ) => {
+  const now = Math.floor(Date.now() / 1000);
   const variables = {
     participantAddress,
     posOffset: props?.posOffset || 0,
     posLimit: props?.posLimit || 100,
     orderOffset: props?.orderOffset || 0,
     orderLimit: props?.orderLimit || 100,
+    now,
   };
 
   const response = await graphqlRequest<ParticipantResponse>(ParticipantQuery, variables);
@@ -68,6 +70,7 @@ const fetchParticipantAsync = async (
       pricePerDay: BigInt(position.pricePerDay),
       isActive: position.isActive,
       id: position.id,
+      destURL: position.destURL,
       closedBy: position.closedBy,
       closedAt: position.closedAt,
       buyer: {
@@ -84,6 +87,7 @@ const fetchParticipantAsync = async (
       id: order.id,
       isActive: order.isActive,
       isBuy: order.isBuy,
+      destURL: order.destURL,
       participant: {
         address: order.participant.address,
       },
@@ -136,6 +140,7 @@ export type ParticipantPosition = {
   deliveryAt: string;
   pricePerDay: bigint;
   isActive: boolean;
+  destURL: string;
   id: string;
   closedBy: string | null;
   closedAt: string | null;
@@ -154,6 +159,7 @@ export type ParticipantOrder = {
   id: string;
   isActive: boolean;
   isBuy: boolean;
+  destURL: string;
   participant: {
     address: `0x${string}`;
   };
@@ -182,6 +188,7 @@ type ParticipantResponse = {
       deliveryAt: string;
       pricePerDay: string;
       isActive: boolean;
+      destURL: string;
       id: string;
       closedBy: string | null;
       closedAt: string | null;
@@ -196,6 +203,7 @@ type ParticipantResponse = {
       closedAt: string | null;
       closedBy: string | null;
       deliveryAt: string;
+      destURL: string;
       id: string;
       isActive: boolean;
       isBuy: boolean;

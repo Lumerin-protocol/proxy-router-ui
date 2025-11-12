@@ -13,16 +13,19 @@ interface OrderBookTableProps {
   onRowClick?: (price: number, amount: number | null) => void;
   onDeliveryDateChange?: (deliveryDate: number | undefined) => void;
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
+  previousOrderBookStateRef: React.MutableRefObject<Map<number, { bidUnits: number | null; askUnits: number | null }>>;
 }
 
-export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecsQuery }: OrderBookTableProps) => {
+export const OrderBookTable = ({
+  onRowClick,
+  onDeliveryDateChange,
+  contractSpecsQuery,
+  previousOrderBookStateRef,
+}: OrderBookTableProps) => {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   // Track previous basePrice to detect changes
   const previousBasePriceRef = useRef<number | null>(null);
-  const previousOrderBookStateRef = useRef<Map<number, { bidUnits: number | null; askUnits: number | null }>>(
-    new Map(),
-  );
   const [priceHighlights, setPriceHighlights] = useState<Map<number, { color: "red" | "green" }>>(new Map());
 
   const { data: deliveryDatesRaw, isLoading, isError } = useGetDeliveryDates();
@@ -58,14 +61,16 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
     } else {
       onDeliveryDateChange?.(undefined);
     }
-    // Reset highlights and previous state when delivery date changes
-    setPriceHighlights(new Map());
-    previousOrderBookStateRef.current = new Map();
-  }, [selectedDeliveryDate, onDeliveryDateChange]);
+  }, [selectedDeliveryDate]);
 
   // Fetch order book for selected delivery date
-  const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true });
+  const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true, interval: 15000 });
   const orderBookData = orderBookQuery.data?.data?.orders || [];
+
+  useEffect(() => {
+    previousOrderBookStateRef.current = new Map();
+    orderBookQuery.refetch();
+  }, [selectedDateIndex]);
 
   // Helper function to normalize price
   const normalizePrice = (price: number, minimumPriceIncrement: number | null): number => {
@@ -82,31 +87,24 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
       ? Number(contractSpecsQuery.data.data.minimumPriceIncrement) / 1e6
       : null;
 
-    if (orderBookData && orderBookData.length > 0) {
-      const priceToSideCount = new Map<number, { bids: number; asks: number }>();
+    if (!orderBookData || orderBookData.length <= 0) {
+      return state;
+    }
 
-      for (const order of orderBookData) {
-        const rawPrice = Number(order.pricePerDay) / 1e6;
-        const price = normalizePrice(rawPrice, minimumPriceIncrement);
-        const entry = priceToSideCount.get(price) || { bids: 0, asks: 0 };
-        if (order.isBuy) {
-          entry.bids += 1;
-        } else {
-          entry.asks += 1;
-        }
-        priceToSideCount.set(price, entry);
+    for (const order of orderBookData) {
+      const rawPrice = Number(order.pricePerDay) / 1e6;
+      const price = normalizePrice(rawPrice, minimumPriceIncrement);
+      const entry = state.get(price) || { bidUnits: 0, askUnits: 0 };
+      if (order.isBuy) {
+        entry.bidUnits += 1;
+      } else {
+        entry.askUnits += 1;
       }
-
-      for (const [price, counts] of priceToSideCount.entries()) {
-        state.set(price, {
-          bidUnits: counts.bids,
-          askUnits: counts.asks,
-        });
-      }
+      state.set(price, entry);
     }
 
     return state;
-  }, [orderBookData, contractSpecsQuery.data?.data?.minimumPriceIncrement]);
+  }, [orderBookData]);
 
   // Create final order book data
   const finalOrderBookData = createFinalOrderBookData(
@@ -152,13 +150,14 @@ export const OrderBookTable = ({ onRowClick, onDeliveryDateChange, contractSpecs
 
   // Track order book changes and highlight changed prices
   useEffect(() => {
-    if (!orderBookData.length || !previousOrderBookStateRef.current.size) {
+    const previousState = previousOrderBookStateRef.current;
+
+    if (!orderBookData.length || !previousState.size) {
       // First load or no previous state - just store current state
       previousOrderBookStateRef.current = new Map(currentOrderBookState);
       return;
     }
 
-    const previousState = previousOrderBookStateRef.current;
     const newHighlights = new Map<number, { color: "red" | "green" }>();
 
     // Check all prices in current state

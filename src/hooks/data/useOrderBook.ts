@@ -7,12 +7,13 @@ import { OrderBookQuery } from "./graphql-queries";
 
 export const ORDER_BOOK_QK = "OrderBook";
 
-export const useOrderBook = (deliveryDate: number | undefined, props?: { refetch?: boolean }) => {
+export const useOrderBook = (deliveryDate: number | undefined, props?: { refetch?: boolean; interval?: number }) => {
   const query = useQuery({
     queryKey: [ORDER_BOOK_QK],
     queryFn: () => fetchOrderBookAsync(deliveryDate!),
     enabled: !!deliveryDate,
-    ...(props?.refetch ? backgroundRefetchOpts : {}),
+    refetchInterval: props?.interval ?? 10000,
+    refetchIntervalInBackground: true,
   });
 
   return query;
@@ -25,18 +26,18 @@ const fetchOrderBookAsync = async (deliveryDate: number) => {
 
   const response = await graphqlRequest<OrderBookResponse>(OrderBookQuery, variables);
 
-  const data: OrderBook = {
-    orders: response.orders.map((order) => ({
-      id: order.id,
-      pricePerDay: BigInt(order.pricePerDay),
-      deliveryAt: BigInt(order.deliveryAt),
-      participant: {
-        address: order.participant.address,
-      },
-      isBuy: order.isBuy,
-      isActive: order.isActive,
-    })),
-  };
+  var orders = response.orders.map((order) => ({
+    id: order.id,
+    pricePerDay: BigInt(order.pricePerDay),
+    deliveryAt: BigInt(order.deliveryAt),
+    participant: {
+      address: order.participant.address,
+    },
+    isBuy: order.isBuy,
+    isActive: order.isActive,
+  }));
+
+  const data: OrderBook = { orders };
 
   return {
     data,
