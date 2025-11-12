@@ -32,6 +32,7 @@ const fetchPositionBookAsync = async (address: `0x${string}`) => {
       deliveryAt: position.deliveryAt,
       pricePerDay: BigInt(position.pricePerDay),
       isActive: position.isActive,
+      destURL: position.destURL,
       id: position.id,
       closedBy: position.closedBy,
       closedAt: position.closedAt,
@@ -84,6 +85,7 @@ export type PositionBookPosition = {
   isActive: boolean;
   id: string;
   closedBy: string | null;
+  destURL: string,
   closedAt: string | null;
   buyer: {
     address: `0x${string}`;
@@ -107,6 +109,7 @@ type PositionBookResponse = {
     pricePerDay: string;
     isActive: boolean;
     id: string;
+    destURL: string,
     closedBy: string | null;
     closedAt: string | null;
     buyer: {

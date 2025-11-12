@@ -22,6 +22,7 @@ export const ParticipantQuery = gql`
         timestamp
         deliveryAt
         pricePerDay
+        destURL
         isActive
         id
         closedBy
@@ -38,6 +39,7 @@ export const ParticipantQuery = gql`
         closedBy
         deliveryAt
         id
+        destURL
         isActive
         isBuy
         participant {
@@ -76,6 +78,7 @@ export const PositionsBookQuery = gql`
     id
     closedBy
     closedAt
+    destURL
     buyer {
       address
     }
