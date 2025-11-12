@@ -36,12 +36,14 @@ const fetchParticipantAsync = async (
     orderLimit?: number;
   },
 ) => {
+  const now = Math.floor(Date.now() / 1000);
   const variables = {
     participantAddress,
     posOffset: props?.posOffset || 0,
     posLimit: props?.posLimit || 100,
     orderOffset: props?.orderOffset || 0,
     orderLimit: props?.orderLimit || 100,
+    now,
   };
 
   const response = await graphqlRequest<ParticipantResponse>(ParticipantQuery, variables);

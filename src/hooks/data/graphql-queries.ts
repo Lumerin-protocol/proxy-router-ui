@@ -7,6 +7,7 @@ export const ParticipantQuery = gql`
     $posLimit: Int!
     $orderOffset: Int!
     $orderLimit: Int!
+    $now: BigInt!
   ) {
     participant(id: $participantAddress) {
       address
@@ -16,7 +17,7 @@ export const ParticipantQuery = gql`
       totalDeposited
       totalVolume
       totalWithdrawn
-      positions(where: { isActive: true }, first: $posLimit, skip: $posOffset, orderBy: timestamp, orderDirection: desc) {
+      positions(where: { isActive: true, deliveryAt_gt: $now }, first: $posLimit, skip: $posOffset, orderBy: timestamp, orderDirection: desc) {
         transactionHash
         timestamp
         deliveryAt
@@ -32,7 +33,7 @@ export const ParticipantQuery = gql`
           address
         }
       }
-      orders(where: { isActive: true }, first: $orderLimit, skip: $orderOffset, orderBy: timestamp, orderDirection: desc) {
+      orders(where: { isActive: true, deliveryAt_gt: $now }, first: $orderLimit, skip: $orderOffset, orderBy: timestamp, orderDirection: desc) {
         closedAt
         closedBy
         deliveryAt

@@ -7,12 +7,13 @@ import { OrderBookQuery } from "./graphql-queries";
 
 export const ORDER_BOOK_QK = "OrderBook";
 
-export const useOrderBook = (deliveryDate: number | undefined, props?: { refetch?: boolean }) => {
+export const useOrderBook = (deliveryDate: number | undefined, props?: { refetch?: boolean; interval?: number }) => {
   const query = useQuery({
     queryKey: [ORDER_BOOK_QK],
     queryFn: () => fetchOrderBookAsync(deliveryDate!),
     enabled: !!deliveryDate,
-    ...(props?.refetch ? backgroundRefetchOpts : {}),
+    refetchInterval: props?.interval ?? 10000,
+    refetchIntervalInBackground: true,
   });
 
   return query;
