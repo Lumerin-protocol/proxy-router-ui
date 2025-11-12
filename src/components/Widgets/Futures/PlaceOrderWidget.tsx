@@ -160,7 +160,7 @@ export const PlaceOrderWidget = ({
 
     // Validate balance for buy orders
     const currentPrice = parseFloat(price);
-    const totalOrderValue = BigInt(Math.floor(currentPrice * 1e6)) * BigInt(amount);
+    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount);
     const balance = balanceQuery.data ?? 0n;
 
     if (totalOrderValue > balance) {
@@ -299,7 +299,7 @@ export const PlaceOrderWidget = ({
           }}
         >
           <PlaceOrderForm
-            price={BigInt(Math.floor(pendingOrder.price * 1e6))}
+            price={BigInt(Math.round(pendingOrder.price * 1e6))}
             deliveryDate={BigInt(externalDeliveryDate)}
             quantity={pendingOrder.quantity}
             closeForm={() => {

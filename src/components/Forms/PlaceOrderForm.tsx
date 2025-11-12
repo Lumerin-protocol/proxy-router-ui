@@ -171,7 +171,6 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
             };
           },
           postConfirmation: async (receipt: TransactionReceipt) => {
-            debugger;
             // Wait for block number to ensure indexer has updated
             await waitForBlockNumber(receipt.blockNumber, qc);
 
