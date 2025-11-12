@@ -148,7 +148,7 @@ export const PlaceOrderWidget = ({
       const snappedValue = snapToStep(numValue);
       setPrice(snappedValue.toFixed(2));
     } else {
-      setPrice(value);
+      setPrice("1.00");
     }
   };
 
@@ -242,12 +242,13 @@ export const PlaceOrderWidget = ({
                   −
                 </PriceButton>
                 <input
-                  type="number"
+                  type="text"
                   value={price}
                   placeholder="5.00"
                   onChange={(e) => handlePriceChange(e.target.value)}
                   step={priceStep}
                   min="1"
+                  inputMode={"decimal"}
                 />
                 <PriceButton onClick={incrementPrice} disabled={showOrderForm}>
                   +
