@@ -61,11 +61,16 @@ export const OrderBookTable = ({
     } else {
       onDeliveryDateChange?.(undefined);
     }
-  }, [selectedDeliveryDate, onDeliveryDateChange]);
+  }, [selectedDeliveryDate]);
 
   // Fetch order book for selected delivery date
   const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true, interval: 15000 });
   const orderBookData = orderBookQuery.data?.data?.orders || [];
+
+  useEffect(() => {
+    previousOrderBookStateRef.current = new Map();
+    orderBookQuery.refetch();
+  }, [selectedDateIndex]);
 
   // Helper function to normalize price
   const normalizePrice = (price: number, minimumPriceIncrement: number | null): number => {
@@ -203,14 +208,12 @@ export const OrderBookTable = ({
   const goToPreviousDate = () => {
     if (selectedDateIndex > 0) {
       setSelectedDateIndex(selectedDateIndex - 1);
-      previousOrderBookStateRef.current = new Map();
     }
   };
 
   const goToNextDate = () => {
     if (selectedDateIndex < deliveryDates.length - 1) {
       setSelectedDateIndex(selectedDateIndex + 1);
-      previousOrderBookStateRef.current = new Map();
     }
   };
 
