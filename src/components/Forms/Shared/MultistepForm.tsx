@@ -223,6 +223,7 @@ export const MultipleTransactionProgress = (props: {
   txState: Record<number, TxState>;
   onRetry: (txNumber: number) => void;
 }) => {
+  const [showError, useShowError] = useState(false);
   return (
     <div>
       <Alert severity="warning" sx={{ margin: "0 0 1em 0" }}>
@@ -240,6 +241,17 @@ export const MultipleTransactionProgress = (props: {
                   Retry
                 </RetryButton>
               )}
+              {tx.error && (
+                <RetryButton
+                  style={{ padding: "0 10px" }}
+                  size="small"
+                  type="button"
+                  color="error"
+                  onClick={() => useShowError(!showError)}
+                >
+                  {showError ? "Hide" : "Show"} Details
+                </RetryButton>
+              )}
             </StepProgressRow>
             {tx.txhash && (
               <StepTxHash>
@@ -249,7 +261,8 @@ export const MultipleTransactionProgress = (props: {
                 </TxLink>
               </StepTxHash>
             )}
-            {tx.error && <StepError>{mapErrorToString(tx.error)}</StepError>}
+            {tx.error && showError && <StepError>{mapErrorToString(tx.error)}</StepError>}
+            {tx.error && !showError && <StepError>Oops! Something went wrong. Please try again.</StepError>}
           </StepStyled>
         ))}
       </Steps>

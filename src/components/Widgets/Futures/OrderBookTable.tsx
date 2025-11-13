@@ -10,7 +10,7 @@ import type { GetResponse } from "../../../gateway/interfaces";
 import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface OrderBookTableProps {
-  onRowClick?: (price: number, amount: number | null) => void;
+  onRowClick?: (price: string, amount: number | null) => void;
   onDeliveryDateChange?: (deliveryDate: number | undefined) => void;
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
   previousOrderBookStateRef: React.MutableRefObject<Map<number, { bidUnits: number | null; askUnits: number | null }>>;
@@ -326,7 +326,7 @@ export const OrderBookTable = ({
                   onClick={() => {
                     // Use askUnits if available, otherwise bidUnits, otherwise null
                     const amount = row.askUnits || row.bidUnits || null;
-                    onRowClick?.(row.price, amount);
+                    onRowClick?.(row.price.toFixed(2), amount);
                   }}
                 >
                   <td>{row.bidUnits || ""}</td>

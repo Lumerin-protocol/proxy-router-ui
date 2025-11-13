@@ -1,8 +1,9 @@
-import { type FC, useCallback, useState } from "react";
+import { type FC, useCallback, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useAccount } from "wagmi";
 import { useRemoveMargin } from "../../hooks/data/useRemoveMargin";
 import { useGetFutureBalance } from "../../hooks/data/useGetFutureBalance";
+import { useGetMarginShortfall } from "../../hooks/data/useGetMarginShortfall";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import { AmountInputForm } from "./Shared/AmountInputForm";
 import { formatValue, paymentToken } from "../../lib/units";
@@ -20,6 +21,24 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
   const { address } = useAccount();
   const { removeMarginAsync, isPending } = useRemoveMargin();
   const futureBalance = useGetFutureBalance(address);
+  const marginShortfall = useGetMarginShortfall(address);
+
+  // Calculate available balance: balance - shortfall (shortfall is locked amount)
+  // getMarginShortfall returns int256, where positive values represent locked amount
+  const lockedAmount = useMemo(() => {
+    const shortfall = marginShortfall.data;
+    // If shortfall is positive, it's the locked amount. If negative or zero, no shortfall.
+    return shortfall && shortfall > 0n ? shortfall : 0n;
+  }, [marginShortfall.data]);
+
+  const availableBalance = useMemo(() => {
+    if (!futureBalance.data) return undefined;
+    const balance = futureBalance.data;
+
+    // Available balance is balance minus locked amount
+    const available = balance > lockedAmount ? balance - lockedAmount : 0n;
+    return available;
+  }, [futureBalance.data, lockedAmount]);
 
   const form = useForm<InputValues>({
     mode: "onBlur",
@@ -33,22 +52,48 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
 
   const validateBalance = useCallback(
     (value: string): string | true => {
-      if (!futureBalance.data) {
+      if (!futureBalance.data || availableBalance === undefined) {
         return "Unable to fetch balance. Please try again.";
       }
       const amountBigInt = parseUnits(value, paymentToken.decimals);
-      if (amountBigInt > futureBalance.data) {
-        const balanceFormatted = formatValue(futureBalance.data, paymentToken).valueRounded;
+      if (amountBigInt > availableBalance) {
+        const balanceFormatted = formatValue(availableBalance, paymentToken).valueRounded;
         return `Insufficient balance. Available: ${balanceFormatted} ${paymentToken.symbol}`;
       }
       return true;
     },
-    [futureBalance.data],
+    [futureBalance.data, availableBalance],
   );
 
   const inputForm = useCallback(
-    () => <AmountInputForm control={form.control} label="Withdrawal Amount" additionalValidate={validateBalance} />,
-    [form.control, validateBalance],
+    () => (
+      <div className="space-y-4">
+        <AmountInputForm control={form.control} label="Withdrawal Amount" additionalValidate={validateBalance} />
+        <div className="p-4 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-gray-300">Total balance:</span>
+            <span className="text-white font-medium">
+              {futureBalance.data ? formatValue(futureBalance.data, paymentToken).valueRounded : "0"}{" "}
+              {paymentToken.symbol}
+            </span>
+          </div>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-gray-300">Locked amount:</span>
+            <span className="text-white font-medium">
+              {formatValue(lockedAmount, paymentToken).valueRounded} {paymentToken.symbol}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300">Available balance:</span>
+            <span className="text-white font-medium">
+              {availableBalance !== undefined ? formatValue(availableBalance, paymentToken).valueRounded : "0"}{" "}
+              {paymentToken.symbol}
+            </span>
+          </div>
+        </div>
+      </div>
+    ),
+    [form.control, validateBalance, futureBalance.data, lockedAmount, availableBalance],
   );
 
   const validateInput = useCallback(async () => {
@@ -62,7 +107,7 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
     }
 
     // Check if balance is available
-    if (!futureBalance.data) {
+    if (!futureBalance.data || availableBalance === undefined) {
       form.setError("amount", {
         type: "validation",
         message: "Unable to fetch balance. Please try again.",
@@ -70,10 +115,10 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
       return false;
     }
 
-    // Validate that amount doesn't exceed balance
+    // Validate that amount doesn't exceed available balance (balance - shortfall)
     const amountBigInt = parseUnits(amountValue, paymentToken.decimals);
-    if (amountBigInt > futureBalance.data) {
-      const balanceFormatted = formatValue(futureBalance.data, paymentToken).valueRounded;
+    if (amountBigInt > availableBalance) {
+      const balanceFormatted = formatValue(availableBalance, paymentToken).valueRounded;
       form.setError("amount", {
         type: "validation",
         message: `Insufficient balance. Available: ${balanceFormatted} ${paymentToken.symbol}`,
@@ -83,7 +128,7 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
 
     setAmount(amountValue);
     return true;
-  }, [form, futureBalance.data]);
+  }, [form, futureBalance.data, availableBalance]);
 
   const reviewForm = useCallback(
     () => (
@@ -98,14 +143,14 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
           <div className="flex justify-between items-center">
             <span className="text-gray-300">Available balance:</span>
             <span className="text-white font-medium">
-              {futureBalance.data ? formatValue(futureBalance.data, paymentToken).valueRounded : "0"}{" "}
+              {availableBalance !== undefined ? formatValue(availableBalance, paymentToken).valueRounded : "0"}{" "}
               {paymentToken.symbol}
             </span>
           </div>
         </div>
       </div>
     ),
-    [amount, futureBalance.data],
+    [amount, availableBalance],
   );
 
   const transactionSteps = [
