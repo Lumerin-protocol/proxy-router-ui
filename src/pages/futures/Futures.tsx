@@ -32,8 +32,8 @@ export const Futures: FC = () => {
     new Map(),
   );
 
-  const handleOrderBookClick = (price: number, amount: number | null) => {
-    setSelectedPrice(price.toString());
+  const handleOrderBookClick = (price: string, amount: number | null) => {
+    setSelectedPrice(price);
     setSelectedAmount(amount ? amount : undefined);
   };
 
