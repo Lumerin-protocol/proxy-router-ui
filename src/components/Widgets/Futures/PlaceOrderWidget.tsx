@@ -42,6 +42,9 @@ export const PlaceOrderWidget = ({
     ? Number(contractSpecsQuery.data.data.minimumPriceIncrement) / 1e6
     : null;
 
+  // Get delivery duration days from contract specs
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+
   // Get newest item price for validation and default price
   const newestItemPrice =
     hashrateQuery.data && hashrateQuery.data.length > 0 ? Number(hashrateQuery.data[0].priceToken) / 1e6 : null;
@@ -163,11 +166,11 @@ export const PlaceOrderWidget = ({
 
     // Validate balance for buy orders
     const currentPrice = parseFloat(price);
-    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount);
+    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount) * BigInt(deliveryDurationDays);
     const balance = balanceQuery.data ?? 0n;
 
     if (totalOrderValue > balance) {
-      alert("Insufficient funds");
+      alert(`Insufficient funds. Required: ${totalOrderValue / BigInt(10 ** 6)} USDC`);
       return;
     }
 
@@ -213,7 +216,15 @@ export const PlaceOrderWidget = ({
       return;
     }
 
+    // Validate balance for sell orders
     const currentPrice = parseFloat(price);
+    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount) * BigInt(deliveryDurationDays);
+    const balance = balanceQuery.data ?? 0n;
+
+    if (totalOrderValue > balance) {
+      alert(`Insufficient funds. Required: ${totalOrderValue / BigInt(10 ** 6)} USDC`);
+      return;
+    }
 
     // Check for conflicting orders (opposite action, same price, same delivery date)
     if (participantData?.orders) {
@@ -280,7 +291,7 @@ export const PlaceOrderWidget = ({
         <MainSection>
           <InputSection>
             <InputGroup>
-              <label>Price, USDC (Step: {priceStep.toFixed(2)})</label>
+              <label>Price per day, USDC</label>
               <PriceInputContainer>
                 <PriceButton onClick={decrementPrice} disabled={showOrderForm}>
                   −
@@ -328,6 +339,7 @@ export const PlaceOrderWidget = ({
           pendingOrder={pendingOrder}
           newestItemPrice={newestItemPrice}
           highPricePercentage={highPricePercentage}
+          contractSpecsQuery={contractSpecsQuery}
           onConfirm={handleConfirmHighPrice}
           onCancel={handleCancelHighPrice}
         />
@@ -363,12 +375,14 @@ const HighPriceConfirmationModal = ({
   pendingOrder,
   newestItemPrice,
   highPricePercentage,
+  contractSpecsQuery,
   onConfirm,
   onCancel,
 }: {
   pendingOrder: { price: number; amount: number; quantity: number } | null;
   newestItemPrice: number;
   highPricePercentage: number;
+  contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
   onConfirm: () => void;
   onCancel: () => void;
 }) => {
@@ -376,6 +390,7 @@ const HighPriceConfirmationModal = ({
 
   const percentageOver = ((pendingOrder.price / newestItemPrice) * 100).toFixed(1);
   const isBuy = pendingOrder.quantity > 0;
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
 
   return (
     <div className="space-y-6">
@@ -418,7 +433,9 @@ const HighPriceConfirmationModal = ({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Total Value:</span>
-            <span className="text-white">{(pendingOrder.price * pendingOrder.amount * 7).toFixed(2)} USDC</span>
+            <span className="text-white">
+              {(pendingOrder.price * pendingOrder.amount * deliveryDurationDays).toFixed(2)} USDC
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Expected Hashrate:</span>

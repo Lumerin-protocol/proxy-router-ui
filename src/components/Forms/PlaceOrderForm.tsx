@@ -13,6 +13,7 @@ import { formatStratumUrl } from "../../utils/formatters";
 import { isValidHost, isValidUsername } from "../../utils/validators";
 import styled from "@mui/material/styles/styled";
 import type { Participant } from "../../hooks/data/useParticipant";
+import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
 
 interface PoolFormValues {
   poolAddress: string;
@@ -31,10 +32,12 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, parti
   const { createOrderAsync } = useCreateOrder();
   const qc = useQueryClient();
   const { address } = useAccount();
+  const contractSpecsQuery = useFuturesContractSpecs();
 
   // Determine order type from quantity sign
   const isBuy = quantity > 0;
   const absoluteQuantity = Math.abs(quantity);
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
 
   // Check for conflicting orders (opposite action, same price, same delivery date)
   const hasConflictingOrder = () => {
@@ -138,7 +141,9 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, parti
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-300">Total Value:</span>
-                <span className="text-white">{((Number(price) / 1e6) * absoluteQuantity * 7).toFixed(2)} USDC</span>
+                <span className="text-white">
+                  {((Number(price) / 1e6) * absoluteQuantity * deliveryDurationDays).toFixed(2)} USDC
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-300">Expected Hashrate:</span>
