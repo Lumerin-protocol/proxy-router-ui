@@ -74,6 +74,7 @@ export const Futures: FC = () => {
                   externalIsBuy={selectedIsBuy}
                   highlightTrigger={highlightTrigger}
                   contractSpecsQuery={contractSpecsQuery}
+                  participantData={participantData?.data}
                 />
               </div>
             )}

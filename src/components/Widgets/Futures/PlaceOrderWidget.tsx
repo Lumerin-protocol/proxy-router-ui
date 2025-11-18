@@ -9,6 +9,7 @@ import { PlaceOrderForm } from "../../Forms/PlaceOrderForm";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { GetResponse } from "../../../gateway/interfaces";
 import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
+import type { Participant } from "../../../hooks/data/useParticipant";
 import { useAccount } from "wagmi";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 
@@ -20,6 +21,7 @@ interface PlaceOrderWidgetProps {
   highlightTrigger?: number;
   address?: `0x${string}`;
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
+  participantData?: Participant | null;
 }
 
 export const PlaceOrderWidget = ({
@@ -29,6 +31,7 @@ export const PlaceOrderWidget = ({
   externalIsBuy,
   highlightTrigger,
   contractSpecsQuery,
+  participantData,
 }: PlaceOrderWidgetProps) => {
   const hashrateQuery = useHashrateIndexData();
   const { address } = useAccount();
@@ -168,6 +171,26 @@ export const PlaceOrderWidget = ({
       return;
     }
 
+    // Check for conflicting orders (opposite action, same price, same delivery date)
+    if (participantData?.orders) {
+      const priceInWei = BigInt(Math.round(currentPrice * 1e6));
+      const deliveryDateValue = BigInt(externalDeliveryDate);
+      const hasConflictingOrder = participantData.orders.some(
+        (order) =>
+          order.isActive &&
+          !order.isBuy && // Opposite action (Sell)
+          order.pricePerDay === priceInWei &&
+          order.deliveryAt === deliveryDateValue,
+      );
+
+      if (hasConflictingOrder) {
+        alert(
+          `Cannot create Buy order at price ${currentPrice.toFixed(2)} USDC. You already have an active Sell order at the same price and delivery date. Please close or modify the existing order first.`,
+        );
+        return;
+      }
+    }
+
     // Check if price exceeds the configured percentage of newest item price
     const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
@@ -190,8 +213,29 @@ export const PlaceOrderWidget = ({
       return;
     }
 
-    // Check if price exceeds the configured percentage of newest item price
     const currentPrice = parseFloat(price);
+
+    // Check for conflicting orders (opposite action, same price, same delivery date)
+    if (participantData?.orders) {
+      const priceInWei = BigInt(Math.round(currentPrice * 1e6));
+      const deliveryDateValue = BigInt(externalDeliveryDate);
+      const hasConflictingOrder = participantData.orders.some(
+        (order) =>
+          order.isActive &&
+          order.isBuy && // Opposite action (Buy)
+          order.pricePerDay === priceInWei &&
+          order.deliveryAt === deliveryDateValue,
+      );
+
+      if (hasConflictingOrder) {
+        alert(
+          `Cannot create Sell order at price ${currentPrice.toFixed(2)} USDC. You already have an active Buy order at the same price and delivery date. Please close or modify the existing order first.`,
+        );
+        return;
+      }
+    }
+
+    // Check if price exceeds the configured percentage of newest item price
     const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
     if (currentPrice > maxAllowedPrice) {
@@ -303,6 +347,7 @@ export const PlaceOrderWidget = ({
             price={BigInt(Math.round(pendingOrder.price * 1e6))}
             deliveryDate={BigInt(externalDeliveryDate)}
             quantity={pendingOrder.quantity}
+            participantData={participantData}
             closeForm={() => {
               setShowOrderForm(false);
               setPendingOrder(null);
@@ -373,7 +418,11 @@ const HighPriceConfirmationModal = ({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Total Value:</span>
-            <span className="text-white">${(pendingOrder.price * pendingOrder.amount).toFixed(2)}</span>
+            <span className="text-white">{(pendingOrder.price * pendingOrder.amount * 7).toFixed(2)} USDC</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Expected Hashrate:</span>
+            <span className="text-white">{pendingOrder.amount * 100} Th/s</span>
           </div>
         </div>
       </div>

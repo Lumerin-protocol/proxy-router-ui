@@ -40,7 +40,7 @@ export const FuturesBalanceWidget = () => {
 
   return (
     <>
-      <SmallWidget>
+      <SmallWidget className="lg:w-[60%]">
         <h3>Futures Balance</h3>
         <BalanceContainer>
           {!address && <div>Connect wallet to view balance</div>}

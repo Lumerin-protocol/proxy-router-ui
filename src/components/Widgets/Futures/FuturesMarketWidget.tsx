@@ -33,7 +33,7 @@ export const FuturesMarketWidget = ({ contractSpecsQuery }: FuturesMarketWidgetP
 
   return (
     <>
-      <SmallWidget>
+      <SmallWidget className="lg:w-[38%]">
         <h3>Contract Spec</h3>
         <MarketStats>
           {isLoading && <Spinner fontSize="0.3em" />}

@@ -74,7 +74,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
         name: "Price Token",
         showInLegend: false,
         data: chartData,
-        color: "#509EBA",
+        color: "#22c55e", // "#509EBA",
         lineWidth: 2,
         marker: {
           enabled: false,

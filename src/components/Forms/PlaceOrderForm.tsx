@@ -12,6 +12,7 @@ import { useAccount } from "wagmi";
 import { formatStratumUrl } from "../../utils/formatters";
 import { isValidHost, isValidUsername } from "../../utils/validators";
 import styled from "@mui/material/styles/styled";
+import type { Participant } from "../../hooks/data/useParticipant";
 
 interface PoolFormValues {
   poolAddress: string;
@@ -22,10 +23,11 @@ interface Props {
   price: bigint;
   deliveryDate: bigint;
   quantity: number; // Positive for Buy, Negative for Sell
+  participantData?: Participant | null;
   closeForm: () => void;
 }
 
-export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, closeForm }) => {
+export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, participantData, closeForm }) => {
   const { createOrderAsync } = useCreateOrder();
   const qc = useQueryClient();
   const { address } = useAccount();
@@ -33,6 +35,23 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
   // Determine order type from quantity sign
   const isBuy = quantity > 0;
   const absoluteQuantity = Math.abs(quantity);
+
+  // Check for conflicting orders (opposite action, same price, same delivery date)
+  const hasConflictingOrder = () => {
+    if (!participantData?.orders) return false;
+
+    const priceInWei = price;
+    const deliveryDateValue = deliveryDate;
+    const oppositeIsBuy = !isBuy;
+
+    return participantData.orders.some(
+      (order) =>
+        order.isActive &&
+        order.isBuy === oppositeIsBuy &&
+        order.pricePerDay === priceInWei &&
+        order.deliveryAt === deliveryDateValue,
+    );
+  };
 
   // State for checkbox to show pool input form
   const [hidePoolInput, setHidePoolInput] = useState(true);
@@ -119,7 +138,11 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-300">Total Value:</span>
-                <span className="text-white">{((Number(price) / 1e6) * absoluteQuantity).toFixed(2)} USDC</span>
+                <span className="text-white">{((Number(price) / 1e6) * absoluteQuantity * 7).toFixed(2)} USDC</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Expected Hashrate:</span>
+                <span className="text-white">{absoluteQuantity * 100} Th/s</span>
               </div>
             </div>
           </div>
@@ -153,6 +176,15 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
         {
           label: `Place ${isBuy ? "Buy" : "Sell"} Order`,
           action: async () => {
+            // Check for conflicting order before proceeding
+            if (hasConflictingOrder()) {
+              const oppositeAction = isBuy ? "Sell" : "Buy";
+              const priceInUSDC = Number(price) / 1e6;
+              throw new Error(
+                `Cannot create ${isBuy ? "Buy" : "Sell"} order at price ${priceInUSDC} USDC. You already have an active ${oppositeAction} order at the same price and delivery date. Please close or modify the existing order first.`,
+              );
+            }
+
             const destUrl = getDestUrl();
             const txhash = await createOrderAsync({
               price,
