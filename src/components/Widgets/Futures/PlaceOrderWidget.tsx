@@ -405,12 +405,12 @@ const HighPriceConfirmationModal = ({
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-300">Your Price:</span>
-            <span className="text-white font-medium">${pendingOrder.price.toFixed(2)}</span>
+            <span className="text-white font-medium">{pendingOrder.price.toFixed(2)} USDC</span>
           </div>
 
           <div className="flex justify-between">
             <span className="text-gray-300">Market Price:</span>
-            <span className="text-white font-medium">${newestItemPrice.toFixed(2)}</span>
+            <span className="text-white font-medium">{newestItemPrice.toFixed(2)} USDC</span>
           </div>
 
           <div className="flex justify-between">
@@ -595,10 +595,12 @@ const PriceButton = styled("button")`
 `;
 
 const ButtonSection = styled("div")`
-  display: flex;
-  flex-direction: column;
   gap: 0.75rem;
   flex-shrink: 0;
+
+  align-self: end;
+  display: flex;
+  flex-direction: row;
   
   @media (max-width: 768px) {
     flex-direction: row;

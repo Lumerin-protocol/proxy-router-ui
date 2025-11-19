@@ -12,7 +12,12 @@ import { ModalItem } from "../../Modal";
 import { DepositForm } from "../../Forms/DepositForm";
 import { WithdrawalForm } from "../../Forms/WithdrawalForm";
 
-export const FuturesBalanceWidget = () => {
+interface FuturesBalanceWidgetProps {
+  minMargin: bigint | null;
+  isLoadingMinMargin: boolean;
+}
+
+export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesBalanceWidgetProps) => {
   const { address } = useAccount();
   const futureBalance = useGetFutureBalance(address);
   const lmrBalanceValidation = useLmrBalanceValidation(address);
@@ -32,6 +37,7 @@ export const FuturesBalanceWidget = () => {
   const isLoading = futureBalance.isLoading;
   const isSuccess = !!(futureBalance.isSuccess && address);
   const balanceValue = formatValue(futureBalance.data ?? 0n, paymentToken);
+  const lockedBalanceValue = minMargin !== null ? formatValue(minMargin, paymentToken) : null;
 
   // Check if LMR balance meets minimum requirement
   const requiredLmrAmount = BigInt(process.env.REACT_APP_FUTURES_REQUIRED_LMR || "10000");
@@ -46,35 +52,56 @@ export const FuturesBalanceWidget = () => {
           {!address && <div>Connect wallet to view balance</div>}
           {isLoading && <Spinner fontSize="0.3em" />}
           {isSuccess && address && (
-            <BalanceRow>
-              <BalanceDisplay>
-                <BalanceAmount>
-                  <UsdcIcon style={{ width: "25px", marginRight: "8px" }} />
-                  {balanceValue?.valueRounded}
-                  <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
-                </BalanceAmount>
-              </BalanceDisplay>
-              <ActionButtons>
-                <PrimaryButton
-                  onClick={depositModal.open}
-                  disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
-                  title={
-                    !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
-                  }
-                >
-                  Deposit
-                </PrimaryButton>
-                <PrimaryButton
-                  onClick={withdrawalModal.open}
-                  disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
-                  title={
-                    !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
-                  }
-                >
-                  Withdraw
-                </PrimaryButton>
-              </ActionButtons>
-            </BalanceRow>
+            <>
+              <BalanceRow>
+                <BalanceDisplay>
+                  <BalanceStats>
+                    <div className="balance">
+                      <div>
+                        <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                        <div>{balanceValue?.valueRounded}</div>
+                        <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                      </div>
+                      <p>BALANCE</p>
+                    </div>
+                    <div className="balance">
+                      <div>
+                        {isLoadingMinMargin ? (
+                          <Spinner fontSize="0.3em" />
+                        ) : (
+                          <>
+                            <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                            <div>{lockedBalanceValue ? lockedBalanceValue.valueRounded : 0}</div>
+                            <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                          </>
+                        )}
+                      </div>
+                      <p>LOCKED BALANCE</p>
+                    </div>
+                  </BalanceStats>
+                </BalanceDisplay>
+                <ActionButtons>
+                  <PrimaryButton
+                    onClick={depositModal.open}
+                    disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
+                    title={
+                      !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
+                    }
+                  >
+                    Deposit
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onClick={withdrawalModal.open}
+                    disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
+                    title={
+                      !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
+                    }
+                  >
+                    Withdraw
+                  </PrimaryButton>
+                </ActionButtons>
+              </BalanceRow>
+            </>
           )}
         </BalanceContainer>
         <div className="link">
@@ -93,7 +120,11 @@ export const FuturesBalanceWidget = () => {
       </ModalItem>
 
       <ModalItem open={withdrawalModal.isOpen} setOpen={withdrawalModal.setOpen}>
-        <WithdrawalForm closeForm={handleWithdrawalSuccess} />
+        <WithdrawalForm
+          closeForm={handleWithdrawalSuccess}
+          minMargin={minMargin}
+          isLoadingMinMargin={isLoadingMinMargin}
+        />
       </ModalItem>
     </>
   );
@@ -104,7 +135,6 @@ const BalanceContainer = styled("div")`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
   width: 100%;
   padding: 1rem 0;
   gap: 1rem;
@@ -130,19 +160,41 @@ const BalanceDisplay = styled("div")`
   gap: 0.5rem;
 `;
 
-const BalanceAmount = styled("div")`
-  font-size: 2rem;
-  font-weight: 600;
-  color: #fff;
+const BalanceStats = styled("div")`
   display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.75rem;
+  gap: 3rem;
+  width: 100%;
+
+  .balance {
+    flex: 1;
+    div {
+      font-size: 1.85rem;
+      line-height: 1.75rem;
+      text-align: center;
+      margin-bottom: 0.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+    p {
+      font-size: 0.625rem;
+      text-align: center;
+      color: #a7a9b6;
+    }
+  }
 `;
 
 const TokenSymbol = styled("span")`
   font-size: 1.2rem;
   font-weight: 400;
   color: #a7a9b6;
+  margin-left: 0.25rem;
 `;
 
 const ActionButtons = styled("div")`

@@ -1,4 +1,4 @@
-import { memo, type FC, useCallback, useState } from "react";
+import { memo, type FC, useCallback, useState, useEffect } from "react";
 import { useForm, useController, type Control } from "react-hook-form";
 import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
@@ -8,12 +8,13 @@ import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
 import { PARTICIPANT_QK } from "../../hooks/data/useParticipant";
 import { POSITION_BOOK_QK } from "../../hooks/data/usePositionBook";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { formatStratumUrl } from "../../utils/formatters";
 import { isValidHost, isValidUsername } from "../../utils/validators";
 import styled from "@mui/material/styles/styled";
 import type { Participant } from "../../hooks/data/useParticipant";
 import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
+import { calculateMinMargin } from "../../hooks/data/useGetMinMarginForPosition";
 
 interface PoolFormValues {
   poolAddress: string;
@@ -32,12 +33,39 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, parti
   const { createOrderAsync } = useCreateOrder();
   const qc = useQueryClient();
   const { address } = useAccount();
+  const publicClient = usePublicClient();
   const contractSpecsQuery = useFuturesContractSpecs();
 
   // Determine order type from quantity sign
   const isBuy = quantity > 0;
   const absoluteQuantity = Math.abs(quantity);
   const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+
+  // State for required margin
+  const [requiredMargin, setRequiredMargin] = useState<bigint | null>(null);
+  const [isLoadingMargin, setIsLoadingMargin] = useState(false);
+
+  // Calculate required margin when price or quantity changes
+  useEffect(() => {
+    const fetchMargin = async () => {
+      if (!publicClient) return;
+
+      setIsLoadingMargin(true);
+      try {
+        const margin = await calculateMinMargin(publicClient, {
+          entryPricePerDay: price,
+          quantity: quantity,
+        });
+        setRequiredMargin(margin);
+      } catch (error) {
+        console.error("Failed to calculate required margin:", error);
+        setRequiredMargin(null);
+      } finally {
+        setIsLoadingMargin(false);
+      }
+    };
+    fetchMargin();
+  }, [publicClient, price, quantity]);
 
   // Check for conflicting orders (opposite action, same price, same delivery date)
   const hasConflictingOrder = () => {
@@ -121,14 +149,9 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, parti
       reviewForm={(props) => (
         <>
           <div className="mb-4">
-            <h3 className="font-semibold mb-2">Order Details:</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-300">Type:</span>
-                <span className="text-white">{isBuy ? "Buy" : "Sell"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Price:</span>
+                <span className="text-gray-300">Price Per Day:</span>
                 <span className="text-white">{Number(price) / 1e6} USDC</span>
               </div>
               <div className="flex justify-between">
@@ -148,6 +171,16 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, parti
               <div className="flex justify-between">
                 <span className="text-gray-300">Expected Hashrate:</span>
                 <span className="text-white">{absoluteQuantity * 100} Th/s</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Required Margin:</span>
+                <span className="text-white">
+                  {requiredMargin !== null
+                    ? `${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
+                    : isLoadingMargin
+                      ? "Loading..."
+                      : "N/A"}
+                </span>
               </div>
             </div>
           </div>

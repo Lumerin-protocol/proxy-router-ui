@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { useAccount } from "wagmi";
 import { useRemoveMargin } from "../../hooks/data/useRemoveMargin";
 import { useGetFutureBalance } from "../../hooks/data/useGetFutureBalance";
-import { useGetMarginShortfall } from "../../hooks/data/useGetMarginShortfall";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import { AmountInputForm } from "./Shared/AmountInputForm";
 import { formatValue, paymentToken } from "../../lib/units";
@@ -11,25 +10,25 @@ import { parseUnits } from "viem";
 
 interface WithdrawalFormProps {
   closeForm: () => void;
+  minMargin: bigint | null;
+  isLoadingMinMargin: boolean;
 }
 
 interface InputValues {
   amount: string;
 }
 
-export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
+export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm, minMargin, isLoadingMinMargin }) => {
   const { address } = useAccount();
   const { removeMarginAsync, isPending } = useRemoveMargin();
   const futureBalance = useGetFutureBalance(address);
-  const marginShortfall = useGetMarginShortfall(address);
 
-  // Calculate available balance: balance - shortfall (shortfall is locked amount)
-  // getMarginShortfall returns int256, where positive values represent locked amount
+  // Calculate available balance: balance - minMargin (minMargin is locked amount)
+  // getMinMargin returns int256, where positive values represent locked amount
   const lockedAmount = useMemo(() => {
-    const shortfall = marginShortfall.data;
-    // If shortfall is positive, it's the locked amount. If negative or zero, no shortfall.
-    return shortfall && shortfall > 0n ? shortfall : 0n;
-  }, [marginShortfall.data]);
+    // If minMargin is positive, it's the locked amount. If negative or zero, no locked amount.
+    return minMargin && minMargin > 0n ? minMargin : 0n;
+  }, [minMargin]);
 
   const availableBalance = useMemo(() => {
     if (!futureBalance.data) return undefined;
@@ -47,8 +46,6 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
       amount: "",
     },
   });
-
-  const [amount, setAmount] = useState<string>("");
 
   const validateBalance = useCallback(
     (value: string): string | true => {
@@ -126,37 +123,14 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
       return false;
     }
 
-    setAmount(amountValue);
     return true;
   }, [form, futureBalance.data, availableBalance]);
-
-  const reviewForm = useCallback(
-    () => (
-      <div className="space-y-4">
-        <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-gray-300">Amount to withdraw:</span>
-            <span className="text-white font-medium">
-              {amount} {paymentToken.symbol}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300">Available balance:</span>
-            <span className="text-white font-medium">
-              {availableBalance !== undefined ? formatValue(availableBalance, paymentToken).valueRounded : "0"}{" "}
-              {paymentToken.symbol}
-            </span>
-          </div>
-        </div>
-      </div>
-    ),
-    [amount, availableBalance],
-  );
 
   const transactionSteps = [
     {
       label: "Withdraw Margin",
       async action() {
+        const amount = form.getValues("amount");
         if (!amount) throw new Error("Amount not set");
         const amountBigInt = parseUnits(amount, paymentToken.decimals);
         const result = await removeMarginAsync({ amount: amountBigInt });
@@ -170,8 +144,7 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
       onClose={closeForm}
       title="Withdraw Margin"
       description="Remove margin from your futures account"
-      inputForm={inputForm}
-      reviewForm={reviewForm}
+      reviewForm={inputForm}
       validateInput={validateInput}
       transactionSteps={transactionSteps}
       resultForm={(p) => (
@@ -179,7 +152,7 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm }) => {
           <div className="p-4 rounded-lg">
             <p className="text-gray-300">Your withdrawal has been processed successfully.</p>
             <p className="text-white font-medium mt-2">
-              Amount withdrawn: {amount} {paymentToken.symbol}
+              Amount withdrawn: {form.getValues("amount")} {paymentToken.symbol}
             </p>
           </div>
         </div>

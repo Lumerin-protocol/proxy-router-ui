@@ -383,6 +383,7 @@ const Header = styled("div")`
 
 const TableContainer = styled("div")`
   overflow-y: auto;
+  width: 100%;
   max-height: 607px; /* Approximately 10 rows * 40px per row */
   
   &::-webkit-scrollbar {

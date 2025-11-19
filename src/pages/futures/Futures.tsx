@@ -12,6 +12,8 @@ import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
 import { useParticipant } from "../../hooks/data/useParticipant";
 import { usePositionBook } from "../../hooks/data/usePositionBook";
 import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
+import { calculateMinMarginForAddress } from "../../hooks/data/useGetMinMarginForPosition";
+import { useGetMinMargin } from "../../hooks/data/useGetMinMargin";
 
 export const Futures: FC = () => {
   const { isConnected, address } = useAccount();
@@ -19,6 +21,11 @@ export const Futures: FC = () => {
   const contractSpecsQuery = useFuturesContractSpecs();
   const { data: participantData, isLoading: isParticipantLoading } = useParticipant(address);
   const { data: positionBookData, isLoading: isPositionBookLoading } = usePositionBook(address);
+
+  // Get min margin for address using hook (used for withdrawal form)
+  const minMarginQuery = useGetMinMargin(address);
+  const minMargin = minMarginQuery.data ?? null;
+  const isLoadingMinMargin = minMarginQuery.isLoading;
 
   // State for order book selection
   const [selectedPrice, setSelectedPrice] = useState<string | undefined>();
@@ -54,7 +61,7 @@ export const Futures: FC = () => {
       {/* Main content area - all existing blocks */}
       <div className="flex-1 flex flex-col">
         <WidgetsWrapper>
-          <FuturesBalanceWidget />
+          <FuturesBalanceWidget minMargin={minMargin} isLoadingMinMargin={isLoadingMinMargin} />
           <FuturesMarketWidget contractSpecsQuery={contractSpecsQuery} />
         </WidgetsWrapper>
 
