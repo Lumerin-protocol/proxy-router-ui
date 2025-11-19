@@ -37,10 +37,13 @@ export const OrdersPositionsTabWidget = ({
   const positionsCount = useMemo(() => {
     const unique = new Set<string>();
     positions.forEach((p) => {
-      unique.add(`${p.deliveryAt.toString()}_${p.pricePerDay.toString()}`);
+      // Determine position type and use appropriate price
+      const isLong = participantAddress && p.buyer.address.toLowerCase() === participantAddress.toLowerCase();
+      const pricePerDay = isLong ? p.buyPricePerDay : p.sellPricePerDay;
+      unique.add(`${p.deliveryAt.toString()}_${pricePerDay.toString()}`);
     });
     return unique.size;
-  }, [positions]);
+  }, [positions, participantAddress]);
 
   return (
     <TabContainer>

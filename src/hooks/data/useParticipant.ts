@@ -67,7 +67,8 @@ const fetchParticipantAsync = async (
       transactionHash: position.transactionHash,
       timestamp: position.timestamp,
       deliveryAt: position.deliveryAt,
-      pricePerDay: BigInt(position.pricePerDay),
+      sellPricePerDay: BigInt(position.sellPricePerDay),
+      buyPricePerDay: BigInt(position.buyPricePerDay),
       isActive: position.isActive,
       id: position.id,
       destURL: position.destURL,
@@ -138,7 +139,8 @@ export type ParticipantPosition = {
   transactionHash: `0x${string}`;
   timestamp: string;
   deliveryAt: string;
-  pricePerDay: bigint;
+  sellPricePerDay: bigint;
+  buyPricePerDay: bigint;
   isActive: boolean;
   destURL: string;
   id: string;
@@ -186,7 +188,8 @@ type ParticipantResponse = {
       transactionHash: `0x${string}`;
       timestamp: string;
       deliveryAt: string;
-      pricePerDay: string;
+      sellPricePerDay: string;
+      buyPricePerDay: string;
       isActive: boolean;
       destURL: string;
       id: string;

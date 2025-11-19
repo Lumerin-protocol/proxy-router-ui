@@ -300,7 +300,7 @@ export const PlaceOrderWidget = ({
                   type="text"
                   value={price}
                   placeholder="5.00"
-                  onChange={(e) => handlePriceChange(e.target.value)}
+                  onChange={(e) => handlePriceChange(e.target.value.replace("-", ""))}
                   step={priceStep}
                   min="1"
                   inputMode={"decimal"}
@@ -316,7 +316,7 @@ export const PlaceOrderWidget = ({
               <input
                 type="number"
                 value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                onChange={(e) => setAmount(Number(e.target.value.replace("-", "")))}
                 min="1"
                 max="50"
               />
