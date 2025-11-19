@@ -139,13 +139,13 @@ jobs:
           # Map environment to AWS secret suffix
           case $ENV in
             dev)
-              SECRET_NAME="futures-marketplace-secrets-dev"
+              SECRET_NAME="futures-marketplace-secrets-v2-${ENV}"
               ;;
             stg)
-              SECRET_NAME="futures-marketplace-secrets-stg"
+              SECRET_NAME="futures-marketplace-secrets-v2-${ENV}"
               ;;
             main)
-              SECRET_NAME="futures-marketplace-secrets-lmn"
+              SECRET_NAME="futures-marketplace-secrets-v2-${ENV}"
               ;;
           esac
           
