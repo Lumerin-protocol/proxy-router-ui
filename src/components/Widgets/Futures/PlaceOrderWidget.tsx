@@ -22,6 +22,7 @@ interface PlaceOrderWidgetProps {
   address?: `0x${string}`;
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
   participantData?: Participant | null;
+  onOrderPlaced?: () => void | Promise<void>;
 }
 
 export const PlaceOrderWidget = ({
@@ -32,6 +33,7 @@ export const PlaceOrderWidget = ({
   highlightTrigger,
   contractSpecsQuery,
   participantData,
+  onOrderPlaced,
 }: PlaceOrderWidgetProps) => {
   const hashrateQuery = useHashrateIndexData();
   const { address } = useAccount();
@@ -360,6 +362,7 @@ export const PlaceOrderWidget = ({
             deliveryDate={BigInt(externalDeliveryDate)}
             quantity={pendingOrder.quantity}
             participantData={participantData}
+            onOrderPlaced={onOrderPlaced}
             closeForm={() => {
               setShowOrderForm(false);
               setPendingOrder(null);

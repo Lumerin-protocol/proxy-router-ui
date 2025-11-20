@@ -6,14 +6,13 @@ import { OrderBookTable } from "../../components/Widgets/Futures/OrderBookTable"
 import { HashrateChart } from "../../components/Charts/HashrateChart";
 import { PlaceOrderWidget } from "../../components/Widgets/Futures/PlaceOrderWidget";
 import { OrdersPositionsTabWidget } from "../../components/Widgets/Futures/OrdersPositionsTabWidget";
-import { FeedWidget } from "../../components/Widgets/Futures/FeedWidget";
 import { WidgetsWrapper } from "../marketplace/styled";
 import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
 import { useParticipant } from "../../hooks/data/useParticipant";
 import { usePositionBook } from "../../hooks/data/usePositionBook";
 import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
-import { calculateMinMarginForAddress } from "../../hooks/data/useGetMinMarginForPosition";
 import { useGetMinMargin } from "../../hooks/data/useGetMinMargin";
+import { SmallWidget } from "../../components/Cards/Cards.styled";
 
 export const Futures: FC = () => {
   const { isConnected, address } = useAccount();
@@ -69,9 +68,9 @@ export const Futures: FC = () => {
         <div className="flex flex-col lg:flex-row gap-6 mb-8 w-full">
           {/* Left Column - Chart and Place Order (3/4 width) */}
           <div className="flex flex-col gap-6 w-full lg:w-[60%]">
-            <div className="w-full">
+            <SmallWidget className="w-full">
               <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
-            </div>
+            </SmallWidget>
             {isConnected && (
               <div className="w-full">
                 <PlaceOrderWidget
@@ -82,6 +81,9 @@ export const Futures: FC = () => {
                   highlightTrigger={highlightTrigger}
                   contractSpecsQuery={contractSpecsQuery}
                   participantData={participantData?.data}
+                  onOrderPlaced={async () => {
+                    await minMarginQuery.refetch();
+                  }}
                 />
               </div>
             )}

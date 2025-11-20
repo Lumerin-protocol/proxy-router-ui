@@ -26,10 +26,18 @@ interface Props {
   deliveryDate: bigint;
   quantity: number; // Positive for Buy, Negative for Sell
   participantData?: Participant | null;
+  onOrderPlaced?: () => void | Promise<void>;
   closeForm: () => void;
 }
 
-export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, participantData, closeForm }) => {
+export const PlaceOrderForm: FC<Props> = ({
+  price,
+  deliveryDate,
+  quantity,
+  participantData,
+  onOrderPlaced,
+  closeForm,
+}) => {
   const { createOrderAsync } = useCreateOrder();
   const qc = useQueryClient();
   const { address } = useAccount();
@@ -245,6 +253,10 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, parti
               address && qc.invalidateQueries({ queryKey: [POSITION_BOOK_QK] }),
               address && qc.invalidateQueries({ queryKey: [PARTICIPANT_QK] }),
             ]);
+
+            if (onOrderPlaced) {
+              await onOrderPlaced();
+            }
           },
         },
       ]}
