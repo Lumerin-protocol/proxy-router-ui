@@ -11,6 +11,7 @@ import { PrimaryButton } from "../../Forms/FormButtons/Buttons.styled";
 import { ModalItem } from "../../Modal";
 import { DepositForm } from "../../Forms/DepositForm";
 import { WithdrawalForm } from "../../Forms/WithdrawalForm";
+import EastIcon from "@mui/icons-material/East";
 
 interface FuturesBalanceWidgetProps {
   minMargin: bigint | null;
@@ -47,11 +48,11 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
   return (
     <>
       <SmallWidget className="lg:w-[60%]">
-        <h3>Futures Balance</h3>
+        {address && <h3>Futures Balance</h3>}
         <BalanceContainer>
-          {!address && <div>Connect wallet to view balance</div>}
-          {isLoading && <Spinner fontSize="0.3em" />}
-          {isSuccess && address && (
+          {!address && <div>Connect wallet to view balance and use marketplace</div>}
+          {isLoading && address && <Spinner fontSize="0.3em" />}
+          {isSuccess && address && hasMinimumLmrBalance && (
             <>
               <BalanceRow>
                 <BalanceDisplay>
@@ -103,16 +104,23 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
               </BalanceRow>
             </>
           )}
+          {isSuccess && address && !hasMinimumLmrBalance && (
+            <p onClick={(e) => e.preventDefault()}>
+              {isLmrBalanceLoading
+                ? "Checking LMR balance..."
+                : hasMinimumLmrBalance
+                  ? `✓ LMR balance sufficient (${lmrBalanceValidation.totalBalance.toString()} LMR)`
+                  : `⚠ Insufficient LMR balance (${lmrBalanceValidation.totalBalance.toString()} LMR). Required: ${process.env.REACT_APP_FUTURES_REQUIRED_LMR} LMR (Arbitrum or Ethereum)`}
+            </p>
+          )}
         </BalanceContainer>
-        <div className="link">
-          <p onClick={(e) => e.preventDefault()}>
-            {isLmrBalanceLoading
-              ? "Checking LMR balance..."
-              : hasMinimumLmrBalance
-                ? `✓ LMR balance sufficient (${lmrBalanceValidation.totalBalance.toString()} LMR)`
-                : `⚠ Insufficient LMR balance. Required: ${process.env.REACT_APP_FUTURES_REQUIRED_LMR} LMR (Arbitrum or Ethereum)`}
-          </p>
-        </div>
+        {isSuccess && address && !hasMinimumLmrBalance && (
+          <div className="link">
+            <a href={process.env.REACT_APP_BUY_LMR_URL} target="_blank" rel="noreferrer">
+              Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: "0.75rem" }} />
+            </a>
+          </div>
+        )}
       </SmallWidget>
 
       <ModalItem open={depositModal.isOpen} setOpen={depositModal.setOpen}>
