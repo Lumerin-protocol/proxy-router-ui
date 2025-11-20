@@ -21,7 +21,8 @@ export const ParticipantQuery = gql`
         transactionHash
         timestamp
         deliveryAt
-        pricePerDay
+        sellPricePerDay
+        buyPricePerDay
         destURL
         isActive
         id
@@ -73,7 +74,8 @@ export const PositionsBookQuery = gql`
     transactionHash
     timestamp
     deliveryAt
-    pricePerDay
+    sellPricePerDay
+    buyPricePerDay
     isActive
     id
     closedBy

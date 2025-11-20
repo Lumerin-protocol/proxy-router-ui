@@ -20,6 +20,7 @@ export const useFuturesContractSpecs = (props?: { refetch?: boolean }) => {
 const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpecs>> => {
   const response = await graphqlRequest<ContractSpecsResponse>(ContractSpecsQuery);
   const data: FuturesContractSpecs = {
+    deliveryDurationDays: response.futures.deliveryDurationDays,
     deliveryDurationSeconds: response.futures.deliveryDurationDays * 24 * 60 * 60,
     hashrateOracleAddress: response.futures.hashrateOracleAddress,
     minimumPriceIncrement: BigInt(response.futures.minimumPriceIncrement),
@@ -35,6 +36,7 @@ const fetchContractSpecsAsync = async (): Promise<GetResponse<FuturesContractSpe
 };
 
 export type FuturesContractSpecs = {
+  deliveryDurationDays: number;
   deliveryDurationSeconds: number;
   hashrateOracleAddress: `0x${string}`;
   minimumPriceIncrement: bigint;

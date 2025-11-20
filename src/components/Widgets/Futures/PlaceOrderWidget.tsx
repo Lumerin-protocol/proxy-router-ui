@@ -9,6 +9,7 @@ import { PlaceOrderForm } from "../../Forms/PlaceOrderForm";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { GetResponse } from "../../../gateway/interfaces";
 import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
+import type { Participant } from "../../../hooks/data/useParticipant";
 import { useAccount } from "wagmi";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 
@@ -20,6 +21,8 @@ interface PlaceOrderWidgetProps {
   highlightTrigger?: number;
   address?: `0x${string}`;
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
+  participantData?: Participant | null;
+  onOrderPlaced?: () => void | Promise<void>;
 }
 
 export const PlaceOrderWidget = ({
@@ -29,6 +32,8 @@ export const PlaceOrderWidget = ({
   externalIsBuy,
   highlightTrigger,
   contractSpecsQuery,
+  participantData,
+  onOrderPlaced,
 }: PlaceOrderWidgetProps) => {
   const hashrateQuery = useHashrateIndexData();
   const { address } = useAccount();
@@ -38,6 +43,9 @@ export const PlaceOrderWidget = ({
   const priceStep = contractSpecsQuery.data?.data?.minimumPriceIncrement
     ? Number(contractSpecsQuery.data.data.minimumPriceIncrement) / 1e6
     : null;
+
+  // Get delivery duration days from contract specs
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
 
   // Get newest item price for validation and default price
   const newestItemPrice =
@@ -160,12 +168,32 @@ export const PlaceOrderWidget = ({
 
     // Validate balance for buy orders
     const currentPrice = parseFloat(price);
-    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount);
+    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount) * BigInt(deliveryDurationDays);
     const balance = balanceQuery.data ?? 0n;
 
     if (totalOrderValue > balance) {
-      alert("Insufficient funds");
+      alert(`Insufficient funds. Required: ${totalOrderValue / BigInt(10 ** 6)} USDC`);
       return;
+    }
+
+    // Check for conflicting orders (opposite action, same price, same delivery date)
+    if (participantData?.orders) {
+      const priceInWei = BigInt(Math.round(currentPrice * 1e6));
+      const deliveryDateValue = BigInt(externalDeliveryDate);
+      const hasConflictingOrder = participantData.orders.some(
+        (order) =>
+          order.isActive &&
+          !order.isBuy && // Opposite action (Sell)
+          order.pricePerDay === priceInWei &&
+          order.deliveryAt === deliveryDateValue,
+      );
+
+      if (hasConflictingOrder) {
+        alert(
+          `Cannot create Buy order at price ${currentPrice.toFixed(2)} USDC. You already have an active Sell order at the same price and delivery date. Please close or modify the existing order first.`,
+        );
+        return;
+      }
     }
 
     // Check if price exceeds the configured percentage of newest item price
@@ -190,8 +218,37 @@ export const PlaceOrderWidget = ({
       return;
     }
 
-    // Check if price exceeds the configured percentage of newest item price
+    // Validate balance for sell orders
     const currentPrice = parseFloat(price);
+    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount) * BigInt(deliveryDurationDays);
+    const balance = balanceQuery.data ?? 0n;
+
+    if (totalOrderValue > balance) {
+      alert(`Insufficient funds. Required: ${totalOrderValue / BigInt(10 ** 6)} USDC`);
+      return;
+    }
+
+    // Check for conflicting orders (opposite action, same price, same delivery date)
+    if (participantData?.orders) {
+      const priceInWei = BigInt(Math.round(currentPrice * 1e6));
+      const deliveryDateValue = BigInt(externalDeliveryDate);
+      const hasConflictingOrder = participantData.orders.some(
+        (order) =>
+          order.isActive &&
+          order.isBuy && // Opposite action (Buy)
+          order.pricePerDay === priceInWei &&
+          order.deliveryAt === deliveryDateValue,
+      );
+
+      if (hasConflictingOrder) {
+        alert(
+          `Cannot create Sell order at price ${currentPrice.toFixed(2)} USDC. You already have an active Buy order at the same price and delivery date. Please close or modify the existing order first.`,
+        );
+        return;
+      }
+    }
+
+    // Check if price exceeds the configured percentage of newest item price
     const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
 
     if (currentPrice > maxAllowedPrice) {
@@ -236,7 +293,7 @@ export const PlaceOrderWidget = ({
         <MainSection>
           <InputSection>
             <InputGroup>
-              <label>Price, USDC (Step: {priceStep.toFixed(2)})</label>
+              <label>Price per day, USDC</label>
               <PriceInputContainer>
                 <PriceButton onClick={decrementPrice} disabled={showOrderForm}>
                   −
@@ -245,7 +302,7 @@ export const PlaceOrderWidget = ({
                   type="text"
                   value={price}
                   placeholder="5.00"
-                  onChange={(e) => handlePriceChange(e.target.value)}
+                  onChange={(e) => handlePriceChange(e.target.value.replace("-", ""))}
                   step={priceStep}
                   min="1"
                   inputMode={"decimal"}
@@ -261,7 +318,7 @@ export const PlaceOrderWidget = ({
               <input
                 type="number"
                 value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                onChange={(e) => setAmount(Number(e.target.value.replace("-", "")))}
                 min="1"
                 max="50"
               />
@@ -284,6 +341,7 @@ export const PlaceOrderWidget = ({
           pendingOrder={pendingOrder}
           newestItemPrice={newestItemPrice}
           highPricePercentage={highPricePercentage}
+          contractSpecsQuery={contractSpecsQuery}
           onConfirm={handleConfirmHighPrice}
           onCancel={handleCancelHighPrice}
         />
@@ -303,6 +361,8 @@ export const PlaceOrderWidget = ({
             price={BigInt(Math.round(pendingOrder.price * 1e6))}
             deliveryDate={BigInt(externalDeliveryDate)}
             quantity={pendingOrder.quantity}
+            participantData={participantData}
+            onOrderPlaced={onOrderPlaced}
             closeForm={() => {
               setShowOrderForm(false);
               setPendingOrder(null);
@@ -318,12 +378,14 @@ const HighPriceConfirmationModal = ({
   pendingOrder,
   newestItemPrice,
   highPricePercentage,
+  contractSpecsQuery,
   onConfirm,
   onCancel,
 }: {
   pendingOrder: { price: number; amount: number; quantity: number } | null;
   newestItemPrice: number;
   highPricePercentage: number;
+  contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
   onConfirm: () => void;
   onCancel: () => void;
 }) => {
@@ -331,6 +393,7 @@ const HighPriceConfirmationModal = ({
 
   const percentageOver = ((pendingOrder.price / newestItemPrice) * 100).toFixed(1);
   const isBuy = pendingOrder.quantity > 0;
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
 
   return (
     <div className="space-y-6">
@@ -345,12 +408,12 @@ const HighPriceConfirmationModal = ({
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-300">Your Price:</span>
-            <span className="text-white font-medium">${pendingOrder.price.toFixed(2)}</span>
+            <span className="text-white font-medium">{pendingOrder.price.toFixed(2)} USDC</span>
           </div>
 
           <div className="flex justify-between">
             <span className="text-gray-300">Market Price:</span>
-            <span className="text-white font-medium">${newestItemPrice.toFixed(2)}</span>
+            <span className="text-white font-medium">{newestItemPrice.toFixed(2)} USDC</span>
           </div>
 
           <div className="flex justify-between">
@@ -373,7 +436,13 @@ const HighPriceConfirmationModal = ({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Total Value:</span>
-            <span className="text-white">${(pendingOrder.price * pendingOrder.amount).toFixed(2)}</span>
+            <span className="text-white">
+              {(pendingOrder.price * pendingOrder.amount * deliveryDurationDays).toFixed(2)} USDC
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Expected Hashrate:</span>
+            <span className="text-white">{pendingOrder.amount * 100} Th/s</span>
           </div>
         </div>
       </div>
@@ -529,10 +598,12 @@ const PriceButton = styled("button")`
 `;
 
 const ButtonSection = styled("div")`
-  display: flex;
-  flex-direction: column;
   gap: 0.75rem;
   flex-shrink: 0;
+
+  align-self: end;
+  display: flex;
+  flex-direction: row;
   
   @media (max-width: 768px) {
     flex-direction: row;

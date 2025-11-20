@@ -32,8 +32,6 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
     },
   });
 
-  const [amount, setAmount] = useState<string>("");
-
   const validateBalance = useCallback(
     (value: string): string | true => {
       if (!paymentTokenBalance.data) {
@@ -84,37 +82,40 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
       return false;
     }
 
-    setAmount(amountValue);
     return true;
   }, [form, paymentTokenBalance.data]);
 
   const reviewForm = useCallback(
     () => (
-      <div className="space-y-4">
-        <div className="p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-gray-300">Amount to deposit:</span>
-            <span className="text-white font-medium">
-              {amount} {paymentToken.symbol}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300">Current balance:</span>
-            <span className="text-white font-medium">
-              {paymentTokenBalance.data ? formatValue(paymentTokenBalance.data, paymentToken).valueRounded : "0"}{" "}
-              {paymentToken.symbol}
-            </span>
+      <>
+        {inputForm()}
+        <div className="space-y-4">
+          <div className="p-4 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-300">Available balance:</span>
+              <span className="text-white font-medium">
+                {paymentTokenBalance.isLoading ? (
+                  <span>Loading...</span>
+                ) : (
+                  <>
+                    {paymentTokenBalance.data ? formatValue(paymentTokenBalance.data, paymentToken).valueRounded : "0"}{" "}
+                    {paymentToken.symbol}
+                  </>
+                )}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     ),
-    [amount, paymentTokenBalance.data],
+    [paymentTokenBalance.data],
   );
 
   const transactionSteps = [
     {
       label: "Approve Token",
       async action() {
+        const amount = form.getValues("amount");
         if (!amount) throw new Error("Amount not set");
         const amountBigInt = parseUnits(amount, paymentToken.decimals);
         const result = await approveAsync({
@@ -127,6 +128,7 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
     {
       label: "Deposit Margin",
       async action() {
+        const amount = form.getValues("amount");
         if (!amount) throw new Error("Amount not set");
         const amountBigInt = parseUnits(amount, paymentToken.decimals);
         const result = await addMarginAsync({ amount: amountBigInt });
@@ -140,7 +142,6 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
       onClose={closeForm}
       title="Deposit Margin"
       description="Add margin to your futures account"
-      inputForm={inputForm}
       reviewForm={reviewForm}
       validateInput={validateInput}
       transactionSteps={transactionSteps}
@@ -149,7 +150,7 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
           <div className="p-4 rounded-lg">
             <p className="text-gray-300">Your deposit has been processed successfully.</p>
             <p className="text-white font-medium mt-2">
-              Amount deposited: {amount} {paymentToken.symbol}
+              Amount deposited: {form.getValues("amount")} {paymentToken.symbol}
             </p>
           </div>
         </div>

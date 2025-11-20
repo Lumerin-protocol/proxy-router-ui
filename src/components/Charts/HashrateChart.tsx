@@ -74,7 +74,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
         name: "Price Token",
         showInLegend: false,
         data: chartData,
-        color: "#509EBA",
+        color: "#22c55e", // "#509EBA",
         lineWidth: 2,
         marker: {
           enabled: false,
@@ -146,7 +146,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
   }
 
   return (
-    <div style={{ width: "100%", height: "500px" }}>
+    <div style={{ width: "100%", height: "500px", padding: "1rem" }}>
       <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "100%" } }} />
     </div>
   );

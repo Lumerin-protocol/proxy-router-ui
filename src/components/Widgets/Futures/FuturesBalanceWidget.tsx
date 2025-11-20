@@ -1,5 +1,6 @@
 import styled from "@mui/material/styles/styled";
 import { useAccount } from "wagmi";
+import { useMemo } from "react";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 import { useLmrBalanceValidation } from "../../../hooks/data/useLmrBalanceValidation";
 import { useModal } from "../../../hooks/useModal";
@@ -11,8 +12,14 @@ import { PrimaryButton } from "../../Forms/FormButtons/Buttons.styled";
 import { ModalItem } from "../../Modal";
 import { DepositForm } from "../../Forms/DepositForm";
 import { WithdrawalForm } from "../../Forms/WithdrawalForm";
+import EastIcon from "@mui/icons-material/East";
 
-export const FuturesBalanceWidget = () => {
+interface FuturesBalanceWidgetProps {
+  minMargin: bigint | null;
+  isLoadingMinMargin: boolean;
+}
+
+export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesBalanceWidgetProps) => {
   const { address } = useAccount();
   const futureBalance = useGetFutureBalance(address);
   const lmrBalanceValidation = useLmrBalanceValidation(address);
@@ -32,81 +39,126 @@ export const FuturesBalanceWidget = () => {
   const isLoading = futureBalance.isLoading;
   const isSuccess = !!(futureBalance.isSuccess && address);
   const balanceValue = formatValue(futureBalance.data ?? 0n, paymentToken);
+  const lockedBalanceValue = minMargin !== null ? formatValue(minMargin, paymentToken) : null;
 
   // Check if LMR balance meets minimum requirement
   const requiredLmrAmount = BigInt(process.env.REACT_APP_FUTURES_REQUIRED_LMR || "10000");
   const hasMinimumLmrBalance = lmrBalanceValidation.totalBalance >= requiredLmrAmount;
   const isLmrBalanceLoading = lmrBalanceValidation.isLoading;
 
+  // Check if locked amount is at or above threshold percentage of balance
+  const lockedBalanceThreshold = Number(process.env.REACT_APP_FUTURES_LOCKED_BALANCE_THRESHOLD || "80");
+  const shouldHighlight = useMemo(() => {
+    if (!futureBalance.data || !minMargin || futureBalance.data === 0n) return false;
+    const lockedAmount = minMargin > 0n ? minMargin : -minMargin; // Use absolute value
+    const lockedPercentage = (Number(lockedAmount) / Number(futureBalance.data)) * 100;
+    return lockedPercentage >= lockedBalanceThreshold;
+  }, [futureBalance.data, minMargin, lockedBalanceThreshold]);
+
   return (
     <>
-      <SmallWidget>
-        <h3>Futures Balance</h3>
-        <BalanceContainer>
-          {!address && <div>Connect wallet to view balance</div>}
-          {isLoading && <Spinner fontSize="0.3em" />}
-          {isSuccess && address && (
-            <BalanceRow>
-              <BalanceDisplay>
-                <BalanceAmount>
-                  <UsdcIcon style={{ width: "25px", marginRight: "8px" }} />
-                  {balanceValue?.valueRounded}
-                  <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
-                </BalanceAmount>
-              </BalanceDisplay>
-              <ActionButtons>
-                <PrimaryButton
-                  onClick={depositModal.open}
-                  disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
-                  title={
-                    !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
-                  }
-                >
-                  Deposit
-                </PrimaryButton>
-                <PrimaryButton
-                  onClick={withdrawalModal.open}
-                  disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
-                  title={
-                    !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
-                  }
-                >
-                  Withdraw
-                </PrimaryButton>
-              </ActionButtons>
-            </BalanceRow>
+      <BalanceWidgetContainer className="lg:w-[60%]" $shouldHighlight={shouldHighlight}>
+        {address && <h3>Futures Balance</h3>}
+        <BalanceContainer $shouldHighlight={shouldHighlight}>
+          {!address && <div>Connect wallet to view balance and use marketplace</div>}
+          {isLoading && address && <Spinner fontSize="0.3em" />}
+          {isSuccess && address && hasMinimumLmrBalance && (
+            <>
+              <BalanceRow>
+                <BalanceDisplay>
+                  <BalanceStats>
+                    <div className="balance">
+                      <div>
+                        <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                        <div>{balanceValue?.valueRounded}</div>
+                        <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                      </div>
+                      <p>BALANCE</p>
+                    </div>
+                    <div className="balance">
+                      <div>
+                        {isLoadingMinMargin ? (
+                          <Spinner fontSize="0.3em" />
+                        ) : (
+                          <>
+                            <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                            <div>{lockedBalanceValue ? lockedBalanceValue.valueRounded : 0}</div>
+                            <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                          </>
+                        )}
+                      </div>
+                      <p>LOCKED BALANCE</p>
+                    </div>
+                  </BalanceStats>
+                </BalanceDisplay>
+                <ActionButtons>
+                  <PrimaryButton
+                    onClick={depositModal.open}
+                    disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
+                    title={
+                      !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
+                    }
+                  >
+                    Deposit
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onClick={withdrawalModal.open}
+                    disabled={!hasMinimumLmrBalance || isLmrBalanceLoading}
+                    title={
+                      !hasMinimumLmrBalance ? `Insufficient LMR balance. Required: ${requiredLmrAmount} LMR` : undefined
+                    }
+                  >
+                    Withdraw
+                  </PrimaryButton>
+                </ActionButtons>
+              </BalanceRow>
+            </>
+          )}
+          {isSuccess && address && !hasMinimumLmrBalance && (
+            <p onClick={(e) => e.preventDefault()}>
+              {isLmrBalanceLoading
+                ? "Checking LMR balance..."
+                : hasMinimumLmrBalance
+                  ? `✓ LMR balance sufficient (${lmrBalanceValidation.totalBalance.toString()} LMR)`
+                  : `⚠ Insufficient LMR balance (${lmrBalanceValidation.totalBalance.toString()} LMR). Required: ${process.env.REACT_APP_FUTURES_REQUIRED_LMR} LMR (Arbitrum or Ethereum)`}
+            </p>
           )}
         </BalanceContainer>
-        <div className="link">
-          <p onClick={(e) => e.preventDefault()}>
-            {isLmrBalanceLoading
-              ? "Checking LMR balance..."
-              : hasMinimumLmrBalance
-                ? `✓ LMR balance sufficient (${lmrBalanceValidation.totalBalance.toString()} LMR)`
-                : `⚠ Insufficient LMR balance. Required: ${process.env.REACT_APP_FUTURES_REQUIRED_LMR} LMR (Arbitrum or Ethereum)`}
-          </p>
-        </div>
-      </SmallWidget>
+        {isSuccess && address && !hasMinimumLmrBalance && (
+          <div className="link">
+            <a href={process.env.REACT_APP_BUY_LMR_URL} target="_blank" rel="noreferrer">
+              Buy LMR tokens on Uniswap <EastIcon style={{ fontSize: "0.75rem" }} />
+            </a>
+          </div>
+        )}
+
+        {shouldHighlight && (
+          <MarginCallWarning>⚠️ Margin Call Warning: Add Funds to Avoid Liquidation</MarginCallWarning>
+        )}
+      </BalanceWidgetContainer>
 
       <ModalItem open={depositModal.isOpen} setOpen={depositModal.setOpen}>
         <DepositForm closeForm={handleDepositSuccess} />
       </ModalItem>
 
       <ModalItem open={withdrawalModal.isOpen} setOpen={withdrawalModal.setOpen}>
-        <WithdrawalForm closeForm={handleWithdrawalSuccess} />
+        <WithdrawalForm
+          closeForm={handleWithdrawalSuccess}
+          minMargin={minMargin}
+          isLoadingMinMargin={isLoadingMinMargin}
+        />
       </ModalItem>
     </>
   );
 };
 
-const BalanceContainer = styled("div")`
+const BalanceContainer = styled("div")<{ $shouldHighlight: boolean }>`
+  padding: ${(props) => (props.$shouldHighlight ? "1rem 0 0 0" : "1rem 0")};
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
   width: 100%;
-  padding: 1rem 0;
   gap: 1rem;
 `;
 
@@ -130,19 +182,41 @@ const BalanceDisplay = styled("div")`
   gap: 0.5rem;
 `;
 
-const BalanceAmount = styled("div")`
-  font-size: 2rem;
-  font-weight: 600;
-  color: #fff;
+const BalanceStats = styled("div")`
   display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.75rem;
+  gap: 3rem;
+  width: 100%;
+
+  .balance {
+    flex: 1;
+    div {
+      font-size: 1.85rem;
+      line-height: 1.75rem;
+      text-align: center;
+      margin-bottom: 0.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+    p {
+      font-size: 0.625rem;
+      text-align: center;
+      color: #a7a9b6;
+    }
+  }
 `;
 
 const TokenSymbol = styled("span")`
   font-size: 1.2rem;
   font-weight: 400;
   color: #a7a9b6;
+  margin-left: 0.25rem;
 `;
 
 const ActionButtons = styled("div")`
@@ -165,4 +239,22 @@ const ActionButtons = styled("div")`
       max-width: 120px;
     }
   }
+`;
+
+const BalanceWidgetContainer = styled(SmallWidget)<{ $shouldHighlight: boolean }>`
+  border: ${(props) => (props.$shouldHighlight ? "2px solid #fbbf24" : "rgba(171, 171, 171, 1) 1px solid")};
+  background: ${(props) => (props.$shouldHighlight ? "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 0, 0.05) 100%)" : "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%)")};
+  transition: border-color 0.3s ease;
+`;
+
+const MarginCallWarning = styled("div")`
+  padding: 0.2rem;
+  background-color: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 6px;
+  color: #fbbf24;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
 `;

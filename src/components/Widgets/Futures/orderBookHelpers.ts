@@ -146,10 +146,10 @@ export const createFinalOrderBookData = (
     }
   }
 
-  // Build final array sorted by price asc (lower prices on top)
+  // Build final array sorted by price desc (higher prices on top)
   // Normalize prices in final output to ensure consistency
   return Array.from(mergedMap.entries())
-    .sort((a, b) => a[0] - b[0])
+    .sort((a, b) => b[0] - a[0])
     .map(([price, v]) => {
       const normalizedPrice = normalizePrice(price);
       return {

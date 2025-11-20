@@ -23,7 +23,15 @@ export const FuturesMarketWidget = ({ contractSpecsQuery }: FuturesMarketWidgetP
   };
 
   const formatDuration = (seconds: number) => {
-    const weeks = Math.round(seconds / (7 * 24 * 60 * 60)); // Convert to weeks
+    const secondsInWeek = 7 * 24 * 60 * 60;
+    const secondsInDay = 24 * 60 * 60;
+
+    if (seconds < secondsInWeek) {
+      const days = Math.round(seconds / secondsInDay);
+      return `${days} day${days !== 1 ? "s" : ""}`;
+    }
+
+    const weeks = Math.round(seconds / secondsInWeek);
     return `${weeks} week${weeks !== 1 ? "s" : ""}`;
   };
 
@@ -33,7 +41,7 @@ export const FuturesMarketWidget = ({ contractSpecsQuery }: FuturesMarketWidgetP
 
   return (
     <>
-      <SmallWidget>
+      <SmallWidget className="lg:w-[38%]">
         <h3>Contract Spec</h3>
         <MarketStats>
           {isLoading && <Spinner fontSize="0.3em" />}

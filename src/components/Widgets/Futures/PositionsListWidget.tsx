@@ -47,6 +47,11 @@ export const PositionsListWidget = ({
     return type === "Long" ? "#22c55e" : "#ef4444";
   };
 
+  const getPriceForPosition = (position: PositionBookPosition) => {
+    const positionType = getPositionType(position);
+    return positionType === "Long" ? position.buyPricePerDay : position.sellPricePerDay;
+  };
+
   const formatPrice = (price: bigint) => {
     return (Number(price) / 1e6).toFixed(2); // Convert from wei to USDC
   };
@@ -136,15 +141,16 @@ export const PositionsListWidget = ({
     }
   };
 
-  // Group positions by pricePerDay, deliveryAt, and position type
+  // Group positions by price (based on position type), deliveryAt, and position type
   const groupedPositions = positions.reduce(
     (acc, position) => {
       const positionType = getPositionType(position);
-      const key = `${position.pricePerDay}-${position.deliveryAt}-${positionType}`;
+      const pricePerDay = getPriceForPosition(position);
+      const key = `${pricePerDay}-${position.deliveryAt}-${positionType}`;
 
       if (!acc[key]) {
         acc[key] = {
-          pricePerDay: position.pricePerDay,
+          pricePerDay: pricePerDay,
           deliveryAt: position.deliveryAt,
           positionType: positionType,
           destURL: position.destURL,

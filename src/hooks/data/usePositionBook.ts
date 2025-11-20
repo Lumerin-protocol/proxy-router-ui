@@ -30,7 +30,8 @@ const fetchPositionBookAsync = async (address: `0x${string}`) => {
       transactionHash: position.transactionHash,
       timestamp: position.timestamp,
       deliveryAt: position.deliveryAt,
-      pricePerDay: BigInt(position.pricePerDay),
+      sellPricePerDay: BigInt(position.sellPricePerDay),
+      buyPricePerDay: BigInt(position.buyPricePerDay),
       isActive: position.isActive,
       destURL: position.destURL,
       id: position.id,
@@ -81,7 +82,8 @@ export type PositionBookPosition = {
   transactionHash: `0x${string}`;
   timestamp: string;
   deliveryAt: string;
-  pricePerDay: bigint;
+  sellPricePerDay: bigint;
+  buyPricePerDay: bigint;
   isActive: boolean;
   id: string;
   closedBy: string | null;
@@ -106,7 +108,8 @@ type PositionBookResponse = {
     transactionHash: `0x${string}`;
     timestamp: string;
     deliveryAt: string;
-    pricePerDay: string;
+    sellPricePerDay: string;
+    buyPricePerDay: string;
     isActive: boolean;
     id: string;
     destURL: string;

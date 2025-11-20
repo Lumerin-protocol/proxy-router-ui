@@ -1,4 +1,4 @@
-import { memo, type FC, useCallback, useState } from "react";
+import { memo, type FC, useCallback, useState, useEffect } from "react";
 import { useForm, useController, type Control } from "react-hook-form";
 import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
@@ -8,10 +8,13 @@ import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
 import { PARTICIPANT_QK } from "../../hooks/data/useParticipant";
 import { POSITION_BOOK_QK } from "../../hooks/data/usePositionBook";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { formatStratumUrl } from "../../utils/formatters";
 import { isValidHost, isValidUsername } from "../../utils/validators";
 import styled from "@mui/material/styles/styled";
+import type { Participant } from "../../hooks/data/useParticipant";
+import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
+import { calculateMinMargin } from "../../hooks/data/useGetMinMarginForPosition";
 
 interface PoolFormValues {
   poolAddress: string;
@@ -22,17 +25,72 @@ interface Props {
   price: bigint;
   deliveryDate: bigint;
   quantity: number; // Positive for Buy, Negative for Sell
+  participantData?: Participant | null;
+  onOrderPlaced?: () => void | Promise<void>;
   closeForm: () => void;
 }
 
-export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, closeForm }) => {
+export const PlaceOrderForm: FC<Props> = ({
+  price,
+  deliveryDate,
+  quantity,
+  participantData,
+  onOrderPlaced,
+  closeForm,
+}) => {
   const { createOrderAsync } = useCreateOrder();
   const qc = useQueryClient();
   const { address } = useAccount();
+  const publicClient = usePublicClient();
+  const contractSpecsQuery = useFuturesContractSpecs();
 
   // Determine order type from quantity sign
   const isBuy = quantity > 0;
   const absoluteQuantity = Math.abs(quantity);
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+
+  // State for required margin
+  const [requiredMargin, setRequiredMargin] = useState<bigint | null>(null);
+  const [isLoadingMargin, setIsLoadingMargin] = useState(false);
+
+  // Calculate required margin when price or quantity changes
+  useEffect(() => {
+    const fetchMargin = async () => {
+      if (!publicClient) return;
+
+      setIsLoadingMargin(true);
+      try {
+        const margin = await calculateMinMargin(publicClient, {
+          entryPricePerDay: price,
+          quantity: quantity,
+        });
+        setRequiredMargin(margin);
+      } catch (error) {
+        console.error("Failed to calculate required margin:", error);
+        setRequiredMargin(null);
+      } finally {
+        setIsLoadingMargin(false);
+      }
+    };
+    fetchMargin();
+  }, [publicClient, price, quantity]);
+
+  // Check for conflicting orders (opposite action, same price, same delivery date)
+  const hasConflictingOrder = () => {
+    if (!participantData?.orders) return false;
+
+    const priceInWei = price;
+    const deliveryDateValue = deliveryDate;
+    const oppositeIsBuy = !isBuy;
+
+    return participantData.orders.some(
+      (order) =>
+        order.isActive &&
+        order.isBuy === oppositeIsBuy &&
+        order.pricePerDay === priceInWei &&
+        order.deliveryAt === deliveryDateValue,
+    );
+  };
 
   // State for checkbox to show pool input form
   const [hidePoolInput, setHidePoolInput] = useState(true);
@@ -99,14 +157,9 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
       reviewForm={(props) => (
         <>
           <div className="mb-4">
-            <h3 className="font-semibold mb-2">Order Details:</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-300">Type:</span>
-                <span className="text-white">{isBuy ? "Buy" : "Sell"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Price:</span>
+                <span className="text-gray-300">Price Per Day:</span>
                 <span className="text-white">{Number(price) / 1e6} USDC</span>
               </div>
               <div className="flex justify-between">
@@ -119,7 +172,23 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-300">Total Value:</span>
-                <span className="text-white">{((Number(price) / 1e6) * absoluteQuantity).toFixed(2)} USDC</span>
+                <span className="text-white">
+                  {((Number(price) / 1e6) * absoluteQuantity * deliveryDurationDays).toFixed(2)} USDC
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Expected Hashrate:</span>
+                <span className="text-white">{absoluteQuantity * 100} Th/s</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Required Margin:</span>
+                <span className="text-white">
+                  {requiredMargin !== null
+                    ? `${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
+                    : isLoadingMargin
+                      ? "Loading..."
+                      : "N/A"}
+                </span>
               </div>
             </div>
           </div>
@@ -153,6 +222,15 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
         {
           label: `Place ${isBuy ? "Buy" : "Sell"} Order`,
           action: async () => {
+            // Check for conflicting order before proceeding
+            if (hasConflictingOrder()) {
+              const oppositeAction = isBuy ? "Sell" : "Buy";
+              const priceInUSDC = Number(price) / 1e6;
+              throw new Error(
+                `Cannot create ${isBuy ? "Buy" : "Sell"} order at price ${priceInUSDC} USDC. You already have an active ${oppositeAction} order at the same price and delivery date. Please close or modify the existing order first.`,
+              );
+            }
+
             const destUrl = getDestUrl();
             const txhash = await createOrderAsync({
               price,
@@ -175,6 +253,10 @@ export const PlaceOrderForm: FC<Props> = ({ price, deliveryDate, quantity, close
               address && qc.invalidateQueries({ queryKey: [POSITION_BOOK_QK] }),
               address && qc.invalidateQueries({ queryKey: [PARTICIPANT_QK] }),
             ]);
+
+            if (onOrderPlaced) {
+              await onOrderPlaced();
+            }
           },
         },
       ]}
