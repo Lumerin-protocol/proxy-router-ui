@@ -1,5 +1,6 @@
 import styled from "@mui/material/styles/styled";
 import { useAccount } from "wagmi";
+import { useMemo } from "react";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 import { useLmrBalanceValidation } from "../../../hooks/data/useLmrBalanceValidation";
 import { useModal } from "../../../hooks/useModal";
@@ -45,11 +46,20 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
   const hasMinimumLmrBalance = lmrBalanceValidation.totalBalance >= requiredLmrAmount;
   const isLmrBalanceLoading = lmrBalanceValidation.isLoading;
 
+  // Check if locked amount is at or above threshold percentage of balance
+  const lockedBalanceThreshold = Number(process.env.REACT_APP_FUTURES_LOCKED_BALANCE_THRESHOLD || "80");
+  const shouldHighlight = useMemo(() => {
+    if (!futureBalance.data || !minMargin || futureBalance.data === 0n) return false;
+    const lockedAmount = minMargin > 0n ? minMargin : -minMargin; // Use absolute value
+    const lockedPercentage = (Number(lockedAmount) / Number(futureBalance.data)) * 100;
+    return lockedPercentage >= lockedBalanceThreshold;
+  }, [futureBalance.data, minMargin, lockedBalanceThreshold]);
+
   return (
     <>
-      <SmallWidget className="lg:w-[60%]">
+      <BalanceWidgetContainer className="lg:w-[60%]" $shouldHighlight={shouldHighlight}>
         {address && <h3>Futures Balance</h3>}
-        <BalanceContainer>
+        <BalanceContainer $shouldHighlight={shouldHighlight}>
           {!address && <div>Connect wallet to view balance and use marketplace</div>}
           {isLoading && address && <Spinner fontSize="0.3em" />}
           {isSuccess && address && hasMinimumLmrBalance && (
@@ -121,7 +131,11 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
             </a>
           </div>
         )}
-      </SmallWidget>
+
+        {shouldHighlight && (
+          <MarginCallWarning>⚠️ Margin Call Warning: Add Funds to Avoid Liquidation</MarginCallWarning>
+        )}
+      </BalanceWidgetContainer>
 
       <ModalItem open={depositModal.isOpen} setOpen={depositModal.setOpen}>
         <DepositForm closeForm={handleDepositSuccess} />
@@ -138,13 +152,13 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
   );
 };
 
-const BalanceContainer = styled("div")`
+const BalanceContainer = styled("div")<{ $shouldHighlight: boolean }>`
+  padding: ${(props) => (props.$shouldHighlight ? "1rem 0 0 0" : "1rem 0")};
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 1rem 0;
   gap: 1rem;
 `;
 
@@ -225,4 +239,22 @@ const ActionButtons = styled("div")`
       max-width: 120px;
     }
   }
+`;
+
+const BalanceWidgetContainer = styled(SmallWidget)<{ $shouldHighlight: boolean }>`
+  border: ${(props) => (props.$shouldHighlight ? "2px solid #fbbf24" : "rgba(171, 171, 171, 1) 1px solid")};
+  background: ${(props) => (props.$shouldHighlight ? "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 0, 0.05) 100%)" : "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%)")};
+  transition: border-color 0.3s ease;
+`;
+
+const MarginCallWarning = styled("div")`
+  padding: 0.2rem;
+  background-color: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 6px;
+  color: #fbbf24;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
 `;
