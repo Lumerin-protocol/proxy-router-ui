@@ -12,6 +12,7 @@ import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContrac
 import type { Participant } from "../../../hooks/data/useParticipant";
 import { useAccount } from "wagmi";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
+import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
@@ -22,6 +23,7 @@ interface PlaceOrderWidgetProps {
   address?: `0x${string}`;
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
   participantData?: Participant | null;
+  latestPrice: bigint | null;
   onOrderPlaced?: () => void | Promise<void>;
 }
 
@@ -33,6 +35,7 @@ export const PlaceOrderWidget = ({
   highlightTrigger,
   contractSpecsQuery,
   participantData,
+  latestPrice,
   onOrderPlaced,
 }: PlaceOrderWidgetProps) => {
   const hashrateQuery = useHashrateIndexData();
@@ -46,6 +49,7 @@ export const PlaceOrderWidget = ({
 
   // Get delivery duration days from contract specs
   const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+  const marginPercent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
 
   // Get newest item price for validation and default price
   const newestItemPrice =
@@ -166,13 +170,30 @@ export const PlaceOrderWidget = ({
       return;
     }
 
-    // Validate balance for buy orders
+    // Validate balance for buy orders using getMinMarginForPositionManual
     const currentPrice = parseFloat(price);
-    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount) * BigInt(deliveryDurationDays);
+    const priceInWei = BigInt(Math.round(currentPrice * 1e6));
     const balance = balanceQuery.data ?? 0n;
 
-    if (totalOrderValue > balance) {
-      alert(`Insufficient funds. Required: ${totalOrderValue / BigInt(10 ** 6)} USDC`);
+    if (!latestPrice) {
+      alert("Unable to fetch market price. Please try again.");
+      return;
+    }
+
+    const requiredMargin = getMinMarginForPositionManual(
+      priceInWei,
+      amount, // Positive quantity for Buy
+      latestPrice,
+      marginPercent,
+      deliveryDurationDays,
+    );
+
+    if (requiredMargin > balance) {
+      const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
+      const balanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      alert(
+        `Insufficient funds. Required margin: ${requiredMarginFormatted} USDC. Available balance: ${balanceFormatted} USDC`,
+      );
       return;
     }
 
@@ -218,13 +239,30 @@ export const PlaceOrderWidget = ({
       return;
     }
 
-    // Validate balance for sell orders
+    // Validate balance for sell orders using getMinMarginForPositionManual
     const currentPrice = parseFloat(price);
-    const totalOrderValue = BigInt(Math.round(currentPrice * 1e6)) * BigInt(amount) * BigInt(deliveryDurationDays);
+    const priceInWei = BigInt(Math.round(currentPrice * 1e6));
     const balance = balanceQuery.data ?? 0n;
 
-    if (totalOrderValue > balance) {
-      alert(`Insufficient funds. Required: ${totalOrderValue / BigInt(10 ** 6)} USDC`);
+    if (!latestPrice) {
+      alert("Unable to fetch market price. Please try again.");
+      return;
+    }
+
+    const requiredMargin = getMinMarginForPositionManual(
+      priceInWei,
+      -amount, // Negative quantity for Sell
+      latestPrice,
+      marginPercent,
+      deliveryDurationDays,
+    );
+
+    if (requiredMargin > balance) {
+      const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
+      const balanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      alert(
+        `Insufficient funds. Required margin: ${requiredMarginFormatted} USDC. Available balance: ${balanceFormatted} USDC`,
+      );
       return;
     }
 
@@ -362,6 +400,7 @@ export const PlaceOrderWidget = ({
             deliveryDate={BigInt(externalDeliveryDate)}
             quantity={pendingOrder.quantity}
             participantData={participantData}
+            latestPrice={latestPrice}
             onOrderPlaced={onOrderPlaced}
             closeForm={() => {
               setShowOrderForm(false);

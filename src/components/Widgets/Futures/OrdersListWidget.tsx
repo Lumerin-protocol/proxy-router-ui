@@ -8,6 +8,9 @@ import { ModifyOrderForm } from "../../Forms/ModifyOrderForm";
 import { CloseOrderForm } from "../../Forms/CloseOrderForm";
 import { ServerStackIcon } from "@heroicons/react/24/outline";
 import Tooltip from "@mui/material/Tooltip";
+import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
+import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface OrdersListWidgetProps {
   orders: ParticipantOrder[];
@@ -17,6 +20,8 @@ interface OrdersListWidgetProps {
 export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) => {
   const modifyModal = useModal();
   const closeModal = useModal();
+  const hashrateQuery = useHashrateIndexData();
+  const contractSpecsQuery = useFuturesContractSpecs();
   const [selectedOrder, setSelectedOrder] = useState<{
     order: ParticipantOrder;
     orderIds: string[];
@@ -53,6 +58,25 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
   const formatDeliveryDate = (deliveryDate: bigint) => {
     const date = new Date(Number(deliveryDate) * 1000);
     return date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+  };
+
+  // Get latest price from hashrate index
+  const latestPrice = hashrateQuery.data && hashrateQuery.data.length > 0 ? hashrateQuery.data[0].priceToken : null;
+
+  // Get contract specs
+  const marginPercent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+
+  // Calculate margin for an order
+  const calculateMargin = (pricePerDay: bigint, amount: number, isBuy: boolean): bigint | null => {
+    if (!latestPrice) return null;
+    const qty = isBuy ? amount : -amount;
+    return getMinMarginForPositionManual(pricePerDay, qty, latestPrice, marginPercent, deliveryDurationDays);
+  };
+
+  const formatMargin = (margin: bigint | null): string => {
+    if (margin === null) return "-";
+    return `${(Number(margin) / 1e6).toFixed(2)} USDC`;
   };
 
   const handleCloseOrder = (groupedOrder: {
@@ -132,8 +156,9 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
           <thead>
             <tr>
               <th>Type</th>
-              <th>Price</th>
+              <th>Price per day</th>
               <th>Amount</th>
+              <th>Margin</th>
               <th>Delivery Date</th>
               <th>Destination</th>
               <th>Actions</th>
@@ -149,14 +174,19 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
                 </td>
                 <td>{formatPrice(groupedOrder.pricePerDay)} USDC</td>
                 <td>{groupedOrder.amount}</td>
+                <td>
+                  {formatMargin(calculateMargin(groupedOrder.pricePerDay, groupedOrder.amount, groupedOrder.isBuy))}
+                </td>
                 <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
                 <td>
-                  {groupedOrder.destURL && (
+                  {groupedOrder.destURL ? (
                     <Tooltip title={groupedOrder.destURL}>
                       <DestURLCell>
                         <ServerStackIcon width={20} height={20} />
                       </DestURLCell>
                     </Tooltip>
+                  ) : (
+                    <span>---</span>
                   )}
                 </td>
                 <td>

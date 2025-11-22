@@ -81,6 +81,7 @@ export const PositionsBookQuery = gql`
     closedBy
     closedAt
     destURL
+    isPaid
     buyer {
       address
     }

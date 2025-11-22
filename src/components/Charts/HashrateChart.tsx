@@ -101,9 +101,18 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
         color: "#ffffff",
       },
       formatter: function () {
-        const date = new Date(this.x as number).toLocaleDateString();
+        // const date = new Date(this.x as number).toLocaleDateString();
+        const date = new Date(this.x as number).toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
         const value = (this.y as number).toFixed(2);
-        return `${date}<br/><b>Price:</b> ${value} USDC`;
+
+        const style = "color: grey; font-size: 10px;";
+        return `<b>Price:</b> ${value} USDC<br/> <span style="${style}">${date}</span>`;
       },
     },
     credits: {

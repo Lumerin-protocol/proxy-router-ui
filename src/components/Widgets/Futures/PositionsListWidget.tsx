@@ -5,7 +5,13 @@ import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
 import { ParticipantPosition } from "../../../hooks/data/useParticipant";
 import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
-import { ServerStackIcon } from "@heroicons/react/24/outline";
+import { ServerStackIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { useModal } from "../../../hooks/useModal";
+import { ModalItem } from "../../Modal";
+import { DepositDeliveryPaymentForm } from "../../Forms/DepositDeliveryPaymentForm";
+import { useState } from "react";
+import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
+import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface PositionsListWidgetProps {
   positions: PositionBookPosition[];
@@ -22,6 +28,11 @@ export const PositionsListWidget = ({
 }: PositionsListWidgetProps) => {
   const { createOrderAsync, isPending } = useCreateOrder();
   const hashrateQuery = useHashrateIndexData();
+  const contractSpecsQuery = useFuturesContractSpecs();
+  const depositModal = useModal();
+  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<bigint | null>(null);
+  const [selectedPricePerDay, setSelectedPricePerDay] = useState<bigint | null>(null);
+  const [selectedTotalContracts, setSelectedTotalContracts] = useState<number | null>(null);
 
   const getStatusColor = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
@@ -64,6 +75,24 @@ export const PositionsListWidget = ({
   // Get latest price from hashrate index
   const latestPrice =
     hashrateQuery.data && hashrateQuery.data.length > 0 ? Number(hashrateQuery.data[0].priceToken) / 1e6 : null;
+  const latestPriceBigInt =
+    hashrateQuery.data && hashrateQuery.data.length > 0 ? hashrateQuery.data[0].priceToken : null;
+
+  // Get contract specs
+  const marginPercent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
+  const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+
+  // Calculate margin for a position
+  const calculateMargin = (pricePerDay: bigint, amount: number, positionType: string): bigint | null => {
+    if (!latestPriceBigInt) return null;
+    const qty = positionType === "Long" ? amount : -amount;
+    return getMinMarginForPositionManual(pricePerDay, qty, latestPriceBigInt, marginPercent, deliveryDurationDays);
+  };
+
+  const formatMargin = (margin: bigint | null): string => {
+    if (margin === null) return "-";
+    return `${(Number(margin) / 1e6).toFixed(2)} USDC`;
+  };
 
   // Calculate PnL for a position
   const calculatePnL = (
@@ -155,13 +184,17 @@ export const PositionsListWidget = ({
           positionType: positionType,
           destURL: position.destURL,
           amount: 0,
+          paidCount: 0,
           isActive: position.isActive,
           closedAt: position.closedAt,
-          positions: [] as ParticipantPosition[],
+          positions: [] as PositionBookPosition[],
         };
       }
 
       acc[key].amount += 1;
+      if (position.isPaid) {
+        acc[key].paidCount += 1;
+      }
       acc[key].positions.push(position);
 
       return acc;
@@ -174,6 +207,7 @@ export const PositionsListWidget = ({
         positionType: string;
         destURL: string;
         amount: number;
+        paidCount: number;
         isActive: boolean;
         closedAt: string | null;
         positions: PositionBookPosition[];
@@ -203,11 +237,13 @@ export const PositionsListWidget = ({
           <thead>
             <tr>
               <th>Type</th>
-              <th>Price</th>
+              <th>Price per day</th>
               <th>Amount</th>
+              <th>Margin</th>
               <th>PnL</th>
               <th>Start Time</th>
               <th>Destination</th>
+              <th>Payment</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -222,6 +258,11 @@ export const PositionsListWidget = ({
                 <td>{formatPrice(groupedPosition.pricePerDay)} USDC</td>
                 <td>{groupedPosition.amount}</td>
                 <td>
+                  {formatMargin(
+                    calculateMargin(groupedPosition.pricePerDay, groupedPosition.amount, groupedPosition.positionType),
+                  )}
+                </td>
+                <td>
                   {(() => {
                     const { pnl, percentage } = calculatePnL(
                       groupedPosition.pricePerDay,
@@ -233,24 +274,57 @@ export const PositionsListWidget = ({
                 </td>
                 <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
                 <td>
-                  {groupedPosition.destURL && (
+                  {groupedPosition.destURL ? (
                     <Tooltip title={groupedPosition.destURL}>
                       <DestURLCell>
                         <ServerStackIcon width={20} height={20} />
                       </DestURLCell>
                     </Tooltip>
+                  ) : (
+                    <span>---</span>
                   )}
                 </td>
                 <td>
-                  {groupedPosition.isActive && !groupedPosition.closedAt && (
-                    <CloseButton
-                      onClick={() => handleClosePosition(groupedPosition)}
-                      disabled={isPending}
-                      title="By creating opposite order"
-                    >
-                      Close
-                    </CloseButton>
+                  {groupedPosition.destURL ? (
+                    <PaymentStatusCell>
+                      {groupedPosition.paidCount === groupedPosition.amount ? (
+                        <CheckCircleIcon width={20} height={20} color="#22c55e" />
+                      ) : (
+                        <XCircleIcon width={20} height={20} color="#ef4444" />
+                      )}
+                      <PaymentText>
+                        {groupedPosition.paidCount}/{groupedPosition.amount}
+                      </PaymentText>
+                    </PaymentStatusCell>
+                  ) : (
+                    <span>---</span>
                   )}
+                </td>
+                <td>
+                  <ActionButtons>
+                    {groupedPosition.destURL && (
+                      <DepositButton
+                        onClick={() => {
+                          setSelectedDeliveryDate(BigInt(groupedPosition.deliveryAt));
+                          setSelectedPricePerDay(groupedPosition.pricePerDay);
+                          setSelectedTotalContracts(groupedPosition.amount);
+                          depositModal.open();
+                        }}
+                        title="Deposit delivery payment"
+                      >
+                        Deposit
+                      </DepositButton>
+                    )}
+                    {groupedPosition.isActive && !groupedPosition.closedAt && (
+                      <CloseButton
+                        onClick={() => handleClosePosition(groupedPosition)}
+                        disabled={isPending}
+                        title="By creating opposite order"
+                      >
+                        Close
+                      </CloseButton>
+                    )}
+                  </ActionButtons>
                 </td>
               </TableRow>
             ))}
@@ -263,6 +337,22 @@ export const PositionsListWidget = ({
           <p>No positions found</p>
         </EmptyState>
       )}
+
+      <ModalItem open={depositModal.isOpen} setOpen={depositModal.setOpen}>
+        {selectedDeliveryDate !== null && selectedPricePerDay !== null && selectedTotalContracts !== null && (
+          <DepositDeliveryPaymentForm
+            closeForm={() => {
+              depositModal.close();
+              setSelectedDeliveryDate(null);
+              setSelectedPricePerDay(null);
+              setSelectedTotalContracts(null);
+            }}
+            deliveryDate={selectedDeliveryDate}
+            pricePerDay={selectedPricePerDay}
+            totalContracts={selectedTotalContracts}
+          />
+        )}
+      </ModalItem>
     </PositionsContainer>
   );
 };
@@ -360,6 +450,17 @@ const DestURLCell = styled("span")`
   font-size: 0.875rem;
 `;
 
+const PaymentStatusCell = styled("span")`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const PaymentText = styled("span")`
+  font-size: 0.875rem;
+  color: #fff;
+`;
+
 const StatusBadge = styled("span")<{ $status: string }>`
   display: inline-block;
   padding: 0.25rem 0.5rem;
@@ -377,6 +478,33 @@ const StatusBadge = styled("span")<{ $status: string }>`
     }
   }};
   color: ${(props) => getStatusColor(props.$status)};
+`;
+
+const ActionButtons = styled("div")`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+const DepositButton = styled("button")`
+  padding: 0.5rem 0.875rem;
+  background: #4c5a5f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  
+  &:hover {
+    background: #5a6b70;
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 const CloseButton = styled("button")`

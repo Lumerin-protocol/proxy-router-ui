@@ -15,6 +15,7 @@ import styled from "@mui/material/styles/styled";
 import type { Participant } from "../../hooks/data/useParticipant";
 import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
 import { calculateMinMargin } from "../../hooks/data/useGetMinMarginForPosition";
+import { getMinMarginForPositionManual } from "../../hooks/data/getMinMarginForPositionManual";
 
 interface PoolFormValues {
   poolAddress: string;
@@ -26,6 +27,7 @@ interface Props {
   deliveryDate: bigint;
   quantity: number; // Positive for Buy, Negative for Sell
   participantData?: Participant | null;
+  latestPrice: bigint | null;
   onOrderPlaced?: () => void | Promise<void>;
   closeForm: () => void;
 }
@@ -35,6 +37,7 @@ export const PlaceOrderForm: FC<Props> = ({
   deliveryDate,
   quantity,
   participantData,
+  latestPrice,
   onOrderPlaced,
   closeForm,
 }) => {
@@ -48,6 +51,7 @@ export const PlaceOrderForm: FC<Props> = ({
   const isBuy = quantity > 0;
   const absoluteQuantity = Math.abs(quantity);
   const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+  const marginPersent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
 
   // State for required margin
   const [requiredMargin, setRequiredMargin] = useState<bigint | null>(null);
@@ -55,25 +59,12 @@ export const PlaceOrderForm: FC<Props> = ({
 
   // Calculate required margin when price or quantity changes
   useEffect(() => {
-    const fetchMargin = async () => {
-      if (!publicClient) return;
-
-      setIsLoadingMargin(true);
-      try {
-        const margin = await calculateMinMargin(publicClient, {
-          entryPricePerDay: price,
-          quantity: quantity,
-        });
-        setRequiredMargin(margin);
-      } catch (error) {
-        console.error("Failed to calculate required margin:", error);
-        setRequiredMargin(null);
-      } finally {
-        setIsLoadingMargin(false);
-      }
-    };
-    fetchMargin();
-  }, [publicClient, price, quantity]);
+    if (!latestPrice) return;
+    setIsLoadingMargin(true);
+    const margin = getMinMarginForPositionManual(price, quantity, latestPrice, marginPersent, deliveryDurationDays);
+    setRequiredMargin(margin);
+    setIsLoadingMargin(false);
+  }, [latestPrice, price, quantity]);
 
   // Check for conflicting orders (opposite action, same price, same delivery date)
   const hasConflictingOrder = () => {
@@ -184,7 +175,7 @@ export const PlaceOrderForm: FC<Props> = ({
                 <span className="text-gray-300">Required Margin:</span>
                 <span className="text-white">
                   {requiredMargin !== null
-                    ? `${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
+                    ? `~${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
                     : isLoadingMargin
                       ? "Loading..."
                       : "N/A"}
