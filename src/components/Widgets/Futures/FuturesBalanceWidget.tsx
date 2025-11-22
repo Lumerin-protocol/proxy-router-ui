@@ -51,7 +51,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
   const isLmrBalanceLoading = lmrBalanceValidation.isLoading;
 
   // Check if locked amount is at or above threshold percentage of balance
-  const lockedBalanceThreshold = Number(process.env.REACT_APP_FUTURES_LOCKED_BALANCE_THRESHOLD || "80");
+  const lockedBalanceThreshold = Number(process.env.REACT_APP_MARGIN_UTILIZATION_WARNING_PERCENT || "80");
   const shouldHighlight = useMemo(() => {
     if (!futureBalance.data || !minMargin || futureBalance.data === 0n) return false;
     const lockedAmount = minMargin > 0n ? minMargin : -minMargin; // Use absolute value
