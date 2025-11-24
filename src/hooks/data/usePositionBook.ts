@@ -19,8 +19,10 @@ export const usePositionBook = (address: `0x${string}` | undefined, props?: { re
 };
 
 const fetchPositionBookAsync = async (address: `0x${string}`) => {
+  const now = Math.floor(Date.now() / 1000);
   const variables = {
     address: address,
+    now: now,
   };
 
   const response = await graphqlRequest<PositionBookResponse>(PositionsBookQuery, variables);

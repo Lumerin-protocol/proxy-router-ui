@@ -147,7 +147,7 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
               type="button"
               onClick={handleMaxQuantityClick}
               disabled={maxQuantity === quantity}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700"
             >
               Max ({maxQuantity})
             </button>
@@ -241,7 +241,7 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
   const reviewForm = useCallback(
     () => (
       <>
-        <div className="p-4 rounded-lg bg-white-500/10 border border-white-500/20">
+        <div className="p-4 mb-2 rounded-lg bg-white-500/10 border border-white-500/20">
           <p className="text-white-400 text-sm font-medium mb-2">Important Information</p>
           <p className="text-gray-300 text-sm">
             This deposit is required if you are interested in actual hashrate delivery. The deposit must be completed

@@ -85,21 +85,25 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm, minMargin, 
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">Total balance:</span>
             <span className="text-white font-medium">
-              {Number(futureBalance.data ? formatValue(futureBalance.data, paymentToken).valueRounded : "0").toFixed(2)}{" "}
+              {Number(futureBalance.data ? formatValue(futureBalance.data, paymentToken).value : "0").toFixed(2)}{" "}
               {paymentToken.symbol}
             </span>
           </div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">Locked amount:</span>
             <span className="text-white font-medium">
-              {Number(formatValue(lockedAmount, paymentToken).valueRounded).toFixed(2)} {paymentToken.symbol}
+              {Number(formatValue(lockedAmount, paymentToken).value).toFixed(2)} {paymentToken.symbol}
             </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-300">Available balance:</span>
             <span className="text-white font-medium">
               {availableBalance !== undefined
-                ? Number(formatValue(availableBalance, paymentToken).valueRounded).toFixed(2)
+                ? (() => {
+                    const numValue = Number(availableBalance) / 1e6; // Convert from wei to USDC
+                    const floored = Math.floor(numValue * 100) / 100; // Round down to 2 decimals
+                    return floored.toFixed(2);
+                  })()
                 : "0"}{" "}
               {paymentToken.symbol}
             </span>

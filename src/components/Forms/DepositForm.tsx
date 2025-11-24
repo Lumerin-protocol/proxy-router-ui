@@ -116,7 +116,11 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
                 ) : (
                   <>
                     {paymentTokenBalance.data
-                      ? Number(formatValue(paymentTokenBalance.data, paymentToken).valueRounded).toFixed(2)
+                      ? (() => {
+                          const numValue = Number(paymentTokenBalance.data) / 1e6; // Convert from wei to USDC
+                          const floored = Math.floor(numValue * 100) / 100; // Round down to 2 decimals
+                          return floored.toFixed(2);
+                        })()
                       : "0"}{" "}
                     {paymentToken.symbol}
                   </>
