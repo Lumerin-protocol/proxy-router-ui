@@ -47,9 +47,26 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
     [paymentTokenBalance.data],
   );
 
+  const handleMaxClick = useCallback(() => {
+    if (paymentTokenBalance.data) {
+      const numValue = Number(paymentTokenBalance.data) / 1e6; // Convert from wei to USDC
+      const floored = Math.floor(numValue * 100) / 100; // Round down to 2 decimals
+      const maxAmount = floored.toFixed(2);
+      form.setValue("amount", maxAmount);
+    }
+  }, [paymentTokenBalance.data, form]);
+
   const inputForm = useCallback(
-    () => <AmountInputForm control={form.control} label="Deposit Amount" additionalValidate={validateBalance} />,
-    [form.control, validateBalance],
+    () => (
+      <AmountInputForm
+        control={form.control}
+        label="Deposit Amount"
+        additionalValidate={validateBalance}
+        onMaxClick={handleMaxClick}
+        showMaxButton={!!paymentTokenBalance.data}
+      />
+    ),
+    [form.control, validateBalance, handleMaxClick, paymentTokenBalance.data],
   );
 
   const validateInput = useCallback(async () => {
@@ -98,7 +115,13 @@ export const DepositForm: FC<DepositFormProps> = ({ closeForm }) => {
                   <span>Loading...</span>
                 ) : (
                   <>
-                    {paymentTokenBalance.data ? formatValue(paymentTokenBalance.data, paymentToken).valueRounded : "0"}{" "}
+                    {paymentTokenBalance.data
+                      ? (() => {
+                          const numValue = Number(paymentTokenBalance.data) / 1e6; // Convert from wei to USDC
+                          const floored = Math.floor(numValue * 100) / 100; // Round down to 2 decimals
+                          return floored.toFixed(2);
+                        })()
+                      : "0"}{" "}
                     {paymentToken.symbol}
                   </>
                 )}

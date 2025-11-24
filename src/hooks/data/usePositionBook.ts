@@ -19,8 +19,10 @@ export const usePositionBook = (address: `0x${string}` | undefined, props?: { re
 };
 
 const fetchPositionBookAsync = async (address: `0x${string}`) => {
+  const now = Math.floor(Date.now() / 1000);
   const variables = {
     address: address,
+    now: now,
   };
 
   const response = await graphqlRequest<PositionBookResponse>(PositionsBookQuery, variables);
@@ -37,6 +39,7 @@ const fetchPositionBookAsync = async (address: `0x${string}`) => {
       id: position.id,
       closedBy: position.closedBy,
       closedAt: position.closedAt,
+      isPaid: position.isPaid,
       buyer: {
         address: position.buyer.address,
       },
@@ -89,6 +92,7 @@ export type PositionBookPosition = {
   closedBy: string | null;
   destURL: string;
   closedAt: string | null;
+  isPaid: boolean;
   buyer: {
     address: `0x${string}`;
   };
@@ -115,6 +119,7 @@ type PositionBookResponse = {
     destURL: string;
     closedBy: string | null;
     closedAt: string | null;
+    isPaid: boolean;
     buyer: {
       address: `0x${string}`;
     };

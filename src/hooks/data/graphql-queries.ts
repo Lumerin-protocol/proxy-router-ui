@@ -60,12 +60,12 @@ export const ParticipantQuery = gql`
 `;
 
 export const PositionsBookQuery = gql`
-  query PositionsBookQuery($address: ID!) {
+  query PositionsBookQuery($address: ID!, $now: BigInt!) {
   positions(
     where: {
       or: [
-        { isActive: true, buyer_: { address: $address } },
-        { isActive: true, seller_: { address: $address } }
+        { isActive: true, deliveryAt_gt: $now, buyer_: { address: $address } },
+        { isActive: true, deliveryAt_gt: $now, seller_: { address: $address } }
       ]
     },
     orderBy: timestamp,
@@ -81,6 +81,7 @@ export const PositionsBookQuery = gql`
     closedBy
     closedAt
     destURL
+    isPaid
     buyer {
       address
     }
@@ -160,6 +161,23 @@ export const DeliveryDatesQuery = gql`
       deliveryDate
       id
     },
+    _meta {
+      block {
+        number
+        timestamp
+      }
+    }
+  }
+`;
+
+export const PaidSellerPositionsQuery = gql`
+  query PaidSellerPositionsQuery($address: ID!) {
+    positions(
+      where: { isPaid: true, seller_: { address: $address }}
+    ) {
+      deliveryAt
+      sellPricePerDay
+    }
     _meta {
       block {
         number

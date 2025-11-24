@@ -55,42 +55,63 @@ export const WithdrawalForm: FC<WithdrawalFormProps> = ({ closeForm, minMargin, 
       const amountBigInt = parseUnits(value, paymentToken.decimals);
       if (amountBigInt > availableBalance) {
         const balanceFormatted = formatValue(availableBalance, paymentToken).valueRounded;
-        return `Insufficient balance. Available: ${balanceFormatted} ${paymentToken.symbol}`;
+        return `Insufficient balance. Available: ${Number(balanceFormatted).toFixed(2)} ${paymentToken.symbol}`;
       }
       return true;
     },
     [futureBalance.data, availableBalance],
   );
 
+  const handleMaxClick = useCallback(() => {
+    if (availableBalance !== undefined) {
+      const numValue = Number(availableBalance) / 1e6; // Convert from wei to USDC
+      const floored = Math.floor(numValue * 100) / 100; // Round down to 2 decimals
+      const maxAmount = floored.toFixed(2);
+      form.setValue("amount", maxAmount);
+    }
+  }, [availableBalance, form]);
+
   const inputForm = useCallback(
     () => (
       <div className="space-y-4">
-        <AmountInputForm control={form.control} label="Withdrawal Amount" additionalValidate={validateBalance} />
+        <AmountInputForm
+          control={form.control}
+          label="Withdrawal Amount"
+          additionalValidate={validateBalance}
+          onMaxClick={handleMaxClick}
+          showMaxButton={availableBalance !== undefined}
+        />
         <div className="p-4 rounded-lg">
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">Total balance:</span>
             <span className="text-white font-medium">
-              {futureBalance.data ? formatValue(futureBalance.data, paymentToken).valueRounded : "0"}{" "}
+              {Number(futureBalance.data ? formatValue(futureBalance.data, paymentToken).value : "0").toFixed(2)}{" "}
               {paymentToken.symbol}
             </span>
           </div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">Locked amount:</span>
             <span className="text-white font-medium">
-              {formatValue(lockedAmount, paymentToken).valueRounded} {paymentToken.symbol}
+              {Number(formatValue(lockedAmount, paymentToken).value).toFixed(2)} {paymentToken.symbol}
             </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-300">Available balance:</span>
             <span className="text-white font-medium">
-              {availableBalance !== undefined ? formatValue(availableBalance, paymentToken).valueRounded : "0"}{" "}
+              {availableBalance !== undefined
+                ? (() => {
+                    const numValue = Number(availableBalance) / 1e6; // Convert from wei to USDC
+                    const floored = Math.floor(numValue * 100) / 100; // Round down to 2 decimals
+                    return floored.toFixed(2);
+                  })()
+                : "0"}{" "}
               {paymentToken.symbol}
             </span>
           </div>
         </div>
       </div>
     ),
-    [form.control, validateBalance, futureBalance.data, lockedAmount, availableBalance],
+    [form.control, validateBalance, handleMaxClick, availableBalance, futureBalance.data, lockedAmount],
   );
 
   const validateInput = useCallback(async () => {

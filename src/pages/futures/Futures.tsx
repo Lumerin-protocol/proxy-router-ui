@@ -1,4 +1,4 @@
-import { type FC, useState, useRef } from "react";
+import { type FC, useState, useRef, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { FuturesBalanceWidget } from "../../components/Widgets/Futures/FuturesBalanceWidget";
 import { FuturesMarketWidget } from "../../components/Widgets/Futures/FuturesMarketWidget";
@@ -13,6 +13,7 @@ import { usePositionBook } from "../../hooks/data/usePositionBook";
 import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
 import { useGetMinMargin } from "../../hooks/data/useGetMinMargin";
 import { SmallWidget } from "../../components/Cards/Cards.styled";
+import type { PositionBookPosition } from "../../hooks/data/usePositionBook";
 
 export const Futures: FC = () => {
   const { isConnected, address } = useAccount();
@@ -25,6 +26,32 @@ export const Futures: FC = () => {
   const minMarginQuery = useGetMinMargin(address);
   const minMargin = minMarginQuery.data ?? null;
   const isLoadingMinMargin = minMarginQuery.isLoading;
+
+  // Calculate total unrealized PnL from all active positions
+  const latestPrice = hashrateQuery.data && hashrateQuery.data.length > 0 ? hashrateQuery.data[0].priceToken : null;
+
+  const totalUnrealizedPnL = useMemo(() => {
+    if (!latestPrice || !positionBookData?.data?.positions || !address) return null;
+
+    const activePositions = positionBookData.data.positions.filter((p) => p.isActive && !p.closedAt);
+    let totalPnL = 0n;
+
+    activePositions.forEach((position: PositionBookPosition) => {
+      const isLong = position.buyer.address.toLowerCase() === address.toLowerCase();
+      const entryPrice = isLong ? position.buyPricePerDay : position.sellPricePerDay;
+      const entryPriceNum = entryPrice;
+      const priceDiff = latestPrice - entryPriceNum;
+
+      const positionPnL = isLong ? priceDiff : -priceDiff;
+      totalPnL += positionPnL;
+    });
+
+    if (Math.abs(Number(totalPnL)) < 1000) {
+      return 0n;
+    }
+
+    return totalPnL;
+  }, [latestPrice, positionBookData?.data?.positions, address]);
 
   // State for order book selection
   const [selectedPrice, setSelectedPrice] = useState<string | undefined>();
@@ -59,8 +86,12 @@ export const Futures: FC = () => {
     <div className="flex gap-6 w-full">
       {/* Main content area - all existing blocks */}
       <div className="flex-1 flex flex-col">
-        <WidgetsWrapper>
-          <FuturesBalanceWidget minMargin={minMargin} isLoadingMinMargin={isLoadingMinMargin} />
+        <WidgetsWrapper className="flex flex-col lg:flex-row gap-6 w-full">
+          <FuturesBalanceWidget
+            minMargin={minMargin}
+            isLoadingMinMargin={isLoadingMinMargin}
+            unrealizedPnL={totalUnrealizedPnL}
+          />
           <FuturesMarketWidget contractSpecsQuery={contractSpecsQuery} />
         </WidgetsWrapper>
 
@@ -81,6 +112,7 @@ export const Futures: FC = () => {
                   highlightTrigger={highlightTrigger}
                   contractSpecsQuery={contractSpecsQuery}
                   participantData={participantData?.data}
+                  latestPrice={latestPrice}
                   onOrderPlaced={async () => {
                     await minMarginQuery.refetch();
                   }}

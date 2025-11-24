@@ -17,9 +17,10 @@ import EastIcon from "@mui/icons-material/East";
 interface FuturesBalanceWidgetProps {
   minMargin: bigint | null;
   isLoadingMinMargin: boolean;
+  unrealizedPnL: bigint | null;
 }
 
-export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesBalanceWidgetProps) => {
+export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealizedPnL }: FuturesBalanceWidgetProps) => {
   const { address } = useAccount();
   const futureBalance = useGetFutureBalance(address);
   const lmrBalanceValidation = useLmrBalanceValidation(address);
@@ -39,7 +40,10 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
   const isLoading = futureBalance.isLoading;
   const isSuccess = !!(futureBalance.isSuccess && address);
   const balanceValue = formatValue(futureBalance.data ?? 0n, paymentToken);
-  const lockedBalanceValue = minMargin !== null ? formatValue(minMargin, paymentToken) : null;
+  const lockedBalanceValue = formatValue(minMargin ?? 0n, paymentToken);
+  const unrealizedPnLValue = formatValue(unrealizedPnL ?? 0n, paymentToken);
+  const pnlColor =
+    unrealizedPnL && unrealizedPnL > 0 ? "#22c55e" : unrealizedPnL && unrealizedPnL < 0 ? "#ef4444" : "#fff";
 
   // Check if LMR balance meets minimum requirement
   const requiredLmrAmount = BigInt(process.env.REACT_APP_FUTURES_REQUIRED_LMR || "10000");
@@ -47,7 +51,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
   const isLmrBalanceLoading = lmrBalanceValidation.isLoading;
 
   // Check if locked amount is at or above threshold percentage of balance
-  const lockedBalanceThreshold = Number(process.env.REACT_APP_FUTURES_LOCKED_BALANCE_THRESHOLD || "80");
+  const lockedBalanceThreshold = Number(process.env.REACT_APP_MARGIN_UTILIZATION_WARNING_PERCENT || "80");
   const shouldHighlight = useMemo(() => {
     if (!futureBalance.data || !minMargin || futureBalance.data === 0n) return false;
     const lockedAmount = minMargin > 0n ? minMargin : -minMargin; // Use absolute value
@@ -70,7 +74,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
                     <div className="balance">
                       <div>
                         <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
-                        <div>{balanceValue?.valueRounded}</div>
+                        <div>{Number(balanceValue?.valueRounded).toFixed(2)}</div>
                         <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
                       </div>
                       <p>BALANCE</p>
@@ -82,12 +86,26 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin }: FuturesB
                         ) : (
                           <>
                             <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
-                            <div>{lockedBalanceValue ? lockedBalanceValue.valueRounded : 0}</div>
+                            <div>{Number(lockedBalanceValue.valueRounded).toFixed(2)}</div>
                             <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
                           </>
                         )}
                       </div>
                       <p>LOCKED BALANCE</p>
+                    </div>
+                    <div className="balance">
+                      <div>
+                        {unrealizedPnL !== null ? (
+                          <>
+                            <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                            <div style={{ color: pnlColor }}>{Number(unrealizedPnLValue.valueRounded).toFixed(2)}</div>
+                            <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                          </>
+                        ) : (
+                          "-"
+                        )}
+                      </div>
+                      <p>UNREALIZED PNL</p>
                     </div>
                   </BalanceStats>
                 </BalanceDisplay>
@@ -187,7 +205,7 @@ const BalanceStats = styled("div")`
   flex-direction: row;
   justify-content: space-between;
   padding: 0.75rem;
-  gap: 3rem;
+  gap: 1.5rem;
   width: 100%;
 
   .balance {

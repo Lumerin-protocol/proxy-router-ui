@@ -2,7 +2,7 @@ import styled from "@mui/material/styles/styled";
 
 export const InputWrapper = styled("div")`
   width: 100%;
-  max-width: 300px;
+  max-width: 400px;
   margin-top: 1.3rem;
 
   label {
