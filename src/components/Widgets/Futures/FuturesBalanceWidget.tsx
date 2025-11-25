@@ -62,7 +62,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
   return (
     <>
       <BalanceWidgetContainer className="lg:w-[60%]" $shouldHighlight={shouldHighlight}>
-        {address && <h3>Futures Balance</h3>}
+        {address && <h3>Portfolio Overview</h3>}
         <BalanceContainer $shouldHighlight={shouldHighlight}>
           {!address && <div>Connect wallet to view balance and use marketplace</div>}
           {isLoading && address && <Spinner fontSize="0.3em" />}
@@ -77,7 +77,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                         <div>{Number(balanceValue?.valueRounded).toFixed(2)}</div>
                         <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
                       </div>
-                      <p>BALANCE</p>
+                      <p>TOTAL</p>
                     </div>
                     <div className="balance">
                       <div>
@@ -91,7 +91,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                           </>
                         )}
                       </div>
-                      <p>LOCKED BALANCE</p>
+                      <p>LOCKED</p>
                     </div>
                     <div className="balance">
                       <div>
@@ -186,6 +186,7 @@ const BalanceRow = styled("div")`
   justify-content: space-between;
   width: 100%;
   gap: 1rem;
+  overflow: auto;
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -204,9 +205,13 @@ const BalanceStats = styled("div")`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 0.75rem;
+  padding: 0.75rem 0;
   gap: 1.5rem;
   width: 100%;
+
+  @media (max-width: 1340px) {
+    gap: 0.5rem;
+  }
 
   .balance {
     flex: 1;
@@ -255,6 +260,14 @@ const ActionButtons = styled("div")`
     button {
       flex: 1;
       max-width: 120px;
+    }
+  }
+
+  @media (max-width: 1530px) {
+    flex-direction: column;
+
+    button {
+      width: 100%;
     }
   }
 `;

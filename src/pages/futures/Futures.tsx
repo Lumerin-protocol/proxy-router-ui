@@ -14,6 +14,7 @@ import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpec
 import { useGetMinMargin } from "../../hooks/data/useGetMinMargin";
 import { SmallWidget } from "../../components/Cards/Cards.styled";
 import type { PositionBookPosition } from "../../hooks/data/usePositionBook";
+import styled from "@mui/material/styles/styled";
 
 export const Futures: FC = () => {
   const { isConnected, address } = useAccount();
@@ -83,23 +84,23 @@ export const Futures: FC = () => {
   };
 
   return (
-    <div className="flex gap-6 w-full">
+    <div className="flex w-full">
       {/* Main content area - all existing blocks */}
       <div className="flex-1 flex flex-col">
-        <WidgetsWrapper className="flex flex-col lg:flex-row gap-6 w-full">
+        <BalanceWidgetContainer className="flex flex-col lg:flex-row 3 w-full">
           <FuturesBalanceWidget
             minMargin={minMargin}
             isLoadingMinMargin={isLoadingMinMargin}
             unrealizedPnL={totalUnrealizedPnL}
           />
           <FuturesMarketWidget contractSpecsQuery={contractSpecsQuery} />
-        </WidgetsWrapper>
+        </BalanceWidgetContainer>
 
         {/* Chart, Place Order, and Order Book Section */}
-        <div className="flex flex-col lg:flex-row gap-6 mb-8 w-full">
+        <div className="flex flex-col lg:flex-row gap-3 w-full">
           {/* Left Column - Chart and Place Order (3/4 width) */}
-          <div className="flex flex-col gap-6 w-full lg:w-[60%]">
-            <SmallWidget className="w-full">
+          <div className="flex flex-col gap-3 w-full lg:w-[60%]">
+            <SmallWidget className="w-full" style={{ marginBottom: 0 }}>
               <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
             </SmallWidget>
             {isConnected && (
@@ -134,7 +135,7 @@ export const Futures: FC = () => {
 
         {/* Orders and Positions List Section - Only show when wallet is connected */}
         {isConnected && (
-          <div className="w-full mb-8">
+          <div className="w-full">
             <OrdersPositionsTabWidget
               orders={participantData?.data?.orders || []}
               positions={positionBookData?.data?.positions || []}
@@ -154,3 +155,11 @@ export const Futures: FC = () => {
     </div>
   );
 };
+
+const BalanceWidgetContainer = styled(WidgetsWrapper)`
+  && {
+    flex-wrap: unset;
+    margin-bottom: 0px;
+    column-gap: 0.75rem;
+  }
+`;

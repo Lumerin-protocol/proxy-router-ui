@@ -35,6 +35,8 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
       text: "Hashprice Index",
       style: {
         color: "#ffffff",
+        fontWeight: "600",
+        fontSize: "1.3em",
       },
     },
     xAxis: {
@@ -54,7 +56,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
     },
     yAxis: {
       title: {
-        text: "Price (100 TH/s per day)",
+        text: "USDC",
         style: {
           color: "#ffffff",
         },
@@ -112,7 +114,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
         const value = (this.y as number).toFixed(2);
 
         const style = "color: grey; font-size: 10px;";
-        return `<b>Price:</b> ${value} USDC<br/> <span style="${style}">${date}</span>`;
+        return `<b>Price (100 TH/s per day):</b> ${value}<br/> <span style="${style}">${date}</span>`;
       },
     },
     credits: {

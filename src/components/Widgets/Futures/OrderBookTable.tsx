@@ -329,9 +329,9 @@ export const OrderBookTable = ({
                     onRowClick?.(row.price.toFixed(2), amount);
                   }}
                 >
-                  <td>{row.bidUnits || ""}</td>
+                  <td className="bidUnits">{row.bidUnits || ""}</td>
                   <PriceCell $isLastHashprice={row.isLastHashprice}>{row.price.toFixed(2)}</PriceCell>
-                  <td>{row.askUnits || ""}</td>
+                  <td className="askUnits">{row.askUnits || ""}</td>
                 </TableRow>
               );
             })}
@@ -446,6 +446,14 @@ const TableRow = styled("tr")<{ $isHighlighted?: boolean; $highlightColor?: "red
   
   &:last-child {
     border-bottom: none;
+  }
+
+  .bidUnits {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .askUnits {
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
   }
 `;
 
