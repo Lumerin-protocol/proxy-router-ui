@@ -302,7 +302,7 @@ export const PositionsListWidget = ({
                 </td>
                 <td>
                   <ActionButtons>
-                    {groupedPosition.destURL && (
+                    {groupedPosition.destURL && groupedPosition.positionType !== "Short" && (
                       <DepositButton
                         onClick={() => {
                           setSelectedDeliveryDate(BigInt(groupedPosition.deliveryAt));
