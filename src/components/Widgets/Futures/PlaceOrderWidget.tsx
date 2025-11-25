@@ -150,18 +150,8 @@ export const PlaceOrderWidget = ({
 
   const decrementPrice = () => {
     const currentPrice = parseFloat(price) || 0;
-    const newPrice = snapToStep(Math.max(0, currentPrice - priceStep));
+    const newPrice = snapToStep(Math.max(0.01, currentPrice - priceStep));
     setPrice(newPrice.toFixed(2));
-  };
-
-  const handlePriceChange = (value: string) => {
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue)) {
-      const snappedValue = snapToStep(numValue);
-      setPrice(snappedValue.toFixed(2));
-    } else {
-      setPrice("1.00");
-    }
   };
 
   const handleBuy = async () => {
@@ -339,11 +329,45 @@ export const PlaceOrderWidget = ({
                 <input
                   type="text"
                   value={price}
-                  placeholder="5.00"
-                  onChange={(e) => handlePriceChange(e.target.value.replace("-", ""))}
+                  onChange={(e) => {
+                    setPrice(e.target.value);
+                  }}
+                  onBeforeInput={(e) => {
+                    const inputChar = e.data;
+
+                    // Allow deletion or navigation
+                    if (!inputChar) return;
+
+                    // Reject anything not digit or "."
+                    if (!/^[0-9.]$/.test(inputChar)) {
+                      e.preventDefault();
+                      return;
+                    }
+
+                    const current = e.currentTarget.value;
+                    const selectionStart = e.currentTarget.selectionStart;
+                    const selectionEnd = e.currentTarget.selectionEnd;
+
+                    // Predict the new value if input is allowed
+                    const newValue =
+                      current.slice(0, selectionStart ?? 0) + inputChar + current.slice(selectionEnd ?? 0);
+
+                    // Only one dot allowed
+                    if ((newValue.match(/\./g) || []).length > 1) {
+                      e.preventDefault();
+                      return;
+                    }
+
+                    // Max 2 digits after decimal
+                    const parts = newValue.split(".");
+                    if (parts[1] && parts[1].length > 2) {
+                      e.preventDefault();
+                      return;
+                    }
+                  }}
                   step={priceStep}
-                  min="1"
-                  inputMode={"decimal"}
+                  min="0.01"
+                  inputMode={"numeric"}
                 />
                 <PriceButton onClick={incrementPrice} disabled={showOrderForm}>
                   +

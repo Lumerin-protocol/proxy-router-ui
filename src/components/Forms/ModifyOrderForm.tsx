@@ -294,7 +294,45 @@ const ModifyInputForm = memo<{
     <InputFormContainer>
       <InputGroup>
         <label>Price, USDC</label>
-        <input type="number" {...priceController.field} step="0.01" min="0.01" placeholder="5.00" />
+        <input
+          type="text"
+          {...priceController.field}
+          step="0.01"
+          min="0.01"
+          onBeforeInput={(e) => {
+            const inputChar = e.data;
+
+            // Allow deletion or navigation
+            if (!inputChar) return;
+
+            // Reject anything not digit or "."
+            if (!/^[0-9.]$/.test(inputChar)) {
+              e.preventDefault();
+              return;
+            }
+
+            const current = e.currentTarget.value;
+            const selectionStart = e.currentTarget.selectionStart;
+            const selectionEnd = e.currentTarget.selectionEnd;
+
+            // Predict the new value if input is allowed
+            const newValue = current.slice(0, selectionStart ?? 0) + inputChar + current.slice(selectionEnd ?? 0);
+
+            // Only one dot allowed
+            if ((newValue.match(/\./g) || []).length > 1) {
+              e.preventDefault();
+              return;
+            }
+
+            // Max 2 digits after decimal
+            const parts = newValue.split(".");
+            if (parts[1] && parts[1].length > 2) {
+              e.preventDefault();
+              return;
+            }
+          }}
+          inputMode={"numeric"}
+        />
         {priceController.fieldState.error && <ErrorText>{priceController.fieldState.error.message}</ErrorText>}
       </InputGroup>
 
