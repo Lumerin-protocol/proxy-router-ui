@@ -128,7 +128,7 @@ export const PlaceOrderWidget = ({
   if (contractSpecsQuery.isLoading || !priceStep || hashrateQuery.isLoading || !newestItemPrice) {
     return (
       <PlaceOrderContainer>
-        <h3>Place order</h3>
+        <h3>Place Order</h3>
         <div style={{ textAlign: "center", padding: "2rem", color: "#6b7280" }}>
           <Spinner fontSize="0.3em" />
           <p style={{ marginTop: "1rem", margin: 0 }}>Loading contract specifications...</p>
@@ -326,7 +326,7 @@ export const PlaceOrderWidget = ({
   return (
     <>
       <PlaceOrderContainer>
-        <h3>Place order</h3>
+        <h3>Place Order</h3>
 
         <MainSection>
           <InputSection>
@@ -512,7 +512,7 @@ const PlaceOrderContainer = styled(SmallWidget)`
   
   h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: #fff;
   }
