@@ -155,7 +155,7 @@ const FuturesContainer = styled("div")`
   display: grid;
   grid-template-columns: 3fr 2fr;
   grid-auto-rows: auto;
-  gap: 0.75rem;
+  gap: 1.5rem;
   width: 100%;
 
   /* Medium screens: Adjust column ratio for better fit */
