@@ -6,14 +6,15 @@ import { OrdersListWidget } from "./OrdersListWidget";
 import { PositionsListWidget } from "./PositionsListWidget";
 import type { ParticipantOrder } from "../../../hooks/data/useParticipant";
 import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
-import { usePaidSellerPositions } from "../../../hooks/data/usePaidSellerPositions";
-import { useModal } from "../../../hooks/useModal";
-import { ModalItem } from "../../Modal";
-import { useWithdrawDeliveryPaymentBatch } from "../../../hooks/data/useWithdrawDeliveryPaymentBatch";
-import { TransactionFormV2 as TransactionForm } from "../../Forms/Shared/MultistepForm";
-import { useQueryClient } from "@tanstack/react-query";
-import { waitForBlockNumberPositionBook } from "../../../hooks/data/usePositionBook";
-import type { TransactionReceipt } from "viem";
+// Commented out: Receive Payment feature
+// import { usePaidSellerPositions } from "../../../hooks/data/usePaidSellerPositions";
+// import { useModal } from "../../../hooks/useModal";
+// import { ModalItem } from "../../Modal";
+// import { useWithdrawDeliveryPaymentBatch } from "../../../hooks/data/useWithdrawDeliveryPaymentBatch";
+// import { TransactionFormV2 as TransactionForm } from "../../Forms/Shared/MultistepForm";
+// import { useQueryClient } from "@tanstack/react-query";
+// import { waitForBlockNumberPositionBook } from "../../../hooks/data/usePositionBook";
+// import type { TransactionReceipt } from "viem";
 
 interface OrdersPositionsTabWidgetProps {
   orders: ParticipantOrder[];
@@ -33,28 +34,30 @@ export const OrdersPositionsTabWidget = ({
   onClosePosition,
 }: OrdersPositionsTabWidgetProps) => {
   const [activeTab, setActiveTab] = useState<"ORDERS" | "POSITIONS">("ORDERS");
-  const paidSellerPositionsQuery = usePaidSellerPositions(participantAddress, { refetch: true });
-  const deliveryDatesModal = useModal();
-  const withdrawModal = useModal();
-  const { withdrawDeliveryPaymentBatchAsync, isPending: isWithdrawPending } = useWithdrawDeliveryPaymentBatch();
-  const queryClient = useQueryClient();
+
+  // Commented out: Receive Payment feature
+  // const paidSellerPositionsQuery = usePaidSellerPositions(participantAddress, { refetch: true });
+  // const deliveryDatesModal = useModal();
+  // const withdrawModal = useModal();
+  // const { withdrawDeliveryPaymentBatchAsync, isPending: isWithdrawPending } = useWithdrawDeliveryPaymentBatch();
+  // const queryClient = useQueryClient();
 
   // Get unique deliveryAt values that are older than now
-  const claimableDeliveryDates = useMemo(() => {
-    if (!paidSellerPositionsQuery.data?.data?.positions) return [];
-    const now = Math.floor(Date.now() / 1000);
-    const uniqueDates = new Set<string>();
-    paidSellerPositionsQuery.data.data.positions.forEach((position) => {
-      const deliveryAt = Number(position.deliveryAt);
-      if (deliveryAt < now) {
-        uniqueDates.add(position.deliveryAt);
-      }
-    });
-    return Array.from(uniqueDates).sort((a, b) => Number(a) - Number(b));
-  }, [paidSellerPositionsQuery.data?.data?.positions]);
+  // const claimableDeliveryDates = useMemo(() => {
+  //   if (!paidSellerPositionsQuery.data?.data?.positions) return [];
+  //   const now = Math.floor(Date.now() / 1000);
+  //   const uniqueDates = new Set<string>();
+  //   paidSellerPositionsQuery.data.data.positions.forEach((position) => {
+  //     const deliveryAt = Number(position.deliveryAt);
+  //     if (deliveryAt < now) {
+  //       uniqueDates.add(position.deliveryAt);
+  //     }
+  //   });
+  //   return Array.from(uniqueDates).sort((a, b) => Number(a) - Number(b));
+  // }, [paidSellerPositionsQuery.data?.data?.positions]);
 
   // Show button only if there are claimable delivery dates
-  const hasClaimableDates = claimableDeliveryDates.length > 0;
+  // const hasClaimableDates = claimableDeliveryDates.length > 0;
 
   const ordersCount = useMemo(() => {
     const unique = new Set<string>();
@@ -86,11 +89,12 @@ export const OrdersPositionsTabWidget = ({
           value={activeTab}
           setValue={setActiveTab}
         />
-        {hasClaimableDates && (
+        {/* Commented out: Receive Payment button */}
+        {/* {hasClaimableDates && (
           <ClaimButton onClick={() => withdrawModal.open()} disabled={isWithdrawPending}>
             Receive Payment
           </ClaimButton>
-        )}
+        )} */}
       </Header>
 
       <Content>
@@ -111,7 +115,8 @@ export const OrdersPositionsTabWidget = ({
         )}
       </Content>
 
-      <ModalItem open={withdrawModal.isOpen} setOpen={withdrawModal.setOpen}>
+      {/* Commented out: Receive Payment modal */}
+      {/* <ModalItem open={withdrawModal.isOpen} setOpen={withdrawModal.setOpen}>
         <TransactionForm
           onClose={() => {
             withdrawModal.close();
@@ -167,7 +172,7 @@ export const OrdersPositionsTabWidget = ({
             </div>
           )}
         />
-      </ModalItem>
+      </ModalItem> */}
     </TabContainer>
   );
 };

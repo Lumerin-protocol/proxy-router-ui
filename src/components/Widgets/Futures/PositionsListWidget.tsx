@@ -33,6 +33,7 @@ export const PositionsListWidget = ({
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<bigint | null>(null);
   const [selectedPricePerDay, setSelectedPricePerDay] = useState<bigint | null>(null);
   const [selectedTotalContracts, setSelectedTotalContracts] = useState<number | null>(null);
+  const [selectedPositions, setSelectedPositions] = useState<PositionBookPosition[]>([]);
 
   const getStatusColor = (isActive: boolean, closedAt: string | null) => {
     if (closedAt) {
@@ -302,19 +303,22 @@ export const PositionsListWidget = ({
                 </td>
                 <td>
                   <ActionButtons>
-                    {groupedPosition.destURL && groupedPosition.positionType !== "Short" && (
-                      <DepositButton
-                        onClick={() => {
-                          setSelectedDeliveryDate(BigInt(groupedPosition.deliveryAt));
-                          setSelectedPricePerDay(groupedPosition.pricePerDay);
-                          setSelectedTotalContracts(groupedPosition.amount);
-                          depositModal.open();
-                        }}
-                        title="Deposit delivery payment"
-                      >
-                        Deposit
-                      </DepositButton>
-                    )}
+                    {groupedPosition.destURL &&
+                      groupedPosition.positionType !== "Short" &&
+                      groupedPosition.paidCount < groupedPosition.amount && (
+                        <DepositButton
+                          onClick={() => {
+                            setSelectedDeliveryDate(BigInt(groupedPosition.deliveryAt));
+                            setSelectedPricePerDay(groupedPosition.pricePerDay);
+                            setSelectedTotalContracts(groupedPosition.amount);
+                            setSelectedPositions(groupedPosition.positions);
+                            depositModal.open();
+                          }}
+                          title="Deposit delivery payment"
+                        >
+                          Deposit
+                        </DepositButton>
+                      )}
                     {groupedPosition.isActive && !groupedPosition.closedAt && (
                       <CloseButton
                         onClick={() => handleClosePosition(groupedPosition)}
@@ -339,19 +343,24 @@ export const PositionsListWidget = ({
       )}
 
       <ModalItem open={depositModal.isOpen} setOpen={depositModal.setOpen}>
-        {selectedDeliveryDate !== null && selectedPricePerDay !== null && selectedTotalContracts !== null && (
-          <DepositDeliveryPaymentForm
-            closeForm={() => {
-              depositModal.close();
-              setSelectedDeliveryDate(null);
-              setSelectedPricePerDay(null);
-              setSelectedTotalContracts(null);
-            }}
-            deliveryDate={selectedDeliveryDate}
-            pricePerDay={selectedPricePerDay}
-            totalContracts={selectedTotalContracts}
-          />
-        )}
+        {selectedDeliveryDate !== null &&
+          selectedPricePerDay !== null &&
+          selectedTotalContracts !== null &&
+          selectedPositions.length > 0 && (
+            <DepositDeliveryPaymentForm
+              closeForm={() => {
+                depositModal.close();
+                setSelectedDeliveryDate(null);
+                setSelectedPricePerDay(null);
+                setSelectedTotalContracts(null);
+                setSelectedPositions([]);
+              }}
+              deliveryDate={selectedDeliveryDate}
+              pricePerDay={selectedPricePerDay}
+              totalContracts={selectedTotalContracts}
+              positions={selectedPositions}
+            />
+          )}
       </ModalItem>
     </PositionsContainer>
   );

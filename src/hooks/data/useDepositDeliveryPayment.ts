@@ -4,8 +4,7 @@ import { useWalletClient } from "wagmi";
 import { FuturesABI } from "../../abi/Futures";
 
 interface DepositDeliveryPaymentProps {
-  amount: bigint;
-  deliveryDate: bigint;
+  positionIds: `0x${string}`[];
 }
 
 export function useDepositDeliveryPayment() {
@@ -21,7 +20,7 @@ export function useDepositDeliveryPayment() {
       client: walletClient,
     });
 
-    const req = await futuresContract.simulate.depositDeliveryPayment([props.amount, props.deliveryDate], {
+    const req = await futuresContract.simulate.depositDeliveryPayment([props.positionIds], {
       account: walletClient.account.address,
     });
 

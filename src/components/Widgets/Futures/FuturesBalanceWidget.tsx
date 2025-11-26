@@ -70,11 +70,12 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
             <>
               <BalanceRow>
                 <BalanceDisplay>
-                  <BalanceStats>
+                  {/* Desktop and Mobile: Show all three columns */}
+                  <BalanceStats className="full-layout">
                     <div className="balance">
                       <div>
                         <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
-                        <div>{Number(balanceValue?.valueRounded).toFixed(2)}</div>
+                        <span>{Number(balanceValue?.valueRounded).toFixed(2)}</span>
                         <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
                       </div>
                       <p>TOTAL</p>
@@ -86,7 +87,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                         ) : (
                           <>
                             <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
-                            <div>{Number(lockedBalanceValue.valueRounded).toFixed(2)}</div>
+                            <span>{Number(lockedBalanceValue.valueRounded).toFixed(2)}</span>
                             <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
                           </>
                         )}
@@ -98,7 +99,9 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                         {unrealizedPnL !== null ? (
                           <>
                             <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
-                            <div style={{ color: pnlColor }}>{Number(unrealizedPnLValue.valueRounded).toFixed(2)}</div>
+                            <span style={{ color: pnlColor }}>
+                              {Number(unrealizedPnLValue.valueRounded).toFixed(2)}
+                            </span>
                             <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
                           </>
                         ) : (
@@ -106,6 +109,38 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                         )}
                       </div>
                       <p>UNREALIZED PNL</p>
+                    </div>
+                  </BalanceStats>
+
+                  {/* Medium screens (1024-1400px): Show merged LOCKED/PNL */}
+                  <BalanceStats className="compact-layout">
+                    <div className="balance">
+                      <div>
+                        <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                        <span>{Number(balanceValue?.valueRounded).toFixed(2)}</span>
+                      </div>
+                      <p>TOTAL</p>
+                    </div>
+                    <div className="balance">
+                      <div>
+                        {isLoadingMinMargin ? (
+                          <Spinner fontSize="0.3em" />
+                        ) : (
+                          <>
+                            <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                            <span>{Number(lockedBalanceValue.valueRounded).toFixed(2)}</span>
+                            <SlashSeparator>/</SlashSeparator>
+                            {unrealizedPnL !== null ? (
+                              <span style={{ color: pnlColor }}>
+                                {Number(unrealizedPnLValue.valueRounded).toFixed(2)}
+                              </span>
+                            ) : (
+                              <span>-</span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <p>LOCKED / PNL</p>
                     </div>
                   </BalanceStats>
                 </BalanceDisplay>
@@ -209,12 +244,35 @@ const BalanceStats = styled("div")`
   gap: 1.5rem;
   width: 100%;
 
+  /* Show full layout by default (desktop > 1400px and mobile < 1024px) */
+  &.full-layout {
+    display: flex;
+  }
+  
+  /* Hide compact layout by default */
+  &.compact-layout {
+    display: none;
+  }
+
+  /* Medium screens (1024px - 1400px): Hide full, show compact */
+  @media (min-width: 1024px) and (max-width: 1400px) {
+    &.full-layout {
+      display: none;
+    }
+    
+    &.compact-layout {
+      display: flex;
+    }
+  }
+
   @media (max-width: 1340px) {
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .balance {
     flex: 1;
+    min-width: 0;
+    
     div {
       font-size: 1.85rem;
       line-height: 1.75rem;
@@ -226,11 +284,13 @@ const BalanceStats = styled("div")`
       color: #fff;
       font-size: 1.4rem;
       font-weight: 600;
+      gap: 0;
     }
     p {
       font-size: 0.625rem;
       text-align: center;
       color: #a7a9b6;
+      white-space: nowrap;
     }
   }
 `;
@@ -240,6 +300,13 @@ const TokenSymbol = styled("span")`
   font-weight: 400;
   color: #a7a9b6;
   margin-left: 0.25rem;
+`;
+
+const SlashSeparator = styled("span")`
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: #6b7280;
+  margin: 0 0.5rem;
 `;
 
 const ActionButtons = styled("div")`

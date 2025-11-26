@@ -530,6 +530,7 @@ const HighPriceConfirmationModal = ({
 const PlaceOrderContainer = styled(SmallWidget)`
   width: 100%;
   padding: 1.5rem;
+  margin-bottom: 0px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -548,7 +549,7 @@ const MainSection = styled("div")`
   gap: 1.5rem;
   align-items: center;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1400px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -560,7 +561,7 @@ const InputSection = styled("div")`
   gap: 1rem;
   flex: 1;
   
-  @media (max-width: 768px) {
+  @media (max-width: 640px) {
     flex-direction: column;
   }
 `;
@@ -663,14 +664,19 @@ const PriceButton = styled("button")`
 const ButtonSection = styled("div")`
   gap: 0.75rem;
   flex-shrink: 0;
-
   align-self: end;
   display: flex;
   flex-direction: row;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1400px) {
     flex-direction: row;
     justify-content: center;
+    align-self: stretch;
+    width: 100%;
+    
+    button {
+      flex: 1;
+    }
   }
 `;
 

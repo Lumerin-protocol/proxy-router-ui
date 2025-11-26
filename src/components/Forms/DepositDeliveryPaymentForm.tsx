@@ -7,12 +7,14 @@ import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpec
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import { formatValue, paymentToken } from "../../lib/units";
 import { parseUnits } from "viem";
+import type { PositionBookPosition } from "../../hooks/data/usePositionBook";
 
 interface DepositDeliveryPaymentFormProps {
   closeForm: () => void;
   deliveryDate: bigint;
   pricePerDay: bigint;
   totalContracts: number;
+  positions: PositionBookPosition[];
 }
 
 interface InputValues {
@@ -25,12 +27,18 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
   deliveryDate,
   pricePerDay,
   totalContracts,
+  positions,
 }) => {
   const { address } = useAccount();
   const { depositDeliveryPaymentAsync } = useDepositDeliveryPayment();
   const futureBalance = useGetFutureBalance(address);
   const contractSpecsQuery = useFuturesContractSpecs();
   const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+
+  // Filter unpaid positions
+  const unpaidPositions = useMemo(() => {
+    return positions.filter((p) => !p.isPaid);
+  }, [positions]);
 
   const form = useForm<InputValues>({
     mode: "onBlur",
@@ -52,13 +60,13 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
 
   // Calculate max quantity based on available balance
   const maxQuantity = useMemo(() => {
-    if (!futureBalance.data) return totalContracts;
+    if (!futureBalance.data) return unpaidPositions.length;
     const pricePerDayNum = Number(pricePerDay) / 1e6;
     const totalCostPerContract = pricePerDayNum * deliveryDurationDays;
     const balanceNum = Number(futureBalance.data) / 1e6;
     const maxAffordable = Math.floor(balanceNum / totalCostPerContract);
-    return Math.min(maxAffordable, totalContracts);
-  }, [futureBalance.data, pricePerDay, deliveryDurationDays, totalContracts]);
+    return Math.min(maxAffordable, unpaidPositions.length);
+  }, [futureBalance.data, pricePerDay, deliveryDurationDays, unpaidPositions.length]);
 
   // Update amount when quantity changes
   useEffect(() => {
@@ -95,15 +103,15 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
       if (value < 1) {
         return "Quantity must be at least 1";
       }
-      if (value > totalContracts) {
-        return `Quantity cannot exceed total contracts (${totalContracts})`;
+      if (value > unpaidPositions.length) {
+        return `Quantity cannot exceed unpaid positions (${unpaidPositions.length})`;
       }
       if (value > maxQuantity) {
         return `Quantity cannot exceed affordable contracts (${maxQuantity}) based on available balance`;
       }
       return true;
     },
-    [totalContracts, maxQuantity],
+    [unpaidPositions.length, maxQuantity],
   );
 
   const handleMaxQuantityClick = useCallback(() => {
@@ -153,7 +161,7 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
             </button>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            Available: {maxQuantity} of {totalContracts} contracts (limited by balance)
+            Available: {maxQuantity} of {unpaidPositions.length} unpaid positions (limited by balance)
           </p>
         </div>
         {/* <div className="p-4 rounded-lg bg-gray-800/50 border border-gray-700">
@@ -185,7 +193,7 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
       validateBalance,
       quantity,
       maxQuantity,
-      totalContracts,
+      unpaidPositions.length,
       handleQuantityChange,
       handleMaxQuantityClick,
       pricePerDay,
@@ -253,9 +261,9 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
           <div className="p-4 rounded-lg">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-gray-300">Contracts to pay:</span>
+                <span className="text-gray-300">Positions to pay:</span>
                 <span className="text-white font-medium">
-                  {quantity} of {totalContracts}
+                  {quantity} of {unpaidPositions.length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -293,28 +301,35 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
       futureBalance.data,
       futureBalance.isLoading,
       quantity,
-      totalContracts,
+      unpaidPositions.length,
       pricePerDay,
       deliveryDurationDays,
       calculatedAmount,
     ],
   );
 
-  const transactionSteps = [
-    {
-      label: "Deposit Delivery Payment",
-      async action() {
-        const amount = form.getValues("amount");
-        if (!amount) throw new Error("Amount not set");
-        const amountBigInt = parseUnits(amount, paymentToken.decimals);
-        const result = await depositDeliveryPaymentAsync({
-          amount: amountBigInt,
-          deliveryDate: deliveryDate,
-        });
-        return result ? { isSkipped: false, txhash: result } : { isSkipped: false };
+  const transactionSteps = useMemo(
+    () => [
+      {
+        label: "Deposit Delivery Payment",
+        async action() {
+          // Select the first N unpaid positions based on quantity
+          const selectedPositions = unpaidPositions.slice(0, quantity);
+          const positionIds = selectedPositions.map((p) => p.id as `0x${string}`);
+
+          if (positionIds.length === 0) {
+            throw new Error("No positions selected");
+          }
+
+          const result = await depositDeliveryPaymentAsync({
+            positionIds: positionIds,
+          });
+          return result ? { isSkipped: false, txhash: result } : { isSkipped: false };
+        },
       },
-    },
-  ];
+    ],
+    [unpaidPositions, quantity, depositDeliveryPaymentAsync],
+  );
 
   return (
     <TransactionForm
