@@ -6,7 +6,6 @@ import { OrderBookTable } from "../../components/Widgets/Futures/OrderBookTable"
 import { HashrateChart } from "../../components/Charts/HashrateChart";
 import { PlaceOrderWidget } from "../../components/Widgets/Futures/PlaceOrderWidget";
 import { OrdersPositionsTabWidget } from "../../components/Widgets/Futures/OrdersPositionsTabWidget";
-import { WidgetsWrapper } from "../marketplace/styled";
 import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
 import { useParticipant } from "../../hooks/data/useParticipant";
 import { usePositionBook } from "../../hooks/data/usePositionBook";
@@ -84,82 +83,195 @@ export const Futures: FC = () => {
   };
 
   return (
-    <div className="flex w-full">
-      {/* Main content area - all existing blocks */}
-      <div className="flex-1 flex flex-col">
-        <BalanceWidgetContainer className="flex flex-col lg:flex-row 3 w-full">
-          <FuturesBalanceWidget
-            minMargin={minMargin}
-            isLoadingMinMargin={isLoadingMinMargin}
-            unrealizedPnL={totalUnrealizedPnL}
+    <FuturesContainer>
+      {/* Row 1: Balance Widget (60%) and Stats Widget (40%) */}
+      <BalanceWidgetArea>
+        <FuturesBalanceWidget
+          minMargin={minMargin}
+          isLoadingMinMargin={isLoadingMinMargin}
+          unrealizedPnL={totalUnrealizedPnL}
+        />
+      </BalanceWidgetArea>
+
+      <StatsWidgetArea>
+        <FuturesMarketWidget contractSpecsQuery={contractSpecsQuery} />
+      </StatsWidgetArea>
+
+      {/* Row 2: Chart (60%) */}
+      <ChartArea>
+        <SmallWidget className="w-full" style={{ marginBottom: 0 }}>
+          <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
+        </SmallWidget>
+      </ChartArea>
+
+      {/* Row 3: Place Order (60%) - only shown when connected */}
+      {isConnected && (
+        <PlaceOrderArea>
+          <PlaceOrderWidget
+            externalPrice={selectedPrice}
+            externalAmount={selectedAmount}
+            externalDeliveryDate={selectedDeliveryDate}
+            externalIsBuy={selectedIsBuy}
+            highlightTrigger={highlightTrigger}
+            contractSpecsQuery={contractSpecsQuery}
+            participantData={participantData?.data}
+            latestPrice={latestPrice}
+            onOrderPlaced={async () => {
+              await minMarginQuery.refetch();
+            }}
           />
-          <FuturesMarketWidget contractSpecsQuery={contractSpecsQuery} />
-        </BalanceWidgetContainer>
+        </PlaceOrderArea>
+      )}
 
-        {/* Chart, Place Order, and Order Book Section */}
-        <div className="flex flex-col lg:flex-row gap-3 w-full">
-          {/* Left Column - Chart and Place Order (3/4 width) */}
-          <div className="flex flex-col gap-3 w-full lg:w-[60%]">
-            <SmallWidget className="w-full" style={{ marginBottom: 0 }}>
-              <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
-            </SmallWidget>
-            {isConnected && (
-              <div className="w-full">
-                <PlaceOrderWidget
-                  externalPrice={selectedPrice}
-                  externalAmount={selectedAmount}
-                  externalDeliveryDate={selectedDeliveryDate}
-                  externalIsBuy={selectedIsBuy}
-                  highlightTrigger={highlightTrigger}
-                  contractSpecsQuery={contractSpecsQuery}
-                  participantData={participantData?.data}
-                  latestPrice={latestPrice}
-                  onOrderPlaced={async () => {
-                    await minMarginQuery.refetch();
-                  }}
-                />
-              </div>
-            )}
-          </div>
+      {/* Order Book (40%) - spans rows 2 and 3 */}
+      <OrderBookArea $isConnected={isConnected}>
+        <OrderBookTable
+          onRowClick={handleOrderBookClick}
+          onDeliveryDateChange={handleDeliveryDateChange}
+          contractSpecsQuery={contractSpecsQuery}
+          previousOrderBookStateRef={previousOrderBookStateRef}
+        />
+      </OrderBookArea>
 
-          {/* Right Column - Order Book (1/4 width) */}
-          <div className="w-full lg:w-[40%]">
-            <OrderBookTable
-              onRowClick={handleOrderBookClick}
-              onDeliveryDateChange={handleDeliveryDateChange}
-              contractSpecsQuery={contractSpecsQuery}
-              previousOrderBookStateRef={previousOrderBookStateRef}
-            />
-          </div>
-        </div>
-
-        {/* Orders and Positions List Section - Only show when wallet is connected */}
-        {isConnected && (
-          <div className="w-full">
-            <OrdersPositionsTabWidget
-              orders={participantData?.data?.orders || []}
-              positions={positionBookData?.data?.positions || []}
-              ordersLoading={isParticipantLoading}
-              positionsLoading={isPositionBookLoading}
-              participantAddress={address}
-              onClosePosition={handleClosePosition}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Feed widget in right corner
-      <div className="flex-shrink-0">
-        <FeedWidget />
-      </div> */}
-    </div>
+      {/* Row 4: Orders and Positions List - Full width */}
+      {isConnected && (
+        <OrdersPositionsArea>
+          <OrdersPositionsTabWidget
+            orders={participantData?.data?.orders || []}
+            positions={positionBookData?.data?.positions || []}
+            ordersLoading={isParticipantLoading}
+            positionsLoading={isPositionBookLoading}
+            participantAddress={address}
+            onClosePosition={handleClosePosition}
+          />
+        </OrdersPositionsArea>
+      )}
+    </FuturesContainer>
   );
 };
 
-const BalanceWidgetContainer = styled(WidgetsWrapper)`
-  && {
-    flex-wrap: unset;
-    margin-bottom: 0px;
-    column-gap: 0.75rem;
+// Grid Container with explicit grid structure
+const FuturesContainer = styled("div")`
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  grid-auto-rows: auto;
+  gap: 1.5rem;
+  width: 100%;
+
+  /* Medium screens: Adjust column ratio for better fit */
+  @media (max-width: 1400px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Tablet: Stack in single column */
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+// Balance Widget - Row 1, Column 1 (60% width)
+const BalanceWidgetArea = styled("div")`
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+
+  > * {
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+`;
+
+// Stats Widget - Row 1, Column 2 (40% width)
+const StatsWidgetArea = styled("div")`
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+
+  > * {
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+`;
+
+// Chart Area - Row 2, Column 1 (60% width)
+const ChartArea = styled("div")`
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+
+  > * {
+    width: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+`;
+
+// Place Order Area - Row 3, Column 1 (60% width)
+const PlaceOrderArea = styled("div")`
+  grid-column: 1;
+  grid-row: 3;
+  width: 100%;
+  min-width: 0;
+
+  > * {
+    width: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+`;
+
+// Order Book Area - Rows 2-3, Column 2 (40% width, spans 2 rows)
+const OrderBookArea = styled("div")<{ $isConnected: boolean }>`
+  grid-column: 2;
+  grid-row: ${(props) => (props.$isConnected ? "2 / 4" : "2 / 3")};
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  > * {
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    grid-column: 1;
+    grid-row: auto;
+    height: auto;
+  }
+`;
+
+// Orders and Positions Area - Row 4, Full width
+const OrdersPositionsArea = styled("div")`
+  grid-column: 1 / -1;
+  grid-row: 4;
+  width: 100%;
+  min-width: 0;
+
+  > * {
+    width: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    grid-column: 1;
+    grid-row: auto;
   }
 `;

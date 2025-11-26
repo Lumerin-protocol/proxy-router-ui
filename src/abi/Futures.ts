@@ -174,6 +174,11 @@ export const FuturesABI = [
   },
   {
     inputs: [],
+    name: "OnlyPositionBuyer",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "OnlyValidator",
     type: "error",
   },
@@ -211,12 +216,22 @@ export const FuturesABI = [
   },
   {
     inputs: [],
+    name: "PositionAlreadyPaid",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "PositionDeliveryExpired",
     type: "error",
   },
   {
     inputs: [],
     name: "PositionDeliveryNotStartedYet",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "PositionDestURLNotSet",
     type: "error",
   },
   {
@@ -491,6 +506,32 @@ export const FuturesABI = [
     inputs: [
       {
         indexed: true,
+        internalType: "bytes32",
+        name: "positionId",
+        type: "bytes32",
+      },
+    ],
+    name: "PositionPaid",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "positionId",
+        type: "bytes32",
+      },
+    ],
+    name: "PositionPaymentReceived",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "from",
         type: "address",
@@ -752,6 +793,19 @@ export const FuturesABI = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32[]",
+        name: "_positionIds",
+        type: "bytes32[]",
+      },
+    ],
+    name: "depositDeliveryPayment",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -1049,6 +1103,30 @@ export const FuturesABI = [
         internalType: "struct Futures.Position",
         name: "",
         type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_participant",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_deliveryDate",
+        type: "uint256",
+      },
+    ],
+    name: "getPositionsByParticipantDeliveryDate",
+    outputs: [
+      {
+        internalType: "bytes32[]",
+        name: "",
+        type: "bytes32[]",
       },
     ],
     stateMutability: "view",
