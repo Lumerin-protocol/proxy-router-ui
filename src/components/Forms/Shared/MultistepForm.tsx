@@ -126,6 +126,96 @@ export const TransactionForm = (props: TransactionFormProps) => {
   );
 };
 
+export const TransactionFormV2 = (props: TransactionFormProps) => {
+  const multistepTx = useMultistepTx({
+    steps: props.transactionSteps,
+  });
+
+  async function handleExecuteTransaction(fromStep = 0) {
+    for (let i = fromStep; i < props.transactionSteps.length; i++) {
+      const success = await multistepTx.executeNextTransaction(i);
+      if (!success) {
+        console.error("transaction failed");
+        return;
+      }
+    }
+  }
+
+  return (
+    <MultistepForm
+      onClose={props.onClose}
+      steps={[
+        ...(props.inputForm
+          ? [
+              {
+                label: props.title,
+                component: (p: StepComponentProps) => (
+                  <>
+                    <p className="mb-2">{props.description}</p>
+                    {typeof props.inputForm === "function" ? props.inputForm!(p) : props.inputForm}
+                    <MultistepFormActions
+                      primary={{
+                        label: "Review",
+                        onClick: async () => {
+                          if (props.validateInput && !(await props.validateInput())) {
+                            return;
+                          }
+                          p.nextStep();
+                        },
+                      }}
+                      secondary={{ label: "Cancel", onClick: () => p.prevStep() }}
+                    />
+                  </>
+                ),
+              },
+            ]
+          : []),
+        {
+          label: props.title,
+          component: (p) => (
+            <>
+              {props.reviewForm(p)}
+              <MultistepFormActions
+                primary={{
+                  label: "Execute",
+                  onClick: async () => {
+                    if (props.validateInput && !(await props.validateInput())) {
+                      return;
+                    }
+                    p.nextStep();
+                    await handleExecuteTransaction();
+                  },
+                }}
+                secondary={{ label: "Back", onClick: () => p.prevStep() }}
+              />
+            </>
+          ),
+        },
+        {
+          label: props.title,
+          component: (p) => (
+            <>
+              <MultipleTransactionProgress
+                steps={props.transactionSteps}
+                txState={multistepTx.txState}
+                onRetry={(stepNumber) => handleExecuteTransaction(stepNumber)}
+              />
+              {multistepTx.isSuccess && props.resultForm!(p)}
+              <MultistepFormActions
+                primary={{
+                  label: multistepTx.isSuccess && props.resultForm ? "Okay" : "Cancel",
+                  onClick: multistepTx.isSuccess && props.resultForm ? () => props.onClose() : () => props.onClose(),
+                  disabled: multistepTx.isPending,
+                }}
+              />
+            </>
+          ),
+        },
+      ]}
+    />
+  );
+};
+
 // TransactionForm.whyDidYouRender = true;
 
 export const MultipleTransactionProgress = (props: {
@@ -133,6 +223,7 @@ export const MultipleTransactionProgress = (props: {
   txState: Record<number, TxState>;
   onRetry: (txNumber: number) => void;
 }) => {
+  const [showError, useShowError] = useState(false);
   return (
     <div>
       <Alert severity="warning" sx={{ margin: "0 0 1em 0" }}>
@@ -150,6 +241,17 @@ export const MultipleTransactionProgress = (props: {
                   Retry
                 </RetryButton>
               )}
+              {tx.error && (
+                <RetryButton
+                  style={{ padding: "0 10px" }}
+                  size="small"
+                  type="button"
+                  color="error"
+                  onClick={() => useShowError(!showError)}
+                >
+                  {showError ? "Hide" : "Show"} Details
+                </RetryButton>
+              )}
             </StepProgressRow>
             {tx.txhash && (
               <StepTxHash>
@@ -159,7 +261,8 @@ export const MultipleTransactionProgress = (props: {
                 </TxLink>
               </StepTxHash>
             )}
-            {tx.error && <StepError>{mapErrorToString(tx.error)}</StepError>}
+            {tx.error && showError && <StepError>{mapErrorToString(tx.error)}</StepError>}
+            {tx.error && !showError && <StepError>Oops! Something went wrong. Please try again.</StepError>}
           </StepStyled>
         ))}
       </Steps>

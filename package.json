@@ -18,7 +18,7 @@
     "lint:fix": "biome lint --write",
     "prettier": "biome format",
     "prettier:fix": "biome format --write",
-    "format": "biome format --write --staged",
+    "format": "biome format --write --staged --files-ignore-unknown=true --no-errors-on-unmatched",
     "prepare": "husky"
   },
   "dependencies": {
@@ -36,8 +36,12 @@
     "@tanstack/react-query": "^5.75.2",
     "@tanstack/react-table": "^8.21.3",
     "buffer": "^6.0.3",
-    "contracts-js": "github:Lumerin-protocol/contracts-js#v2.0.7",
+    "contracts-js": "https://github.com/Lumerin-protocol/contracts-js#v2.0.7",
     "ecies-geth": "^1.6.2",
+    "graphql": "^16.11.0",
+    "graphql-request": "^7.2.0",
+    "highcharts": "^12.4.0",
+    "highcharts-react-official": "^3.2.3",
     "pretty-ms": "^9.2.0",
     "react": "^18.3",
     "react-circular-progressbar": "^2.1.0",
