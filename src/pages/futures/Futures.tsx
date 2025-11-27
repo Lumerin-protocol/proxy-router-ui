@@ -99,7 +99,7 @@ export const Futures: FC = () => {
 
       {/* Row 2: Chart (60%) */}
       <ChartArea>
-        <SmallWidget className="w-full" style={{ marginBottom: 0 }}>
+        <SmallWidget className="w-full" style={{ marginBottom: 0, paddingLeft: 5, paddingRight: 10 }}>
           <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
         </SmallWidget>
       </ChartArea>
@@ -160,7 +160,7 @@ const FuturesContainer = styled("div")`
 
   /* Medium screens: Adjust column ratio for better fit */
   @media (max-width: 1400px) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 3fr 2fr;
   }
 
   /* Tablet: Stack in single column */

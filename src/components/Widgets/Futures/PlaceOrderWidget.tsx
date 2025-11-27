@@ -13,6 +13,7 @@ import type { Participant } from "../../../hooks/data/useParticipant";
 import { useAccount } from "wagmi";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
+import { handleNumericDecimalInput } from "../../Forms/Shared/AmountInputForm";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
@@ -332,39 +333,7 @@ export const PlaceOrderWidget = ({
                   onChange={(e) => {
                     setPrice(e.target.value);
                   }}
-                  onBeforeInput={(e) => {
-                    const inputChar = e.data;
-
-                    // Allow deletion or navigation
-                    if (!inputChar) return;
-
-                    // Reject anything not digit or "."
-                    if (!/^[0-9.]$/.test(inputChar)) {
-                      e.preventDefault();
-                      return;
-                    }
-
-                    const current = e.currentTarget.value;
-                    const selectionStart = e.currentTarget.selectionStart;
-                    const selectionEnd = e.currentTarget.selectionEnd;
-
-                    // Predict the new value if input is allowed
-                    const newValue =
-                      current.slice(0, selectionStart ?? 0) + inputChar + current.slice(selectionEnd ?? 0);
-
-                    // Only one dot allowed
-                    if ((newValue.match(/\./g) || []).length > 1) {
-                      e.preventDefault();
-                      return;
-                    }
-
-                    // Max 2 digits after decimal
-                    const parts = newValue.split(".");
-                    if (parts[1] && parts[1].length > 2) {
-                      e.preventDefault();
-                      return;
-                    }
-                  }}
+                  onBeforeInput={handleNumericDecimalInput}
                   step={priceStep}
                   min="0.01"
                   inputMode={"numeric"}

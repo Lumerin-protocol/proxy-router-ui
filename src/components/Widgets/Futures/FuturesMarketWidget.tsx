@@ -75,7 +75,7 @@ export const FuturesMarketWidget = ({ contractSpecsQuery }: FuturesMarketWidgetP
       </SmallWidget>
 
       <ModalItem open={detailedSpecsModal.isOpen} setOpen={detailedSpecsModal.setOpen}>
-        <DetailedSpecsModal closeForm={detailedSpecsModal.close} />
+        <DetailedSpecsModal closeForm={detailedSpecsModal.close} contractSpecs={contractSpecs?.data} />
       </ModalItem>
     </>
   );
