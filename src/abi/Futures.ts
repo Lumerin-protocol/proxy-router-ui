@@ -904,43 +904,6 @@ export const FuturesABI = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_entryPricePerDay",
-        type: "uint256",
-      },
-      {
-        internalType: "int256",
-        name: "_qty",
-        type: "int256",
-      },
-    ],
-    name: "getMaintenanceMarginForPosition",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getMarginPercent",
-    outputs: [
-      {
-        internalType: "uint8",
-        name: "",
-        type: "uint8",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "getMarketPrice",
     outputs: [
@@ -1243,6 +1206,25 @@ export const FuturesABI = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "bytes[]",
+        name: "data",
+        type: "bytes[]",
+      },
+    ],
+    name: "multicall",
+    outputs: [
+      {
+        internalType: "bytes[]",
+        name: "results",
+        type: "bytes[]",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "name",
     outputs: [
@@ -1368,6 +1350,19 @@ export const FuturesABI = [
       },
     ],
     name: "setLiquidationMarginPercent",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "addr",
+        type: "address",
+      },
+    ],
+    name: "setOracle",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

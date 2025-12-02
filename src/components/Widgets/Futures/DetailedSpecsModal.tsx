@@ -1,11 +1,43 @@
 import styled from "@mui/material/styles/styled";
 import { PrimaryButton } from "../../Forms/FormButtons/Buttons.styled";
+import { formatHashrateTHPS } from "../../../lib/units";
+import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface DetailedSpecsModalProps {
   closeForm: () => void;
+  contractSpecs: FuturesContractSpecs | null | undefined;
 }
 
-export const DetailedSpecsModal = ({ closeForm }: DetailedSpecsModalProps) => {
+export const DetailedSpecsModal = ({ closeForm, contractSpecs }: DetailedSpecsModalProps) => {
+  const formatSpeed = (speedHps: bigint) => {
+    return formatHashrateTHPS(speedHps).full;
+  };
+
+  const formatDuration = (seconds: number) => {
+    const secondsInWeek = 7 * 24 * 60 * 60;
+    const secondsInDay = 24 * 60 * 60;
+
+    if (seconds < secondsInWeek) {
+      const days = Math.round(seconds / secondsInDay);
+      return `${days} day${days !== 1 ? "s" : ""}`;
+    }
+
+    const weeks = Math.round(seconds / secondsInWeek);
+    return `${weeks} week${weeks !== 1 ? "s" : ""}`;
+  };
+
+  if (!contractSpecs) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-semibold text-white mb-6">Contract Specifications</h2>
+        <div>Loading contract specifications...</div>
+      </div>
+    );
+  }
+
+  const speedFormatted = formatSpeed(contractSpecs.speedHps);
+  const durationFormatted = formatDuration(contractSpecs.deliveryDurationSeconds);
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-white mb-6">Contract Specifications</h2>
@@ -13,12 +45,14 @@ export const DetailedSpecsModal = ({ closeForm }: DetailedSpecsModalProps) => {
       <div className="space-y-4">
         <SpecItem>
           <SpecLabel>Contract Unit</SpecLabel>
-          <SpecValue>100 TH per week</SpecValue>
+          <SpecValue>
+            {speedFormatted} per {durationFormatted}
+          </SpecValue>
         </SpecItem>
 
         <SpecItem>
           <SpecLabel>Price Quotation</SpecLabel>
-          <SpecValue>U.S. dollars and cents per 100 TH per day</SpecValue>
+          <SpecValue>U.S. dollars and cents per {speedFormatted} per day</SpecValue>
         </SpecItem>
 
         <SpecItem>
@@ -30,10 +64,6 @@ export const DetailedSpecsModal = ({ closeForm }: DetailedSpecsModalProps) => {
           <SpecLabel>Tick Value</SpecLabel>
           <SpecValue>$0.07</SpecValue>
         </SpecItem>
-      </div>
-
-      <div className="flex justify-end mt-8">
-        <PrimaryButton onClick={closeForm}>Close</PrimaryButton>
       </div>
     </div>
   );

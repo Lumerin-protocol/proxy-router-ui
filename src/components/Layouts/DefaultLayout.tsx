@@ -27,8 +27,10 @@ export const DefaultLayout: FC<Props> = ({ children, pageTitle }) => {
           color: "white",
         }}
       >
-        <Header setSidebarOpen={sidebar.setOpen} pageTitle={pageTitle} />
-        <Box component="main">{children}</Box>
+        <ContentWrapper>
+          <Header setSidebarOpen={sidebar.setOpen} pageTitle={pageTitle} />
+          <Box component="main">{children}</Box>
+        </ContentWrapper>
       </Box>
     </BodyWrapper>
   );
@@ -36,6 +38,12 @@ export const DefaultLayout: FC<Props> = ({ children, pageTitle }) => {
 
 const BodyWrapper = styled("div")`
   display: flex;
+`;
+
+const ContentWrapper = styled("div")`
+  max-width: 1920px;
+  margin: 0 auto;
+  width: 100%;
 `;
 
 const drawerWidth = 240;

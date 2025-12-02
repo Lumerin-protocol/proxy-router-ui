@@ -330,7 +330,7 @@ const ActionButtons = styled("div")`
     }
   }
 
-  @media (max-width: 1530px) {
+  @media (min-width: 769px) and (max-width: 1530px) {
     flex-direction: column;
 
     button {
