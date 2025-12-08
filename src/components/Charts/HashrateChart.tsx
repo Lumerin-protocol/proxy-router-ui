@@ -157,7 +157,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
   }
 
   return (
-    <div style={{ width: "100%", height: "500px", padding: "1rem" }}>
+    <div style={{ width: "100%", height: "500px", paddingTop: "1rem" }}>
       <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "100%" } }} />
     </div>
   );

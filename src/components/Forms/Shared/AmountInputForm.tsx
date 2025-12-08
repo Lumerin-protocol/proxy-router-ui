@@ -12,6 +12,44 @@ interface Props {
   showMaxButton?: boolean;
 }
 
+/**
+ * Validates numeric input for decimal numbers with up to 2 decimal places.
+ * Prevents non-numeric characters (except single decimal point) and limits decimal places.
+ * @param e - The beforeinput event
+ */
+export const handleNumericDecimalInput = (e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const inputChar = e.data;
+
+  // Allow deletion or navigation
+  if (!inputChar) return;
+
+  // Reject anything not digit or "."
+  if (!/^[0-9.]$/.test(inputChar)) {
+    e.preventDefault();
+    return;
+  }
+
+  const current = e.target.value;
+  const selectionStart = e.target.selectionStart;
+  const selectionEnd = e.target.selectionEnd;
+
+  // Predict the new value if input is allowed
+  const newValue = current.slice(0, selectionStart ?? 0) + inputChar + current.slice(selectionEnd ?? 0);
+
+  // Only one dot allowed
+  if ((newValue.match(/\./g) || []).length > 1) {
+    e.preventDefault();
+    return;
+  }
+
+  // Max 2 digits after decimal
+  const parts = newValue.split(".");
+  if (parts[1] && parts[1].length > 2) {
+    e.preventDefault();
+    return;
+  }
+};
+
 export const AmountInputForm: FC<Props> = ({
   control,
   label = "Amount",
@@ -47,14 +85,16 @@ export const AmountInputForm: FC<Props> = ({
         <TextField
           {...amountController.field}
           label={label}
-          type="number"
+          type="text"
+          inputMode={"numeric"}
           autoComplete="off"
           fullWidth
           variant="outlined"
           error={!!amountController.fieldState.error}
           helperText={amountController.fieldState.error?.message}
+          onBeforeInput={handleNumericDecimalInput}
           inputProps={{
-            min: 0,
+            min: 0.01,
             step: "0.01",
           }}
           sx={{ flex: 1 }}

@@ -3,7 +3,7 @@ import { useForm, useController, type Control } from "react-hook-form";
 import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
-import { useCreateOrder } from "../../hooks/data/useCreateOrder";
+import { useModifyOrder } from "../../hooks/data/useModifyOrder";
 import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
 import { PARTICIPANT_QK } from "../../hooks/data/useParticipant";
 import { POSITION_BOOK_QK } from "../../hooks/data/usePositionBook";
@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
 import type { ParticipantOrder } from "../../hooks/data/useParticipant";
 import styled from "@mui/material/styles/styled";
+import { handleNumericDecimalInput } from "./Shared/AmountInputForm";
 
 interface ModifyOrderFormProps {
   order: ParticipantOrder;
@@ -26,7 +27,7 @@ interface ModifyFormValues {
 
 export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
   ({ order, orderIds, currentQuantity, closeForm }) => {
-    const { createOrderAsync } = useCreateOrder();
+    const { modifyOrderAsync } = useModifyOrder();
     const qc = useQueryClient();
     const { address } = useAccount();
 
@@ -129,10 +130,7 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
                 </div>
               </div>
             </div>
-            <p className="text-gray-400 text-sm">
-              You are about to modify your order. An opposite order will be created to close the old order, then a new
-              order will be created with the updated values.
-            </p>
+            <p className="text-gray-400 text-sm">You are about to modify your order.</p>
           </>
         )}
         resultForm={(props) => (
@@ -144,41 +142,24 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
         )}
         transactionSteps={[
           {
-            label: "Close Old Order",
-            action: async () => {
-              // Create an order with opposite sign to close the existing orders
-              // If buy orders (isBuy = true), create sell order with negative quantity
-              // If sell orders (isBuy = false), create buy order with positive quantity
-              const oppositeQuantity = isBuy ? -currentQuantity : currentQuantity;
-
-              const txhash = await createOrderAsync({
-                price: order.pricePerDay,
-                deliveryDate: order.deliveryAt,
-                quantity: oppositeQuantity,
-                destUrl: order.destURL,
-              });
-
-              return {
-                isSkipped: false,
-                txhash: txhash,
-              };
-            },
-            postConfirmation: async (receipt: TransactionReceipt) => {
-              await waitForBlockNumber(receipt.blockNumber, qc);
-            },
-          },
-          {
-            label: "Create New Order",
+            label: "Modify Order",
             action: async () => {
               const formValues = form.getValues();
-              const priceBigInt = BigInt(Math.round(parseFloat(formValues.price) * 1e6));
-              const signedQuantity = getSignedQuantity();
-              const txhash = await createOrderAsync({
-                price: priceBigInt,
-                deliveryDate: order.deliveryAt,
-                quantity: signedQuantity,
+              const newPriceBigInt = BigInt(Math.round(parseFloat(formValues.price) * 1e6));
+              const newSignedQuantity = getSignedQuantity();
+
+              // Determine old quantity with sign
+              const oldSignedQuantity = isBuy ? currentQuantity : -currentQuantity;
+
+              const txhash = await modifyOrderAsync({
+                oldPrice: order.pricePerDay,
+                oldQuantity: oldSignedQuantity,
+                newPrice: newPriceBigInt,
+                newQuantity: newSignedQuantity,
                 destUrl: order.destURL,
+                deliveryDate: order.deliveryAt,
               });
+
               return {
                 isSkipped: false,
                 txhash: txhash,
@@ -299,38 +280,7 @@ const ModifyInputForm = memo<{
           {...priceController.field}
           step="0.01"
           min="0.01"
-          onBeforeInput={(e) => {
-            const inputChar = e.data;
-
-            // Allow deletion or navigation
-            if (!inputChar) return;
-
-            // Reject anything not digit or "."
-            if (!/^[0-9.]$/.test(inputChar)) {
-              e.preventDefault();
-              return;
-            }
-
-            const current = e.currentTarget.value;
-            const selectionStart = e.currentTarget.selectionStart;
-            const selectionEnd = e.currentTarget.selectionEnd;
-
-            // Predict the new value if input is allowed
-            const newValue = current.slice(0, selectionStart ?? 0) + inputChar + current.slice(selectionEnd ?? 0);
-
-            // Only one dot allowed
-            if ((newValue.match(/\./g) || []).length > 1) {
-              e.preventDefault();
-              return;
-            }
-
-            // Max 2 digits after decimal
-            const parts = newValue.split(".");
-            if (parts[1] && parts[1].length > 2) {
-              e.preventDefault();
-              return;
-            }
-          }}
+          onBeforeInput={handleNumericDecimalInput}
           inputMode={"numeric"}
         />
         {priceController.fieldState.error && <ErrorText>{priceController.fieldState.error.message}</ErrorText>}
