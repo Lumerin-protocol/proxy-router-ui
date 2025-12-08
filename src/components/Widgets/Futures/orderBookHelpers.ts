@@ -10,39 +10,27 @@ export interface OrderBookData {
   isLastHashprice?: boolean;
 }
 
-type HashrateIndexData = {
-  id: number;
-  updatedAt: string;
-  updatedAtDate: Date;
-  priceToken: bigint;
-  priceBTC: bigint;
-};
-
 /**
  * Creates the final order book data by merging live order book data with calculated static data
  * @param orderBookData - Live order book data from the API
- * @param hashrateData - Hashrate index data to calculate base prices
+ * @param marketPrice - Market price from the Futures contract
  * @param contractSpecs - Contract specifications including price ladder step
  * @returns Final merged and sorted order book data
  */
 export const createFinalOrderBookData = (
   orderBookData: OrderBookOrder[],
-  hashrateData: HashrateIndexData[] | undefined,
+  marketPrice: bigint | null | undefined,
   contractSpecs: FuturesContractSpecs | undefined,
 ): OrderBookData[] => {
   // Calculate minimumPriceIncrement once for reuse
   const minimumPriceIncrement = contractSpecs ? Number(contractSpecs.minimumPriceIncrement) / 1e6 : null; // Convert from wei to USDC
 
-  // Calculate basePrice from newest hashprice (used for highlighting and calculating order book)
+  // Calculate basePrice from market price (used for highlighting and calculating order book)
   let basePrice: number | null = null;
-  if (hashrateData && hashrateData.length > 0 && minimumPriceIncrement !== null) {
-    // Get the newest item by date (last item in the array since it's ordered by updatedAt asc)
-    const newestItem = hashrateData[0];
-    if (newestItem && newestItem.priceToken) {
-      const rawPrice = Number(newestItem.priceToken) / 1e6; // Convert from wei to USDC
-      // Round to the nearest multiple of minimumPriceIncrement
-      basePrice = Math.round(rawPrice / minimumPriceIncrement) * minimumPriceIncrement;
-    }
+  if (marketPrice && minimumPriceIncrement !== null) {
+    const rawPrice = Number(marketPrice) / 1e6; // Convert from wei to USDC
+    // Round to the nearest multiple of minimumPriceIncrement
+    basePrice = Math.round(rawPrice / minimumPriceIncrement) * minimumPriceIncrement;
   }
 
   // Calculate static order book data based on hashrate

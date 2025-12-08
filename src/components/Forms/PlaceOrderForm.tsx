@@ -175,7 +175,7 @@ export const PlaceOrderForm: FC<Props> = ({
                 <span className="text-gray-300">Required Margin:</span>
                 <span className="text-white">
                   {requiredMargin !== null
-                    ? `~${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
+                    ? `${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
                     : isLoadingMargin
                       ? "Loading..."
                       : "N/A"}

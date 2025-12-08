@@ -3,7 +3,7 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useGetDeliveryDates } from "../../../hooks/data/useGetDeliveryDates";
 import { useOrderBook } from "../../../hooks/data/useOrderBook";
-import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { useGetMarketPrice } from "../../../hooks/data/useGetMarketPrice";
 import { createFinalOrderBookData } from "./orderBookHelpers";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { GetResponse } from "../../../gateway/interfaces";
@@ -29,7 +29,7 @@ export const OrderBookTable = ({
   const [priceHighlights, setPriceHighlights] = useState<Map<number, { color: "red" | "green" }>>(new Map());
 
   const { data: deliveryDatesRaw, isLoading, isError } = useGetDeliveryDates();
-  const hashrateQuery = useHashrateIndexData();
+  const { data: marketPrice } = useGetMarketPrice();
 
   // Transform delivery dates from bigint[] to [{ deliveryDate: number }]
   // Filter out dates that are earlier than now
@@ -107,11 +107,7 @@ export const OrderBookTable = ({
   }, [orderBookData]);
 
   // Create final order book data
-  const finalOrderBookData = createFinalOrderBookData(
-    orderBookData,
-    hashrateQuery.data as any,
-    contractSpecsQuery.data?.data,
-  );
+  const finalOrderBookData = createFinalOrderBookData(orderBookData, marketPrice, contractSpecsQuery.data?.data);
 
   // Add highlighting to final order book data based on price changes
   const finalOrderBookDataWithHighlights = useMemo(() => {

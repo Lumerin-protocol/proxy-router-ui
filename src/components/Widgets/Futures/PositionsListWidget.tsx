@@ -4,7 +4,7 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
 import { ParticipantPosition } from "../../../hooks/data/useParticipant";
-import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { useGetMarketPrice } from "../../../hooks/data/useGetMarketPrice";
 import { ServerStackIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useModal } from "../../../hooks/useModal";
 import { ModalItem } from "../../Modal";
@@ -27,7 +27,7 @@ export const PositionsListWidget = ({
   onClosePosition,
 }: PositionsListWidgetProps) => {
   const { createOrderAsync, isPending } = useCreateOrder();
-  const hashrateQuery = useHashrateIndexData();
+  const { data: marketPrice } = useGetMarketPrice();
   const contractSpecsQuery = useFuturesContractSpecs();
   const depositModal = useModal();
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<bigint | null>(null);
@@ -73,11 +73,9 @@ export const PositionsListWidget = ({
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
-  // Get latest price from hashrate index
-  const latestPrice =
-    hashrateQuery.data && hashrateQuery.data.length > 0 ? Number(hashrateQuery.data[0].priceToken) / 1e6 : null;
-  const latestPriceBigInt =
-    hashrateQuery.data && hashrateQuery.data.length > 0 ? hashrateQuery.data[0].priceToken : null;
+  // Get latest price from market price hook
+  const latestPrice = marketPrice ? Number(marketPrice) / 1e6 : null;
+  const latestPriceBigInt = marketPrice ?? null;
 
   // Get contract specs
   const marginPercent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
