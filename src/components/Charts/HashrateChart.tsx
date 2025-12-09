@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useMemo } from "react";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
@@ -9,11 +9,36 @@ interface HashrateChartProps {
     priceToken: bigint;
   }>;
   isLoading?: boolean;
+  marketPrice?: bigint | null;
 }
 
-export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false }) => {
+export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false, marketPrice }) => {
+  // Merge market price with historical data if it differs from the first item
+  const enhancedData = useMemo(() => {
+    if (!marketPrice || !data || data.length === 0) {
+      return data;
+    }
+
+    const firstItem = data[0];
+    const firstItemPrice = firstItem?.priceToken;
+
+    // Check if marketPrice is different from the first item's price
+    if (firstItemPrice !== marketPrice) {
+      // Add marketPrice as the latest value with current timestamp
+      return [
+        {
+          updatedAtDate: new Date(), // Use current time
+          priceToken: marketPrice,
+        },
+        ...data,
+      ];
+    }
+
+    return data;
+  }, [data, marketPrice]);
+
   // Transform data for Highcharts
-  const chartData = data
+  const chartData = enhancedData
     .filter((item) => item.updatedAtDate || item.updatedAt) // Filter out items without date
     .map((item) => {
       const date = item.updatedAtDate || new Date(Number(item.updatedAt) * 1000);
@@ -31,14 +56,15 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
         fontFamily: "inherit",
       },
     },
-    title: {
-      text: "Hashprice Index",
-      style: {
-        color: "#ffffff",
-        fontWeight: "600",
-        fontSize: "1.3em",
-      },
-    },
+    title: { text: undefined },
+    // title: {
+    //   text: "Hashprice Index",
+    //   style: {
+    //     color: "#ffffff",
+    //     fontWeight: "600",
+    //     fontSize: "1.3em",
+    //   },
+    // },
     xAxis: {
       type: "datetime",
       title: {
@@ -157,8 +183,11 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false 
   }
 
   return (
-    <div style={{ width: "100%", height: "500px", paddingTop: "1rem" }}>
-      <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "100%" } }} />
-    </div>
+    <>
+      <h3>Hashprice Index</h3>
+      <div style={{ width: "100%", height: "500px", paddingTop: "1rem" }}>
+        <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "100%" } }} />
+      </div>
+    </>
   );
 };

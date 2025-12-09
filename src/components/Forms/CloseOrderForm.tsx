@@ -1,4 +1,4 @@
-import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
+import { waitForAggregateBlockNumber, AGGREGATE_ORDER_BOOK_QK } from "../../hooks/data/useAggregateOrderBook";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { colors } from "../../styles/styles.config";
@@ -7,7 +7,6 @@ import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import { useCreateOrder } from "../../hooks/data/useCreateOrder";
 import { useAccount } from "wagmi";
-import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
 import { PARTICIPANT_QK } from "../../hooks/data/useParticipant";
 import { POSITION_BOOK_QK } from "../../hooks/data/usePositionBook";
 import type { FC } from "react";
@@ -93,11 +92,11 @@ export const CloseOrderForm: FC<CloseOrderFormProps> = ({ isBuy, pricePerDay, de
           },
           postConfirmation: async (receipt: TransactionReceipt) => {
             // Wait for block number to ensure indexer has updated
-            await waitForBlockNumber(receipt.blockNumber, qc);
+            await waitForAggregateBlockNumber(receipt.blockNumber, qc, Number(deliveryAt));
 
             // Refetch order book, positions, and participant data
             await Promise.all([
-              qc.invalidateQueries({ queryKey: [ORDER_BOOK_QK] }),
+              qc.invalidateQueries({ queryKey: [AGGREGATE_ORDER_BOOK_QK] }),
               address && qc.invalidateQueries({ queryKey: [POSITION_BOOK_QK] }),
               address && qc.invalidateQueries({ queryKey: [PARTICIPANT_QK] }),
             ]);

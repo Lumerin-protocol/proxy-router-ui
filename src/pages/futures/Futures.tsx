@@ -11,6 +11,7 @@ import { useParticipant } from "../../hooks/data/useParticipant";
 import { usePositionBook } from "../../hooks/data/usePositionBook";
 import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
 import { useGetMinMargin } from "../../hooks/data/useGetMinMargin";
+import { useGetMarketPrice } from "../../hooks/data/useGetMarketPrice";
 import { SmallWidget } from "../../components/Cards/Cards.styled";
 import type { PositionBookPosition } from "../../hooks/data/usePositionBook";
 import styled from "@mui/material/styles/styled";
@@ -27,11 +28,12 @@ export const Futures: FC = () => {
   const minMargin = minMarginQuery.data ?? null;
   const isLoadingMinMargin = minMarginQuery.isLoading;
 
-  // Calculate total unrealized PnL from all active positions
-  const latestPrice = hashrateQuery.data && hashrateQuery.data.length > 0 ? hashrateQuery.data[0].priceToken : null;
+  // Get market price from contract - polls every 10 seconds
+  const { data: marketPrice, isLoading: isMarketPriceLoading } = useGetMarketPrice();
 
+  // Calculate total unrealized PnL from all active positions
   const totalUnrealizedPnL = useMemo(() => {
-    if (!latestPrice || !positionBookData?.data?.positions || !address) return null;
+    if (!marketPrice || !positionBookData?.data?.positions || !address) return null;
 
     const activePositions = positionBookData.data.positions.filter((p) => p.isActive && !p.closedAt);
     let totalPnL = 0n;
@@ -40,7 +42,7 @@ export const Futures: FC = () => {
       const isLong = position.buyer.address.toLowerCase() === address.toLowerCase();
       const entryPrice = isLong ? position.buyPricePerDay : position.sellPricePerDay;
       const entryPriceNum = entryPrice;
-      const priceDiff = latestPrice - entryPriceNum;
+      const priceDiff = marketPrice - entryPriceNum;
 
       const positionPnL = isLong ? priceDiff : -priceDiff;
       totalPnL += positionPnL;
@@ -51,7 +53,7 @@ export const Futures: FC = () => {
     }
 
     return totalPnL;
-  }, [latestPrice, positionBookData?.data?.positions, address]);
+  }, [marketPrice, positionBookData?.data?.positions, address]);
 
   // State for order book selection
   const [selectedPrice, setSelectedPrice] = useState<string | undefined>();
@@ -100,7 +102,11 @@ export const Futures: FC = () => {
       {/* Row 2: Chart (60%) */}
       <ChartArea>
         <SmallWidget className="w-full" style={{ marginBottom: 0, paddingLeft: 5, paddingRight: 10 }}>
-          <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
+          <HashrateChart
+            data={hashrateQuery.data || []}
+            isLoading={hashrateQuery.isLoading}
+            marketPrice={marketPrice}
+          />
         </SmallWidget>
       </ChartArea>
 
@@ -115,7 +121,7 @@ export const Futures: FC = () => {
             highlightTrigger={highlightTrigger}
             contractSpecsQuery={contractSpecsQuery}
             participantData={participantData?.data}
-            latestPrice={latestPrice}
+            latestPrice={marketPrice ?? null}
             onOrderPlaced={async () => {
               await minMarginQuery.refetch();
             }}

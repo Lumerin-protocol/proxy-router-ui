@@ -41,11 +41,9 @@ export const FuturesMarketWidget = ({ contractSpecsQuery }: FuturesMarketWidgetP
 
   return (
     <>
-      <SmallWidget className="lg:w-[40%] relative">
-        <h3 className="absolute" style={{ top: "8px" }}>
-          Contract Specification
-        </h3>
-        <MarketStats style={{ marginTop: "30px" }}>
+      <SmallWidget className="lg:w-[40%]" style={{ justifyContent: "space-between" }}>
+        <h3>Contract Specification</h3>
+        <MarketStats>
           {isLoading && <Spinner fontSize="0.3em" />}
           {error && <div>Error loading market data</div>}
           {contractSpecs?.data && (

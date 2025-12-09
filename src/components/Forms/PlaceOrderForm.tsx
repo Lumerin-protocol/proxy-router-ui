@@ -1,10 +1,9 @@
 import { memo, type FC, useCallback, useState, useEffect } from "react";
 import { useForm, useController, type Control } from "react-hook-form";
-import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
+import { waitForAggregateBlockNumber, AGGREGATE_ORDER_BOOK_QK } from "../../hooks/data/useAggregateOrderBook";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import { useCreateOrder } from "../../hooks/data/useCreateOrder";
-import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
 import { PARTICIPANT_QK } from "../../hooks/data/useParticipant";
 import { POSITION_BOOK_QK } from "../../hooks/data/usePositionBook";
 import { useQueryClient } from "@tanstack/react-query";
@@ -175,7 +174,7 @@ export const PlaceOrderForm: FC<Props> = ({
                 <span className="text-gray-300">Required Margin:</span>
                 <span className="text-white">
                   {requiredMargin !== null
-                    ? `~${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
+                    ? `${(Math.abs(Number(requiredMargin) * deliveryDurationDays) / 1e6).toFixed(2)} USDC`
                     : isLoadingMargin
                       ? "Loading..."
                       : "N/A"}
@@ -236,11 +235,11 @@ export const PlaceOrderForm: FC<Props> = ({
           },
           postConfirmation: async (receipt: TransactionReceipt) => {
             // Wait for block number to ensure indexer has updated
-            await waitForBlockNumber(receipt.blockNumber, qc);
+            await waitForAggregateBlockNumber(receipt.blockNumber, qc, Number(deliveryDate));
 
             // Refetch order book, positions, and participant data
             await Promise.all([
-              qc.invalidateQueries({ queryKey: [ORDER_BOOK_QK] }),
+              qc.invalidateQueries({ queryKey: [AGGREGATE_ORDER_BOOK_QK] }),
               address && qc.invalidateQueries({ queryKey: [POSITION_BOOK_QK] }),
               address && qc.invalidateQueries({ queryKey: [PARTICIPANT_QK] }),
             ]);
