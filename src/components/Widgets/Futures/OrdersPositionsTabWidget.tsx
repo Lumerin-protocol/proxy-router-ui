@@ -4,8 +4,12 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import { TabSwitch } from "../../TabSwitch";
 import { OrdersListWidget } from "./OrdersListWidget";
 import { PositionsListWidget } from "./PositionsListWidget";
+import { HistoricalOrdersListWidget } from "./HistoricalOrdersListWidget";
+import { HistoricalPositionsListWidget } from "./HistoricalPositionsListWidget";
 import type { ParticipantOrder } from "../../../hooks/data/useParticipant";
 import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
+import { useHistoricalOrders } from "../../../hooks/data/useHistoricalOrders";
+import { useHistoricalPositions } from "../../../hooks/data/useHistoricalPositions";
 // Commented out: Receive Payment feature
 // import { usePaidSellerPositions } from "../../../hooks/data/usePaidSellerPositions";
 // import { useModal } from "../../../hooks/useModal";
@@ -15,6 +19,8 @@ import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 // import { useQueryClient } from "@tanstack/react-query";
 // import { waitForBlockNumberPositionBook } from "../../../hooks/data/usePositionBook";
 // import type { TransactionReceipt } from "viem";
+
+type TimeFilter = "OPEN" | "LAST_30_DAYS";
 
 interface OrdersPositionsTabWidgetProps {
   orders: ParticipantOrder[];
@@ -34,6 +40,12 @@ export const OrdersPositionsTabWidget = ({
   onClosePosition,
 }: OrdersPositionsTabWidgetProps) => {
   const [activeTab, setActiveTab] = useState<"ORDERS" | "POSITIONS">("ORDERS");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("OPEN");
+
+  // Fetch historical data only when "Last 30 days" is selected
+  const isHistoricalMode = timeFilter === "LAST_30_DAYS";
+  const historicalOrdersQuery = useHistoricalOrders(participantAddress, isHistoricalMode);
+  const historicalPositionsQuery = useHistoricalPositions(participantAddress, isHistoricalMode);
 
   // Commented out: Receive Payment feature
   // const paidSellerPositionsQuery = usePaidSellerPositions(participantAddress, { refetch: true });
@@ -60,14 +72,32 @@ export const OrdersPositionsTabWidget = ({
   // const hasClaimableDates = claimableDeliveryDates.length > 0;
 
   const ordersCount = useMemo(() => {
+    if (isHistoricalMode) {
+      const historicalOrders = historicalOrdersQuery.data?.data || [];
+      const unique = new Set<string>();
+      historicalOrders.forEach((order) => {
+        unique.add(`${order.deliveryAt.toString()}_${order.pricePerDay.toString()}`);
+      });
+      return unique.size;
+    }
     const unique = new Set<string>();
     orders.forEach((order) => {
       unique.add(`${order.deliveryAt.toString()}_${order.pricePerDay.toString()}`);
     });
     return unique.size;
-  }, [orders]);
+  }, [orders, isHistoricalMode, historicalOrdersQuery.data?.data]);
 
   const positionsCount = useMemo(() => {
+    if (isHistoricalMode) {
+      const historicalPositions = historicalPositionsQuery.data?.data || [];
+      const unique = new Set<string>();
+      historicalPositions.forEach((p) => {
+        const isLong = participantAddress && p.buyer.address.toLowerCase() === participantAddress.toLowerCase();
+        const pricePerDay = isLong ? p.buyPricePerDay : p.sellPricePerDay;
+        unique.add(`${p.deliveryAt.toString()}_${pricePerDay.toString()}`);
+      });
+      return unique.size;
+    }
     const unique = new Set<string>();
     positions.forEach((p) => {
       // Determine position type and use appropriate price
@@ -76,7 +106,7 @@ export const OrdersPositionsTabWidget = ({
       unique.add(`${p.deliveryAt.toString()}_${pricePerDay.toString()}`);
     });
     return unique.size;
-  }, [positions, participantAddress]);
+  }, [positions, participantAddress, isHistoricalMode, historicalPositionsQuery.data?.data]);
 
   return (
     <TabContainer>
@@ -89,6 +119,14 @@ export const OrdersPositionsTabWidget = ({
           value={activeTab}
           setValue={setActiveTab}
         />
+        <TimeFilterSwitch>
+          <TimeFilterButton $active={timeFilter === "OPEN"} onClick={() => setTimeFilter("OPEN")}>
+            Active
+          </TimeFilterButton>
+          <TimeFilterButton $active={timeFilter === "LAST_30_DAYS"} onClick={() => setTimeFilter("LAST_30_DAYS")}>
+            Last 30 days
+          </TimeFilterButton>
+        </TimeFilterSwitch>
         {/* Commented out: Receive Payment button */}
         {/* {hasClaimableDates && (
           <ClaimButton onClick={() => withdrawModal.open()} disabled={isWithdrawPending}>
@@ -98,18 +136,35 @@ export const OrdersPositionsTabWidget = ({
       </Header>
 
       <Content>
-        {activeTab === "ORDERS" && (
+        {activeTab === "ORDERS" && !isHistoricalMode && (
           <OrdersWrapper>
             <OrdersListWidget orders={orders} isLoading={ordersLoading} />
           </OrdersWrapper>
         )}
-        {activeTab === "POSITIONS" && (
+        {activeTab === "ORDERS" && isHistoricalMode && (
+          <OrdersWrapper>
+            <HistoricalOrdersListWidget
+              orders={historicalOrdersQuery.data?.data || []}
+              isLoading={historicalOrdersQuery.isLoading}
+            />
+          </OrdersWrapper>
+        )}
+        {activeTab === "POSITIONS" && !isHistoricalMode && (
           <PositionsWrapper>
             <PositionsListWidget
               positions={positions}
               isLoading={positionsLoading}
               participantAddress={participantAddress}
               onClosePosition={onClosePosition}
+            />
+          </PositionsWrapper>
+        )}
+        {activeTab === "POSITIONS" && isHistoricalMode && (
+          <PositionsWrapper>
+            <HistoricalPositionsListWidget
+              positions={historicalPositionsQuery.data?.data || []}
+              isLoading={historicalPositionsQuery.isLoading}
+              participantAddress={participantAddress}
             />
           </PositionsWrapper>
         )}
@@ -312,5 +367,33 @@ const CloseButton = styled("button")`
   
   &:hover {
     background: #5a6b70;
+  }
+`;
+
+const TimeFilterSwitch = styled("div")`
+  display: flex;
+  gap: 0;
+  border: 1px solid rgba(171, 171, 171, 1);
+  border-radius: 6px;
+  overflow: hidden;
+`;
+
+const TimeFilterButton = styled("button")<{ $active: boolean }>`
+  padding: 0.5rem 1rem;
+  background: ${(props) => (props.$active ? "#4c5a5f" : "transparent")};
+  color: #fff;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    background: ${(props) => (props.$active ? "#4c5a5f" : "rgba(76, 90, 95, 0.5)")};
+  }
+  
+  &:first-of-type {
+    border-right: 1px solid rgba(171, 171, 171, 0.5);
   }
 `;

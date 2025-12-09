@@ -321,7 +321,7 @@ export const PlaceOrderWidget = ({
         <MainSection>
           <InputSection>
             <InputGroup>
-              <label>Price per day, USDC</label>
+              <label>Price per day (USDC)</label>
               <PriceInputContainer>
                 <PriceButton onClick={decrementPrice} disabled={showOrderForm}>
                   −

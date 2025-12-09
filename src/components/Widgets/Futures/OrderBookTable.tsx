@@ -2,7 +2,7 @@ import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useGetDeliveryDates } from "../../../hooks/data/useGetDeliveryDates";
-import { useOrderBook } from "../../../hooks/data/useOrderBook";
+import { useAggregateOrderBook } from "../../../hooks/data/useAggregateOrderBook";
 import { useGetMarketPrice } from "../../../hooks/data/useGetMarketPrice";
 import { createFinalOrderBookData } from "./orderBookHelpers";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -64,7 +64,7 @@ export const OrderBookTable = ({
   }, [selectedDeliveryDate]);
 
   // Fetch order book for selected delivery date
-  const orderBookQuery = useOrderBook(selectedDeliveryDate, { refetch: true, interval: 15000 });
+  const orderBookQuery = useAggregateOrderBook(selectedDeliveryDate, { refetch: true, interval: 15000 });
   const orderBookData = orderBookQuery.data?.data?.orders || [];
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export const OrderBookTable = ({
     return Math.round(price * 100) / 100;
   };
 
-  // Group current order book data by price
+  // Get current order book state from pre-aggregated data
   const currentOrderBookState = useMemo(() => {
     const state = new Map<number, { bidUnits: number; askUnits: number }>();
     const minimumPriceIncrement = contractSpecsQuery.data?.data?.minimumPriceIncrement
@@ -91,16 +91,14 @@ export const OrderBookTable = ({
       return state;
     }
 
+    // Data is already aggregated with buyOrdersCount and sellOrdersCount
     for (const order of orderBookData) {
-      const rawPrice = Number(order.pricePerDay) / 1e6;
+      const rawPrice = Number(order.price) / 1e6;
       const price = normalizePrice(rawPrice, minimumPriceIncrement);
-      const entry = state.get(price) || { bidUnits: 0, askUnits: 0 };
-      if (order.isBuy) {
-        entry.bidUnits += 1;
-      } else {
-        entry.askUnits += 1;
-      }
-      state.set(price, entry);
+      state.set(price, {
+        bidUnits: order.buyOrdersCount,
+        askUnits: order.sellOrdersCount,
+      });
     }
 
     return state;
@@ -289,6 +287,7 @@ export const OrderBookTable = ({
 
   return (
     <OrderBookWidget>
+      <h3>Order Book</h3>
       <Header>
         <button onClick={goToPreviousDate} className="nav-arrow" disabled={selectedDateIndex === 0 || isLoading}>
           ←
@@ -308,7 +307,7 @@ export const OrderBookTable = ({
           <thead>
             <tr>
               <th>Buy</th>
-              <th>Price, USDC</th>
+              <th>Price</th>
               <th>Sell</th>
             </tr>
           </thead>

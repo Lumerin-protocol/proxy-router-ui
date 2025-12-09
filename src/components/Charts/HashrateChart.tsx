@@ -56,14 +56,15 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false,
         fontFamily: "inherit",
       },
     },
-    title: {
-      text: "Hashprice Index",
-      style: {
-        color: "#ffffff",
-        fontWeight: "600",
-        fontSize: "1.3em",
-      },
-    },
+    title: { text: undefined },
+    // title: {
+    //   text: "Hashprice Index",
+    //   style: {
+    //     color: "#ffffff",
+    //     fontWeight: "600",
+    //     fontSize: "1.3em",
+    //   },
+    // },
     xAxis: {
       type: "datetime",
       title: {
@@ -182,8 +183,11 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false,
   }
 
   return (
-    <div style={{ width: "100%", height: "500px", paddingTop: "1rem" }}>
-      <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "100%" } }} />
-    </div>
+    <>
+      <h3>Hashprice Index</h3>
+      <div style={{ width: "100%", height: "500px", paddingTop: "1rem" }}>
+        <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "100%" } }} />
+      </div>
+    </>
   );
 };

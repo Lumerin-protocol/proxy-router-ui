@@ -1,4 +1,4 @@
-import type { OrderBookOrder } from "../../../hooks/data/useOrderBook";
+import type { AggregateOrderBookOrder } from "../../../hooks/data/useAggregateOrderBook";
 import type { FuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 export interface OrderBookData {
@@ -11,14 +11,14 @@ export interface OrderBookData {
 }
 
 /**
- * Creates the final order book data by merging live order book data with calculated static data
- * @param orderBookData - Live order book data from the API
+ * Creates the final order book data by merging live aggregated order book data with calculated static data
+ * @param orderBookData - Pre-aggregated order book data from the API (already has buyOrdersCount and sellOrdersCount)
  * @param marketPrice - Market price from the Futures contract
  * @param contractSpecs - Contract specifications including price ladder step
  * @returns Final merged and sorted order book data
  */
 export const createFinalOrderBookData = (
-  orderBookData: OrderBookOrder[],
+  orderBookData: AggregateOrderBookOrder[],
   marketPrice: bigint | null | undefined,
   contractSpecs: FuturesContractSpecs | undefined,
 ): OrderBookData[] => {
@@ -82,29 +82,18 @@ export const createFinalOrderBookData = (
     return Math.round(price * 100) / 100;
   };
 
-  // Group fetched order book by price and side
+  // Use pre-aggregated data directly - no need to group by price/side since it's already aggregated
   const liveGroupedMap = new Map<number, { bidUnits: number | null; askUnits: number | null }>();
 
   if (orderBookData && orderBookData.length > 0) {
-    const priceToSideCount = new Map<number, { bids: number; asks: number }>();
-
     for (const order of orderBookData) {
-      const rawPrice = Number(order.pricePerDay) / 1e6; // Convert from wei to USDC
+      const rawPrice = Number(order.price) / 1e6; // Convert from wei to USDC
       const price = normalizePrice(rawPrice); // Normalize to consistent precision
-      const entry = priceToSideCount.get(price) || { bids: 0, asks: 0 };
-      if (order.isBuy) {
-        entry.bids += 1; // counting orders as units for now
-      } else {
-        entry.asks += 1;
-      }
-      priceToSideCount.set(price, entry);
-    }
 
-    // Fill liveGroupedMap from aggregated counts
-    for (const [price, counts] of priceToSideCount.entries()) {
+      // Data is already aggregated with buyOrdersCount and sellOrdersCount
       liveGroupedMap.set(price, {
-        bidUnits: counts.bids > 0 ? counts.bids : null,
-        askUnits: counts.asks > 0 ? counts.asks : null,
+        bidUnits: order.buyOrdersCount > 0 ? order.buyOrdersCount : null,
+        askUnits: order.sellOrdersCount > 0 ? order.sellOrdersCount : null,
       });
     }
   }
