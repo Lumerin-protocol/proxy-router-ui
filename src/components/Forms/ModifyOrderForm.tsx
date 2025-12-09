@@ -1,10 +1,9 @@
 import { memo, useCallback, type FC } from "react";
 import { useForm, useController, type Control } from "react-hook-form";
-import { waitForBlockNumber } from "../../hooks/data/useOrderBook";
+import { waitForAggregateBlockNumber, AGGREGATE_ORDER_BOOK_QK } from "../../hooks/data/useAggregateOrderBook";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
 import { useModifyOrder } from "../../hooks/data/useModifyOrder";
-import { ORDER_BOOK_QK } from "../../hooks/data/useOrderBook";
 import { PARTICIPANT_QK } from "../../hooks/data/useParticipant";
 import { POSITION_BOOK_QK } from "../../hooks/data/usePositionBook";
 import { useQueryClient } from "@tanstack/react-query";
@@ -167,11 +166,11 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
             },
             postConfirmation: async (receipt: TransactionReceipt) => {
               // Wait for block number to ensure indexer has updated
-              await waitForBlockNumber(receipt.blockNumber, qc);
+              await waitForAggregateBlockNumber(receipt.blockNumber, qc, Number(order.deliveryAt));
 
               // Refetch order book, positions, and participant data
               await Promise.all([
-                qc.invalidateQueries({ queryKey: [ORDER_BOOK_QK] }),
+                qc.invalidateQueries({ queryKey: [AGGREGATE_ORDER_BOOK_QK] }),
                 address && qc.invalidateQueries({ queryKey: [POSITION_BOOK_QK] }),
                 address && qc.invalidateQueries({ queryKey: [PARTICIPANT_QK] }),
               ]);
@@ -274,7 +273,7 @@ const ModifyInputForm = memo<{
   return (
     <InputFormContainer>
       <InputGroup>
-        <label>Price, USDC</label>
+        <label>Price (USDC)</label>
         <input
           type="text"
           {...priceController.field}

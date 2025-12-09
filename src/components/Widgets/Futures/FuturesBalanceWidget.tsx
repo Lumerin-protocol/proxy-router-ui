@@ -188,6 +188,18 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
         {shouldHighlight && (
           <MarginCallWarning>⚠️ Margin Call Warning: Add Funds to Avoid Liquidation</MarginCallWarning>
         )}
+
+        {/* Bottom footer */}
+        {!shouldHighlight && hasMinimumLmrBalance && (
+          <div className="link">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+              }}
+            ></a>
+          </div>
+        )}
       </BalanceWidgetContainer>
 
       <ModalItem open={depositModal.isOpen} setOpen={depositModal.setOpen}>
@@ -206,7 +218,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
 };
 
 const BalanceContainer = styled("div")<{ $shouldHighlight: boolean }>`
-  padding: ${(props) => (props.$shouldHighlight ? "1rem 0 0 0" : "1rem 0")};
+  // padding: ${(props) => (props.$shouldHighlight ? "1rem 0 0 0" : "1rem 0")};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -343,6 +355,7 @@ const BalanceWidgetContainer = styled(SmallWidget)<{ $shouldHighlight: boolean }
   border: ${(props) => (props.$shouldHighlight ? "2px solid #fbbf24" : "rgba(171, 171, 171, 1) 1px solid")};
   background: ${(props) => (props.$shouldHighlight ? "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 0, 0.05) 100%)" : "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%)")};
   transition: border-color 0.3s ease;
+  justify-content: space-between;
 `;
 
 const MarginCallWarning = styled("div")`

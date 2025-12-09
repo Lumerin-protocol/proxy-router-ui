@@ -1,7 +1,7 @@
 import styled from "@mui/material/styles/styled";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
-import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { useGetMarketPrice } from "../../../hooks/data/useGetMarketPrice";
 import { Spinner } from "../../Spinner.styled";
 import { ModalItem } from "../../Modal";
 import { PrimaryButton, SecondaryButton } from "../../Forms/FormButtons/Buttons.styled";
@@ -39,7 +39,7 @@ export const PlaceOrderWidget = ({
   latestPrice,
   onOrderPlaced,
 }: PlaceOrderWidgetProps) => {
-  const hashrateQuery = useHashrateIndexData();
+  const { data: marketPrice, isLoading: isMarketPriceLoading } = useGetMarketPrice();
   const { address } = useAccount();
   const balanceQuery = useGetFutureBalance(address);
 
@@ -52,9 +52,8 @@ export const PlaceOrderWidget = ({
   const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
   const marginPercent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
 
-  // Get newest item price for validation and default price
-  const newestItemPrice =
-    hashrateQuery.data && hashrateQuery.data.length > 0 ? Number(hashrateQuery.data[0].priceToken) / 1e6 : null;
+  // Get market price for validation and default price
+  const newestItemPrice = marketPrice ? Number(marketPrice) / 1e6 : null;
 
   const [price, setPrice] = useState("5.00"); // Will be updated when hashrate data loads
   const [priceInitialized, setPriceInitialized] = useState(false); // Track if price has been initialized from hashrate
@@ -126,7 +125,7 @@ export const PlaceOrderWidget = ({
   }, [externalIsBuy, externalPrice, externalAmount, highlightTrigger]);
 
   // Show loading state while minimumPriceIncrement is being fetched
-  if (contractSpecsQuery.isLoading || !priceStep || hashrateQuery.isLoading || !newestItemPrice) {
+  if (contractSpecsQuery.isLoading || !priceStep || isMarketPriceLoading || !newestItemPrice) {
     return (
       <PlaceOrderContainer>
         <h3>Place Order</h3>
@@ -322,7 +321,7 @@ export const PlaceOrderWidget = ({
         <MainSection>
           <InputSection>
             <InputGroup>
-              <label>Price per day, USDC</label>
+              <label>Price per day (USDC)</label>
               <PriceInputContainer>
                 <PriceButton onClick={decrementPrice} disabled={showOrderForm}>
                   −

@@ -119,6 +119,24 @@ export const OrderBookQuery = gql`
   }
 `;
 
+export const AggregateOrderBookQuery = gql`
+  query AggregateOrderBook($deliveryAt: BigInt!) {
+    deliveryDateOrders (where: { deliveryDate: $deliveryAt }) {
+      buyOrdersCount
+      deliveryDate
+      id
+      price
+      sellOrdersCount
+    }
+    _meta {
+      block {
+        number
+        timestamp
+      }
+    }
+  }
+`;
+
 export const ContractSpecsQuery = gql`
   query ContractSpecs {
     futures(id: "0") {
@@ -177,6 +195,78 @@ export const PaidSellerPositionsQuery = gql`
     ) {
       deliveryAt
       sellPricePerDay
+    }
+    _meta {
+      block {
+        number
+        timestamp
+      }
+    }
+  }
+`;
+
+// Historical positions query (last 30 days, isActive: false) with cursor pagination
+export const HistoricalPositionsQuery = gql`
+  query HistoricalPositionsQuery($address: ID!, $thirtyDaysAgo: BigInt!, $first: Int!, $skip: Int!) {
+    positions(
+      where: {
+        or: [
+          { isActive: false, deliveryAt_gte: $thirtyDaysAgo, buyer_: { address: $address } },
+          { isActive: false, deliveryAt_gte: $thirtyDaysAgo, seller_: { address: $address } }
+        ]
+      },
+      first: $first,
+      skip: $skip,
+      orderBy: timestamp,
+      orderDirection: desc
+    ) {
+      id
+      timestamp
+      deliveryAt
+      sellPricePerDay
+      buyPricePerDay
+      isActive
+      closedAt
+      buyer {
+        address
+      }
+      seller {
+        address
+      }
+    }
+    _meta {
+      block {
+        number
+        timestamp
+      }
+    }
+  }
+`;
+
+// Historical orders query (last 30 days, isActive: false) with cursor pagination
+export const HistoricalOrdersQuery = gql`
+  query HistoricalOrdersQuery($participantAddress: ID!, $thirtyDaysAgo: BigInt!, $first: Int!, $skip: Int!) {
+    orders(
+      where: { 
+        isActive: false, 
+        deliveryAt_gte: $thirtyDaysAgo,
+        participant_: { address: $participantAddress }
+      },
+      first: $first,
+      skip: $skip,
+      orderBy: timestamp,
+      orderDirection: desc
+    ) {
+      id
+      timestamp
+      deliveryAt
+      pricePerDay
+      isBuy
+      isActive
+      closedAt
+      participant {
+        address
+      }
     }
     _meta {
       block {

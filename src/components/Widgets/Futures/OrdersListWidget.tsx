@@ -9,7 +9,7 @@ import { CloseOrderForm } from "../../Forms/CloseOrderForm";
 import { ServerStackIcon } from "@heroicons/react/24/outline";
 import Tooltip from "@mui/material/Tooltip";
 import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
-import { useHashrateIndexData } from "../../../hooks/data/useHashRateIndexData";
+import { useGetMarketPrice } from "../../../hooks/data/useGetMarketPrice";
 import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractSpecs";
 
 interface OrdersListWidgetProps {
@@ -20,7 +20,7 @@ interface OrdersListWidgetProps {
 export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) => {
   const modifyModal = useModal();
   const closeModal = useModal();
-  const hashrateQuery = useHashrateIndexData();
+  const { data: marketPrice } = useGetMarketPrice();
   const contractSpecsQuery = useFuturesContractSpecs();
   const [selectedOrder, setSelectedOrder] = useState<{
     order: ParticipantOrder;
@@ -60,8 +60,8 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
     return date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
   };
 
-  // Get latest price from hashrate index
-  const latestPrice = hashrateQuery.data && hashrateQuery.data.length > 0 ? hashrateQuery.data[0].priceToken : null;
+  // Get latest price from market price hook
+  const latestPrice = marketPrice ?? null;
 
   // Get contract specs
   const marginPercent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
