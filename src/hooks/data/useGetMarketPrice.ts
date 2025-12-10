@@ -6,7 +6,7 @@ import { FuturesABI } from "../../abi/Futures";
  * Polls every 10 seconds to keep the price up to date
  */
 export function useGetMarketPrice() {
-  return useReadContract({
+  const result = useReadContract({
     address: process.env.REACT_APP_FUTURES_TOKEN_ADDRESS,
     abi: FuturesABI,
     functionName: "getMarketPrice",
@@ -16,4 +16,9 @@ export function useGetMarketPrice() {
       refetchOnWindowFocus: true,
     },
   });
+
+  return {
+    ...result,
+    dataFetchedAt: result.dataUpdatedAt ? new Date(result.dataUpdatedAt) : undefined,
+  };
 }
