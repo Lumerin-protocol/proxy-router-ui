@@ -340,7 +340,12 @@ export const OrderBookTable = ({
 const OrderBookWidget = styled(SmallWidget)`
   width: 100%;
   padding: 1.5rem;
-  padding-top: 0;
+  padding-top: 0.5rem;
+  justify-content: space-between;
+
+  @media (max-width: 1400px) {
+    justify-content: start;
+  }
 `;
 
 const Header = styled("div")`

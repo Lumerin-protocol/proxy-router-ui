@@ -10,9 +10,15 @@ interface HashrateChartProps {
   }>;
   isLoading?: boolean;
   marketPrice?: bigint | null;
+  marketPriceFetchedAt?: Date;
 }
 
-export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false, marketPrice }) => {
+export const HashrateChart: FC<HashrateChartProps> = ({
+  data,
+  isLoading = false,
+  marketPrice,
+  marketPriceFetchedAt,
+}) => {
   // Merge market price with historical data if it differs from the first item
   const enhancedData = useMemo(() => {
     if (!marketPrice || !data || data.length === 0) {
@@ -22,12 +28,16 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false,
     const firstItem = data[0];
     const firstItemPrice = firstItem?.priceToken;
 
+    if (!firstItemPrice) {
+      return data;
+    }
+
     // Check if marketPrice is different from the first item's price
     if (firstItemPrice !== marketPrice) {
-      // Add marketPrice as the latest value with current timestamp
+      // Add marketPrice as the latest value with the timestamp when it was fetched
       return [
         {
-          updatedAtDate: new Date(), // Use current time
+          updatedAtDate: marketPriceFetchedAt ?? new Date(),
           priceToken: marketPrice,
         },
         ...data,
@@ -35,7 +45,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false,
     }
 
     return data;
-  }, [data, marketPrice]);
+  }, [data, marketPrice, marketPriceFetchedAt]);
 
   // Transform data for Highcharts
   const chartData = enhancedData
@@ -98,6 +108,9 @@ export const HashrateChart: FC<HashrateChartProps> = ({ data, isLoading = false,
     },
     series: [
       {
+        connectNulls: false,
+        dataSorting: { enabled: false },
+        dataGrouping: { enabled: false },
         type: "line",
         name: "Price Token",
         showInLegend: false,

@@ -29,7 +29,11 @@ export const Futures: FC = () => {
   const isLoadingMinMargin = minMarginQuery.isLoading;
 
   // Get market price from contract - polls every 10 seconds
-  const { data: marketPrice, isLoading: isMarketPriceLoading } = useGetMarketPrice();
+  const {
+    data: marketPrice,
+    isLoading: isMarketPriceLoading,
+    dataFetchedAt: marketPriceFetchedAt,
+  } = useGetMarketPrice();
 
   // Calculate total unrealized PnL from all active positions
   const totalUnrealizedPnL = useMemo(() => {
@@ -106,6 +110,7 @@ export const Futures: FC = () => {
             data={hashrateQuery.data || []}
             isLoading={hashrateQuery.isLoading}
             marketPrice={marketPrice}
+            marketPriceFetchedAt={marketPriceFetchedAt}
           />
         </SmallWidget>
       </ChartArea>

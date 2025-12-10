@@ -282,8 +282,6 @@ const BalanceStats = styled("div")`
   }
 
   .balance {
-    flex: 1;
-    min-width: 0;
     
     div {
       font-size: 1.85rem;
@@ -342,7 +340,7 @@ const ActionButtons = styled("div")`
     }
   }
 
-  @media (min-width: 769px) and (max-width: 1530px) {
+  @media (min-width: 769px) and (max-width: 1562px) {
     flex-direction: column;
 
     button {
