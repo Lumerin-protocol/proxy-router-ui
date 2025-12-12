@@ -281,6 +281,7 @@ const InputGroup = styled("div")`
     font-size: 1rem;
     transition: border-color 0.2s ease, background-color 0.2s ease;
     width: 100%;
+    min-width: 65px;
 
     &:focus {
       outline: none;

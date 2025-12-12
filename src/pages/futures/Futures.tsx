@@ -1,4 +1,4 @@
-import { type FC, useState, useRef, useMemo } from "react";
+import { type FC, useState, useRef, useMemo, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { FuturesBalanceWidget } from "../../components/Widgets/Futures/FuturesBalanceWidget";
 import { FuturesMarketWidget } from "../../components/Widgets/Futures/FuturesMarketWidget";
@@ -18,6 +18,21 @@ import styled from "@mui/material/styles/styled";
 
 export const Futures: FC = () => {
   const { isConnected, address } = useAccount();
+  const previousAddressRef = useRef<string | undefined>(undefined);
+
+  // Track account changes and reload page when account switches
+  useEffect(() => {
+    // On first render, just store the current address
+    if (previousAddressRef.current === undefined) {
+      previousAddressRef.current = address;
+      return;
+    }
+
+    // If address changed (including connecting/disconnecting), reload the page
+    if (previousAddressRef.current !== address) {
+      window.location.reload();
+    }
+  }, [address]);
   const hashrateQuery = useHashrateIndexData();
   const contractSpecsQuery = useFuturesContractSpecs();
   const { data: participantData, isLoading: isParticipantLoading } = useParticipant(address);
