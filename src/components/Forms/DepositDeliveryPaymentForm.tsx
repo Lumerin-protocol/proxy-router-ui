@@ -333,8 +333,8 @@ export const DepositDeliveryPaymentForm: FC<DepositDeliveryPaymentFormProps> = (
           // Wait for block number to ensure indexer has updated
           await waitForBlockNumberPositionBook(receipt.blockNumber, qc);
 
-          // Refetch position book to update the positions list
-          await Promise.all([address && qc.invalidateQueries({ queryKey: [POSITION_BOOK_QK] })]);
+          // Refetch position book to update the positions lists
+          await qc.invalidateQueries({ queryKey: [POSITION_BOOK_QK] });
         },
       },
     ],
