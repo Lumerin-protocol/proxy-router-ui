@@ -7,5 +7,10 @@ export function useGetMinMargin(address: `0x${string}` | undefined) {
     abi: FuturesABI,
     functionName: "getMinMargin",
     args: [address!],
+    query: {
+      refetchInterval: 10000, // Poll every 10 seconds
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+    },
   });
 }
