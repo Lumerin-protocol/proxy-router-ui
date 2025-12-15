@@ -106,9 +106,10 @@ export const PositionsListWidget = ({
 
     // Long: profit when price goes up (current > entry)
     // Short: profit when price goes down (entry > current)
-    const pnl = positionType === "Long" ? priceDiff * amount : -priceDiff * amount;
+    // Multiply by deliveryDurationDays to get total PnL for the contract period
+    const pnl = (positionType === "Long" ? priceDiff * amount : -priceDiff * amount) * deliveryDurationDays;
     // Calculate percentage based on PnL and initial investment (entry value)
-    const entryValue = latestPrice * amount;
+    const entryValue = latestPrice * amount * deliveryDurationDays;
     const percentage = entryValue !== 0 ? (pnl / entryValue) * 100 : 0;
 
     return { pnl, percentage };
