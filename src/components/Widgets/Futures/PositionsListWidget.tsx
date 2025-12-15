@@ -136,8 +136,8 @@ export const PositionsListWidget = ({
         ? groupedPosition.amount // Buy order (positive)
         : -groupedPosition.amount; // Sell order (negative)
 
-    // Format price as string
-    const priceString = formatPrice(groupedPosition.pricePerDay);
+    // Use market price instead of position price for closing
+    const priceString = latestPrice ? latestPrice.toFixed(2) : formatPrice(groupedPosition.pricePerDay);
 
     // Determine isBuy for callback compatibility
     const isBuy = quantity > 0;
@@ -153,15 +153,18 @@ export const PositionsListWidget = ({
       // Use deliveryAt directly (it's already a timestamp)
       const deliveryDate = BigInt(groupedPosition.deliveryAt);
 
+      // Use market price for the order
+      const closePrice = latestPriceBigInt ?? groupedPosition.pricePerDay;
+
       await createOrderAsync({
-        price: groupedPosition.pricePerDay,
+        price: closePrice,
         deliveryDate: deliveryDate,
         quantity: quantity,
         destUrl: "",
       });
 
       console.log(
-        `Created ${isBuy ? "buy" : "sell"} order to close ${Math.abs(quantity)} ${groupedPosition.positionType} positions`,
+        `Created ${isBuy ? "buy" : "sell"} order to close ${Math.abs(quantity)} ${groupedPosition.positionType} positions at market price`,
       );
     } catch (err) {
       console.error("Failed to close position:", err);
@@ -515,7 +518,7 @@ const DepositButton = styled("button")`
 
 const CloseButton = styled("button")`
   padding: 0.5rem 0.875rem;
-  background: #4c5a5f;
+  background:rgb(76, 90, 95);
   color: #fff;
   border: none;
   border-radius: 6px;
