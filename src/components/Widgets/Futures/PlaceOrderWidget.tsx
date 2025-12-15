@@ -351,7 +351,7 @@ export const PlaceOrderWidget = ({
             </InputGroup>
 
             <InputGroup>
-              <label>Amount</label>
+              <label>Quantity</label>
               <input
                 type="number"
                 value={amount}

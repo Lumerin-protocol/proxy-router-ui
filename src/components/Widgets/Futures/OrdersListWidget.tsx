@@ -157,7 +157,7 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
             <tr>
               <th>Type</th>
               <th>Price per day</th>
-              <th>Amount</th>
+              <th>Quantity</th>
               <th>Margin</th>
               <th>Delivery Date</th>
               <th>Destination</th>
