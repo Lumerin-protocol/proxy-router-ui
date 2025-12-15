@@ -117,9 +117,7 @@ export const PositionsListWidget = ({
 
   const formatPnL = (pnl: number | null, percentage: number | null): string => {
     if (pnl === null || percentage === null) return "-";
-    const sign = pnl >= 0 ? "+" : "";
-    const percentageSign = percentage >= 0 ? "+" : "";
-    return `${sign}${pnl.toFixed(2)} USDC (${percentageSign}${percentage.toFixed(2)}%)`;
+    return `${pnl.toFixed(2)} USDC (${percentage.toFixed(2)}%)`;
   };
 
   const handleClosePosition = async (groupedPosition: {
