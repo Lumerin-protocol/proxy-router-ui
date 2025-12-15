@@ -52,7 +52,7 @@ export const Futures: FC = () => {
 
   // Calculate total unrealized PnL from all active positions
   const totalUnrealizedPnL = useMemo(() => {
-    if (!marketPrice || !positionBookData?.data?.positions || !address) return null;
+    if (!marketPrice || !positionBookData?.data?.positions || !address || !contractSpecsQuery?.data) return null;
 
     const activePositions = positionBookData.data.positions.filter((p) => p.isActive && !p.closedAt);
     let totalPnL = 0n;
@@ -66,6 +66,8 @@ export const Futures: FC = () => {
       const positionPnL = isLong ? priceDiff : -priceDiff;
       totalPnL += positionPnL;
     });
+
+    totalPnL = totalPnL * BigInt(contractSpecsQuery?.data?.data?.deliveryDurationDays ?? 1);
 
     if (Math.abs(Number(totalPnL)) < 1000) {
       return 0n;
