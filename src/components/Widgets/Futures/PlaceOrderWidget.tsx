@@ -14,6 +14,7 @@ import { useAccount } from "wagmi";
 import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
 import { handleNumericDecimalInput } from "../../Forms/Shared/AmountInputForm";
+import { usePaymentTokenBalance } from "../../../hooks/data/usePaymentTokenBalance";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
@@ -42,6 +43,7 @@ export const PlaceOrderWidget = ({
   const { data: marketPrice, isLoading: isMarketPriceLoading } = useGetMarketPrice();
   const { address } = useAccount();
   const balanceQuery = useGetFutureBalance(address);
+  const accountBalanceQuery = usePaymentTokenBalance(address);
 
   // Calculate price step from contract specs
   const priceStep = contractSpecsQuery.data?.data?.minimumPriceIncrement
@@ -180,9 +182,11 @@ export const PlaceOrderWidget = ({
 
     if (requiredMargin > balance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
-      const balanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const futuresBalanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const accountBalance = accountBalanceQuery.data ?? 0n;
+      const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Required margin: ${requiredMarginFormatted} USDC. Available balance: ${balanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nAvailable futures balance: ${futuresBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
@@ -249,9 +253,11 @@ export const PlaceOrderWidget = ({
 
     if (requiredMargin > balance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
-      const balanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const futuresBalanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const accountBalance = accountBalanceQuery.data ?? 0n;
+      const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Required margin: ${requiredMarginFormatted} USDC. Available balance: ${balanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nAvailable futures balance: ${futuresBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
@@ -336,6 +342,7 @@ export const PlaceOrderWidget = ({
                   step={priceStep}
                   min="0.01"
                   inputMode={"numeric"}
+                  style={{ minWidth: "70px" }}
                 />
                 <PriceButton onClick={incrementPrice} disabled={showOrderForm}>
                   +
@@ -513,6 +520,7 @@ const PlaceOrderContainer = styled(SmallWidget)`
 
 const MainSection = styled("div")`
   display: flex;
+  width: 100%;
   flex-direction: row;
   gap: 1.5rem;
   align-items: center;
