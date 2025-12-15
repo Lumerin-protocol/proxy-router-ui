@@ -4,18 +4,18 @@ import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
 
 // Pulsing background animation - single blue color for all inputs
-const pulseBlue = keyframes`
+const pulseYellow = keyframes`
   0%, 100% {
-    background-color: rgba(76, 90, 95, 0.15);
+    background-color: rgba(251, 191, 36, 0.15);
   }
   50% {
-    background-color: rgba(76, 90, 95, 0.35);
+    background-color: rgba(251, 191, 36, 0.45);
   }
 `;
 
 const getPulseAnimation = (isHighlighted?: boolean) => {
   if (isHighlighted) {
-    return css`${pulseBlue} 1.5s ease-in-out infinite`;
+    return css`${pulseYellow} 1.5s ease-in-out infinite`;
   }
   return "none";
 };
@@ -389,20 +389,10 @@ export const PlaceOrderWidget = ({
           </InputSection>
 
           <ButtonSection>
-            <BuyButton
-              onClick={handleBuy}
-              disabled={showOrderForm}
-              $isHighlighted={highlightedButton === "buy"}
-              $isInactive={highlightedButton === "sell"}
-            >
+            <BuyButton onClick={handleBuy} disabled={showOrderForm} $isHighlighted={highlightedButton === "buy"}>
               Buy
             </BuyButton>
-            <SellButton
-              onClick={handleSell}
-              disabled={showOrderForm}
-              $isHighlighted={highlightedButton === "sell"}
-              $isInactive={highlightedButton === "buy"}
-            >
+            <SellButton onClick={handleSell} disabled={showOrderForm} $isHighlighted={highlightedButton === "sell"}>
               Sell
             </SellButton>
           </ButtonSection>
@@ -698,20 +688,21 @@ const ButtonSection = styled("div")`
   }
 `;
 
-const BuyButton = styled("button")<{ $isHighlighted?: boolean; $isInactive?: boolean }>`
+const BuyButton = styled("button")<{ $isHighlighted?: boolean }>`
   padding: 0.875rem 1rem;
-  background: ${(props) => (props.$isInactive ? "#4c5a5f" : "#22c55e")};
+  background: #22c55e;
   color: #fff;
   border: none;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: transform 0.1s ease;
   min-width: 120px;
+  animation: ${(props) => (props.$isHighlighted ? css`${pulseYellow} 1.5s ease-in-out infinite` : "none")};
   
   &:hover:not(:disabled) {
-    background: ${(props) => (props.$isInactive ? "#5a6b70" : "#16a34a")};
+    background: #16a34a;
     transform: translateY(-1px);
   }
   
@@ -723,23 +714,25 @@ const BuyButton = styled("button")<{ $isHighlighted?: boolean; $isInactive?: boo
     background: #6b7280;
     cursor: not-allowed;
     opacity: 0.6;
+    animation: none;
   }
 `;
 
-const SellButton = styled("button")<{ $isHighlighted?: boolean; $isInactive?: boolean }>`
+const SellButton = styled("button")<{ $isHighlighted?: boolean }>`
   padding: 0.875rem 1rem;
-  background: ${(props) => (props.$isInactive ? "#4c5a5f" : "#ef4444")};
+  background: #ef4444;
   color: #fff;
   border: none;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: transform 0.1s ease;
   min-width: 120px;
+  animation: ${(props) => (props.$isHighlighted ? css`${pulseYellow} 1.5s ease-in-out infinite` : "none")};
   
   &:hover:not(:disabled) {
-    background: ${(props) => (props.$isInactive ? "#5a6b70" : "#dc2626")};
+    background: #dc2626;
     transform: translateY(-1px);
   }
   
@@ -751,5 +744,6 @@ const SellButton = styled("button")<{ $isHighlighted?: boolean; $isInactive?: bo
     background: #6b7280;
     cursor: not-allowed;
     opacity: 0.6;
+    animation: none;
   }
 `;

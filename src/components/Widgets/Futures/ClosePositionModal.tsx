@@ -100,7 +100,7 @@ export const ClosePositionModal = ({
               {" "}
               We have prefilled the Place Order widget with <strong>{pendingClosePosition.amount}</strong> contract(s)
               at the current <strong>market price ({pendingClosePosition.price} USDC)</strong>. Adjust if required and
-              then click <strong>[Buy/Sell]</strong> to create the order.
+              then click <strong>{pendingClosePosition.isBuy ? "Buy" : "Sell"}</strong> to create the order.
             </>
           )}
         </ModalMessage>
@@ -121,7 +121,7 @@ export const ClosePositionModal = ({
           {/* <CancelButton onClick={onCancel}>
             Cancel
           </CancelButton> */}
-          <PrimaryButton onClick={onConfirm}>Confirm</PrimaryButton>
+          <PrimaryButton onClick={onConfirm}>Okay</PrimaryButton>
         </ModalButtons>
       </ClosePositionModalContent>
     </ModalItem>
