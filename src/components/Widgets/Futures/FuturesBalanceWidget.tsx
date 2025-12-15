@@ -62,7 +62,12 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
   return (
     <>
       <BalanceWidgetContainer className="lg:w-[60%]" $shouldHighlight={shouldHighlight}>
-        {address && <h3>Portfolio Overview</h3>}
+        {address && (
+          <div className="flex items-center justify-center" style={{ fontSize: "0.75rem" }}>
+            <UsdcIcon style={{ width: "18px", marginRight: "6px" }} />
+            <span>Portfolio Overview (USDC)</span>
+          </div>
+        )}
         <BalanceContainer $shouldHighlight={shouldHighlight}>
           {!address && <div>Connect wallet to view balance and use marketplace</div>}
           {isLoading && address && <Spinner fontSize="0.3em" />}
@@ -74,9 +79,9 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                   <BalanceStats className="full-layout">
                     <div className="balance">
                       <div>
-                        <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                        {/* <UsdcIcon style={{ width: "20px", marginRight: "6px" }} /> */}
                         <span>{Number(balanceValue?.valueRounded).toFixed(2)}</span>
-                        <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                        {/* <TokenSymbol>{paymentToken.symbol}</TokenSymbol> */}
                       </div>
                       <p>TOTAL</p>
                     </div>
@@ -86,9 +91,9 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                           <Spinner fontSize="0.3em" />
                         ) : (
                           <>
-                            <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                            {/* <UsdcIcon style={{ width: "20px", marginRight: "6px" }} /> */}
                             <span>{Number(lockedBalanceValue.valueRounded).toFixed(2)}</span>
-                            <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                            {/* <TokenSymbol>{paymentToken.symbol}</TokenSymbol> */}
                           </>
                         )}
                       </div>
@@ -98,11 +103,11 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                       <div>
                         {unrealizedPnL !== null ? (
                           <>
-                            <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                            {/* <UsdcIcon style={{ width: "20px", marginRight: "6px" }} /> */}
                             <span style={{ color: pnlColor }}>
                               {Number(unrealizedPnLValue.valueRounded).toFixed(2)}
                             </span>
-                            <TokenSymbol>{paymentToken.symbol}</TokenSymbol>
+                            {/* <TokenSymbol>{paymentToken.symbol}</TokenSymbol> */}
                           </>
                         ) : (
                           "-"
@@ -116,7 +121,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                   <BalanceStats className="compact-layout">
                     <div className="balance">
                       <div>
-                        <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                        {/* <UsdcIcon style={{ width: "20px", marginRight: "6px" }} /> */}
                         <span>{Number(balanceValue?.valueRounded).toFixed(2)}</span>
                       </div>
                       <p>TOTAL</p>
@@ -127,7 +132,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
                           <Spinner fontSize="0.3em" />
                         ) : (
                           <>
-                            <UsdcIcon style={{ width: "20px", marginRight: "6px" }} />
+                            {/* <UsdcIcon style={{ width: "20px", marginRight: "6px" }} /> */}
                             <span>{Number(lockedBalanceValue.valueRounded).toFixed(2)}</span>
                             <SlashSeparator>/</SlashSeparator>
                             {unrealizedPnL !== null ? (
@@ -253,7 +258,7 @@ const BalanceStats = styled("div")`
   flex-direction: row;
   justify-content: space-between;
   padding: 0.75rem 0;
-  gap: 1.5rem;
+  gap: 3.5rem;
   width: 100%;
 
   /* Show full layout by default (desktop > 1400px and mobile < 1024px) */
@@ -277,8 +282,12 @@ const BalanceStats = styled("div")`
     }
   }
 
-  @media (max-width: 1340px) {
+  @media (max-width: 1105px) {
     gap: 0.75rem;
+  }
+
+  @media (max-width: 1025px) {
+    gap: 3.5rem;
   }
 
   .balance {
@@ -301,6 +310,12 @@ const BalanceStats = styled("div")`
       text-align: center;
       color: #a7a9b6;
       white-space: nowrap;
+    }
+    span {
+      font-size: 1.85rem;
+      font-weight: 400;
+      line-height: 1.75rem;
+      text-align: center;
     }
   }
 `;

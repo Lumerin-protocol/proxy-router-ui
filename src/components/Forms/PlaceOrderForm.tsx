@@ -1,5 +1,5 @@
 import { memo, type FC, useCallback, useState, useEffect } from "react";
-import { useForm, useController, type Control } from "react-hook-form";
+import { useForm, useController, useWatch, type Control } from "react-hook-form";
 import { waitForAggregateBlockNumber, AGGREGATE_ORDER_BOOK_QK } from "../../hooks/data/useAggregateOrderBook";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
 import type { TransactionReceipt } from "viem";
@@ -15,8 +15,12 @@ import type { Participant } from "../../hooks/data/useParticipant";
 import { useFuturesContractSpecs } from "../../hooks/data/useFuturesContractSpecs";
 import { calculateMinMargin } from "../../hooks/data/useGetMinMarginForPosition";
 import { getMinMarginForPositionManual } from "../../hooks/data/getMinMarginForPositionManual";
+import { predefinedPools } from "./BuyerForms/predefinedPools";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
 
 interface PoolFormValues {
+  predefinedPoolIndex: number | "";
   poolAddress: string;
   username: string;
 }
@@ -90,6 +94,7 @@ export const PlaceOrderForm: FC<Props> = ({
     mode: "onBlur",
     reValidateMode: "onBlur",
     defaultValues: {
+      predefinedPoolIndex: "" as const,
       poolAddress: "",
       username: "",
     },
@@ -97,7 +102,17 @@ export const PlaceOrderForm: FC<Props> = ({
 
   // Optional input form for buy orders to set pool address and username
   // Use useCallback to prevent recreation on each render, which causes input focus loss
-  const inputForm = useCallback(() => <PoolInputForm key="pool-input-form" control={form.control} />, [form.control]);
+  const inputForm = useCallback(
+    () => (
+      <PoolInputForm
+        key="pool-input-form"
+        control={form.control}
+        setValue={form.setValue}
+        resetField={form.resetField}
+      />
+    ),
+    [form.control, form.setValue, form.resetField],
+  );
 
   // Construct stratum URL if pool address is provided
   const getDestUrl = (): string => {
@@ -261,6 +276,33 @@ const PoolInputContainer = styled("div")`
   margin-bottom: 1rem;
 `;
 
+const PoolSelectWrapper = styled("div")`
+  .MuiTextField-root {
+    width: 100%;
+  }
+  
+  .MuiInputBase-root {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+  
+  .MuiInputLabel-root {
+    color: #a7a9b6;
+  }
+  
+  .MuiOutlinedInput-notchedOutline {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .MuiSelect-icon {
+    color: #a7a9b6;
+  }
+`;
+
 const InputGroup = styled("div")`
   display: flex;
   flex-direction: column;
@@ -332,14 +374,48 @@ const CheckboxLabel = styled("label")`
   user-select: none;
 `;
 
+// Helper function to determine pool type
+function getPoolType(predefinedPoolIndex: number | ""): "manual" | "pool" | null {
+  if (predefinedPoolIndex === "") {
+    return null;
+  }
+  if (predefinedPoolIndex === -1) {
+    return "manual";
+  }
+  return "pool";
+}
+
 // Separate memoized component to prevent input focus loss
 const PoolInputForm = memo<{
   control: Control<PoolFormValues>;
-}>(({ control }) => {
+  setValue: (name: keyof PoolFormValues, value: string) => void;
+  resetField: (name: keyof PoolFormValues) => void;
+}>(({ control, setValue, resetField }) => {
+  const predefinedPoolController = useController({
+    name: "predefinedPoolIndex",
+    control: control,
+    rules: {
+      required: "Please select a pool",
+      onChange: (event) => {
+        const value = event.target.value;
+        const poolType = getPoolType(value);
+
+        if (poolType === "pool") {
+          setValue("poolAddress", predefinedPools[value].address);
+        }
+
+        if (poolType === "manual") {
+          resetField("poolAddress");
+        }
+      },
+    },
+  });
+
   const poolAddressController = useController({
     name: "poolAddress",
     control: control,
     rules: {
+      required: "Pool Address is required",
       validate: (poolAddress: string) => {
         if (!poolAddress) {
           return true; // Optional field
@@ -368,14 +444,38 @@ const PoolInputForm = memo<{
     },
   });
 
+  const predefinedPoolIndex = useWatch({ control, name: "predefinedPoolIndex" });
+  const isManualPool = predefinedPoolIndex !== "" && getPoolType(predefinedPoolIndex) === "manual";
+
   return (
     <PoolInputContainer>
       <p className="text-gray-400 text-sm mb-4">
         Configure the pool address and username to which your purchased hashpower will be directed.
       </p>
+      <PoolSelectWrapper>
+        <TextField
+          select
+          {...predefinedPoolController.field}
+          label="Predefined Pools"
+          error={!!predefinedPoolController.fieldState.error}
+          helperText={predefinedPoolController.fieldState.error?.message}
+          fullWidth
+        >
+          {predefinedPools.map((item, index) =>
+            item.isLightning ? null : (
+              <MenuItem key={item.name} value={index}>
+                {item.name}
+              </MenuItem>
+            ),
+          )}
+          <MenuItem key="-1" value={-1}>
+            Manually enter pool address
+          </MenuItem>
+        </TextField>
+      </PoolSelectWrapper>
       <InputGroup>
         <label>Pool Address</label>
-        <input type="text" {...poolAddressController.field} placeholder="mypool.com:3333" />
+        <input type="text" {...poolAddressController.field} placeholder="mypool.com:3333" disabled={!isManualPool} />
         {poolAddressController.fieldState.error && (
           <ErrorText>{poolAddressController.fieldState.error.message}</ErrorText>
         )}
