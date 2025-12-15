@@ -238,7 +238,7 @@ export const PositionsListWidget = ({
             <tr>
               <th>Type</th>
               <th>Price per day</th>
-              <th>Amount</th>
+              <th>Quantity</th>
               <th>Margin</th>
               <th>PnL</th>
               <th>Start Time</th>

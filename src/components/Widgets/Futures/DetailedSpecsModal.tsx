@@ -62,7 +62,7 @@ export const DetailedSpecsModal = ({ closeForm, contractSpecs }: DetailedSpecsMo
 
         <SpecItem>
           <SpecLabel>Tick Value</SpecLabel>
-          <SpecValue>$0.07</SpecValue>
+          <SpecValue>${contractSpecs.deliveryDurationDays * 0.01}</SpecValue>
         </SpecItem>
       </div>
     </div>
