@@ -1,6 +1,24 @@
 import styled from "@mui/material/styles/styled";
+import { keyframes, css } from "@emotion/react";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import { useState, useEffect } from "react";
+
+// Pulsing background animation - single blue color for all inputs
+const pulseBlue = keyframes`
+  0%, 100% {
+    background-color: rgba(76, 90, 95, 0.15);
+  }
+  50% {
+    background-color: rgba(76, 90, 95, 0.35);
+  }
+`;
+
+const getPulseAnimation = (isHighlighted?: boolean) => {
+  if (isHighlighted) {
+    return css`${pulseBlue} 1.5s ease-in-out infinite`;
+  }
+  return "none";
+};
 import { useGetMarketPrice } from "../../../hooks/data/useGetMarketPrice";
 import { Spinner } from "../../Spinner.styled";
 import { ModalItem } from "../../Modal";
@@ -326,10 +344,14 @@ export const PlaceOrderWidget = ({
 
         <MainSection>
           <InputSection>
-            <InputGroup>
+            <InputGroup $isHighlighted={highlightedButton !== null}>
               <label>Price per day (USDC)</label>
-              <PriceInputContainer>
-                <PriceButton onClick={decrementPrice} disabled={showOrderForm}>
+              <PriceInputContainer $isHighlighted={highlightedButton !== null}>
+                <PriceButton
+                  onClick={decrementPrice}
+                  disabled={showOrderForm}
+                  $isHighlighted={highlightedButton !== null}
+                >
                   −
                 </PriceButton>
                 <input
@@ -344,13 +366,17 @@ export const PlaceOrderWidget = ({
                   inputMode={"numeric"}
                   style={{ minWidth: "70px" }}
                 />
-                <PriceButton onClick={incrementPrice} disabled={showOrderForm}>
+                <PriceButton
+                  onClick={incrementPrice}
+                  disabled={showOrderForm}
+                  $isHighlighted={highlightedButton !== null}
+                >
                   +
                 </PriceButton>
               </PriceInputContainer>
             </InputGroup>
 
-            <InputGroup>
+            <InputGroup $isHighlighted={highlightedButton !== null}>
               <label>Quantity</label>
               <input
                 type="number"
@@ -363,10 +389,20 @@ export const PlaceOrderWidget = ({
           </InputSection>
 
           <ButtonSection>
-            <BuyButton onClick={handleBuy} disabled={showOrderForm} $isHighlighted={highlightedButton === "buy"}>
+            <BuyButton
+              onClick={handleBuy}
+              disabled={showOrderForm}
+              $isHighlighted={highlightedButton === "buy"}
+              $isInactive={highlightedButton === "sell"}
+            >
               Buy
             </BuyButton>
-            <SellButton onClick={handleSell} disabled={showOrderForm} $isHighlighted={highlightedButton === "sell"}>
+            <SellButton
+              onClick={handleSell}
+              disabled={showOrderForm}
+              $isHighlighted={highlightedButton === "sell"}
+              $isInactive={highlightedButton === "buy"}
+            >
               Sell
             </SellButton>
           </ButtonSection>
@@ -542,7 +578,7 @@ const InputSection = styled("div")`
   }
 `;
 
-const InputGroup = styled("div")`
+const InputGroup = styled("div")<{ $isHighlighted?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -558,11 +594,12 @@ const InputGroup = styled("div")`
     padding: 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.05);
     color: #fff;
     font-size: 1rem;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition: border-color 0.2s ease;
     width: 100%;
+    animation: ${(props) => getPulseAnimation(props.$isHighlighted)};
+    background: ${(props) => (props.$isHighlighted ? undefined : "rgba(255, 255, 255, 0.05)")};
     
     &:focus {
       outline: none;
@@ -576,7 +613,7 @@ const InputGroup = styled("div")`
   }
 `;
 
-const PriceInputContainer = styled("div")`
+const PriceInputContainer = styled("div")<{ $isHighlighted?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -586,6 +623,10 @@ const PriceInputContainer = styled("div")`
     border-radius: 0;
     border-left: none;
     border-right: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    animation: ${(props) => getPulseAnimation(props.$isHighlighted)};
+    background: ${(props) => (props.$isHighlighted ? undefined : "rgba(255, 255, 255, 0.05)")};
     
     &:focus {
       border-left: 1px solid #509EBA;
@@ -594,9 +635,8 @@ const PriceInputContainer = styled("div")`
   }
 `;
 
-const PriceButton = styled("button")`
+const PriceButton = styled("button")<{ $isHighlighted?: boolean }>`
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
@@ -609,6 +649,8 @@ const PriceButton = styled("button")`
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: ${(props) => getPulseAnimation(props.$isHighlighted)};
+  background: ${(props) => (props.$isHighlighted ? undefined : "rgba(255, 255, 255, 0.1)")};
   
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.15);
@@ -656,21 +698,20 @@ const ButtonSection = styled("div")`
   }
 `;
 
-const BuyButton = styled("button")<{ $isHighlighted?: boolean }>`
+const BuyButton = styled("button")<{ $isHighlighted?: boolean; $isInactive?: boolean }>`
   padding: 0.875rem 1rem;
-  background: ${(props) => (props.$isHighlighted ? "#16a34a" : "#22c55e")};
+  background: ${(props) => (props.$isInactive ? "#4c5a5f" : "#22c55e")};
   color: #fff;
-  border: ${(props) => (props.$isHighlighted ? "2px solid #10b981" : "none")};
+  border: none;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   min-width: 120px;
-  box-shadow: ${(props) => (props.$isHighlighted ? "0 0 12px rgba(34, 197, 94, 0.6)" : "none")};
   
   &:hover:not(:disabled) {
-    background: #16a34a;
+    background: ${(props) => (props.$isInactive ? "#5a6b70" : "#16a34a")};
     transform: translateY(-1px);
   }
   
@@ -685,21 +726,20 @@ const BuyButton = styled("button")<{ $isHighlighted?: boolean }>`
   }
 `;
 
-const SellButton = styled("button")<{ $isHighlighted?: boolean }>`
+const SellButton = styled("button")<{ $isHighlighted?: boolean; $isInactive?: boolean }>`
   padding: 0.875rem 1rem;
-  background: ${(props) => (props.$isHighlighted ? "#dc2626" : "#ef4444")};
+  background: ${(props) => (props.$isInactive ? "#4c5a5f" : "#ef4444")};
   color: #fff;
-  border: ${(props) => (props.$isHighlighted ? "2px solid #f87171" : "none")};
+  border: none;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   min-width: 120px;
-  box-shadow: ${(props) => (props.$isHighlighted ? "0 0 12px rgba(239, 68, 68, 0.6)" : "none")};
   
   &:hover:not(:disabled) {
-    background: #dc2626;
+    background: ${(props) => (props.$isInactive ? "#5a6b70" : "#dc2626")};
     transform: translateY(-1px);
   }
   

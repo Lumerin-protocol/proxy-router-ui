@@ -1,4 +1,4 @@
-import { type FC, useState, useRef, useMemo, useEffect } from "react";
+import { type FC, useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { FuturesBalanceWidget } from "../../components/Widgets/Futures/FuturesBalanceWidget";
 import { FuturesMarketWidget } from "../../components/Widgets/Futures/FuturesMarketWidget";
@@ -6,6 +6,7 @@ import { OrderBookTable } from "../../components/Widgets/Futures/OrderBookTable"
 import { HashrateChart } from "../../components/Charts/HashrateChart";
 import { PlaceOrderWidget } from "../../components/Widgets/Futures/PlaceOrderWidget";
 import { OrdersPositionsTabWidget } from "../../components/Widgets/Futures/OrdersPositionsTabWidget";
+import { ClosePositionModal, useClosePositionModal } from "../../components/Widgets/Futures/ClosePositionModal";
 import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
 import { useParticipant } from "../../hooks/data/useParticipant";
 import { usePositionBook } from "../../hooks/data/usePositionBook";
@@ -88,6 +89,18 @@ export const Futures: FC = () => {
     new Map(),
   );
 
+  // Function to proceed with close position (highlighting)
+  const proceedWithClosePosition = useCallback((price: string, amount: number, isBuy: boolean) => {
+    setSelectedPrice(price);
+    setSelectedAmount(amount);
+    setSelectedIsBuy(isBuy);
+    // Increment trigger to force highlight update
+    setHighlightTrigger((prev) => prev + 1);
+  }, []);
+
+  // Close position modal hook
+  const closePositionModal = useClosePositionModal(proceedWithClosePosition);
+
   const handleOrderBookClick = (price: string, amount: number | null) => {
     setSelectedPrice(price);
     setSelectedAmount(amount ? amount : undefined);
@@ -95,14 +108,6 @@ export const Futures: FC = () => {
 
   const handleDeliveryDateChange = (deliveryDate: number | undefined) => {
     setSelectedDeliveryDate(deliveryDate);
-  };
-
-  const handleClosePosition = (price: string, amount: number, isBuy: boolean) => {
-    setSelectedPrice(price);
-    setSelectedAmount(amount);
-    setSelectedIsBuy(isBuy);
-    // Increment trigger to force highlight update
-    setHighlightTrigger((prev) => prev + 1);
   };
 
   return (
@@ -170,10 +175,20 @@ export const Futures: FC = () => {
             ordersLoading={isParticipantLoading}
             positionsLoading={isPositionBookLoading}
             participantAddress={address}
-            onClosePosition={handleClosePosition}
+            onClosePosition={closePositionModal.handleClosePosition}
           />
         </OrdersPositionsArea>
       )}
+
+      {/* Close Position Info Modal */}
+      <ClosePositionModal
+        isOpen={closePositionModal.showModal}
+        pendingClosePosition={closePositionModal.pendingClosePosition}
+        onConfirm={closePositionModal.handleConfirm}
+        onCancel={closePositionModal.handleCancel}
+        doNotShowAgain={closePositionModal.doNotShowAgain}
+        onDoNotShowAgainChange={closePositionModal.setDoNotShowAgain}
+      />
     </FuturesContainer>
   );
 };
