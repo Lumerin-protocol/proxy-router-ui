@@ -106,9 +106,10 @@ export const PositionsListWidget = ({
 
     // Long: profit when price goes up (current > entry)
     // Short: profit when price goes down (entry > current)
-    const pnl = positionType === "Long" ? priceDiff * amount : -priceDiff * amount;
+    // Multiply by deliveryDurationDays to get total PnL for the contract period
+    const pnl = (positionType === "Long" ? priceDiff * amount : -priceDiff * amount) * deliveryDurationDays;
     // Calculate percentage based on PnL and initial investment (entry value)
-    const entryValue = latestPrice * amount;
+    const entryValue = latestPrice * amount * deliveryDurationDays;
     const percentage = entryValue !== 0 ? (pnl / entryValue) * 100 : 0;
 
     return { pnl, percentage };
@@ -116,9 +117,7 @@ export const PositionsListWidget = ({
 
   const formatPnL = (pnl: number | null, percentage: number | null): string => {
     if (pnl === null || percentage === null) return "-";
-    const sign = pnl >= 0 ? "+" : "";
-    const percentageSign = percentage >= 0 ? "+" : "";
-    return `${sign}${pnl.toFixed(2)} USDC (${percentageSign}${percentage.toFixed(2)}%)`;
+    return `${pnl.toFixed(2)} USDC (${percentage.toFixed(2)}%)`;
   };
 
   const handleClosePosition = async (groupedPosition: {
@@ -237,7 +236,7 @@ export const PositionsListWidget = ({
             <tr>
               <th>Type</th>
               <th>Price per day</th>
-              <th>Amount</th>
+              <th>Quantity</th>
               <th>Margin</th>
               <th>PnL</th>
               <th>Start Time</th>
