@@ -33,6 +33,7 @@ import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
 import { handleNumericDecimalInput } from "../../Forms/Shared/AmountInputForm";
 import { usePaymentTokenBalance } from "../../../hooks/data/usePaymentTokenBalance";
+import { useOrderFee } from "../../../hooks/data/useOrderFee";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
@@ -66,6 +67,7 @@ export const PlaceOrderWidget = ({
   const { address } = useAccount();
   const balanceQuery = useGetFutureBalance(address);
   const accountBalanceQuery = usePaymentTokenBalance(address);
+  const { data: orderFeeRaw } = useOrderFee();
 
   // Calculate price step from contract specs
   const priceStep = contractSpecsQuery.data?.data?.minimumPriceIncrement
@@ -205,15 +207,21 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > availableBalance) {
+    // Include order fee in the balance check
+    const orderFee = orderFeeRaw ?? 0n;
+    const totalRequired = requiredMargin + orderFee;
+
+    if (totalRequired > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
+      const orderFeeFormatted = (Number(orderFee) / 1e6).toFixed(2);
+      const totalRequiredFormatted = (Number(totalRequired) / 1e6).toFixed(2);
       const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
       const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
       const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nOrder fee: ${orderFeeFormatted} USDC\nTotal required: ${totalRequiredFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
@@ -280,15 +288,21 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > availableBalance) {
+    // Include order fee in the balance check
+    const orderFee = orderFeeRaw ?? 0n;
+    const totalRequired = requiredMargin + orderFee;
+
+    if (totalRequired > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
+      const orderFeeFormatted = (Number(orderFee) / 1e6).toFixed(2);
+      const totalRequiredFormatted = (Number(totalRequired) / 1e6).toFixed(2);
       const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
       const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
       const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nOrder fee: ${orderFeeFormatted} USDC\nTotal required: ${totalRequiredFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
