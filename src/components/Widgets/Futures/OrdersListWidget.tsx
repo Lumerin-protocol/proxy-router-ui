@@ -15,9 +15,11 @@ import { useFuturesContractSpecs } from "../../../hooks/data/useFuturesContractS
 interface OrdersListWidgetProps {
   orders: ParticipantOrder[];
   isLoading?: boolean;
+  participantData?: any;
+  minMargin?: bigint | null;
 }
 
-export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) => {
+export const OrdersListWidget = ({ orders, isLoading, participantData, minMargin }: OrdersListWidgetProps) => {
   const modifyModal = useModal();
   const closeModal = useModal();
   const { data: marketPrice } = useGetMarketPrice();
@@ -66,6 +68,9 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
   // Get contract specs
   const marginPercent = contractSpecsQuery.data?.data?.liquidationMarginPercent ?? 20;
   const deliveryDurationDays = contractSpecsQuery.data?.data?.deliveryDurationDays ?? 7;
+
+  // Get newest item price for high price validation
+  const newestItemPrice = marketPrice ? Number(marketPrice) / 1e6 : null;
 
   // Calculate margin for an order
   const calculateMargin = (pricePerDay: bigint, amount: number, isBuy: boolean): bigint | null => {
@@ -221,6 +226,12 @@ export const OrdersListWidget = ({ orders, isLoading }: OrdersListWidgetProps) =
             order={selectedOrder.order}
             orderIds={selectedOrder.orderIds}
             currentQuantity={selectedOrder.currentQuantity}
+            participantData={participantData}
+            latestPrice={latestPrice}
+            marginPercent={marginPercent}
+            deliveryDurationDays={deliveryDurationDays}
+            minMargin={minMargin}
+            newestItemPrice={newestItemPrice}
             closeForm={() => {
               modifyModal.close();
               setSelectedOrder(null);
