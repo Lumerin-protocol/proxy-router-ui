@@ -53,18 +53,21 @@ export const Landing: FC = () => {
                 Marketplace
               </HeroHeadline>
               <HeroSubheadline>Buy, sell, and own hashpower through your Web3 wallet</HeroSubheadline>
+              <Suspense fallback={<ConnectButton disabled>Connect wallet</ConnectButton>}>
+                <Web3ProviderLazy>
+                  <ConnectWidgetLazy
+                    hideChain={true}
+                    hideConnector={true}
+                    onConnect={() => navigate(PathName.Marketplace)}
+                  />
+                </Web3ProviderLazy>
+              </Suspense>
               <ButtonsWrapper>
-                <Suspense fallback={<ConnectButton disabled>Connect wallet</ConnectButton>}>
-                  <Web3ProviderLazy>
-                    <ConnectWidgetLazy
-                      hideChain={true}
-                      hideConnector={true}
-                      onConnect={() => navigate(PathName.Marketplace)}
-                    />
-                  </Web3ProviderLazy>
-                </Suspense>
                 <ConnectBtn type="button" onClick={() => navigate(PathName.Marketplace)}>
-                  Enter Marketplace
+                  Spot Market
+                </ConnectBtn>
+                <ConnectBtn type="button" onClick={() => navigate(PathName.Futures)}>
+                  Futures Market
                 </ConnectBtn>
               </ButtonsWrapper>
             </div>

@@ -44,7 +44,9 @@ interface PlaceOrderWidgetProps {
   contractSpecsQuery: UseQueryResult<GetResponse<FuturesContractSpecs>, Error>;
   participantData?: Participant | null;
   latestPrice: bigint | null;
+  highlightMode: "inputs" | "buttons" | undefined;
   onOrderPlaced?: () => void | Promise<void>;
+  minMargin?: bigint | null;
 }
 
 export const PlaceOrderWidget = ({
@@ -56,7 +58,9 @@ export const PlaceOrderWidget = ({
   contractSpecsQuery,
   participantData,
   latestPrice,
+  highlightMode,
   onOrderPlaced,
+  minMargin,
 }: PlaceOrderWidgetProps) => {
   const { data: marketPrice, isLoading: isMarketPriceLoading } = useGetMarketPrice();
   const { address } = useAccount();
@@ -78,7 +82,7 @@ export const PlaceOrderWidget = ({
   const [price, setPrice] = useState("5.00"); // Will be updated when hashrate data loads
   const [priceInitialized, setPriceInitialized] = useState(false); // Track if price has been initialized from hashrate
   const [amount, setAmount] = useState(1);
-  const [highlightedButton, setHighlightedButton] = useState<"buy" | "sell" | null>(null);
+  const [highlightedButton, setHighlightedButton] = useState<"buy" | "sell" | "inputs" | null>(null);
   const [showHighPriceModal, setShowHighPriceModal] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [pendingOrder, setPendingOrder] = useState<{
@@ -118,18 +122,19 @@ export const PlaceOrderWidget = ({
   // Highlight button when position is closed and values are substituted
   useEffect(() => {
     if (
-      externalIsBuy !== undefined &&
       externalPrice !== undefined &&
       externalAmount !== undefined &&
       highlightTrigger !== undefined &&
+      highlightMode !== undefined &&
       highlightTrigger > 0
     ) {
       // Reset highlight first to ensure visual feedback
       setHighlightedButton(null);
 
+      const mode = highlightMode === "buttons" ? (externalIsBuy ? "buy" : "sell") : "inputs";
       // Set highlight in next tick to ensure visual change
       const highlightTimeout = setTimeout(() => {
-        setHighlightedButton(externalIsBuy ? "buy" : "sell");
+        setHighlightedButton(mode);
       }, 10);
 
       // Clear highlight after 3 seconds
@@ -142,7 +147,7 @@ export const PlaceOrderWidget = ({
         clearTimeout(clearTimeoutId);
       };
     }
-  }, [externalIsBuy, externalPrice, externalAmount, highlightTrigger]);
+  }, [highlightMode, externalIsBuy, externalPrice, externalAmount, highlightTrigger]);
 
   // Show loading state while minimumPriceIncrement is being fetched
   if (contractSpecsQuery.isLoading || !priceStep || isMarketPriceLoading || !newestItemPrice) {
@@ -183,7 +188,9 @@ export const PlaceOrderWidget = ({
     // Validate balance for buy orders using getMinMarginForPositionManual
     const currentPrice = parseFloat(price);
     const priceInWei = BigInt(Math.round(currentPrice * 1e6));
-    const balance = balanceQuery.data ?? 0n;
+    const totalBalance = balanceQuery.data ?? 0n;
+    const lockedBalance = minMargin ?? 0n;
+    const availableBalance = totalBalance - lockedBalance;
 
     if (!latestPrice) {
       alert("Unable to fetch market price. Please try again.");
@@ -198,13 +205,15 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > balance) {
+    if (requiredMargin > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
-      const futuresBalanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
+      const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
+      const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nAvailable futures balance: ${futuresBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
@@ -254,7 +263,9 @@ export const PlaceOrderWidget = ({
     // Validate balance for sell orders using getMinMarginForPositionManual
     const currentPrice = parseFloat(price);
     const priceInWei = BigInt(Math.round(currentPrice * 1e6));
-    const balance = balanceQuery.data ?? 0n;
+    const totalBalance = balanceQuery.data ?? 0n;
+    const lockedBalance = minMargin ?? 0n;
+    const availableBalance = totalBalance - lockedBalance;
 
     if (!latestPrice) {
       alert("Unable to fetch market price. Please try again.");
@@ -269,13 +280,15 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > balance) {
+    if (requiredMargin > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
-      const futuresBalanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
+      const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
+      const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nAvailable futures balance: ${futuresBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }

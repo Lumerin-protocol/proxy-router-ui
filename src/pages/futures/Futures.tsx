@@ -82,6 +82,7 @@ export const Futures: FC = () => {
   const [selectedAmount, setSelectedAmount] = useState<number | undefined>();
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<number | undefined>();
   const [selectedIsBuy, setSelectedIsBuy] = useState<boolean | undefined>();
+  const [highlightMode, setHighlightMode] = useState<"inputs" | "buttons" | undefined>();
   const [highlightTrigger, setHighlightTrigger] = useState(0);
 
   // Track previous order book state for change detection
@@ -94,6 +95,7 @@ export const Futures: FC = () => {
     setSelectedPrice(price);
     setSelectedAmount(amount);
     setSelectedIsBuy(isBuy);
+    setHighlightMode("buttons");
     // Increment trigger to force highlight update
     setHighlightTrigger((prev) => prev + 1);
   }, []);
@@ -103,7 +105,9 @@ export const Futures: FC = () => {
 
   const handleOrderBookClick = (price: string, amount: number | null) => {
     setSelectedPrice(price);
-    setSelectedAmount(amount ? amount : undefined);
+    setSelectedAmount(amount ? amount : 1);
+    setHighlightMode("inputs");
+    setHighlightTrigger((prev) => prev + 1);
   };
 
   const handleDeliveryDateChange = (deliveryDate: number | undefined) => {
@@ -148,7 +152,9 @@ export const Futures: FC = () => {
             highlightTrigger={highlightTrigger}
             contractSpecsQuery={contractSpecsQuery}
             participantData={participantData?.data}
+            highlightMode={highlightMode}
             latestPrice={marketPrice ?? null}
+            minMargin={minMargin}
             onOrderPlaced={async () => {
               await minMarginQuery.refetch();
             }}
