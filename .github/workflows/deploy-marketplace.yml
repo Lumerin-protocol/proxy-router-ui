@@ -37,6 +37,7 @@ jobs:
       vfull: ${{ steps.gen_tag_name.outputs.vfull }}
       environment: ${{ steps.determine_env.outputs.environment }}
       should_create_release: ${{ steps.determine_env.outputs.should_create_release }}
+      is_cicd_branch: ${{ steps.determine_env.outputs.is_cicd_branch }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -48,6 +49,7 @@ jobs:
         id: determine_env
         run: |
           BRANCH="${{ github.ref_name }}"
+          IS_CICD="false"
           if [ "$BRANCH" == "main" ]; then
             ENV="main"
             CREATE_RELEASE="true"
@@ -57,13 +59,15 @@ jobs:
           elif [[ "$BRANCH" == cicd/* ]]; then
             ENV="dev"
             CREATE_RELEASE="false"
-            echo "🔧 CI/CD feature branch detected - deploying to DEV"
+            IS_CICD="true"
+            echo "🔧 CI/CD test branch detected - will skip build/deploy"
           else
             ENV="dev"
             CREATE_RELEASE="false"
           fi
           echo "environment=${ENV}" >> $GITHUB_OUTPUT
           echo "should_create_release=${CREATE_RELEASE}" >> $GITHUB_OUTPUT
+          echo "is_cicd_branch=${IS_CICD}" >> $GITHUB_OUTPUT
 
       - name: Determine tag name
         id: gen_tag_name
@@ -114,6 +118,7 @@ jobs:
     name: ⚙️ Setup
     needs:
       - generate-tag
+    if: needs.generate-tag.outputs.is_cicd_branch != 'true'
     runs-on: ubuntu-latest
     # NO environment scope - uses repo-level AWS_ROLE_ARN secrets
     outputs:
@@ -180,6 +185,7 @@ jobs:
     needs:
       - generate-tag
       - setup
+    if: needs.generate-tag.outputs.is_cicd_branch != 'true'
     runs-on: ubuntu-latest
     # HAS environment scope - can access environment-scoped secrets/variables
     environment:
@@ -266,6 +272,7 @@ jobs:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
     needs: [generate-tag, setup, build]
+    if: needs.generate-tag.outputs.is_cicd_branch != 'true'
     
     steps:
       - name: Download build artifacts
@@ -301,6 +308,7 @@ jobs:
     name: 🔍 Verify
     runs-on: ubuntu-latest
     needs: [generate-tag, setup, build, deploy]
+    if: needs.generate-tag.outputs.is_cicd_branch != 'true'
     
     steps:
       - name: Wait for CloudFront propagation
@@ -352,7 +360,7 @@ jobs:
     name: 📊 Summary & Tag
     runs-on: ubuntu-latest
     needs: [generate-tag, setup, build, deploy, verify]
-    if: always()
+    if: always() && needs.generate-tag.outputs.is_cicd_branch != 'true'
     
     steps:
       - name: Clone repository
@@ -434,3 +442,40 @@ jobs:
           echo "⚠️ Deployment or verification failed. Check logs above for details." >> $GITHUB_STEP_SUMMARY
           echo "🚫 Tag NOT created - deployment was not successful" >> $GITHUB_STEP_SUMMARY
 
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [generate-tag, setup, build, deploy, verify, summary]
+    if: always()
+    
+    steps:
+      - name: Checkout (for composite action)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: Determine status
+        id: status
+        run: |
+          if [ "${{ needs.generate-tag.outputs.is_cicd_branch }}" == "true" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.verify.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.verify.result }}" == "failure" ] || [ "${{ needs.deploy.result }}" == "failure" ] || [ "${{ needs.build.result }}" == "failure" ]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.verify.result }}" == "cancelled" ] || [ "${{ needs.deploy.result }}" == "cancelled" ]; then
+            echo "status=cancelled" >> $GITHUB_OUTPUT
+          else
+            echo "status=skipped" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Send Slack notification
+        uses: ./.github/actions/slack-notify
+        with:
+          status: ${{ steps.status.outputs.status }}
+          environment: ${{ needs.generate-tag.outputs.environment }}
+          service_name: 'Marketplace'
+          version: ${{ needs.generate-tag.outputs.vtag }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          additional_info: '${{ needs.generate-tag.outputs.is_cicd_branch == ''true'' && ''*Mode:* CI/CD Test (no build/deploy)'' || format(''*URL:* {0}'', needs.setup.outputs.marketplace_url) }}'

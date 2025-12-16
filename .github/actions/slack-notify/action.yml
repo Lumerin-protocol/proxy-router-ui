@@ -1,0 +1,212 @@
+name: 'Slack Deployment Notification'
+description: 'Send beautifully formatted deployment notifications to Slack'
+
+inputs:
+  status:
+    description: 'Deployment status (success, failure, cancelled)'
+    required: true
+  environment:
+    description: 'Target environment (dev, stg, main)'
+    required: true
+  service_name:
+    description: 'Name of the service being deployed'
+    required: true
+  version:
+    description: 'Version tag being deployed'
+    required: true
+  slack_webhook_url:
+    description: 'Slack webhook URL'
+    required: true
+  github_token:
+    description: 'GitHub token for API calls to fetch PR info'
+    required: false
+    default: ''
+  additional_info:
+    description: 'Additional info to include in markdown format (optional)'
+    required: false
+    default: ''
+  image_tag:
+    description: 'Docker image tag if applicable (optional)'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get PR info
+      id: pr_info
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+      run: |
+        # Try to find PR number from merge commit message first
+        COMMIT_MSG=$(git log -1 --pretty=%s 2>/dev/null || echo "")
+        
+        # Pattern: "Merge pull request #123 from ..."
+        if [[ "$COMMIT_MSG" =~ Merge\ pull\ request\ \#([0-9]+) ]]; then
+          PR_NUMBER="${BASH_REMATCH[1]}"
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "📎 Found PR #$PR_NUMBER from merge commit"
+        # Pattern: "... (#123)" - squash merge pattern
+        elif [[ "$COMMIT_MSG" =~ \(\#([0-9]+)\) ]]; then
+          PR_NUMBER="${BASH_REMATCH[1]}"
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "📎 Found PR #$PR_NUMBER from squash commit"
+        # Fallback: Use GitHub API to find associated PR
+        elif [ -n "$GH_TOKEN" ]; then
+          PR_NUMBER=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+            | jq -r '.[0].number // empty' 2>/dev/null || echo "")
+          if [ -n "$PR_NUMBER" ]; then
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "📎 Found PR #$PR_NUMBER from GitHub API"
+          else
+            echo "pr_number=" >> $GITHUB_OUTPUT
+            echo "📎 No PR found for this commit"
+          fi
+        else
+          echo "pr_number=" >> $GITHUB_OUTPUT
+          echo "📎 No PR info available (no token provided)"
+        fi
+
+    - name: Send Slack notification
+      shell: bash
+      env:
+        SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
+        STATUS: ${{ inputs.status }}
+        ENVIRONMENT: ${{ inputs.environment }}
+        SERVICE_NAME: ${{ inputs.service_name }}
+        VERSION: ${{ inputs.version }}
+        ADDITIONAL_INFO: ${{ inputs.additional_info }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        PR_NUMBER: ${{ steps.pr_info.outputs.pr_number }}
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+        GITHUB_SERVER_URL: ${{ github.server_url }}
+      run: |
+        # Set environment emoji and label
+        case "$ENVIRONMENT" in
+          dev)   ENV_EMOJI="🔧"; ENV_LABEL="DEV" ;;
+          stg)   ENV_EMOJI="🧪"; ENV_LABEL="STG" ;;
+          main)  ENV_EMOJI="🚀"; ENV_LABEL="PROD" ;;
+          *)     ENV_EMOJI="📦"; ENV_LABEL="${ENVIRONMENT^^}" ;;
+        esac
+        
+        # Set status emoji and color
+        case "$STATUS" in
+          success)   STATUS_EMOJI="✅"; COLOR="good"; STATUS_TEXT="Deployed Successfully" ;;
+          failure)   STATUS_EMOJI="❌"; COLOR="danger"; STATUS_TEXT="Deployment Failed" ;;
+          cancelled) STATUS_EMOJI="⚠️"; COLOR="warning"; STATUS_TEXT="Deployment Cancelled" ;;
+          skipped)   STATUS_EMOJI="⏭️"; COLOR="#808080"; STATUS_TEXT="Skipped" ;;
+          *)         STATUS_EMOJI="ℹ️"; COLOR="#808080"; STATUS_TEXT="$STATUS" ;;
+        esac
+        
+        # Get commit info
+        COMMIT_SHORT="${GITHUB_SHA:0:7}"
+        COMMIT_MSG=$(git log -1 --pretty=%s 2>/dev/null | head -n 1 | cut -c1-80 || echo "No commit message")
+        
+        # Clean up merge commit messages
+        if [[ "$COMMIT_MSG" =~ ^Merge\ pull\ request\ \#[0-9]+\ from\ .*/(.+)$ ]]; then
+          COMMIT_MSG="Merged: ${BASH_REMATCH[1]}"
+        fi
+        
+        # Build URLs
+        REPO_SHORT="${GITHUB_REPOSITORY#*/}"
+        RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+        
+        # Build header: ENV | repo | service | status
+        # Format: 🔧 DEV | proxy-router-ui | Marketplace | ✅ Deployed Successfully
+        HEADER_TEXT="$ENV_EMOJI $ENV_LABEL | $REPO_SHORT | $SERVICE_NAME | $STATUS_EMOJI $STATUS_TEXT"
+        
+        # Build fields array (removed repo and branch - now in header)
+        FIELDS=$(jq -n \
+          --arg version "$VERSION" \
+          --arg actor "$GITHUB_ACTOR" \
+          '[
+            {"type": "mrkdwn", "text": ("*Version:*\n`" + $version + "`")},
+            {"type": "mrkdwn", "text": ("*Triggered by:*\n" + $actor)}
+          ]')
+        
+        # Add PR field if available
+        if [ -n "$PR_NUMBER" ]; then
+          PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
+          FIELDS=$(echo "$FIELDS" | jq --arg pr_url "$PR_URL" --arg pr_num "$PR_NUMBER" \
+            '. + [{"type": "mrkdwn", "text": ("*Pull Request:*\n<" + $pr_url + "|#" + $pr_num + ">")}]')
+        fi
+        
+        # Add image tag field if available
+        if [ -n "$IMAGE_TAG" ]; then
+          FIELDS=$(echo "$FIELDS" | jq --arg img "$IMAGE_TAG" \
+            '. + [{"type": "mrkdwn", "text": ("*Image:*\n`" + $img + "`")}]')
+        fi
+        
+        # Build commit section (just message, hash available via button)
+        COMMIT_TEXT="*Commit:* ${COMMIT_MSG}"
+        
+        # Build blocks array
+        BLOCKS=$(jq -n \
+          --arg header "$HEADER_TEXT" \
+          --argjson fields "$FIELDS" \
+          --arg commit_text "$COMMIT_TEXT" \
+          '[
+            {"type": "header", "text": {"type": "plain_text", "text": $header, "emoji": true}},
+            {"type": "section", "fields": $fields},
+            {"type": "section", "text": {"type": "mrkdwn", "text": $commit_text}}
+          ]')
+        
+        # Add additional info block if provided
+        if [ -n "$ADDITIONAL_INFO" ]; then
+          BLOCKS=$(echo "$BLOCKS" | jq --arg info "$ADDITIONAL_INFO" \
+            '. + [{"type": "section", "text": {"type": "mrkdwn", "text": $info}}]')
+        fi
+        
+        # Add action buttons
+        if [ -n "$PR_NUMBER" ]; then
+          PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
+          BLOCKS=$(echo "$BLOCKS" | jq \
+            --arg pr_url "$PR_URL" \
+            --arg pr_num "$PR_NUMBER" \
+            --arg run_url "$RUN_URL" \
+            --arg commit_url "$COMMIT_URL" \
+            '. + [
+              {"type": "actions", "elements": [
+                {"type": "button", "text": {"type": "plain_text", "text": "🔀 View PR", "emoji": true}, "url": $pr_url, "style": "primary"},
+                {"type": "button", "text": {"type": "plain_text", "text": "📋 Actions", "emoji": true}, "url": $run_url},
+                {"type": "button", "text": {"type": "plain_text", "text": "🔍 Commit", "emoji": true}, "url": $commit_url}
+              ]}
+            ]')
+        else
+          BLOCKS=$(echo "$BLOCKS" | jq \
+            --arg run_url "$RUN_URL" \
+            --arg commit_url "$COMMIT_URL" \
+            '. + [
+              {"type": "actions", "elements": [
+                {"type": "button", "text": {"type": "plain_text", "text": "📋 Actions", "emoji": true}, "url": $run_url, "style": "primary"},
+                {"type": "button", "text": {"type": "plain_text", "text": "🔍 Commit", "emoji": true}, "url": $commit_url}
+              ]}
+            ]')
+        fi
+        
+        # Build final payload
+        PAYLOAD=$(jq -n \
+          --arg color "$COLOR" \
+          --argjson blocks "$BLOCKS" \
+          '{"attachments": [{"color": $color, "blocks": $blocks}]}')
+        
+        # Send to Slack
+        RESPONSE=$(curl -s -X POST -H 'Content-type: application/json' -d "$PAYLOAD" "$SLACK_WEBHOOK")
+        
+        if [ "$RESPONSE" = "ok" ]; then
+          echo "📢 Slack notification sent successfully"
+        else
+          echo "⚠️ Slack response: $RESPONSE"
+          echo "Payload was:"
+          echo "$PAYLOAD" | jq .
+        fi
+
