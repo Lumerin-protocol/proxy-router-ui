@@ -148,5 +148,5 @@ export const ConnectBtn = styled(PrimaryButton)`
 export const ButtonsWrapper = styled("div")`
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  margin-top: 1rem;
 `;
