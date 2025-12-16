@@ -182,6 +182,8 @@ export const Futures: FC = () => {
             positionsLoading={isPositionBookLoading}
             participantAddress={address}
             onClosePosition={closePositionModal.handleClosePosition}
+            participantData={participantData?.data}
+            minMargin={minMargin}
           />
         </OrdersPositionsArea>
       )}

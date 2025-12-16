@@ -29,6 +29,8 @@ interface OrdersPositionsTabWidgetProps {
   positionsLoading?: boolean;
   participantAddress?: `0x${string}`;
   onClosePosition?: (price: string, amount: number, isBuy: boolean) => void;
+  participantData?: any;
+  minMargin?: bigint | null;
 }
 
 export const OrdersPositionsTabWidget = ({
@@ -38,6 +40,8 @@ export const OrdersPositionsTabWidget = ({
   positionsLoading,
   participantAddress,
   onClosePosition,
+  participantData,
+  minMargin,
 }: OrdersPositionsTabWidgetProps) => {
   const [activeTab, setActiveTab] = useState<"ORDERS" | "POSITIONS">("ORDERS");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("OPEN");
@@ -138,7 +142,12 @@ export const OrdersPositionsTabWidget = ({
       <Content>
         {activeTab === "ORDERS" && !isHistoricalMode && (
           <OrdersWrapper>
-            <OrdersListWidget orders={orders} isLoading={ordersLoading} />
+            <OrdersListWidget
+              orders={orders}
+              isLoading={ordersLoading}
+              participantData={participantData}
+              minMargin={minMargin}
+            />
           </OrdersWrapper>
         )}
         {activeTab === "ORDERS" && isHistoricalMode && (
