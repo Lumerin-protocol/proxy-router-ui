@@ -50,6 +50,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({
   // Transform data for Highcharts
   const chartData = enhancedData
     .filter((item) => item.updatedAtDate || item.updatedAt) // Filter out items without date
+    .filter((item) => item.priceToken > 10000n)
     .map((item) => {
       const date = item.updatedAtDate || new Date(Number(item.updatedAt) * 1000);
       return [
