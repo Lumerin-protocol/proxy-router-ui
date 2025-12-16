@@ -64,6 +64,13 @@ export const DetailedSpecsModal = ({ closeForm, contractSpecs }: DetailedSpecsMo
           <SpecLabel>Tick Value</SpecLabel>
           <SpecValue>${contractSpecs.deliveryDurationDays * 0.01}</SpecValue>
         </SpecItem>
+
+        <SpecItem>
+          <SpecLabel>Contract Address</SpecLabel>
+          <SpecValue style={{ wordBreak: "break-all", fontFamily: "monospace" }}>
+            {process.env.REACT_APP_FUTURES_TOKEN_ADDRESS || "Not configured"}
+          </SpecValue>
+        </SpecItem>
       </div>
     </div>
   );
