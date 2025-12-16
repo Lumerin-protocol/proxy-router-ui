@@ -154,6 +154,7 @@ export const Futures: FC = () => {
             participantData={participantData?.data}
             highlightMode={highlightMode}
             latestPrice={marketPrice ?? null}
+            minMargin={minMargin}
             onOrderPlaced={async () => {
               await minMarginQuery.refetch();
             }}

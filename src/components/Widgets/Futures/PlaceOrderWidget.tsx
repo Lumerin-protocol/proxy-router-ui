@@ -46,6 +46,7 @@ interface PlaceOrderWidgetProps {
   latestPrice: bigint | null;
   highlightMode: "inputs" | "buttons" | undefined;
   onOrderPlaced?: () => void | Promise<void>;
+  minMargin?: bigint | null;
 }
 
 export const PlaceOrderWidget = ({
@@ -59,6 +60,7 @@ export const PlaceOrderWidget = ({
   latestPrice,
   highlightMode,
   onOrderPlaced,
+  minMargin,
 }: PlaceOrderWidgetProps) => {
   const { data: marketPrice, isLoading: isMarketPriceLoading } = useGetMarketPrice();
   const { address } = useAccount();
@@ -186,7 +188,9 @@ export const PlaceOrderWidget = ({
     // Validate balance for buy orders using getMinMarginForPositionManual
     const currentPrice = parseFloat(price);
     const priceInWei = BigInt(Math.round(currentPrice * 1e6));
-    const balance = balanceQuery.data ?? 0n;
+    const totalBalance = balanceQuery.data ?? 0n;
+    const lockedBalance = minMargin ?? 0n;
+    const availableBalance = totalBalance - lockedBalance;
 
     if (!latestPrice) {
       alert("Unable to fetch market price. Please try again.");
@@ -201,13 +205,15 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > balance) {
+    if (requiredMargin > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
-      const futuresBalanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
+      const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
+      const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nAvailable futures balance: ${futuresBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
@@ -257,7 +263,9 @@ export const PlaceOrderWidget = ({
     // Validate balance for sell orders using getMinMarginForPositionManual
     const currentPrice = parseFloat(price);
     const priceInWei = BigInt(Math.round(currentPrice * 1e6));
-    const balance = balanceQuery.data ?? 0n;
+    const totalBalance = balanceQuery.data ?? 0n;
+    const lockedBalance = minMargin ?? 0n;
+    const availableBalance = totalBalance - lockedBalance;
 
     if (!latestPrice) {
       alert("Unable to fetch market price. Please try again.");
@@ -272,13 +280,15 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > balance) {
+    if (requiredMargin > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
-      const futuresBalanceFormatted = (Number(balance) / 1e6).toFixed(2);
+      const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
+      const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
+      const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nAvailable futures balance: ${futuresBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
