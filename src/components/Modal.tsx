@@ -15,6 +15,7 @@ interface ModalProps {
 export const ModalItem: FC<ModalProps> = ({ open, setOpen, content, children }) => {
   return (
     <Modal
+      disableEnforceFocus
       open={open}
       onClose={() => setOpen(false)}
       css={css`

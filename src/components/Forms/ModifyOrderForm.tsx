@@ -1,4 +1,4 @@
-import { memo, useCallback, type FC } from "react";
+import { memo, useCallback, useState, type FC } from "react";
 import { useForm, useController, type Control } from "react-hook-form";
 import { waitForAggregateBlockNumber, AGGREGATE_ORDER_BOOK_QK } from "../../hooks/data/useAggregateOrderBook";
 import { TransactionFormV2 as TransactionForm } from "./Shared/MultistepForm";
@@ -8,15 +8,25 @@ import { PARTICIPANT_QK } from "../../hooks/data/useParticipant";
 import { POSITION_BOOK_QK } from "../../hooks/data/usePositionBook";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
-import type { ParticipantOrder } from "../../hooks/data/useParticipant";
+import type { ParticipantOrder, Participant } from "../../hooks/data/useParticipant";
 import styled from "@mui/material/styles/styled";
 import { handleNumericDecimalInput } from "./Shared/AmountInputForm";
+import { getMinMarginForPositionManual } from "../../hooks/data/getMinMarginForPositionManual";
+import { useGetFutureBalance } from "../../hooks/data/useGetFutureBalance";
+import { usePaymentTokenBalance } from "../../hooks/data/usePaymentTokenBalance";
+import { useOrderFee } from "../../hooks/data/useOrderFee";
 
 interface ModifyOrderFormProps {
   order: ParticipantOrder;
   orderIds: string[]; // IDs of orders to close (grouped orders)
   currentQuantity: number; // Current quantity of grouped orders
   closeForm: () => void;
+  participantData?: Participant | null;
+  latestPrice: bigint | null;
+  marginPercent: number;
+  deliveryDurationDays: number;
+  minMargin?: bigint | null;
+  newestItemPrice: number | null;
 }
 
 interface ModifyFormValues {
@@ -25,13 +35,31 @@ interface ModifyFormValues {
 }
 
 export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
-  ({ order, orderIds, currentQuantity, closeForm }) => {
+  ({
+    order,
+    orderIds,
+    currentQuantity,
+    closeForm,
+    participantData,
+    latestPrice,
+    marginPercent,
+    deliveryDurationDays,
+    minMargin,
+    newestItemPrice,
+  }) => {
     const { modifyOrderAsync } = useModifyOrder();
     const qc = useQueryClient();
     const { address } = useAccount();
+    const balanceQuery = useGetFutureBalance(address);
+    const accountBalanceQuery = usePaymentTokenBalance(address);
+    const { data: orderFeeRaw } = useOrderFee();
 
     // Determine order type from quantity sign
     const isBuy = order.isBuy;
+
+    // Get high price percentage from environment variable (default 60 for 160%)
+    const highPricePercentage = Number(process.env.REACT_APP_FUTURES_HIGH_PRICE_PERCENTAGE || "60");
+    const maxPriceMultiplier = 1 + highPricePercentage / 100;
 
     // Form setup with default values from current order
     const form = useForm<ModifyFormValues>({
@@ -56,11 +84,90 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
         }
         return false;
       }
-      var values = form.getValues();
+
+      const values = form.getValues();
       if (values.quantity == currentQuantity && values.price == (Number(order.pricePerDay) / 1e6).toFixed(2)) {
         alert("Please change order terms");
         return false;
       }
+
+      // Validate balance for modified order
+      const newPrice = parseFloat(values.price);
+      const newPriceInWei = BigInt(Math.round(newPrice * 1e6));
+      const newQuantity = values.quantity;
+      const totalBalance = balanceQuery.data ?? 0n;
+      const lockedBalance = minMargin ?? 0n;
+      const availableBalance = totalBalance - lockedBalance;
+
+      if (!latestPrice) {
+        alert("Unable to fetch market price. Please try again.");
+        return false;
+      }
+
+      // Calculate required margin for the new order
+      const newSignedQuantity = isBuy ? newQuantity : -newQuantity;
+      const requiredMargin = getMinMarginForPositionManual(
+        newPriceInWei,
+        newSignedQuantity,
+        latestPrice,
+        marginPercent,
+        deliveryDurationDays,
+      );
+
+      // Include order fee in the balance check
+      const orderFee = orderFeeRaw ?? 0n;
+      const totalRequired = requiredMargin + orderFee;
+
+      if (totalRequired > availableBalance) {
+        const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
+        const orderFeeFormatted = (Number(orderFee) / 1e6).toFixed(2);
+        const totalRequiredFormatted = (Number(totalRequired) / 1e6).toFixed(2);
+        const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
+        const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
+        const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
+        const accountBalance = accountBalanceQuery.data ?? 0n;
+        const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
+        alert(
+          `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nOrder fee: ${orderFeeFormatted} USDC\nTotal required: ${totalRequiredFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        );
+        return false;
+      }
+
+      // Check for conflicting orders (opposite action, same price, same delivery date)
+      if (participantData?.orders) {
+        const deliveryDateValue = order.deliveryAt;
+        const conflictingOrder = participantData.orders.find(
+          (existingOrder) =>
+            existingOrder.isActive &&
+            existingOrder.isBuy !== isBuy && // Opposite action
+            existingOrder.pricePerDay === newPriceInWei &&
+            existingOrder.deliveryAt === deliveryDateValue &&
+            existingOrder.id !== order.id, // Exclude the current order being modified
+        );
+
+        if (conflictingOrder) {
+          const oppositeAction = isBuy ? "Sell" : "Buy";
+          alert(
+            `Cannot modify order to price ${newPrice.toFixed(2)} USDC. You already have an active ${oppositeAction} order at the same price and delivery date. Please close or modify the existing order first.`,
+          );
+          return false;
+        }
+      }
+
+      // Check if price exceeds the configured percentage of newest item price
+      if (newestItemPrice) {
+        const maxAllowedPrice = newestItemPrice * maxPriceMultiplier;
+        if (newPrice > maxAllowedPrice) {
+          const percentageOver = ((newPrice / newestItemPrice) * 100).toFixed(1);
+          const confirmed = window.confirm(
+            `⚠️ High Price Warning\n\nYour price (${newPrice.toFixed(2)} USDC) is ${percentageOver}% of the market price (${newestItemPrice.toFixed(2)} USDC).\n\nThis price is significantly above the current market rate. You may experience difficulty finding a counterparty or may face higher slippage.\n\nDo you want to proceed?`,
+          );
+          if (!confirmed) {
+            return false;
+          }
+        }
+      }
+
       return true;
     };
 
@@ -184,7 +291,12 @@ export const ModifyOrderForm: FC<ModifyOrderFormProps> = memo(
     return (
       prevProps.order.id === nextProps.order.id &&
       prevProps.orderIds.length === nextProps.orderIds.length &&
-      prevProps.currentQuantity === nextProps.currentQuantity
+      prevProps.currentQuantity === nextProps.currentQuantity &&
+      prevProps.latestPrice === nextProps.latestPrice &&
+      prevProps.marginPercent === nextProps.marginPercent &&
+      prevProps.deliveryDurationDays === nextProps.deliveryDurationDays &&
+      prevProps.minMargin === nextProps.minMargin &&
+      prevProps.newestItemPrice === nextProps.newestItemPrice
     );
   },
 );
