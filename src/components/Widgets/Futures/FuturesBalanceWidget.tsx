@@ -61,7 +61,7 @@ export const FuturesBalanceWidget = ({ minMargin, isLoadingMinMargin, unrealized
 
   return (
     <>
-      <BalanceWidgetContainer className="lg:w-[60%]" $shouldHighlight={shouldHighlight}>
+      <BalanceWidgetContainer className="lg:w-[60%]" $shouldHighlight={shouldHighlight} $centerContent={!address}>
         {address && (
           <div className="flex items-center justify-center" style={{ fontSize: "0.75rem" }}>
             <UsdcIcon style={{ width: "18px", marginRight: "6px" }} />
@@ -364,11 +364,12 @@ const ActionButtons = styled("div")`
   }
 `;
 
-const BalanceWidgetContainer = styled(SmallWidget)<{ $shouldHighlight: boolean }>`
+const BalanceWidgetContainer = styled(SmallWidget)<{ $shouldHighlight: boolean; $centerContent: boolean }>`
   border: ${(props) => (props.$shouldHighlight ? "2px solid #fbbf24" : "rgba(171, 171, 171, 1) 1px solid")};
   background: ${(props) => (props.$shouldHighlight ? "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 0, 0.05) 100%)" : "radial-gradient(circle, rgba(0, 0, 0, 0) 36%, rgba(255, 255, 255, 0.05) 100%)")};
   transition: border-color 0.3s ease;
-  justify-content: space-between;
+  justify-content: ${(props) => (props.$centerContent ? "center" : "space-between")};
+  align-items: ${(props) => (props.$centerContent ? "center" : "stretch")};
 `;
 
 const MarginCallWarning = styled("div")`
