@@ -33,6 +33,7 @@ import { useGetFutureBalance } from "../../../hooks/data/useGetFutureBalance";
 import { getMinMarginForPositionManual } from "../../../hooks/data/getMinMarginForPositionManual";
 import { handleNumericDecimalInput } from "../../Forms/Shared/AmountInputForm";
 import { usePaymentTokenBalance } from "../../../hooks/data/usePaymentTokenBalance";
+import { useOrderFee } from "../../../hooks/data/useOrderFee";
 
 interface PlaceOrderWidgetProps {
   externalPrice?: string;
@@ -66,6 +67,7 @@ export const PlaceOrderWidget = ({
   const { address } = useAccount();
   const balanceQuery = useGetFutureBalance(address);
   const accountBalanceQuery = usePaymentTokenBalance(address);
+  const { data: orderFeeRaw } = useOrderFee();
 
   // Calculate price step from contract specs
   const priceStep = contractSpecsQuery.data?.data?.minimumPriceIncrement
@@ -84,7 +86,10 @@ export const PlaceOrderWidget = ({
   const [amount, setAmount] = useState(1);
   const [highlightedButton, setHighlightedButton] = useState<"buy" | "sell" | "inputs" | null>(null);
   const [showHighPriceModal, setShowHighPriceModal] = useState(false);
+  const [showConflictModal, setShowConflictModal] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [bypassConflictCheck, setBypassConflictCheck] = useState(false);
+  const [conflictingOrderQuantity, setConflictingOrderQuantity] = useState<number | null>(null);
   const [pendingOrder, setPendingOrder] = useState<{
     price: number;
     amount: number;
@@ -205,15 +210,21 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > availableBalance) {
+    // Include order fee in the balance check
+    const orderFee = orderFeeRaw ?? 0n;
+    const totalRequired = requiredMargin + orderFee;
+
+    if (totalRequired > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
+      const orderFeeFormatted = (Number(orderFee) / 1e6).toFixed(2);
+      const totalRequiredFormatted = (Number(totalRequired) / 1e6).toFixed(2);
       const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
       const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
       const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nOrder fee: ${orderFeeFormatted} USDC\nTotal required: ${totalRequiredFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
@@ -222,7 +233,7 @@ export const PlaceOrderWidget = ({
     if (participantData?.orders) {
       const priceInWei = BigInt(Math.round(currentPrice * 1e6));
       const deliveryDateValue = BigInt(externalDeliveryDate);
-      const hasConflictingOrder = participantData.orders.some(
+      const conflictingOrder = participantData.orders.find(
         (order) =>
           order.isActive &&
           !order.isBuy && // Opposite action (Sell)
@@ -230,10 +241,15 @@ export const PlaceOrderWidget = ({
           order.deliveryAt === deliveryDateValue,
       );
 
-      if (hasConflictingOrder) {
-        alert(
-          `Cannot create Buy order at price ${currentPrice.toFixed(2)} USDC. You already have an active Sell order at the same price and delivery date. Please close or modify the existing order first.`,
-        );
+      if (conflictingOrder) {
+        // Note: ParticipantOrder doesn't expose quantity, so we can't show it
+        setConflictingOrderQuantity(null);
+        setPendingOrder({
+          price: currentPrice,
+          amount: amount,
+          quantity: amount, // Positive for Buy
+        });
+        setShowConflictModal(true);
         return;
       }
     }
@@ -280,15 +296,21 @@ export const PlaceOrderWidget = ({
       deliveryDurationDays,
     );
 
-    if (requiredMargin > availableBalance) {
+    // Include order fee in the balance check
+    const orderFee = orderFeeRaw ?? 0n;
+    const totalRequired = requiredMargin + orderFee;
+
+    if (totalRequired > availableBalance) {
       const requiredMarginFormatted = (Number(requiredMargin) / 1e6).toFixed(2);
+      const orderFeeFormatted = (Number(orderFee) / 1e6).toFixed(2);
+      const totalRequiredFormatted = (Number(totalRequired) / 1e6).toFixed(2);
       const totalBalanceFormatted = (Number(totalBalance) / 1e6).toFixed(2);
       const lockedBalanceFormatted = (Number(lockedBalance) / 1e6).toFixed(2);
       const availableBalanceFormatted = (Number(availableBalance) / 1e6).toFixed(2);
       const accountBalance = accountBalanceQuery.data ?? 0n;
       const accountBalanceFormatted = (Number(accountBalance) / 1e6).toFixed(2);
       alert(
-        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
+        `Insufficient funds. Please deposit futures account.\n\nRequired margin: ${requiredMarginFormatted} USDC\nOrder fee: ${orderFeeFormatted} USDC\nTotal required: ${totalRequiredFormatted} USDC\nTotal futures balance: ${totalBalanceFormatted} USDC\nLocked balance: ${lockedBalanceFormatted} USDC\nAvailable balance: ${availableBalanceFormatted} USDC\nAvailable account balance: ${accountBalanceFormatted} USDC`,
       );
       return;
     }
@@ -297,7 +319,7 @@ export const PlaceOrderWidget = ({
     if (participantData?.orders) {
       const priceInWei = BigInt(Math.round(currentPrice * 1e6));
       const deliveryDateValue = BigInt(externalDeliveryDate);
-      const hasConflictingOrder = participantData.orders.some(
+      const conflictingOrder = participantData.orders.find(
         (order) =>
           order.isActive &&
           order.isBuy && // Opposite action (Buy)
@@ -305,10 +327,15 @@ export const PlaceOrderWidget = ({
           order.deliveryAt === deliveryDateValue,
       );
 
-      if (hasConflictingOrder) {
-        alert(
-          `Cannot create Sell order at price ${currentPrice.toFixed(2)} USDC. You already have an active Buy order at the same price and delivery date. Please close or modify the existing order first.`,
-        );
+      if (conflictingOrder) {
+        // Note: ParticipantOrder doesn't expose quantity, so we can't show it
+        setConflictingOrderQuantity(null);
+        setPendingOrder({
+          price: currentPrice,
+          amount: amount,
+          quantity: -amount, // Negative for Sell
+        });
+        setShowConflictModal(true);
         return;
       }
     }
@@ -348,6 +375,22 @@ export const PlaceOrderWidget = ({
   const handleCancelHighPrice = () => {
     setShowHighPriceModal(false);
     setPendingOrder(null);
+    setBypassConflictCheck(false);
+  };
+
+  const handleConfirmConflict = () => {
+    if (pendingOrder) {
+      setShowConflictModal(false);
+      setBypassConflictCheck(true);
+      setShowOrderForm(true);
+    }
+  };
+
+  const handleCancelConflict = () => {
+    setShowConflictModal(false);
+    setPendingOrder(null);
+    setConflictingOrderQuantity(null);
+    setBypassConflictCheck(false);
   };
 
   return (
@@ -423,6 +466,16 @@ export const PlaceOrderWidget = ({
         />
       </ModalItem>
 
+      <ModalItem open={showConflictModal} setOpen={setShowConflictModal}>
+        <ConflictingOrderModal
+          pendingOrder={pendingOrder}
+          conflictingOrderQuantity={conflictingOrderQuantity}
+          externalDeliveryDate={externalDeliveryDate}
+          onConfirm={handleConfirmConflict}
+          onCancel={handleCancelConflict}
+        />
+      </ModalItem>
+
       {showOrderForm && pendingOrder && externalDeliveryDate && (
         <ModalItem
           open={showOrderForm}
@@ -440,14 +493,74 @@ export const PlaceOrderWidget = ({
             participantData={participantData}
             latestPrice={latestPrice}
             onOrderPlaced={onOrderPlaced}
+            bypassConflictCheck={bypassConflictCheck}
             closeForm={() => {
               setShowOrderForm(false);
               setPendingOrder(null);
+              setConflictingOrderQuantity(null);
+              setBypassConflictCheck(false);
             }}
           />
         </ModalItem>
       )}
     </>
+  );
+};
+
+const ConflictingOrderModal = ({
+  pendingOrder,
+  conflictingOrderQuantity,
+  externalDeliveryDate,
+  onConfirm,
+  onCancel,
+}: {
+  pendingOrder: { price: number; amount: number; quantity: number } | null;
+  conflictingOrderQuantity: number | null;
+  externalDeliveryDate?: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  if (!pendingOrder) return null;
+
+  const isBuy = pendingOrder.quantity > 0;
+  const oppositeAction = isBuy ? "Sell" : "Buy";
+  const deliveryDateFormatted = externalDeliveryDate ? new Date(externalDeliveryDate * 1000).toLocaleString() : "N/A";
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-white mb-6">Conflicting Order Detected</h2>
+
+      <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-4">
+        <p className="text-gray-300 text-sm mb-3">
+          You already have an active <strong className="text-white">{oppositeAction}</strong> order at the same price
+          and delivery date.
+        </p>
+
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-300">Price:</span>
+            <span className="text-white font-medium">{pendingOrder.price.toFixed(2)} USDC</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Delivery Date:</span>
+            <span className="text-white font-medium">{deliveryDateFormatted}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white-900/20 border border-white-500/30 rounded-lg p-4">
+        <p className="text-white-300 text-sm leading-relaxed">
+          <strong>Important:</strong> Your order of <strong>{pendingOrder.amount} units</strong> will be placed as
+          specified. However, it will be matched against your existing {oppositeAction} order and offset orders will be
+          closed.
+        </p>
+      </div>
+
+      <div className="flex gap-3 justify-end">
+        <SecondaryButton onClick={onCancel}>Cancel</SecondaryButton>
+        <PrimaryButton onClick={onConfirm}>Proceed with Order</PrimaryButton>
+      </div>
+    </div>
   );
 };
 

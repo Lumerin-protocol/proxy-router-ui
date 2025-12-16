@@ -18,6 +18,7 @@ import { getMinMarginForPositionManual } from "../../hooks/data/getMinMarginForP
 import { predefinedPools } from "./BuyerForms/predefinedPools";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
+import { useOrderFee } from "../../hooks/data/useOrderFee";
 
 interface PoolFormValues {
   predefinedPoolIndex: number | "";
@@ -33,6 +34,7 @@ interface Props {
   latestPrice: bigint | null;
   onOrderPlaced?: () => void | Promise<void>;
   closeForm: () => void;
+  bypassConflictCheck?: boolean; // Allow proceeding despite conflicting orders
 }
 
 export const PlaceOrderForm: FC<Props> = ({
@@ -43,12 +45,14 @@ export const PlaceOrderForm: FC<Props> = ({
   latestPrice,
   onOrderPlaced,
   closeForm,
+  bypassConflictCheck = false,
 }) => {
   const { createOrderAsync } = useCreateOrder();
   const qc = useQueryClient();
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const contractSpecsQuery = useFuturesContractSpecs();
+  const { orderFeeUSDC, isLoading: isOrderFeeLoading } = useOrderFee();
 
   // Determine order type from quantity sign
   const isBuy = quantity > 0;
@@ -195,6 +199,12 @@ export const PlaceOrderForm: FC<Props> = ({
                       : "N/A"}
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Order Creation Fee:</span>
+                <span className="text-white">
+                  {orderFeeUSDC !== null ? `${orderFeeUSDC.toFixed(2)} USDC` : isOrderFeeLoading ? "Loading..." : "N/A"}
+                </span>
+              </div>
             </div>
           </div>
           {isBuy && (
@@ -227,8 +237,8 @@ export const PlaceOrderForm: FC<Props> = ({
         {
           label: `Place ${isBuy ? "Buy" : "Sell"} Order`,
           action: async () => {
-            // Check for conflicting order before proceeding
-            if (hasConflictingOrder()) {
+            // Check for conflicting order before proceeding (unless bypassed)
+            if (!bypassConflictCheck && hasConflictingOrder()) {
               const oppositeAction = isBuy ? "Sell" : "Buy";
               const priceInUSDC = Number(price) / 1e6;
               throw new Error(
