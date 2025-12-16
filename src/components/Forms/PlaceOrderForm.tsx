@@ -18,6 +18,7 @@ import { getMinMarginForPositionManual } from "../../hooks/data/getMinMarginForP
 import { predefinedPools } from "./BuyerForms/predefinedPools";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
+import { useOrderFee } from "../../hooks/data/useOrderFee";
 
 interface PoolFormValues {
   predefinedPoolIndex: number | "";
@@ -49,6 +50,7 @@ export const PlaceOrderForm: FC<Props> = ({
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const contractSpecsQuery = useFuturesContractSpecs();
+  const { orderFeeUSDC, isLoading: isOrderFeeLoading } = useOrderFee();
 
   // Determine order type from quantity sign
   const isBuy = quantity > 0;
@@ -193,6 +195,12 @@ export const PlaceOrderForm: FC<Props> = ({
                     : isLoadingMargin
                       ? "Loading..."
                       : "N/A"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Order Creation Fee:</span>
+                <span className="text-white">
+                  {orderFeeUSDC !== null ? `${orderFeeUSDC.toFixed(2)} USDC` : isOrderFeeLoading ? "Loading..." : "N/A"}
                 </span>
               </div>
             </div>
