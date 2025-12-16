@@ -34,6 +34,7 @@ interface Props {
   latestPrice: bigint | null;
   onOrderPlaced?: () => void | Promise<void>;
   closeForm: () => void;
+  bypassConflictCheck?: boolean; // Allow proceeding despite conflicting orders
 }
 
 export const PlaceOrderForm: FC<Props> = ({
@@ -44,6 +45,7 @@ export const PlaceOrderForm: FC<Props> = ({
   latestPrice,
   onOrderPlaced,
   closeForm,
+  bypassConflictCheck = false,
 }) => {
   const { createOrderAsync } = useCreateOrder();
   const qc = useQueryClient();
@@ -235,8 +237,8 @@ export const PlaceOrderForm: FC<Props> = ({
         {
           label: `Place ${isBuy ? "Buy" : "Sell"} Order`,
           action: async () => {
-            // Check for conflicting order before proceeding
-            if (hasConflictingOrder()) {
+            // Check for conflicting order before proceeding (unless bypassed)
+            if (!bypassConflictCheck && hasConflictingOrder()) {
               const oppositeAction = isBuy ? "Sell" : "Buy";
               const priceInUSDC = Number(price) / 1e6;
               throw new Error(
