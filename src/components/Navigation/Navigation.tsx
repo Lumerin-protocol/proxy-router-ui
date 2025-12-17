@@ -124,7 +124,7 @@ export const ResponsiveNavigation = (prop: {
         <Socials>
           {[
             { link: "https://discord.gg/lumerin", icon: faDiscord },
-            { link: "https://medium.com/titan-mining-blog", icon: faMedium },
+            { link: "https://titanmining.medium.com", icon: faMedium },
             { link: "https://t.me/LumerinOfficial", icon: faTelegram },
             { link: "http://twitter.com/hellolumerin", icon: faXTwitter },
             { link: "https://www.tiktok.com/@hellolumerin_", icon: faTiktok },
