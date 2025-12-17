@@ -105,7 +105,7 @@ export const Futures: FC = () => {
 
   const handleOrderBookClick = (price: string, amount: number | null) => {
     setSelectedPrice(price);
-    setSelectedAmount(amount ? amount : 1);
+    setSelectedAmount(1);
     setHighlightMode("inputs");
     setHighlightTrigger((prev) => prev + 1);
   };
