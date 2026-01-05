@@ -8,14 +8,15 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { useModal } from "../../hooks/useModal";
 import Button from "@mui/material/Button";
-import { useHashrateIndexData } from "../../hooks/data/useHashRateIndexData";
+import { useHashrateIndexData, type TimePeriod } from "../../hooks/data/useHashRateIndexData";
 import { HashrateChart } from "../../components/Charts/HashrateChart";
 
 export const Test: FC = () => {
   const editModal = useModal();
   const [contractId, setContractId] = useState<string>("0x123");
+  const [chartTimePeriod, setChartTimePeriod] = useState<TimePeriod>("day");
 
-  const hashrateQuery = useHashrateIndexData();
+  const hashrateQuery = useHashrateIndexData({ timePeriod: chartTimePeriod });
 
   if (hashrateQuery.isSuccess) {
     console.log(hashrateQuery.data);
@@ -28,7 +29,12 @@ export const Test: FC = () => {
 
         {/* Hashrate Chart */}
         <div style={{ marginBottom: "2rem" }}>
-          <HashrateChart data={hashrateQuery.data || []} isLoading={hashrateQuery.isLoading} />
+          <HashrateChart
+            data={hashrateQuery.data || []}
+            isLoading={hashrateQuery.isLoading}
+            timePeriod={chartTimePeriod}
+            onTimePeriodChange={setChartTimePeriod}
+          />
         </div>
 
         <Button

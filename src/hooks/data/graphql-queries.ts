@@ -173,6 +173,16 @@ export const HashrateIndexQuery = gql`
   }
 `;
 
+export const AggregatedHashrateIndexQuery = gql`
+  query AggregatedHashrateIndexQuery($interval: String!) {
+  hashesForTokenCandles(interval: $interval) {
+    count
+    id
+    sum
+    timestamp
+  }
+}`;
+
 export const DeliveryDatesQuery = gql`
   query DeliveryDates($now: BigInt!) {
     deliveryDates(where: { deliveryDate_gte: $now }, orderBy: deliveryDate, orderDirection: asc) {
