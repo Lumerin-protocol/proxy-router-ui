@@ -1,6 +1,40 @@
-import { type FC, useMemo } from "react";
+import { type FC, useMemo, useEffect } from "react";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import styled from "@mui/material/styles/styled";
+import type { TimePeriod } from "../../hooks/data/useHashRateIndexData";
+
+const PeriodSwitch = styled("div")`
+  display: flex;
+  gap: 0;
+  border: 1px solid rgba(171, 171, 171, 1);
+  border-radius: 6px;
+  overflow: hidden;
+  align-self: end;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  margin-right: 12px;
+`;
+
+const PeriodButton = styled("button")<{ $active: boolean }>`
+  padding: 0.5rem 1rem;
+  background: ${(props) => (props.$active ? "#4c5a5f" : "transparent")};
+  color: #fff;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${(props) => (props.$active ? "#4c5a5f" : "rgba(76, 90, 95, 0.5)")};
+  }
+
+  &:not(:last-child) {
+    border-right: 1px solid rgba(171, 171, 171, 0.5);
+  }
+`;
 
 interface HashrateChartProps {
   data: Array<{
@@ -11,6 +45,8 @@ interface HashrateChartProps {
   isLoading?: boolean;
   marketPrice?: bigint | null;
   marketPriceFetchedAt?: Date;
+  timePeriod: TimePeriod;
+  onTimePeriodChange: (period: TimePeriod) => void;
 }
 
 export const HashrateChart: FC<HashrateChartProps> = ({
@@ -18,7 +54,14 @@ export const HashrateChart: FC<HashrateChartProps> = ({
   isLoading = false,
   marketPrice,
   marketPriceFetchedAt,
+  timePeriod,
+  onTimePeriodChange,
 }) => {
+  // Track time period changes and log to console
+  useEffect(() => {
+    console.log("Time period changed to:", timePeriod);
+  }, [timePeriod]);
+
   // Merge market price with historical data if it differs from the first item
   const enhancedData = useMemo(() => {
     if (!marketPrice || !data || data.length === 0) {
@@ -55,7 +98,7 @@ export const HashrateChart: FC<HashrateChartProps> = ({
       const date = item.updatedAtDate || new Date(Number(item.updatedAt) * 1000);
       return [
         date.getTime(), // X-axis: timestamp
-        Number((Number(item.priceToken) / 10 ** 6).toFixed(2)), // Y-axis: priceToken divided by 10^6
+        Number(Number(item.priceToken) / 10 ** 6), // Y-axis: priceToken divided by 10^6
       ];
     });
 
@@ -103,6 +146,9 @@ export const HashrateChart: FC<HashrateChartProps> = ({
       labels: {
         style: {
           color: "#ffffff",
+        },
+        formatter: function () {
+          return Number(this.value).toFixed(2);
         },
       },
       gridLineColor: "#333333",
@@ -199,7 +245,18 @@ export const HashrateChart: FC<HashrateChartProps> = ({
   return (
     <>
       <h3>Hashprice Index</h3>
-      <div style={{ width: "100%", height: "500px", paddingTop: "1rem" }}>
+      <PeriodSwitch>
+        <PeriodButton $active={timePeriod === "day"} onClick={() => onTimePeriodChange("day")}>
+          1D
+        </PeriodButton>
+        <PeriodButton $active={timePeriod === "week"} onClick={() => onTimePeriodChange("week")}>
+          7D
+        </PeriodButton>
+        <PeriodButton $active={timePeriod === "month"} onClick={() => onTimePeriodChange("month")}>
+          1M
+        </PeriodButton>
+      </PeriodSwitch>
+      <div style={{ width: "100%", height: "450px", paddingTop: "1rem" }}>
         <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "100%" } }} />
       </div>
     </>

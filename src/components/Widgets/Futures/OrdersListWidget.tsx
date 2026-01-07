@@ -164,7 +164,7 @@ export const OrdersListWidget = ({ orders, isLoading, participantData, minMargin
               <th>Price per day</th>
               <th>Quantity</th>
               <th>Margin</th>
-              <th>Delivery Date</th>
+              <th>Contract Expiration</th>
               <th>Destination</th>
               <th>Actions</th>
             </tr>

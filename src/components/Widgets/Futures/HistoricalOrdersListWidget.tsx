@@ -80,16 +80,17 @@ export const HistoricalOrdersListWidget = ({ orders, isLoading }: HistoricalOrde
         <Table>
           <thead>
             <tr>
+              <th>Contract Expiration</th>
               <th>Type</th>
               <th>Price per day</th>
-              <th>Amount</th>
-              <th>Delivery Date</th>
+              <th>Quantity</th>
               <th>Closed At</th>
             </tr>
           </thead>
           <tbody>
             {groupedOrdersArray.map((groupedOrder, index) => (
               <TableRow key={`${groupedOrder.isBuy}-${groupedOrder.pricePerDay}-${groupedOrder.deliveryAt}-${index}`}>
+                <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
                 <td>
                   <TypeBadge $type={groupedOrder.isBuy ? "Long" : "Short"}>
                     {groupedOrder.isBuy ? "Long" : "Short"}
@@ -97,7 +98,6 @@ export const HistoricalOrdersListWidget = ({ orders, isLoading }: HistoricalOrde
                 </td>
                 <td>{formatPrice(groupedOrder.pricePerDay)} USDC</td>
                 <td>{groupedOrder.amount}</td>
-                <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
                 <td>{groupedOrder.closedAt ? formatTimestamp(groupedOrder.closedAt) : "-"}</td>
               </TableRow>
             ))}

@@ -446,10 +446,10 @@ export const PlaceOrderWidget = ({
 
           <ButtonSection>
             <BuyButton onClick={handleBuy} disabled={showOrderForm} $isHighlighted={highlightedButton === "buy"}>
-              Buy
+              Bid
             </BuyButton>
             <SellButton onClick={handleSell} disabled={showOrderForm} $isHighlighted={highlightedButton === "sell"}>
-              Sell
+              Ask
             </SellButton>
           </ButtonSection>
         </MainSection>
@@ -523,7 +523,7 @@ const ConflictingOrderModal = ({
   if (!pendingOrder) return null;
 
   const isBuy = pendingOrder.quantity > 0;
-  const oppositeAction = isBuy ? "Sell" : "Buy";
+  const oppositeAction = isBuy ? "Ask" : "Bid";
   const deliveryDateFormatted = externalDeliveryDate ? new Date(externalDeliveryDate * 1000).toLocaleString() : "N/A";
 
   return (
@@ -618,7 +618,7 @@ const HighPriceConfirmationModal = ({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-300">Type:</span>
-            <span className="text-white">{isBuy ? "Buy" : "Sell"}</span>
+            <span className="text-white">{isBuy ? "Bid" : "Ask"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Amount:</span>

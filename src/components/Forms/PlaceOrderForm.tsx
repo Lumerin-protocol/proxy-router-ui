@@ -153,7 +153,7 @@ export const PlaceOrderForm: FC<Props> = ({
   return (
     <TransactionForm
       onClose={closeForm}
-      title={isBuy ? "Place Buy Order" : "Place Sell Order"}
+      title={isBuy ? "Place Bid Order" : "Place Ask Order"}
       description={""}
       validateInput={
         isBuy && !hidePoolInput
@@ -222,7 +222,7 @@ export const PlaceOrderForm: FC<Props> = ({
             </div>
           )}
           <p className="text-gray-400 text-sm">
-            You are about to place a {isBuy ? "buy" : "sell"} order. Please review the details above.
+            You are about to place a {isBuy ? "bid" : "ask"} order. Please review the details above.
           </p>
         </>
       )}
@@ -235,14 +235,14 @@ export const PlaceOrderForm: FC<Props> = ({
       )}
       transactionSteps={[
         {
-          label: `Place ${isBuy ? "Buy" : "Sell"} Order`,
+          label: `Place ${isBuy ? "Bid" : "Ask"} Order`,
           action: async () => {
             // Check for conflicting order before proceeding (unless bypassed)
             if (!bypassConflictCheck && hasConflictingOrder()) {
-              const oppositeAction = isBuy ? "Sell" : "Buy";
+              const oppositeAction = isBuy ? "Ask" : "Bid";
               const priceInUSDC = Number(price) / 1e6;
               throw new Error(
-                `Cannot create ${isBuy ? "Buy" : "Sell"} order at price ${priceInUSDC} USDC. You already have an active ${oppositeAction} order at the same price and delivery date. Please close or modify the existing order first.`,
+                `Cannot create ${isBuy ? "Bid" : "Ask"} order at price ${priceInUSDC} USDC. You already have an active ${oppositeAction} order at the same price and delivery date. Please close or modify the existing order first.`,
               );
             }
 

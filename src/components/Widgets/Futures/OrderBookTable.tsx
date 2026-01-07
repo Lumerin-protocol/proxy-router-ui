@@ -306,9 +306,9 @@ export const OrderBookTable = ({
         <Table>
           <thead>
             <tr>
-              <th>Buy</th>
+              <th>Bid</th>
               <th>Price</th>
-              <th>Sell</th>
+              <th>Ask</th>
             </tr>
           </thead>
           <tbody>
