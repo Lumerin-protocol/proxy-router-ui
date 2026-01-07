@@ -92,11 +92,11 @@ export const HistoricalPositionsListWidget = ({
         <Table>
           <thead>
             <tr>
+              <th>Contract Expiration</th>
               <th>Type</th>
               <th>Price per day</th>
-              <th>Amount</th>
-              <th>Start Time</th>
-              <th>Closed At</th>
+              <th>Quantity</th>
+              <th>Delivered At</th>
             </tr>
           </thead>
           <tbody>
@@ -104,12 +104,12 @@ export const HistoricalPositionsListWidget = ({
               <TableRow
                 key={`${groupedPosition.pricePerDay}-${groupedPosition.deliveryAt}-${groupedPosition.positionType}-${index}`}
               >
+                <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
                 <td>
                   <TypeBadge $type={groupedPosition.positionType}>{groupedPosition.positionType}</TypeBadge>
                 </td>
                 <td>{formatPrice(groupedPosition.pricePerDay)} USDC</td>
                 <td>{groupedPosition.amount}</td>
-                <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
                 <td>{groupedPosition.closedAt ? formatTimestamp(groupedPosition.closedAt) : "-"}</td>
               </TableRow>
             ))}
