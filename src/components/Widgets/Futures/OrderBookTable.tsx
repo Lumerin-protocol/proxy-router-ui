@@ -119,6 +119,21 @@ export const OrderBookTable = ({
     });
   }, [finalOrderBookData, priceHighlights]);
 
+  // Calculate max bid and ask amounts for fill width calculation
+  const { maxBidAmount, maxAskAmount } = useMemo(() => {
+    let maxBid = 0;
+    let maxAsk = 0;
+    for (const row of finalOrderBookDataWithHighlights) {
+      if (row.bidUnits && row.bidUnits > maxBid) {
+        maxBid = row.bidUnits;
+      }
+      if (row.askUnits && row.askUnits > maxAsk) {
+        maxAsk = row.askUnits;
+      }
+    }
+    return { maxBidAmount: maxBid, maxAskAmount: maxAsk };
+  }, [finalOrderBookDataWithHighlights]);
+
   const currentBasePrice = finalOrderBookDataWithHighlights.find((o) => o.isLastHashprice);
 
   // Auto-scroll to last hashprice row when basePrice (hashprice) updates
@@ -313,11 +328,17 @@ export const OrderBookTable = ({
           </thead>
           <tbody>
             {finalOrderBookDataWithHighlights.map((row, index) => {
+              // Calculate fill percentages for bid and ask
+              const bidFillPercent = row.bidUnits && maxBidAmount > 0 ? (row.bidUnits / maxBidAmount) * 100 : 0;
+              const askFillPercent = row.askUnits && maxAskAmount > 0 ? (row.askUnits / maxAskAmount) * 100 : 0;
+
               return (
                 <TableRow
                   key={index}
                   $isHighlighted={row.isHighlighted}
                   $highlightColor={row.highlightColor}
+                  $bidFillPercent={bidFillPercent}
+                  $askFillPercent={askFillPercent}
                   onClick={() => {
                     // Use askUnits if available, otherwise bidUnits, otherwise null
                     const amount = row.askUnits || row.bidUnits || null;
@@ -433,16 +454,80 @@ const Table = styled("table")`
   }
 `;
 
-const TableRow = styled("tr")<{ $isHighlighted?: boolean; $highlightColor?: "red" | "green" }>`
-  background-color: ${(props) => {
-    if (!props.$isHighlighted) return "transparent";
-    return props.$highlightColor === "red" ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)";
-  }};
+const TableRow = styled("tr")<{
+  $isHighlighted?: boolean;
+  $highlightColor?: "red" | "green";
+  $bidFillPercent?: number;
+  $askFillPercent?: number;
+}>`
+  position: relative;
   cursor: pointer;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   
+  /* Background fills for order book depth visualization */
+  background: ${(props) => {
+    // If highlighted, show highlight color instead
+    if (props.$isHighlighted) {
+      return props.$highlightColor === "red" ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)";
+    }
+
+    const bidFill = props.$bidFillPercent || 0;
+    const askFill = props.$askFillPercent || 0;
+
+    // Both bid and ask fills - split gradient
+    if (bidFill > 0 && askFill > 0) {
+      // Bid fills from center-left to left, Ask fills from center-right to right
+      // Using 33% as bid column width, 33% center, 33% ask column width
+      const bidStart = 33 - bidFill * 0.33;
+      const askEnd = 67 + askFill * 0.33;
+      return `linear-gradient(
+        to right,
+        transparent 0%,
+        transparent ${bidStart}%,
+        rgba(34, 197, 94, 0.25) ${bidStart}%,
+        rgba(34, 197, 94, 0.25) 33%,
+        transparent 33%,
+        transparent 67%,
+        rgba(239, 68, 68, 0.25) 67%,
+        rgba(239, 68, 68, 0.25) ${askEnd}%,
+        transparent ${askEnd}%,
+        transparent 100%
+      )`;
+    }
+
+    // Only bid fill - green from right edge of bid column
+    if (bidFill > 0) {
+      const bidStart = 33 - bidFill * 0.33;
+      return `linear-gradient(
+        to right,
+        transparent 0%,
+        transparent ${bidStart}%,
+        rgba(34, 197, 94, 0.25) ${bidStart}%,
+        rgba(34, 197, 94, 0.25) 33%,
+        transparent 33%,
+        transparent 100%
+      )`;
+    }
+
+    // Only ask fill - red from left edge of ask column
+    if (askFill > 0) {
+      const askEnd = 67 + askFill * 0.33;
+      return `linear-gradient(
+        to right,
+        transparent 0%,
+        transparent 67%,
+        rgba(239, 68, 68, 0.25) 67%,
+        rgba(239, 68, 68, 0.25) ${askEnd}%,
+        transparent ${askEnd}%,
+        transparent 100%
+      )`;
+    }
+
+    return "transparent";
+  }};
+  
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1) !important;
   }
   
   &:last-child {

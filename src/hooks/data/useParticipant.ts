@@ -11,8 +11,6 @@ export const useParticipant = (
   participantAddress: `0x${string}` | undefined,
   props?: {
     refetch?: boolean;
-    posOffset?: number;
-    posLimit?: number;
     orderOffset?: number;
     orderLimit?: number;
   },
@@ -30,8 +28,6 @@ export const useParticipant = (
 const fetchParticipantAsync = async (
   participantAddress: `0x${string}`,
   props?: {
-    posOffset?: number;
-    posLimit?: number;
     orderOffset?: number;
     orderLimit?: number;
   },
@@ -39,8 +35,6 @@ const fetchParticipantAsync = async (
   const now = Math.floor(Date.now() / 1000);
   const variables = {
     participantAddress,
-    posOffset: props?.posOffset || 0,
-    posLimit: props?.posLimit || 100,
     orderOffset: props?.orderOffset || 0,
     orderLimit: props?.orderLimit || 100,
     now,
@@ -63,24 +57,6 @@ const fetchParticipantAsync = async (
     totalDeposited: BigInt(response.participant.totalDeposited),
     totalVolume: BigInt(response.participant.totalVolume),
     totalWithdrawn: BigInt(response.participant.totalWithdrawn),
-    positions: response.participant.positions.map((position) => ({
-      transactionHash: position.transactionHash,
-      timestamp: position.timestamp,
-      deliveryAt: position.deliveryAt,
-      sellPricePerDay: BigInt(position.sellPricePerDay),
-      buyPricePerDay: BigInt(position.buyPricePerDay),
-      isActive: position.isActive,
-      id: position.id,
-      destURL: position.destURL,
-      closedBy: position.closedBy,
-      closedAt: position.closedAt,
-      buyer: {
-        address: position.buyer.address,
-      },
-      seller: {
-        address: position.seller.address,
-      },
-    })),
     orders: response.participant.orders.map((order) => ({
       closedAt: order.closedAt,
       closedBy: order.closedBy,
@@ -131,27 +107,7 @@ export type Participant = {
   totalDeposited: bigint;
   totalVolume: bigint;
   totalWithdrawn: bigint;
-  positions: ParticipantPosition[];
   orders: ParticipantOrder[];
-};
-
-export type ParticipantPosition = {
-  transactionHash: `0x${string}`;
-  timestamp: string;
-  deliveryAt: string;
-  sellPricePerDay: bigint;
-  buyPricePerDay: bigint;
-  isActive: boolean;
-  destURL: string;
-  id: string;
-  closedBy: string | null;
-  closedAt: string | null;
-  buyer: {
-    address: `0x${string}`;
-  };
-  seller: {
-    address: `0x${string}`;
-  };
 };
 
 export type ParticipantOrder = {
@@ -184,24 +140,6 @@ type ParticipantResponse = {
     totalDeposited: string;
     totalVolume: string;
     totalWithdrawn: string;
-    positions: {
-      transactionHash: `0x${string}`;
-      timestamp: string;
-      deliveryAt: string;
-      sellPricePerDay: string;
-      buyPricePerDay: string;
-      isActive: boolean;
-      destURL: string;
-      id: string;
-      closedBy: string | null;
-      closedAt: string | null;
-      buyer: {
-        address: `0x${string}`;
-      };
-      seller: {
-        address: `0x${string}`;
-      };
-    }[];
     orders: {
       closedAt: string | null;
       closedBy: string | null;

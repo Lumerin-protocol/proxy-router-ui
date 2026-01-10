@@ -14,7 +14,13 @@ export const HistoricalOrdersListWidget = ({ orders, isLoading }: HistoricalOrde
 
   const formatDeliveryDate = (deliveryDate: bigint) => {
     const date = new Date(Number(deliveryDate) * 1000);
-    return date.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -161,6 +167,11 @@ const Table = styled("table")`
     color: #a7a9b6;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     white-space: nowrap;
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
   
   td {
@@ -168,6 +179,11 @@ const Table = styled("table")`
     font-size: 0.875rem;
     color: #fff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
 `;
 

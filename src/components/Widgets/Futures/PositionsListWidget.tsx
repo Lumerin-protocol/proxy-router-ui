@@ -3,7 +3,6 @@ import Tooltip from "@mui/material/Tooltip";
 import { SmallWidget } from "../../Cards/Cards.styled";
 import type { PositionBookPosition } from "../../../hooks/data/usePositionBook";
 import { useCreateOrder } from "../../../hooks/data/useCreateOrder";
-import { ParticipantPosition } from "../../../hooks/data/useParticipant";
 import { useGetMarketPrice } from "../../../hooks/data/useGetMarketPrice";
 import { ServerStackIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useModal } from "../../../hooks/useModal";
@@ -70,7 +69,13 @@ export const PositionsListWidget = ({
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(Number(timestamp) * 1000);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   // Get latest price from market price hook
@@ -237,12 +242,12 @@ export const PositionsListWidget = ({
         <Table>
           <thead>
             <tr>
+              <th>Contract Expiration</th>
               <th>Type</th>
               <th>Price per day</th>
               <th>Quantity</th>
               <th>Margin</th>
               <th>Unrealized PnL</th>
-              <th>Contract Expiration</th>
               <th>Destination</th>
               <th>Payment</th>
               <th>Action</th>
@@ -253,6 +258,7 @@ export const PositionsListWidget = ({
               <TableRow
                 key={`${groupedPosition.pricePerDay}-${groupedPosition.deliveryAt}-${groupedPosition.positionType}-${index}`}
               >
+                <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
                 <td>
                   <TypeBadge $type={groupedPosition.positionType}>{groupedPosition.positionType}</TypeBadge>
                 </td>
@@ -273,7 +279,6 @@ export const PositionsListWidget = ({
                     return <PnLCell $isPositive={pnl !== null && pnl >= 0}>{formatPnL(pnl, percentage)}</PnLCell>;
                   })()}
                 </td>
-                <td>{formatTimestamp(groupedPosition.deliveryAt)}</td>
                 <td>
                   {groupedPosition.destURL ? (
                     <Tooltip title={groupedPosition.destURL}>
@@ -413,6 +418,11 @@ const Table = styled("table")`
     color: #a7a9b6;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     white-space: nowrap;
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
   
   td {
@@ -420,6 +430,11 @@ const Table = styled("table")`
     font-size: 0.875rem;
     color: #fff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
 `;
 

@@ -3,8 +3,6 @@ import { gql } from "graphql-request";
 export const ParticipantQuery = gql`
   query Participant(
     $participantAddress: ID!
-    $posOffset: Int!
-    $posLimit: Int!
     $orderOffset: Int!
     $orderLimit: Int!
     $now: BigInt!
@@ -17,24 +15,6 @@ export const ParticipantQuery = gql`
       totalDeposited
       totalVolume
       totalWithdrawn
-      positions(where: { isActive: true, deliveryAt_gt: $now }, first: $posLimit, skip: $posOffset, orderBy: timestamp, orderDirection: desc) {
-        transactionHash
-        timestamp
-        deliveryAt
-        sellPricePerDay
-        buyPricePerDay
-        destURL
-        isActive
-        id
-        closedBy
-        closedAt
-        buyer {
-          address
-        }
-        seller {
-          address
-        }
-      }
       orders(where: { isActive: true, deliveryAt_gt: $now }, first: $orderLimit, skip: $orderOffset, orderBy: timestamp, orderDirection: desc) {
         closedAt
         closedBy
@@ -235,6 +215,8 @@ export const HistoricalPositionsQuery = gql`
       deliveryAt
       sellPricePerDay
       buyPricePerDay
+      buyerPnl
+      sellerPnl
       isActive
       closedAt
       buyer {
