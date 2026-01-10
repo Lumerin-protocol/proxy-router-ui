@@ -26,7 +26,9 @@ export const OrderBookTable = ({
   const tableContainerRef = useRef<HTMLDivElement>(null);
   // Track previous basePrice to detect changes
   const previousBasePriceRef = useRef<number | null>(null);
-  const [priceHighlights, setPriceHighlights] = useState<Map<number, { color: "red" | "green" }>>(new Map());
+  const [priceHighlights, setPriceHighlights] = useState<Map<number, { highlightBid: boolean; highlightAsk: boolean }>>(
+    new Map(),
+  );
 
   const { data: deliveryDatesRaw, isLoading, isError } = useGetDeliveryDates();
   const { data: marketPrice } = useGetMarketPrice();
@@ -113,8 +115,8 @@ export const OrderBookTable = ({
       const highlight = priceHighlights.get(row.price);
       return {
         ...row,
-        isHighlighted: !!highlight,
-        highlightColor: highlight?.color,
+        highlightBid: highlight?.highlightBid ?? false,
+        highlightAsk: highlight?.highlightAsk ?? false,
       };
     });
   }, [finalOrderBookData, priceHighlights]);
@@ -167,7 +169,7 @@ export const OrderBookTable = ({
       return;
     }
 
-    const newHighlights = new Map<number, { color: "red" | "green" }>();
+    const newHighlights = new Map<number, { highlightBid: boolean; highlightAsk: boolean }>();
 
     // Check all prices in current state
     for (const [price, current] of currentOrderBookState.entries()) {
@@ -177,21 +179,12 @@ export const OrderBookTable = ({
         continue;
       }
 
-      if (!previous) {
-        if (current.bidUnits > 0) {
-          newHighlights.set(price, { color: "green" });
-        } else if (current.askUnits > 0) {
-          newHighlights.set(price, { color: "red" });
-        }
-        continue;
-      }
+      const highlightBid = !previous ? current.bidUnits > 0 : current.bidUnits > (previous.bidUnits ?? 0);
 
-      if (current.bidUnits > (previous.bidUnits ?? 0)) {
-        newHighlights.set(price, { color: "green" });
-      }
+      const highlightAsk = !previous ? current.askUnits > 0 : current.askUnits > (previous.askUnits ?? 0);
 
-      if (current.askUnits > (previous.askUnits ?? 0)) {
-        newHighlights.set(price, { color: "red" });
+      if (highlightBid || highlightAsk) {
+        newHighlights.set(price, { highlightBid, highlightAsk });
       }
     }
 
@@ -335,8 +328,6 @@ export const OrderBookTable = ({
               return (
                 <TableRow
                   key={index}
-                  $isHighlighted={row.isHighlighted}
-                  $highlightColor={row.highlightColor}
                   $bidFillPercent={bidFillPercent}
                   $askFillPercent={askFillPercent}
                   onClick={() => {
@@ -345,9 +336,9 @@ export const OrderBookTable = ({
                     onRowClick?.(row.price.toFixed(2), amount);
                   }}
                 >
-                  <td className="bidUnits">{row.bidUnits || ""}</td>
+                  <BidCell $isHighlighted={row.highlightBid}>{row.bidUnits || ""}</BidCell>
                   <PriceCell $isLastHashprice={row.isLastHashprice}>{row.price.toFixed(2)}</PriceCell>
-                  <td className="askUnits">{row.askUnits || ""}</td>
+                  <AskCell $isHighlighted={row.highlightAsk}>{row.askUnits || ""}</AskCell>
                 </TableRow>
               );
             })}
@@ -455,8 +446,6 @@ const Table = styled("table")`
 `;
 
 const TableRow = styled("tr")<{
-  $isHighlighted?: boolean;
-  $highlightColor?: "red" | "green";
   $bidFillPercent?: number;
   $askFillPercent?: number;
 }>`
@@ -466,11 +455,6 @@ const TableRow = styled("tr")<{
   
   /* Background fills for order book depth visualization */
   background: ${(props) => {
-    // If highlighted, show highlight color instead
-    if (props.$isHighlighted) {
-      return props.$highlightColor === "red" ? "rgba(239, 68, 68, 0.2)" : "rgba(34, 197, 94, 0.2)";
-    }
-
     const bidFill = props.$bidFillPercent || 0;
     const askFill = props.$askFillPercent || 0;
 
@@ -533,14 +517,26 @@ const TableRow = styled("tr")<{
   &:last-child {
     border-bottom: none;
   }
+`;
 
-  .bidUnits {
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-  }
+const BidCell = styled("td")<{ $isHighlighted?: boolean }>`
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: ${(props) => (props.$isHighlighted ? "rgba(34, 197, 94, 0.3)" : "transparent")};
+  ${(props) =>
+    props.$isHighlighted &&
+    `
+    box-shadow: inset 0 0 8px rgba(34, 197, 94, 0.4);
+  `}
+`;
 
-  .askUnits {
-    border-left: 1px solid rgba(255, 255, 255, 0.05);
-  }
+const AskCell = styled("td")<{ $isHighlighted?: boolean }>`
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: ${(props) => (props.$isHighlighted ? "rgba(239, 68, 68, 0.3)" : "transparent")};
+  ${(props) =>
+    props.$isHighlighted &&
+    `
+    box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.4);
+  `}
 `;
 
 const PriceCell = styled("td")<{ $isLastHashprice?: boolean }>`
