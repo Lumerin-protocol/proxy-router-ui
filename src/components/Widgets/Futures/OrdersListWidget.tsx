@@ -59,7 +59,13 @@ export const OrdersListWidget = ({ orders, isLoading, participantData, minMargin
 
   const formatDeliveryDate = (deliveryDate: bigint) => {
     const date = new Date(Number(deliveryDate) * 1000);
-    return date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   // Get latest price from market price hook
@@ -160,11 +166,11 @@ export const OrdersListWidget = ({ orders, isLoading, participantData, minMargin
         <Table>
           <thead>
             <tr>
+              <th>Contract Expiration</th>
               <th>Type</th>
               <th>Price per day</th>
               <th>Quantity</th>
               <th>Margin</th>
-              <th>Contract Expiration</th>
               <th>Destination</th>
               <th>Actions</th>
             </tr>
@@ -172,6 +178,7 @@ export const OrdersListWidget = ({ orders, isLoading, participantData, minMargin
           <tbody>
             {groupedOrdersArray.map((groupedOrder, index) => (
               <TableRow key={`${groupedOrder.isBuy}-${groupedOrder.pricePerDay}-${groupedOrder.deliveryAt}-${index}`}>
+                <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
                 <td>
                   <TypeBadge $type={groupedOrder.isBuy ? "Long" : "Short"}>
                     {groupedOrder.isBuy ? "Long" : "Short"}
@@ -182,7 +189,6 @@ export const OrdersListWidget = ({ orders, isLoading, participantData, minMargin
                 <td>
                   {formatMargin(calculateMargin(groupedOrder.pricePerDay, groupedOrder.amount, groupedOrder.isBuy))}
                 </td>
-                <td>{formatDeliveryDate(groupedOrder.deliveryAt)}</td>
                 <td>
                   {groupedOrder.destURL ? (
                     <Tooltip title={groupedOrder.destURL}>
@@ -305,6 +311,11 @@ const Table = styled("table")`
     color: #a7a9b6;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     white-space: nowrap;
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
   
   td {
@@ -312,6 +323,11 @@ const Table = styled("table")`
     font-size: 0.875rem;
     color: #fff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
 `;
 

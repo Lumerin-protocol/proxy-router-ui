@@ -13,6 +13,8 @@ export type HistoricalPosition = {
   deliveryAt: string;
   sellPricePerDay: bigint;
   buyPricePerDay: bigint;
+  buyerPnl: number;
+  sellerPnl: number;
   isActive: boolean;
   closedAt: string | null;
   buyer: {
@@ -36,6 +38,8 @@ type HistoricalPositionsResponse = {
     deliveryAt: string;
     sellPricePerDay: string;
     buyPricePerDay: string;
+    buyerPnl: string;
+    sellerPnl: string;
     isActive: boolean;
     closedAt: string | null;
     buyer: {
@@ -73,12 +77,16 @@ const fetchAllHistoricalPositions = async (
 
     blockNumber = response._meta.block.number;
 
+    debugger;
+
     const positions = response.positions.map((position) => ({
       id: position.id,
       timestamp: position.timestamp,
       deliveryAt: position.deliveryAt,
       sellPricePerDay: BigInt(position.sellPricePerDay),
       buyPricePerDay: BigInt(position.buyPricePerDay),
+      buyerPnl: Number(position.buyerPnl),
+      sellerPnl: Number(position.sellerPnl),
       isActive: position.isActive,
       closedAt: position.closedAt,
       buyer: {

@@ -23,8 +23,19 @@ export const HistoricalPositionsListWidget = ({
     return positionType === "Long" ? position.buyPricePerDay : position.sellPricePerDay;
   };
 
+  const getPnlForPosition = (position: HistoricalPosition) => {
+    const positionType = getPositionType(position);
+    return positionType === "Long" ? position.buyerPnl : position.sellerPnl;
+  };
+
   const formatPrice = (price: bigint) => {
     return (Number(price) / 1e6).toFixed(2);
+  };
+
+  const formatPnl = (pnl: number) => {
+    const pnlValue = pnl / 1e6;
+    const sign = pnlValue >= 0 ? "" : "-";
+    return `${sign}${pnlValue.toFixed(2)} USDC`;
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -43,6 +54,7 @@ export const HistoricalPositionsListWidget = ({
     (acc, position) => {
       const positionType = getPositionType(position);
       const pricePerDay = getPriceForPosition(position);
+      const pnl = getPnlForPosition(position);
       const key = `${pricePerDay}-${position.deliveryAt}-${positionType}`;
 
       if (!acc[key]) {
@@ -51,11 +63,13 @@ export const HistoricalPositionsListWidget = ({
           deliveryAt: position.deliveryAt,
           positionType: positionType,
           amount: 0,
+          realizedPnl: 0,
           closedAt: position.closedAt,
         };
       }
 
       acc[key].amount += 1;
+      acc[key].realizedPnl += pnl;
 
       return acc;
     },
@@ -66,6 +80,7 @@ export const HistoricalPositionsListWidget = ({
         deliveryAt: string;
         positionType: string;
         amount: number;
+        realizedPnl: number;
         closedAt: string | null;
       }
     >,
@@ -96,7 +111,8 @@ export const HistoricalPositionsListWidget = ({
               <th>Type</th>
               <th>Price per day</th>
               <th>Quantity</th>
-              <th>Delivered At</th>
+              <th>Realized PnL</th>
+              <th>Closed At</th>
             </tr>
           </thead>
           <tbody>
@@ -110,6 +126,11 @@ export const HistoricalPositionsListWidget = ({
                 </td>
                 <td>{formatPrice(groupedPosition.pricePerDay)} USDC</td>
                 <td>{groupedPosition.amount}</td>
+                <td>
+                  <PnLCell $isPositive={groupedPosition.realizedPnl >= 0}>
+                    {formatPnl(groupedPosition.realizedPnl)}
+                  </PnLCell>
+                </td>
                 <td>{groupedPosition.closedAt ? formatTimestamp(groupedPosition.closedAt) : "-"}</td>
               </TableRow>
             ))}
@@ -173,6 +194,11 @@ const Table = styled("table")`
     color: #a7a9b6;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     white-space: nowrap;
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
   
   td {
@@ -180,6 +206,11 @@ const Table = styled("table")`
     font-size: 0.875rem;
     color: #fff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    
+    &:first-child {
+      width: 200px;
+      min-width: 200px;
+    }
   }
 `;
 
@@ -201,6 +232,11 @@ const TypeBadge = styled("span")<{ $type: string }>`
   font-weight: 600;
   background-color: ${(props) => (props.$type === "Long" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)")};
   color: ${(props) => (props.$type === "Long" ? "#22c55e" : "#ef4444")};
+`;
+
+const PnLCell = styled("span")<{ $isPositive: boolean }>`
+  color: ${(props) => (props.$isPositive ? "#22c55e" : "#ef4444")};
+  font-weight: 600;
 `;
 
 const EmptyState = styled("div")`
